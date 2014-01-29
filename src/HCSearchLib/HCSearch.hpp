@@ -66,28 +66,30 @@ using namespace std;
  * @section summary_sec Summary
  * 
  * 1. Must call HCSearch::Setup::initialize() and HCSearch::Setup::configure() before doing anything. 
- * Load dataset using HCSearch::Utility::loadDataset() and load models using HCSearch::Utility::loadModel() if necessary. (Jump to @ref setup_sec)
+ * Load dataset using HCSearch::Dataset::loadDataset() and load models using HCSearch::Model::loadModel() if necessary. (Jump to @ref setup_sec and @ref util_sec)
  * 
  * 2. Define a search space using HCSearch::SearchSpace and search procedure using HCSearch::ISearchProcedure. (Jump to @ref searchspace_sec and @ref searchprocedure_sec)
  *
  * 3. Perform learning using HCSearch::Learning and inference using HCSearch::Inference. (Jump to @ref learn_sec and @ref infer_sec)
  * 
- * 4. Clean up using HCSearch::Utility::unloadDataset() and HCSearch::Setup::finalize(). (Jump to @ref setup_sec)
+ * 4. Clean up using HCSearch::Dataset::unloadDataset() and HCSearch::Setup::finalize(). (Jump to @ref setup_sec)
  * 
- * @section setup_sec Setup and Utilities
+ * @section setup_sec Setup and Teardown
  * 
  * 1. At the beginning of the program, you must call HCSearch::Setup::initialize().
- * 
+ *
  * 2. After calling HCSearch::Setup::initialize() and before calling any HCSearch-related methods, 
  * you must call HCSearch::Setup::configure() to set up the input and output paths.
  * 
- * 3. Use HCSearch::Utility::loadDataset() to load in the preprocessed dataset for the HC-Search program. 
- * Right before exiting the program, use HCSearch::Utility::unloadDataset() to clean up dataset resources.
+ * 3. You must call HCSearch::Setup::finalize() to release resources right before the program exits.
  * 
- * 4. To save a heuristic or cost model, use the HCSearch::Utility::saveModel(). 
- * To load a model for next time, use the HCSearch::Utility::loadModel().
- *
- * 5. You must call HCSearch::Setup::finalize() to release resources right before the program exits.
+ * @section util_sec Dataset and Model Utilities
+ * 
+ * 1. Use HCSearch::Dataset::loadDataset() to load in the preprocessed dataset for the HC-Search program. 
+ * Right before exiting the program, use HCSearch::Dataset::unloadDataset() to clean up dataset resources.
+ * 
+ * 2. To save a heuristic or cost model, use the HCSearch::Model::saveModel(). 
+ * To load a model for next time, use the HCSearch::Model::loadModel().
  * 
  * @section searchspace_sec Search Space
  * 

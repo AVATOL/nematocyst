@@ -81,7 +81,7 @@ namespace HCSearch
 	{
 	public:
 		/*!
-		 * Graph with feature nodes.
+		 * Graph with feature nodes. Public access allows "low level" manipulations.
 		 */
 		FeatureGraph graph;
 
@@ -122,7 +122,7 @@ namespace HCSearch
 	{
 	public:
 		/*!
-		 * Graph with label nodes.
+		 * Graph with label nodes. Public access allows "low level" manipulations.
 		 */
 		LabelGraph graph;
 
