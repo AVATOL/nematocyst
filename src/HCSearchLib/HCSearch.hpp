@@ -34,9 +34,9 @@ using namespace std;
  *		- @ref linux_install
  *		- @ref mac_install
  *
- * The following is the latest stable release: 
+ * Stable releases can be found on GitHub: https://github.com/mqtlam/hcsearchcv/releases
  * 
- * The code can also be found on GitHub: 
+ * The source code and project can also be found on GitHub: https://github.com/mqtlam/hcsearchcv
  * 
  * @section quickstart_sec Quick Start
  * 
