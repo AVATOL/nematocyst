@@ -30,6 +30,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Basic graph implementation with feature data at nodes.
+	 * 
 	 * This data structure is publicly accessible so you can perform 
 	 * direct reading and manipulations.
 	 */
@@ -50,6 +51,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Basic graph implementation with label data at nodes. 
+	 * 
 	 * This data structure is publicly accessible so you can perform 
 	 * direct reading and manipulations.
 	 */
@@ -69,6 +71,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Structured input: graph with feature nodes.
+	 * 
 	 * This stores a graph where nodes hold feature data. 
 	 * Usually the nodes correspond to pixels, superpixels or patches, 
 	 * and the data at each node correspond to the features of that
@@ -109,6 +112,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Structured output labeling: graph with label nodes.
+	 * 
 	 * This stores a graph where nodes hold label data. 
 	 * Usually the nodes correspond to pixels, superpixels or patches. 
 	 * Each pixel, superpixel or patch has an integer label usually corresponding 
@@ -161,6 +165,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Stores features for ranking.
+	 * 
 	 * This is nothing more than a wrapper around a VectorXd object.
 	 */
 	class RankFeatures
@@ -188,6 +193,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Abstract class for model/weights for ranking.
+	 * 
 	 * The main purpose is to rank features using a rank model. 
 	 * Abstract class is useful for extending different kinds of 
 	 * rankers, like offline vs. online and linear vs. nonlinear.
@@ -236,6 +242,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Rank model for SVM-Rank.
+	 * 
 	 * Has methods to learn weights from training examples and ranking.
 	 */
 	class SVMRankModel : public IRankModel
@@ -290,6 +297,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Rank model for online passive-aggressive ranking. 
+	 * 
 	 * Has methods to perform online updates and ranking
 	 */
 	class OnlineRankModel : public IRankModel

@@ -10,7 +10,7 @@ namespace HCSearch
 	/**************** Global ****************/
 
 	/*!
-	 * @breif Global variables: settings and logging (for debugging)
+	 * @brief %Global variables: settings and logging (for debugging)
 	 */
 	namespace Global
 	{

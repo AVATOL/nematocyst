@@ -177,6 +177,7 @@ namespace HCSearch
 
 	/*!
 	 * @brief Required interfaces for setting up and tearing down. 
+	 * 
 	 * These are necessary to set up global variables and optionally MPI stuff.
 	 */
 	class Setup
