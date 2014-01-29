@@ -20,3 +20,7 @@
 *.opensdf
 *.suo
 *.vcxproj.user
+
+# Directories
+external/
+doc/
