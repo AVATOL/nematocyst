@@ -215,28 +215,24 @@ namespace HCSearch
 
 	/*! @}*/
 
-	/**************** Utility ****************/
+	/**************** Dataset ****************/
 
 	/*!
-	 * @defgroup Utilities Utilities
-	 * @brief Provide utilities to load/unload datasets and load/save learned models.
+	 * @defgroup Dataset Dataset Utilities
+	 * @brief Provide utilities to load/unload datasets.
 	 *
-	 * - Use the Utility::loadDataset() 
+	 * - Use the Dataset::loadDataset() 
 	 * function to read in a preprocessed dataset. 
 	 *
-	 * - Use the Utility::loadModel() function to load a model file.
-	 *
-	 * - Use the Utility::saveModel() to save a model to file.
-	 *
-	 * - Use the Utility::unloadDataset() 
+	 * - Use the Dataset::unloadDataset() 
 	 * function to clean up dataset resources properly before exiting the program.
 	 * @{
 	 */
 
 	/*!
-	 * @brief Interfaces for loading/unloading datasets and loading/saving learned models.
+	 * @brief Interfaces for loading/unloading datasets.
 	 */
-	class Utility
+	class Dataset
 	{
 	public:
 		/*!
@@ -265,7 +261,29 @@ namespace HCSearch
 		static void unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
+	};
 
+	/*! @} */
+
+	/**************** Model ****************/
+
+	/*!
+	 * @defgroup Model Model Utilities
+	 * @brief Provide utilities to load/save learned models.
+	 *
+	 * - Use the Utility::loadModel() function to load a model file.
+	 *
+	 * - Use the Utility::saveModel() to save a model to file.
+	 *
+	 * @{
+	 */
+
+	/*!
+	 * @brief Interfaces for loading/saving learned models.
+	 */
+	class Model
+	{
+	public:
 		/*!
 		 * Load single model from file. 
 		 * Can be learned H, C, or C from oracle H.

@@ -205,9 +205,9 @@ namespace HCSearch
 	}
 #endif
 
-	/**************** Utility ****************/
+	/**************** Dataset ****************/
 
-	void Utility::loadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+	void Dataset::loadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
@@ -221,7 +221,7 @@ namespace HCSearch
 		YTest = vector< ImgLabeling* >();
 	}
 
-	void Utility::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
@@ -269,7 +269,9 @@ namespace HCSearch
 		XTest.clear();
 	}
 
-	IRankModel* Utility::loadModel(string fileName, RankerType rankerType)
+	/**************** Model ****************/
+
+	IRankModel* Model::loadModel(string fileName, RankerType rankerType)
 	{
 		if (rankerType == RankerType::ONLINE_RANK)
 		{
@@ -290,7 +292,7 @@ namespace HCSearch
 		}
 	}
 
-	void Utility::saveModel(IRankModel* model, string fileName, RankerType rankerType)
+	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
 	{
 		if (rankerType == RankerType::ONLINE_RANK)
 		{

@@ -47,7 +47,7 @@ void demo(int argc, char* argv[])
 	vector< HCSearch::ImgLabeling* > YTest;
 
 	// load dataset
-	HCSearch::Utility::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+	HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 	const int numTestExamples = XTest.size();
 
 	// load search space functions and search space
@@ -66,9 +66,9 @@ void demo(int argc, char* argv[])
 	HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 
 	// save model
-	HCSearch::Utility::saveModel(heuristicModel, heuristicModelPath, rankerType);
-	HCSearch::Utility::saveModel(costModel, costModelPath, rankerType);
-	HCSearch::Utility::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
+	HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
+	HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
+	HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
 
 	// to demonstrate loading...
 	delete heuristicModel;
@@ -76,9 +76,9 @@ void demo(int argc, char* argv[])
 	delete costOracleHModel;
 
 	// load model
-	heuristicModel = HCSearch::Utility::loadModel(heuristicModelPath, rankerType);
-	costModel = HCSearch::Utility::loadModel(costModelPath, rankerType);
-	costOracleHModel = HCSearch::Utility::loadModel(costOracleHModelPath, rankerType);
+	heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
+	costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
+	costOracleHModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
 
 	// set up metadat for first test example
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
@@ -99,7 +99,7 @@ void demo(int argc, char* argv[])
 	HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
 
 	// clean up
-	HCSearch::Utility::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }
 
 #ifdef USE_MPI
