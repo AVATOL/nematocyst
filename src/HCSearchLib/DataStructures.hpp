@@ -25,8 +25,16 @@ namespace HCSearch
 
 	/**************** Graph ****************/
 
-	typedef set< int > NeighborSet_t; // set of neighbor node
-	typedef map< int, NeighborSet_t > AdjList_t; // node -> set of neighbor node
+	/*!
+	 * Set of (neighbor) nodes.
+	 */
+	typedef set< int > NeighborSet_t;
+
+	/*!
+	 * Adjacency List. 
+	 * Mapping: node -> set of neighbor nodes
+	 */
+	typedef map< int, NeighborSet_t > AdjList_t;
 
 	/*!
 	 * @brief Basic graph implementation with feature data at nodes.
@@ -57,7 +65,9 @@ namespace HCSearch
 	 */
 	struct LabelGraph
 	{
-		// Nodes with labels
+		/*!
+		 * Nodes with labels.
+		 */
 		VectorXi nodesData;
 
 		/*!
