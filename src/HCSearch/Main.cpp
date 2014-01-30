@@ -1,10 +1,36 @@
 #include <iostream>
 #include "HCSearch.hpp" 
+#include "Main.hpp"
+#include "MyProgramOptions.hpp"
 
 using namespace std;
 
-HCSearch::SearchSpace* setupSearchSpace();
-void demo(int argc, char* argv[]);
+int main(int argc, char* argv[])
+{
+	// initialize HCSearch
+	HCSearch::Setup::initialize(argc, argv);
+
+	cout << "Rank=" << HCSearch::Global::settings->RANK << endl;
+
+	// parse arguments
+	MyProgramOptions::ProgramOptions po = MyProgramOptions::ProgramOptions::parseArguments(argc, argv);
+
+	// configure settings
+	HCSearch::Setup::configure(po.inputDir, po.outputDir);
+
+	// demo
+	if (po.demoMode)
+		demo();
+	else
+		run(po);
+
+	if (HCSearch::Global::settings->RANK == 0)
+		HCSearch::abort();
+
+	// finalize
+	HCSearch::Setup::finalize();
+    return 0;
+}
 
 HCSearch::SearchSpace* setupSearchSpace()
 {
@@ -12,7 +38,7 @@ HCSearch::SearchSpace* setupSearchSpace()
 	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
-	// use IID logistic regression as initial prediction function
+	// use IID logistic regression as initial state prediction function
 	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
@@ -25,7 +51,7 @@ HCSearch::SearchSpace* setupSearchSpace()
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 }
 
-void demo(int argc, char* argv[])
+void demo()
 {
 	// time bound
 	int timeBound = 50;
@@ -80,7 +106,7 @@ void demo(int argc, char* argv[])
 	costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
 	costOracleHModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
 
-	// set up metadat for first test example
+	// set up metadata for first test example
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
 	searchMetadata.exampleName; //TODO
 	searchMetadata.iter; //TODO
@@ -102,49 +128,47 @@ void demo(int argc, char* argv[])
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }
 
-#ifdef USE_MPI
-
-int main(int argc, char* argv[])
+void run(MyProgramOptions::ProgramOptions po)
 {
-	// initialize HCSearch
-	HCSearch::Setup::initialize(argc, argv);
+	typedef MyProgramOptions::ProgramOptions::Modes Modes_t;
 
-	cout << "Rank=" << HCSearch::Global::settings->RANK << endl;
-
-	// parse arguments
+	// set up search space
 	//TODO
 
-	// configure settings
-	HCSearch::Setup::configure("dataNematoDemo", "EXPERIMENT_output");
-
-	// demo
-	//demo(argc, argv);
-
-	if (HCSearch::Global::settings->RANK == 0)
-		HCSearch::abort();
-
-	// finalize
-	HCSearch::Setup::finalize();
-    return 0;
-}
-
-#else
-
-int main(int argc, char* argv[])
-{
-	// initialize HCSearch
-	HCSearch::Setup::initialize(argc, argv);
-
-	// parse arguments
+	// set up search procedure
 	//TODO
 
-	// demo
-	demo(argc, argv);
+	// run the appropriate mode
+	for (vector< Modes_t >::iterator it = po.schedule.begin();
+		it != po.schedule.end(); ++it)
+	{
+		Modes_t mode = *it;
 
-	// finalize
-	HCSearch::Setup::finalize();
-
-    return 0;
+		switch (mode)
+		{
+		case Modes_t::LEARN_H:
+			//TODO
+			break;
+		case Modes_t::LEARN_C:
+			//TODO
+			break;
+		case Modes_t::LEARN_C_ORACLE_H:
+			//TODO
+			break;
+		case Modes_t::INFER_LL:
+			//TODO
+			break;
+		case Modes_t::INFER_HL:
+			//TODO
+			break;
+		case Modes_t::INFER_LC:
+			//TODO
+			break;
+		case Modes_t::INFER_HC:
+			//TODO
+			break;
+		default:
+			cerr << "Error!" << endl;
+		}
+	}
 }
-
-#endif
