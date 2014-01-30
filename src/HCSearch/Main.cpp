@@ -140,7 +140,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		successor = new HCSearch::FlipbitSuccessor();
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
-		successor = new HCSearch::StochasticSuccessor();
+		successor = new HCSearch::StochasticSuccessor(po.cutParam);
 		break;
 	default:
 		cerr << "[Error] undefined successor mode." << endl;

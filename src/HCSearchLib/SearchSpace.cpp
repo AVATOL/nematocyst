@@ -466,6 +466,12 @@ namespace HCSearch
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
+		this->cutParam = DEFAULT_T_PARM;
+	}
+
+	StochasticSuccessor::StochasticSuccessor(double cutParam)
+	{
+		this->cutParam = cutParam;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()

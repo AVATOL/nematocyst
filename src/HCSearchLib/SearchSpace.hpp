@@ -237,10 +237,11 @@ namespace HCSearch
 	class StochasticSuccessor : public ISuccessorFunction
 	{
 		static const double DEFAULT_T_PARM;
-		double temperature;
+		double cutParam; // temperature
 
 	public:
 		StochasticSuccessor();
+		StochasticSuccessor(double cutParam);
 		~StochasticSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
