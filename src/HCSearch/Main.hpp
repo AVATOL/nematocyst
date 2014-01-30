@@ -13,7 +13,7 @@
  * 4. Saving and loading models
  * 5. Inference with LL, HL, LC and HC searches
  */
-void demo();
+void demo(MyProgramOptions::ProgramOptions po);
 
 /*!
  * @brief Run learning and/or inference. 

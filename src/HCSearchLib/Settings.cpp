@@ -211,9 +211,9 @@ namespace HCSearch
 		this->paths->EXPERIMENT_INITFUNC_MODEL_FILE = this->paths->EXPERIMENT_TEMP_DIR + "initfunc_model.txt";
 		this->paths->EXPERIMENT_PAIRWISE_MODEL_FILE = this->paths->EXPERIMENT_TEMP_DIR + "pairwise_model.txt";
 
-		this->paths->EXPERIMENT_HEURISTIC_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "heuristicModel.txt";
-		this->paths->EXPERIMENT_COST_H_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "costGivenHModel.txt";
-		this->paths->EXPERIMENT_COST_L_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "costGivenLModel.txt";
+		this->paths->EXPERIMENT_HEURISTIC_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "heuristic_model.txt";
+		this->paths->EXPERIMENT_COST_H_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "cost_H_model.txt";
+		this->paths->EXPERIMENT_COST_L_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "cost_L_model.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)

@@ -18,7 +18,7 @@ int main(int argc, char* argv[])
 
 	// demo or run full program
 	if (po.demoMode)
-		demo();
+		demo(po);
 	else
 		run(po);
 
@@ -46,15 +46,15 @@ HCSearch::SearchSpace* setupSearchSpace()
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 }
 
-void demo()
+void demo(MyProgramOptions::ProgramOptions po)
 {
 	// time bound
-	int timeBound = 50;
+	int timeBound = po.timeBound;
 
 	// paths
-	string heuristicModelPath = "TODO";
-	string costModelPath = "TODO";
-	string costOracleHModelPath = "TODO";
+	string heuristicModelPath = HCSearch::Global::settings->paths->EXPERIMENT_HEURISTIC_MODEL_FILE;
+	string costModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_H_MODEL_FILE;
+	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK;
@@ -157,9 +157,9 @@ void run(MyProgramOptions::ProgramOptions po)
 	int timeBound = po.timeBound;
 
 	// paths
-	string heuristicModelPath = "TODO";
-	string costModelPath = "TODO";
-	string costOracleHModelPath = "TODO";
+	string heuristicModelPath = HCSearch::Global::settings->paths->EXPERIMENT_HEURISTIC_MODEL_FILE;
+	string costModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_H_MODEL_FILE;
+	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK; //TODO
