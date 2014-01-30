@@ -57,6 +57,17 @@ namespace HCSearch
 		return this->graph.nodesData(node);
 	}
 
+	set<int> ImgLabeling::getNeighborLabels(int node)
+	{
+		set<int> labels;
+		for (set<int>::iterator it = this->graph.adjList[node].begin();
+			it != this->graph.adjList[node].end(); ++it)
+		{
+			labels.insert(getLabel(*it));
+		}
+		return labels;
+	}
+
 	/**************** Rank Features ****************/
 
 	RankFeatures::RankFeatures()
