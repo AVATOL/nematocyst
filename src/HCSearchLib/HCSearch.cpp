@@ -5,22 +5,6 @@ using namespace std;
 
 namespace HCSearch
 {
-	void abort()
-	{
-		abort(1);
-	}
-
-	void abort(int errcode)
-	{
-		cerr << "Process [" << Global::settings->RANK << "] is aborting!" << endl;
-
-#ifdef USE_MPI
-		MPI_Abort(MPI_COMM_WORLD, errcode);
-#else
-		exit(errcode);
-#endif
-	}
-
 	/**************** Initialize/Finalize ****************/
 
 	void Setup::initialize(int argc, char* argv[])

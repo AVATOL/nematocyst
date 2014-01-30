@@ -492,18 +492,6 @@ namespace HCSearch
     };
 
 	/*! @} */
-
-	/**************** Miscellaneous ****************/
-
-	/*!
-	 * @brief Abort program cleanly. Especially if using MPI.
-	 */
-	void abort();
-
-	/*!
-	 * @brief Abort program cleanly with error code. Especially if using MPI.
-	 */
-	void abort(int errcode);
 }
 
 #endif
