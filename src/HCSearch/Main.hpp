@@ -37,5 +37,12 @@ void run(MyProgramOptions::ProgramOptions po);
  */
 HCSearch::SearchSpace* setupSearchSpace();
 
+/*!
+ * @brief Set up the search space given program options.
+ */
 HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po);
+
+/*!
+ * @brief Set up the search procedure given program options.
+ */
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po);
