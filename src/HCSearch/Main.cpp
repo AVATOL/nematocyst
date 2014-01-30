@@ -1,10 +1,33 @@
 #include <iostream>
 #include "HCSearch.hpp" 
+#include "Main.hpp"
+#include "MyProgramOptions.hpp"
 
 using namespace std;
 
-HCSearch::SearchSpace* setupSearchSpace();
-void demo(int argc, char* argv[]);
+int main(int argc, char* argv[])
+{
+	// initialize HCSearch
+	HCSearch::Setup::initialize(argc, argv);
+
+	cout << "Rank=" << HCSearch::Global::settings->RANK << endl;
+
+	// parse arguments
+	MyProgramOptions::ProgramOptions po = MyProgramOptions::ProgramOptions::parseArguments(argc, argv);
+
+	// configure settings
+	HCSearch::Setup::configure(po.inputDir, po.outputDir);
+	 
+	// demo or run full program
+	if (po.demoMode)
+		demo();
+	else
+		run(po);
+
+	// finalize
+	HCSearch::Setup::finalize();
+    return 0;
+}
 
 HCSearch::SearchSpace* setupSearchSpace()
 {
@@ -12,7 +35,7 @@ HCSearch::SearchSpace* setupSearchSpace()
 	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
-	// use IID logistic regression as initial prediction function
+	// use IID logistic regression as initial state prediction function
 	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
@@ -25,7 +48,7 @@ HCSearch::SearchSpace* setupSearchSpace()
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 }
 
-void demo(int argc, char* argv[])
+void demo()
 {
 	// time bound
 	int timeBound = 50;
@@ -38,7 +61,7 @@ void demo(int argc, char* argv[])
 	// params
 	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK;
 
-	// Datasets
+	// datasets
 	vector< HCSearch::ImgFeatures* > XTrain;
 	vector< HCSearch::ImgLabeling* > YTrain;
 	vector< HCSearch::ImgFeatures* > XValidation;
@@ -80,7 +103,7 @@ void demo(int argc, char* argv[])
 	costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
 	costOracleHModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
 
-	// set up metadat for first test example
+	// set up metadata for first test example
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
 	searchMetadata.exampleName; //TODO
 	searchMetadata.iter; //TODO
@@ -102,49 +125,119 @@ void demo(int argc, char* argv[])
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }
 
-#ifdef USE_MPI
-
-int main(int argc, char* argv[])
+HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
-	// initialize HCSearch
-	HCSearch::Setup::initialize(argc, argv);
-
-	cout << "Rank=" << HCSearch::Global::settings->RANK << endl;
-
-	// parse arguments
 	//TODO
 
-	// configure settings
-	HCSearch::Setup::configure("dataNematoDemo", "EXPERIMENT_output");
+	// use standard CRF features for both heuristic and cost feature functions
+	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
+	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
-	// demo
-	//demo(argc, argv);
+	// use IID logistic regression as initial state prediction function
+	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
 
-	if (HCSearch::Global::settings->RANK == 0)
-		HCSearch::abort();
+	// use stochastic successor function
+	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
 
-	// finalize
-	HCSearch::Setup::finalize();
-    return 0;
+	// use Hamming loss function
+	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+
+	// construct search space from these functions that we specified
+	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 }
 
-#else
-
-int main(int argc, char* argv[])
+HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
 {
-	// initialize HCSearch
-	HCSearch::Setup::initialize(argc, argv);
-
-	// parse arguments
 	//TODO
 
-	// demo
-	demo(argc, argv);
-
-	// finalize
-	HCSearch::Setup::finalize();
-
-    return 0;
+	return new HCSearch::GreedySearchProcedure();
 }
 
-#endif
+void run(MyProgramOptions::ProgramOptions po)
+{
+	// time bound
+	int timeBound = po.timeBound;
+
+	// paths
+	string heuristicModelPath = "TODO";
+	string costModelPath = "TODO";
+	string costOracleHModelPath = "TODO";
+
+	// params
+	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK; //TODO
+
+	// datasets
+	vector< HCSearch::ImgFeatures* > XTrain;
+	vector< HCSearch::ImgLabeling* > YTrain;
+	vector< HCSearch::ImgFeatures* > XValidation;
+	vector< HCSearch::ImgLabeling* > YValidation;
+	vector< HCSearch::ImgFeatures* > XTest;
+	vector< HCSearch::ImgLabeling* > YTest;
+
+	// load dataset
+	HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+
+	// load search space functions and search space
+	HCSearch::SearchSpace* searchSpace = setupSearchSpace(po);
+
+	// load search procedure
+	HCSearch::ISearchProcedure* searchProcedure = setupSearchProcedure(po);
+
+	// run the appropriate mode
+	typedef MyProgramOptions::ProgramOptions::Modes Modes_t;
+	for (vector< Modes_t >::iterator it = po.schedule.begin();
+		it != po.schedule.end(); ++it)
+	{
+		Modes_t mode = *it;
+		switch (mode)
+		{
+		case Modes_t::LEARN_H:
+			{
+			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
+			HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
+			//TODO
+			break;
+			}
+		case Modes_t::LEARN_C:
+			{
+			HCSearch::IRankModel* heuristicModel = heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
+			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
+			HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
+			//TODO
+			break;
+			}
+		case Modes_t::LEARN_C_ORACLE_H:
+			{
+			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
+			HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
+			//TODO
+			break;
+			}
+		case Modes_t::INFER_LL:
+			{
+			//TODO
+			break;
+			}
+		case Modes_t::INFER_HL:
+			{
+			//TODO
+			break;
+			}
+		case Modes_t::INFER_LC:
+			{
+			//TODO
+			break;
+			}
+		case Modes_t::INFER_HC:
+			{
+			//TODO
+			break;
+			}
+		default:
+			cerr << "Error!" << endl;
+		}
+	}
+
+	// clean up
+	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+}
