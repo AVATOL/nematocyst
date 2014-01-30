@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 
 #include <iostream>
-#include "..\HCSearchLib\HCSearch.hpp"
+#include "HCSearch.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace HCSearch;
