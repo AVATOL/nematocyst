@@ -125,30 +125,53 @@ void demo(MyProgramOptions::ProgramOptions po)
 
 HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
-	//TODO
-
 	// use standard CRF features for both heuristic and cost feature functions
 	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
 	// use IID logistic regression as initial state prediction function
-	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
+	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
-	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
+	HCSearch::ISuccessorFunction* successor = NULL;
+	switch (po.successorsMode)
+	{
+	case MyProgramOptions::ProgramOptions::FLIPBIT:
+		successor = new HCSearch::FlipbitSuccessor();
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC:
+		successor = new HCSearch::StochasticSuccessor();
+		break;
+	default:
+		cerr << "[Error] undefined successor mode." << endl;
+	}
 
 	// use Hamming loss function
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
 
 	// construct search space from these functions that we specified
-	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
+	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, lossFunc);
 }
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
 {
-	//TODO
+	HCSearch::ISearchProcedure* searchProcedure = NULL;
+	switch (po.searchProcedureMode)
+	{
+	case MyProgramOptions::ProgramOptions::GREEDY:
+		searchProcedure = new HCSearch::GreedySearchProcedure();
+		break;
+	case MyProgramOptions::ProgramOptions::BREADTH_BEAM:
+		searchProcedure = new HCSearch::BreadthFirstBeamSearchProcedure(po.beamSize);
+		break;
+	case MyProgramOptions::ProgramOptions::BEST_BEAM:
+		searchProcedure = new HCSearch::BestFirstBeamSearchProcedure(po.beamSize);
+		break;
+	default:
+		cerr << "[Error] undefined search procedure mode." << endl;
+	}
 
-	return new HCSearch::GreedySearchProcedure();
+	return searchProcedure;
 }
 
 void run(MyProgramOptions::ProgramOptions po)
