@@ -2,6 +2,15 @@
 
 namespace MyFileSystem
 {
+	/**************** FileSystem ****************/
+
+	string FileSystem::normalizeSlashes(string dir)
+	{
+		string toReplace = "/";
+		string replaceWith = "\\";
+		return (dir.replace(dir.find(toReplace), toReplace.length(), replaceWith));
+	}
+
 	/**************** Executable ****************/
 
 	const int Executable::DEFAULT_NUM_RETRIES = 3;
