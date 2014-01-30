@@ -50,6 +50,6 @@ namespace MyProgramOptions
 		cerr << "Notes:" << endl;
 		cerr << "* The first three arguments are required. They are the input directory, output directory and time bound." << endl;
 		cerr << "* Can use multiple --infer and --learn options in any order to define a schedule. Must come after the mandatory arguments.";
-		cerr << endl;
+		cerr << endl << endl;
 	}
 }
