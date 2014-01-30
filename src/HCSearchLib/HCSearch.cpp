@@ -1,5 +1,6 @@
 #include <iostream>
 #include "HCSearch.hpp"
+#include "MyFileSystem.hpp"
 
 using namespace std;
 
@@ -41,7 +42,8 @@ namespace HCSearch
 
 	void Setup::configure(string datasetPath, string outputPath)
 	{
-		Global::settings->refresh(datasetPath, outputPath);
+		Global::settings->refresh(MyFileSystem::FileSystem::normalizeSlashes(datasetPath), 
+			MyFileSystem::FileSystem::normalizeSlashes(outputPath));
 	}
 
 	void Setup::finalize()
