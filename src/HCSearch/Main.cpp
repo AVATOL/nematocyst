@@ -193,7 +193,6 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
-			//TODO
 			break;
 			}
 		case Modes_t::LEARN_C:
@@ -201,14 +200,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			HCSearch::IRankModel* heuristicModel = heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
-			//TODO
 			break;
 			}
 		case Modes_t::LEARN_C_ORACLE_H:
 			{
 			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
-			//TODO
 			break;
 			}
 		case Modes_t::INFER_LL:
