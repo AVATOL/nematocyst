@@ -229,9 +229,6 @@ namespace HCSearch
 		~FlipbitSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
-
-	protected:
-		bool hasForegroundNeighbors(ImgLabeling& Y, int node);
 	};
 
 	/*!

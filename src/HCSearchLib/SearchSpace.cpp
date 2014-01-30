@@ -462,28 +462,6 @@ namespace HCSearch
 		return successors;
 	}
 
-	bool FlipbitSuccessor::hasForegroundNeighbors(ImgLabeling& Y, int node)
-	{
-		int nodeLabel = Y.getLabel(node);
-		NeighborSet_t neighbors = Y.graph.adjList[node];
-		const int numNeighbors = neighbors.size();
-
-		bool hasNeighbors = false;
-
-		for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
-		{
-			int neighborLabel = Y.getLabel(*it);
-
-			if (!Global::settings->CLASSES.classLabelIsBackground(neighborLabel))
-			{
-				hasNeighbors = true;
-				break;
-			}
-		}
-
-		return hasNeighbors;
-	}
-
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
 	StochasticSuccessor::StochasticSuccessor()
