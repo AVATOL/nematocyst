@@ -173,10 +173,6 @@ namespace HCSearch
 	//TODO: test
 	ImgLabeling LogRegInit::getInitialPrediction(ImgFeatures& X)
 	{
-		// This implements logistic regression
-
-		const int numNodes = X.getNumNodes();
-
 		// output features
 		imgfeatures2liblinear(X, Global::settings->paths->EXPERIMENT_INITFUNC_FEATURES_FILE);
 		
@@ -186,7 +182,7 @@ namespace HCSearch
 			<< Global::settings->paths->EXPERIMENT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->EXPERIMENT_INITFUNC_MODEL_FILE 
 			<< " " << Global::settings->paths->EXPERIMENT_INITFUNC_PREDICT_FILE;
 
-		int retcode = MyFileSystem::Executable::execute(ssPredictInitFuncCmd.str().c_str());
+		int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
 		if (retcode != 0)
 		{
 			cerr << "[Error] Initial prediction failed!" << endl;
@@ -199,11 +195,18 @@ namespace HCSearch
 		Y.graph.nodesData = VectorXi::Ones(X.getNumNodes());
 
 		// now need to get labels data and confidences...
-
 		// read in initial prediction
 		liblinear2imglabeling(Y, Global::settings->paths->EXPERIMENT_INITFUNC_PREDICT_FILE);
 
 		// eliminate 1-islands
+		eliminateIslands(Y);
+
+		return Y;
+	}
+
+	void LogRegInit::eliminateIslands(ImgLabeling& Y)
+	{
+		const int numNodes = Y.getNumNodes();
 		for (int node = 0; node < numNodes; node++)
 		{
 			if (!Global::settings->CLASSES.classLabelIsBackground(Y.getLabel(node)) && !hasForegroundNeighbors(Y, node))
@@ -216,8 +219,6 @@ namespace HCSearch
 				}
 			}
 		}
-
-		return Y;
 	}
 
 	// Train logistic regression model

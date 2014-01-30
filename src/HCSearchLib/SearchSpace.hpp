@@ -207,6 +207,9 @@ namespace HCSearch
 		static int imgfeatures2liblinear(ImgFeatures& X, string filename);
 		static int liblinear2imglabeling(ImgLabeling& Y, string filename);
 		bool hasForegroundNeighbors(ImgLabeling& Y, int node);
+
+		// eliminate 1-islands
+		void eliminateIslands(ImgLabeling& Y);
 	};
 
 	/**************** Successor Functions ****************/
