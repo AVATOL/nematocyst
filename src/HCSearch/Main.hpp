@@ -36,3 +36,6 @@ void run(MyProgramOptions::ProgramOptions po);
  * - Hamming loss function
  */
 HCSearch::SearchSpace* setupSearchSpace();
+
+HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po);
+HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po);
