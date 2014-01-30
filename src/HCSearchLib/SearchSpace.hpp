@@ -216,6 +216,8 @@ namespace HCSearch
 
 	/*!
 	 * @brief Deterministic flipbit successor function.
+	 *
+	 * For each node, flip its label to a label of a neighboring node.
 	 */
 	class FlipbitSuccessor : public ISuccessorFunction
 	{

@@ -416,107 +416,38 @@ namespace HCSearch
 	
 	vector< ImgLabeling > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
-		// This implements "smart" flip bit successors
-
-		vector< ImgLabeling > successors = vector< ImgLabeling >();
+		vector<ImgLabeling> successors;
 
 		// for all nodes
 		const int numNodes = YPred.getNumNodes();
 		for (int node = 0; node < numNodes; node++)
 		{
-			// set up label sets for convenience
-			set<int> allLabelsSet = Global::settings->CLASSES.getLabels();
-			set<int> foregroundLabelsSet = Global::settings->CLASSES.getForegroundLabels();
-			set<int> backgroundLabelsSet = Global::settings->CLASSES.getBackgroundLabels();
+			// set up candidate label set
+			set<int> candidateLabelsSet;
 
-			// variables for current node
-			set<int> candidateLabelsSet = set<int>();
+			// add only neighboring labels to candidate label set
 			int nodeLabel = YPred.getLabel(node);
-
-			// if confidences are available, use them
-			// otherwise generate all labels except for the current node label
-			if (YPred.confidencesAvailable)
+			candidateLabelsSet.insert(nodeLabel);
+			set<int> neighborLabels = YPred.getNeighborLabels(node);
+			for (set<int>::iterator it2 = neighborLabels.begin(); 
+				it2 != neighborLabels.end(); ++it2)
 			{
-				VectorXd confidences = YPred.confidences.row(node);
-
-				const int numClasses = allLabelsSet.size();
-				if (numClasses == 2)
-				{
-					// get the other label and check if greater than some confidence threshold
-					int otherClassIndex = 1 - Global::settings->CLASSES.getClassIndex(nodeLabel); // this ilookup should return 0 or 1
-					if (confidences(otherClassIndex) > BINARY_CONFIDENCE_THRESHOLD)
-					{
-						candidateLabelsSet.insert(Global::settings->CLASSES.getClassLabel(otherClassIndex));
-					}
-				}
-				else
-				{
-					// sort by confidences
-					mypq_confidences confidencesSorted = mypq_confidences();
-					for (int i = 0; i < confidences.size(); i++)
-					{
-						if (Global::settings->CLASSES.getClassLabel(i) != nodeLabel)
-						{
-							ConfidenceIndexPair_t pair = ConfidenceIndexPair_t(confidences(i), i);
-							confidencesSorted.push(pair);
-						}
-					}
-
-					// get top K labels
-					bool sameLabelFound = false;
-					for (int i = 0; i < NUM_TOP_LABELS_KEEP; i++)
-					{
-						if (confidencesSorted.empty())
-							break;
-
-						ConfidenceIndexPair_t topConfidence = confidencesSorted.top();
-						confidencesSorted.pop();
-						candidateLabelsSet.insert(Global::settings->CLASSES.getClassLabel(topConfidence.second));
-					}
-				}
+				candidateLabelsSet.insert(*it2);
 			}
-			else
+			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
+
+			// for each candidate label, add to successors list for returning
+			for (set<int>::iterator it2 = candidateLabelsSet.begin(); it2 != candidateLabelsSet.end(); ++it2)
 			{
-				//cout << "successors checkpoint 2.1" << endl;
-
-				// if current node is background, only consider foreground successors
-				// otherwise consider everything
-				if (backgroundLabelsSet.count(nodeLabel) == 1)
-				{
-					cout << "successors checkpoint 3.1.1" << endl;
-
-					// if has foreground neighbors then add foreground labels to successors
-					// otherwise current node is background and neighbor is background, so no successor
-					if (hasForegroundNeighbors(YPred, node))
-					{
-						candidateLabelsSet = foregroundLabelsSet;
-					}
-				}
-				else
-				{
-					candidateLabelsSet = allLabelsSet;
-					candidateLabelsSet.erase(nodeLabel);
-				}
-			}
-
-			// don't flip the current node to the same label
-			if (candidateLabelsSet.count(nodeLabel) == 1)
-			{
-				candidateLabelsSet.erase(nodeLabel);
-			}
-
-			// for each candidate, add to successors list for returning
-			for (set<int>::iterator it = candidateLabelsSet.begin(); it != candidateLabelsSet.end(); ++it)
-			{
-				int candidateLabel = *it;
+				int candidateLabel = *it2;
 
 				// form successor object
-				LabelGraph graphNew = LabelGraph();
+				LabelGraph graphNew;
 				graphNew.nodesData = YPred.graph.nodesData;
-				graphNew.nodesData(node) = candidateLabel;
+				graphNew.nodesData(node) = candidateLabel; // flip bit node
 				graphNew.adjList = YPred.graph.adjList;
 
-				ImgLabeling YNew = ImgLabeling();
+				ImgLabeling YNew;
 				YNew.confidences = YPred.confidences;
 				YNew.confidencesAvailable = YPred.confidencesAvailable;
 				YNew.graph = graphNew;
@@ -525,6 +456,8 @@ namespace HCSearch
 				successors.push_back(YNew);
 			}
 		}
+
+		cout << "num successors=" << successors.size() << endl;
 
 		return successors;
 	}
