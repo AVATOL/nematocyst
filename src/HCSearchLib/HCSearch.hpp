@@ -128,6 +128,22 @@ using namespace std;
  *		- To run HC-search, use HCSearch::Inference::runHCSearch(). Requires heuristic model and cost model trained from the heuristic.
  */
 
+/*!
+ * @page preprocess Preprocessing Modules
+ * @brief How to use the MATLAB preprocessing modules to extract features and prepare data for HC-Search.
+ * @tableofcontents
+ * 
+ * The following are instructions to use the preprocessing modules.
+ */
+
+ /*!
+ * @page postprocessing Postprocessing Modules
+ * @brief How to use the MATLAB postprocessing modules for evaluation and visualization.
+ * @tableofcontents
+ * 
+ * The following are instructions to use the postprocessing modules.
+ */
+
  /*!
  * @page windows_install Windows Installation Instructions
  * @brief Provides installation instructions for Windows.
