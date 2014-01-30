@@ -6,13 +6,32 @@ namespace MyProgramOptions
 {
 	ProgramOptions::ProgramOptions()
 	{
+		// input and output directories
+
 		inputDir = "";
 		outputDir = "";
 
+		// time bound
+
 		timeBound = 0;
+
+		// schedule or demo
 
 		demoMode = false;
 		schedule = vector< Modes >();
+
+		// options
+
+		searchProcedureMode = GREEDY;
+		heuristicFeaturesMode = STANDARD;
+		costFeaturesMode = STANDARD;
+		initialFunctionMode = LOG_REG;
+		successorsMode = FLIPBIT;
+		lossMode = HAMMING;
+
+		stochasticCutMode = STATE;
+		beamSize = 1;
+		cutParam = 1.0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -86,6 +105,49 @@ namespace MyProgramOptions
 					po.schedule.push_back(INFER_HL);
 					po.schedule.push_back(INFER_LC);
 					po.schedule.push_back(INFER_LL);
+				}
+			}
+			else if (strcmp(argv[i], "--search") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "greedy") == 0)
+						po.searchProcedureMode = GREEDY;
+					else if (strcmp(argv[i+1], "beam") == 0)
+						po.searchProcedureMode = BREADTH_BEAM;
+					else if (strcmp(argv[i+1], "breadthbeam") == 0)
+						po.searchProcedureMode = BREADTH_BEAM;
+					else if (strcmp(argv[i+1], "bestbeam") == 0)
+						po.searchProcedureMode = BEST_BEAM;
+				}
+			}
+			else if (strcmp(argv[i], "--beamsize") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.beamSize = atoi(argv[i+1]);
+					if (po.beamSize <= 0)
+					{
+						cerr << "Invalid beam size!" << endl;
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--successor") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "flipbit") == 0)
+						po.successorsMode = FLIPBIT;
+					else if (strcmp(argv[i+1], "stochastic") == 0)
+						po.successorsMode = STOCHASTIC;
+				}
+			}
+			else if (strcmp(argv[i], "--cutparam") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.cutParam = atof(argv[i+1]);
 				}
 			}
 		}
