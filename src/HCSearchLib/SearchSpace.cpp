@@ -186,7 +186,7 @@ namespace HCSearch
 		if (retcode != 0)
 		{
 			cerr << "[Error] Initial prediction failed!" << endl;
-			exit(1);
+			abort();
 		}
 
 		ImgLabeling Y = ImgLabeling();
@@ -490,7 +490,7 @@ namespace HCSearch
 
 	double HammingLoss::computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)
 	{
-		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.leftCols(1).array() != YTruth.graph.nodesData.leftCols(1).array();
+		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.array() != YTruth.graph.nodesData.array();
 		double loss = 0.0;
 		for (int i = 0; i < diff.size(); i++)
 		{
@@ -531,7 +531,7 @@ namespace HCSearch
 		if (this->heuristicFeatureFunction == NULL)
 		{
 			cerr << "[ERROR] heuristic feature function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->heuristicFeatureFunction->computeFeatures(X, Y);
@@ -542,7 +542,7 @@ namespace HCSearch
 		if (this->costFeatureFunction == NULL)
 		{
 			cerr << "[ERROR] cost feature function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->costFeatureFunction->computeFeatures(X, Y);
@@ -553,7 +553,7 @@ namespace HCSearch
 		if (this->initialPredictionFunction == NULL)
 		{
 			cerr << "[ERROR] initial pred feature function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->initialPredictionFunction->getInitialPrediction(X);
@@ -564,7 +564,7 @@ namespace HCSearch
 		if (this->successorFunction == NULL)
 		{
 			cerr << "[ERROR] successor function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->successorFunction->generateSuccessors(X, YPred);
@@ -575,7 +575,7 @@ namespace HCSearch
 		if (this->lossFunction == NULL)
 		{
 			cerr << "[ERROR] loss function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->lossFunction->computeLoss(YPred, YTruth);
