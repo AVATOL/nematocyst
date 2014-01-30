@@ -24,3 +24,5 @@
 # Directories
 external/
 doc/
+Data*/
+Results/
