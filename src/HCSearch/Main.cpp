@@ -10,14 +10,12 @@ int main(int argc, char* argv[])
 	// initialize HCSearch
 	HCSearch::Setup::initialize(argc, argv);
 
-	cout << "Rank=" << HCSearch::Global::settings->RANK << endl;
-
 	// parse arguments
 	MyProgramOptions::ProgramOptions po = MyProgramOptions::ProgramOptions::parseArguments(argc, argv);
 
 	// configure settings
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
-	 
+
 	// demo or run full program
 	if (po.demoMode)
 		demo();

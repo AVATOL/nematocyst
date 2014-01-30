@@ -34,6 +34,6 @@ namespace MyProgramOptions
 		/*!
 		 * @brief Print command line usage message.
 		 */
-		static void printUsage(int argc, char* argv[]);
+		static void printUsage();
 	};
 }
