@@ -30,5 +30,10 @@ namespace MyProgramOptions
 		 * @brief Parse command line arguments to get program options.
 		 */
 		static ProgramOptions parseArguments(int argc, char* argv[]);
+
+		/*!
+		 * @brief Print command line usage message.
+		 */
+		static void printUsage(int argc, char* argv[]);
 	};
 }
