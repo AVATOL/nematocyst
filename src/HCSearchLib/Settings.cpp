@@ -121,7 +121,11 @@ namespace HCSearch
 	Paths::Paths()
 	{
 		// misc
+#ifdef USE_WINDOWS
 		DIR_SEP = "\\";
+#else
+		DIR_SEP = "/";
+#endif
 
 		// basic directories
 		BASE_PATH = ""; // must end in DIR_SEP if not empty
@@ -210,6 +214,7 @@ namespace HCSearch
 	{
 		this->paths = paths;
 
+#ifdef USE_WINDOWS
 		SYSTEM_COPY_CMD = "copy";
 		SYSTEM_MKDIR_CMD = "mkdir";
 		SYSTEM_RM_CMD = "del";
@@ -221,6 +226,19 @@ namespace HCSearch
 		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "windows" + paths->DIR_SEP + "svm-train";
 
 		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
+#else
+		SYSTEM_COPY_CMD = "cp";
+		SYSTEM_MKDIR_CMD = "mkdir -p";
+		SYSTEM_RM_CMD = "rm -f";
+
+		LIBLINEAR_PREDICT_CMD = paths->LIBLINEAR_DIR + "predict";
+		LIBLINEAR_TRAIN_CMD = paths->LIBLINEAR_DIR + "train";
+	
+		LIBSVM_PREDICT_CMD = paths->LIBSVM_DIR + "svm-predict";
+		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "svm-train";
+
+		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
+#endif
 	}
 
 	Commands::~Commands()
