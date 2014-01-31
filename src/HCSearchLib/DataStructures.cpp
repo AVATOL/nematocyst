@@ -124,7 +124,7 @@ namespace HCSearch
 
 	RankerType SVMRankModel::rankerType()
 	{
-		return RankerType::SVM_RANK;
+		return SVM_RANK;
 	}
 	
 	VectorXd SVMRankModel::getWeights()
@@ -236,7 +236,7 @@ namespace HCSearch
 
 	RankerType OnlineRankModel::rankerType()
 	{
-		return RankerType::ONLINE_RANK;
+		return ONLINE_RANK;
 	}
 
 	VectorXd OnlineRankModel::getLatestWeights()
