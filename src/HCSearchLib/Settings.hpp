@@ -20,14 +20,6 @@ using namespace std;
 
 namespace HCSearch
 {
-	/**************** Constants ****************/
-
-	enum SearchSpaceMode { FLIPBIT, STOCHASTIC };
-	enum SearchProcedureMode { GREEDY, BFS_BEAM, BESTFS_BEAM, BESTFS };
-	enum InitialFunctionMode { LOG_REG, SVM, CUSTOM };
-	enum GlobalPotentialMode { NONE, SUM, MAX };
-	enum StochasticCutMode { STATE, EDGES };
-
 	/**************** Class Map ****************/
 
 	// Stores class labels
@@ -187,31 +179,6 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		/*!
-		 * @brief Search space to use.
-		 */
-		SearchSpaceMode SEARCH_SPACE_TYPE;
-
-		/*!
-		 * @brief Search procedure to use.
-		 */
-		SearchProcedureMode SEARCH_PROCEDURE_TYPE;
-
-		/*!
-		 * @brief Global potential mode for heuristic/cost feature functions.
-		 */
-		GlobalPotentialMode FEAT_FUNC_GLOBAL_POTENTIAL_MODE;
-
-		/*!
-		 * @Initial function mode.
-		 */
-		InitialFunctionMode INIT_FUNC_MODE;
-
-		/*!
-		 * @brief Stochastic cutting mode.
-		 */
-		StochasticCutMode STOCHASTIC_CUT_MODE;
-
-		/*!
 		 * @brief Use online passive-aggressive rank learning if true 
 		 * otherwise use SVM-Rank learner.
 		 */
@@ -239,11 +206,6 @@ namespace HCSearch
 		bool USE_DAGGER;
 
 		/**************** Experiment Settings ****************/
-
-		/*!
-		 * Unique name for folder.
-		 */
-		string EXPERIMENT_NAME;
 
 		/*!
 		 * Classes data.
