@@ -96,11 +96,13 @@ namespace MyGraphAlgorithms
 		HCSearch::ImgLabeling getOriginalLabeling();
 	};
 
+	/**************** Subgraph Set ****************/
+
 	class SubgraphSet
 	{
 	private:
 		vector< Subgraph* > subgraphs;
-		map< int, vector<int> > cuts;
+		map< int, set<int> > cuts;
 		HCSearch::ImgLabeling original;
 
 	public:

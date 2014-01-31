@@ -314,4 +314,89 @@ namespace MyGraphAlgorithms
 	{
 		return this->subgraphSet->getOriginalLabeling();
 	}
+
+	/**************** Subgraph Set ****************/
+
+	SubgraphSet::SubgraphSet()
+	{
+	}
+
+	SubgraphSet::SubgraphSet(HCSearch::ImgLabeling& labeling, map< int, set<int> > cuts)
+	{
+		this->cuts = cuts;
+		this->original = labeling;
+
+		// determine subgraphs
+
+		const int numNodes = labeling.getNumNodes();
+
+		// first pass: union-find
+		DisjointSet ds = DisjointSet(numNodes);
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (cuts.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			set<int> neighbors = cuts[node1];
+			for (set<int>::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+
+				// automatically union-find neighbors
+				ds.Union(node1, node2);
+			}
+		}
+
+		// second pass: write to output labeling, record size and components (TODO)
+
+		map< int, Subgraph* > subgraphs; // node index -> subgraph
+
+		for (int node = 0; node < numNodes; node++)
+		{
+			int index = ds.FindSet(node);
+
+			// record subgraphs
+			if (subgraphs.count(index) == 0)
+			{
+				//cout << "new subgraph." << endl;
+				subgraphs[index] = new Subgraph(this);
+			}
+			subgraphs[index]->addNode(node);
+		}
+
+		// add to list of subgraphs
+
+		this->subgraphs = vector< Subgraph* >();
+		for (map< int, Subgraph* >::iterator it = subgraphs.begin(); it != subgraphs.end(); ++it)
+		{
+			Subgraph* sub = it->second;
+			sub->processConnectedComponents();
+			this->subgraphs.push_back(sub);
+		}
+	}
+
+	SubgraphSet::~SubgraphSet()
+	{
+		for (vector< Subgraph* >::iterator it = subgraphs.begin(); it != subgraphs.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			delete sub;
+		}
+	}
+
+	int SubgraphSet::size()
+	{
+		return this->subgraphs.size();
+	}
+
+	HCSearch::ImgLabeling SubgraphSet::getOriginalLabeling()
+	{
+		return this->original;
+	}
+
+	vector< Subgraph* > SubgraphSet::getSubgraphs()
+	{
+		return this->subgraphs;
+	}
 }
