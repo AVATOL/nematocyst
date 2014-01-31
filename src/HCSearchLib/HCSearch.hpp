@@ -311,9 +311,34 @@ namespace HCSearch
 			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
 
 	private:
+		/*!
+		 * Read split file (Train.txt, Validation.txt, Test.txt).
+		 * @param[in] filename Path to split file
+		 * @return Return a vector of file name strings
+		 */
 		static vector<string> readSplitsFile(string filename);
+
+		/*!
+		 * Read a meta file for a particular image.
+		 * @param[in] filename Path to meta file
+		 * @param[out] numNodes Number of nodes in the image
+		 * @param[out] numFeatures Number of features for each node in the image
+		 */
 		static void readMetaFile(string filename, int& numNodes, int& numFeatures);
+
+		/*!
+		 * Read a nodes file for a particular image.
+		 * @param[in] filename Path to nodes file
+		 * @param[out] labels Groundtruth labels per node
+		 * @param[out] features Image features per node
+		 */
 		static void readNodesFile(string filename, VectorXi& labels, MatrixXd& features);
+
+		/*!
+		 * Read an edges file for a particular image.
+		 * @param[in] filename Path to edges file
+		 * @param[out] edges Adjacency list for graph edges of the image
+		 */
 		static void readEdgesFile(string filename, AdjList_t& edges);
 	};
 
