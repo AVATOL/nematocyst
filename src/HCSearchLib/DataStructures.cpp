@@ -60,10 +60,13 @@ namespace HCSearch
 	set<int> ImgLabeling::getNeighborLabels(int node)
 	{
 		set<int> labels;
-		for (set<int>::iterator it = this->graph.adjList[node].begin();
-			it != this->graph.adjList[node].end(); ++it)
+		if (hasNeighbors(node))
 		{
-			labels.insert(getLabel(*it));
+			for (set<int>::iterator it = this->graph.adjList[node].begin();
+				it != this->graph.adjList[node].end(); ++it)
+			{
+				labels.insert(getLabel(*it));
+			}
 		}
 		return labels;
 	}
