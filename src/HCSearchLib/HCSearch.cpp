@@ -236,6 +236,7 @@ namespace HCSearch
 			featureGraph.nodesData = features;
 			ImgFeatures* X = new ImgFeatures();
 			X->graph = featureGraph;
+			X->filename = filename;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -280,6 +281,7 @@ namespace HCSearch
 			featureGraph.nodesData = features;
 			ImgFeatures* X = new ImgFeatures();
 			X->graph = featureGraph;
+			X->filename = filename;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -324,6 +326,7 @@ namespace HCSearch
 			featureGraph.nodesData = features;
 			ImgFeatures* X = new ImgFeatures();
 			X->graph = featureGraph;
+			X->filename = filename;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
