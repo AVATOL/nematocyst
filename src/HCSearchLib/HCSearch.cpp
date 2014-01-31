@@ -337,43 +337,37 @@ namespace HCSearch
 		for (vector< ImgFeatures* >::iterator it = XTrain.begin(); it != XTrain.end(); ++it)
 		{
 			ImgFeatures* object = *it;
-			if (object != NULL)
-				delete object;
+			delete object;
 		}
 		XTrain.clear();
 		for (vector< ImgLabeling* >::iterator it = YTrain.begin(); it != YTrain.end(); ++it)
 		{
 			ImgLabeling* object = *it;
-			if (object != NULL)
-				delete object;
+			delete object;
 		}
 		YTrain.clear();
 		for (vector< ImgFeatures* >::iterator it = XValidation.begin(); it != XValidation.end(); ++it)
 		{
 			ImgFeatures* object = *it;
-			if (object != NULL)
-				delete object;
+			delete object;
 		}
 		XValidation.clear();
 		for (vector< ImgLabeling* >::iterator it = YValidation.begin(); it != YValidation.end(); ++it)
 		{
 			ImgLabeling* object = *it;
-			if (object != NULL)
-				delete object;
+			delete object;
 		}
 		YValidation.clear();
 		for (vector< ImgFeatures* >::iterator it = XTest.begin(); it != XTest.end(); ++it)
 		{
 			ImgFeatures* object = *it;
-			if (object != NULL)
-				delete object;
+			delete object;
 		}
 		XTest.clear();
 		for (vector< ImgLabeling* >::iterator it = YTest.begin(); it != YTest.end(); ++it)
 		{
 			ImgLabeling* object = *it;
-			if (object != NULL)
-				delete object;
+			delete object;
 		}
 		XTest.clear();
 	}
