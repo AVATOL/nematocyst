@@ -29,11 +29,11 @@ namespace HCSearch
 
 	void abort(int errcode)
 	{
-		cerr << "Process [" << Global::settings->RANK << "] is aborting!" << endl;
-
 #ifdef USE_MPI
+		cerr << "Process [" << Global::settings->RANK << "] is aborting!" << endl;
 		MPI_Abort(MPI_COMM_WORLD, errcode);
 #else
+		cerr << "Aborting program!" << endl;
 		exit(errcode);
 #endif
 	}
