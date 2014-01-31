@@ -14,11 +14,11 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const enum CompareSearchNodeType { HEURISTIC, COST };
-	const enum RankerType { SVM_RANK, ONLINE_RANK };
-	const enum SearchType { LL=0, HL, LC, HC, 
+	enum CompareSearchNodeType { HEURISTIC, COST };
+	enum RankerType { SVM_RANK, ONLINE_RANK };
+	enum SearchType { LL=0, HL, LC, HC, 
 		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
-	const enum DatasetType { TEST=0, TRAIN, VALIDATION };
+	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 
 	const extern string SearchTypeStrings[];
 	const extern string DatasetTypeStrings[];

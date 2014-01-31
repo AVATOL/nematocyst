@@ -14,16 +14,16 @@ namespace MyProgramOptions
 	public:
 		// constants
 
-		const enum Modes { LEARN_H, LEARN_C, LEARN_C_ORACLE_H, 
+		enum Modes { LEARN_H, LEARN_C, LEARN_C_ORACLE_H, 
 			INFER_HC, INFER_HL, INFER_LC, INFER_LL };
 
-		const enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
-		const enum FeaturesMode { STANDARD };
-		const enum InitialFunctionMode { LOG_REG };
-		const enum SuccessorsMode { FLIPBIT, STOCHASTIC };
-		const enum LossMode { HAMMING };
+		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
+		enum FeaturesMode { STANDARD };
+		enum InitialFunctionMode { LOG_REG };
+		enum SuccessorsMode { FLIPBIT, STOCHASTIC };
+		enum LossMode { HAMMING };
 
-		const enum StochasticCutMode { STATE, EDGES };
+		enum StochasticCutMode { STATE, EDGES };
 
 		// input and output directories
 
