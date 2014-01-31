@@ -4,7 +4,7 @@
 /**************** Enable/Disable MPI ****************/
 
 // comment out below if not using MPI
-#define USE_MPI
+//#define USE_MPI
 
 /**************** End Enable/Disable MPI ****************/
 
