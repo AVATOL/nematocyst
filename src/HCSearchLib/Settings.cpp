@@ -168,11 +168,10 @@ namespace HCSearch
 		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + "temp" + this->paths->DIR_SEP;
 
 		this->paths->OUTPUT_INITFUNC_MODEL_FILE = this->paths->OUTPUT_TEMP_DIR + "initfunc_model.txt";
-		this->paths->OUTPUT_PAIRWISE_MODEL_FILE = this->paths->OUTPUT_TEMP_DIR + "pairwise_model.txt";
 
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "heuristic_model.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_H_model.txt";
-		this->paths->OUTPUT_COST_L_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_L_model.txt";
+		this->paths->OUTPUT_COST_L_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_oracleH_model.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -184,19 +183,13 @@ namespace HCSearch
 		this->paths->OUTPUT_INITFUNC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "initfunc_features", rankID);
 		this->paths->OUTPUT_INITFUNC_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "initfunc_predict", rankID);
 
-		this->paths->OUTPUT_PAIRWISE_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "pairwise_features", rankID);
-		this->paths->OUTPUT_PAIRWISE_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "pairwise_predict", rankID);
+		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristic_features", rankID);
+		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_H_features", rankID);
+		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_oracleH_features", rankID);
 
-		this->paths->OUTPUT_RANKLIB_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "ranklib_features", rankID);
-		this->paths->OUTPUT_RANKLIB_SCORE_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "ranklib_score", rankID);
-
-		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristicFeatures", rankID);
-		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenHFeatures", rankID);
-		this->paths->OUTPUT_COST_L_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenLFeatures", rankID);
-
-		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristicOnlineWeights", rankID);
-		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenHOnlineWeights", rankID);
-		this->paths->OUTPUT_COST_L_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenLOnlineWeights", rankID);
+		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristic_online_weights", rankID);
+		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_H_online_weights", rankID);
+		this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_oracleH_model.txt", rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
