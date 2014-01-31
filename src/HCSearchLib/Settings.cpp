@@ -153,7 +153,7 @@ namespace HCSearch
 		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + "splits" + this->paths->DIR_SEP;
 
 		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + "Train.txt";
-		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + "Valid.txt";
+		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + "Validation.txt";
 		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + "Test.txt";
 
 		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";

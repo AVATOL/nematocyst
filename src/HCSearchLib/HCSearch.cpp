@@ -205,20 +205,20 @@ namespace HCSearch
 		{
 			// read meta file
 			string filename = *it;
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
 			cout << "Loading " << metaFile << "..." << endl;
 			int numNodes, numFeatures;
 			readMetaFile(metaFile, numNodes, numFeatures);
 
 			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
 			cout << "Loading " << nodesFile << "..." << endl;
 			VectorXi labels = VectorXi::Zero(numNodes);
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			cout << "Loading " << edgesFile << "..." << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
@@ -250,20 +250,20 @@ namespace HCSearch
 		{
 			// read meta file
 			string filename = *it;
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
 			cout << "Loading " << metaFile << "..." << endl;
 			int numNodes, numFeatures;
 			readMetaFile(metaFile, numNodes, numFeatures);
 
 			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
 			cout << "Loading " << nodesFile << "..." << endl;
 			VectorXi labels = VectorXi::Zero(numNodes);
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			cout << "Loading " << edgesFile << "..." << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
@@ -295,20 +295,20 @@ namespace HCSearch
 		{
 			// read meta file
 			string filename = *it;
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
 			cout << "Loading " << metaFile << "..." << endl;
 			int numNodes, numFeatures;
 			readMetaFile(metaFile, numNodes, numFeatures);
 
 			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
 			cout << "Loading " << nodesFile << "..." << endl;
 			VectorXi labels = VectorXi::Zero(numNodes);
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			cout << "Loading " << edgesFile << "..." << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
