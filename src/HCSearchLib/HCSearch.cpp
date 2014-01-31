@@ -368,8 +368,29 @@ namespace HCSearch
 
 	vector<string> Dataset::readSplitsFile(string filename)
 	{
-		//TODO
-		return vector<string>();
+		vector<string> filenames;
+
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					filenames.push_back(line);
+				}
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open splits file!" << endl;
+			abort();
+		}
+
+		return filenames;
 	}
 
 	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures)
