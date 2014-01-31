@@ -150,6 +150,12 @@ using namespace std;
  * @tableofcontents
  * 
  * The following are Windows installation instructions.
+ * 
+ * @section mpi_sec Installing MPI (Optional)
+ * 
+ * To take advantage of parallelism, you need to install MPICH2. 
+ * Check out the following website for downloading: 
+ * http://www.mpich.org/downloads/
  */
 
   /*!
@@ -158,6 +164,16 @@ using namespace std;
  * @tableofcontents
  * 
  * The following are Linux installation instructions.
+ * 
+ * @section mpi_sec Installing MPI (Optional)
+ * 
+ * To take advantage of parallelism, you need to install MPICH2. 
+ * On Ubuntu and Debian-like systems, you can run the following command:
+ * 
+ * `sudo apt-get install mpich2`
+ * 
+ * Alternatively, check out the following website: 
+ * http://www.mpich.org/downloads/
  */
 
   /*!
