@@ -198,23 +198,28 @@ namespace HCSearch
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
 		// read in training data
-		vector<string> trainFiles = readSplitsFile(Global::settings->paths->INPUT_SPLITS_TRAIN_FILE);
+		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
+		cout << "Reading from " << trainSplitFile << "..." << endl;
+		vector<string> trainFiles = readSplitsFile(trainSplitFile);
 		for (vector<string>::iterator it = trainFiles.begin(); it != trainFiles.end(); ++it)
 		{
 			// read meta file
 			string filename = *it;
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			cout << "Loading " << metaFile << "..." << endl;
 			int numNodes, numFeatures;
 			readMetaFile(metaFile, numNodes, numFeatures);
 
 			// read nodes file
 			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			cout << "Loading " << nodesFile << "..." << endl;
 			VectorXi labels = VectorXi::Zero(numNodes);
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			cout << "Loading " << edgesFile << "..." << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
 
@@ -238,23 +243,28 @@ namespace HCSearch
 		}
 
 		// read in validation data
-		vector<string> validFiles = readSplitsFile(Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE);
+		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
+		cout << "Reading from " << validSplitFile << "..." << endl;
+		vector<string> validFiles = readSplitsFile(validSplitFile);
 		for (vector<string>::iterator it = validFiles.begin(); it != validFiles.end(); ++it)
 		{
 			// read meta file
 			string filename = *it;
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			cout << "Loading " << metaFile << "..." << endl;
 			int numNodes, numFeatures;
 			readMetaFile(metaFile, numNodes, numFeatures);
 
 			// read nodes file
 			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			cout << "Loading " << nodesFile << "..." << endl;
 			VectorXi labels = VectorXi::Zero(numNodes);
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			cout << "Loading " << edgesFile << "..." << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
 
@@ -278,23 +288,28 @@ namespace HCSearch
 		}
 
 		// read in test data
-		vector<string> testFiles = readSplitsFile(Global::settings->paths->INPUT_SPLITS_TEST_FILE);
+		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
+		cout << "Reading from " << testSplitFile << "..." << endl;
+		vector<string> testFiles = readSplitsFile(testSplitFile);
 		for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); ++it)
 		{
 			// read meta file
 			string filename = *it;
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			cout << "Loading " << metaFile << "..." << endl;
 			int numNodes, numFeatures;
 			readMetaFile(metaFile, numNodes, numFeatures);
 
 			// read nodes file
 			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			cout << "Loading " << nodesFile << "..." << endl;
 			VectorXi labels = VectorXi::Zero(numNodes);
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			cout << "Loading " << edgesFile << "..." << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
 
