@@ -313,7 +313,7 @@ namespace HCSearch
 	private:
 		static vector<string> readSplitsFile(string filename);
 		static void readMetaFile(string filename, int& numNodes, int& numFeatures);
-		static void readNodesFile(string filename, int numNodes, int numFeatures, VectorXi& labels, MatrixXd& features);
+		static void readNodesFile(string filename, VectorXi& labels, MatrixXd& features);
 		static void readEdgesFile(string filename, AdjList_t& edges);
 	};
 

@@ -209,9 +209,9 @@ namespace HCSearch
 
 			// read nodes file
 			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
-			VectorXi labels;
-			MatrixXd features;
-			readNodesFile(nodesFile, numNodes, numFeatures, labels, features);
+			VectorXi labels = VectorXi::Zero(numNodes);
+			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
@@ -249,9 +249,9 @@ namespace HCSearch
 
 			// read nodes file
 			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
-			VectorXi labels;
-			MatrixXd features;
-			readNodesFile(nodesFile, numNodes, numFeatures, labels, features);
+			VectorXi labels = VectorXi::Zero(numNodes);
+			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
@@ -289,9 +289,9 @@ namespace HCSearch
 
 			// read nodes file
 			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
-			VectorXi labels;
-			MatrixXd features;
-			readNodesFile(nodesFile, numNodes, numFeatures, labels, features);
+			VectorXi labels = VectorXi::Zero(numNodes);
+			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+			readNodesFile(nodesFile, labels, features);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
@@ -404,9 +404,53 @@ namespace HCSearch
 		}
 	}
 
-	void Dataset::readNodesFile(string filename, int numNodes, int numFeatures, VectorXi& labels, MatrixXd& features)
+	void Dataset::readNodesFile(string filename, VectorXi& labels, MatrixXd& features)
 	{
-		//TODO
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+					string token;
+
+					// get label
+					getline(iss, token, ' ');
+					labels(lineIndex) = atoi(token.c_str());
+
+					// get features
+					while (getline(iss, token, ' '))
+					{
+						if (!token.empty())
+						{
+							istringstream iss2(token);
+							string sIndex;
+							getline(iss2, sIndex, ':');
+							string sValue;
+							getline(iss2, sValue, ':');
+
+							int featureIndex = atoi(sIndex.c_str()) - 1;
+							double value = atof(sValue.c_str());
+
+							features(lineIndex, featureIndex) = value;
+						}
+					}
+				}
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open file to nodes data!" << endl;
+			abort();
+		}
 	}
 
 	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
