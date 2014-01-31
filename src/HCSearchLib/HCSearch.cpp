@@ -42,8 +42,16 @@ namespace HCSearch
 
 	void Setup::configure(string datasetPath, string outputPath)
 	{
+		// refresh Settings
 		Global::settings->refresh(MyFileSystem::FileSystem::normalizeDirString(datasetPath), 
 			MyFileSystem::FileSystem::normalizeDirString(outputPath));
+
+		// create output folders
+		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_DIR);
+		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_TEMP_DIR);
+		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_RESULTS_DIR);
+		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_LOGS_DIR);
+		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_MODELS_DIR);
 	}
 
 	void Setup::finalize()
