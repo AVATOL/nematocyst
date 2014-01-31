@@ -13,7 +13,14 @@ namespace MyFileSystem
 		string toReplace = "\\";
 		string replaceWith = "/";
 #endif
-		return (dir.replace(dir.find(toReplace), toReplace.length(), replaceWith));
+		size_t pos = 0;
+		while((pos = dir.find(toReplace, pos)) != std::string::npos)
+		{
+			dir.replace(pos, toReplace.length(), replaceWith);
+			pos += replaceWith.length();
+		}
+
+		return dir;
 	}
 
 	/**************** Executable ****************/
