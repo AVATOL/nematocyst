@@ -129,6 +129,11 @@ void demo(MyProgramOptions::ProgramOptions po)
 	HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
 
 	// clean up
+	delete searchSpace;
+	delete searchProcedure;
+	delete heuristicModel;
+	delete costModel;
+	delete costOracleHModel;
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }
 
@@ -266,5 +271,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	}
 
 	// clean up
+	delete searchSpace;
+	delete searchProcedure;
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }
