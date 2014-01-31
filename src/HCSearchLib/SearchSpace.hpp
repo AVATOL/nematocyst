@@ -32,10 +32,14 @@ namespace HCSearch
 	public:
 		virtual ~IFeatureFunction() {}
 
-		// Compute features
+		/*!
+		 * @brief Compute features.
+		 */
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y)=0;
 
-		// Get dimension of computed feature vector given structured features and labeling
+		/*!
+		 * @brief Get dimension of computed feature vector given structured features and labeling.
+		 */
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 	};
 
@@ -47,7 +51,9 @@ namespace HCSearch
 	public:
 		virtual ~IInitialPredictionFunction() {}
 
-		// Get initial prediction
+		/*!
+		 * @brief Get initial prediction.
+		 */
 		virtual ImgLabeling getInitialPrediction(ImgFeatures& X)=0;
 	};
 
@@ -59,7 +65,9 @@ namespace HCSearch
 	public:
 		virtual ~ISuccessorFunction() {}
 		
-		// Generate successors
+		/*!
+		 * @brief Generate successors.
+		 */
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)=0;
 	};
 
@@ -71,7 +79,9 @@ namespace HCSearch
 	public:
 		virtual ~ILossFunction() {}
 
-		// Compute loss
+		/*!
+		 * @brief Compute loss.
+		 */
 		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)=0;
 	};
 
@@ -90,13 +100,19 @@ namespace HCSearch
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 
 	protected:
-		// Compute unary term
+		/*!
+		 * @brief Compute unary term.
+		 */
 		static VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
 		
-		// Compute pairwise term
+		/*!
+		 * @brief Compute pairwise term.
+		 */
 		static VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
 
-		// Compute pairwise features
+		/*!
+		 * @brief Compute pairwise features.
+		 */
 		static VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			int nodeLabel1, int nodeLabel2, int& classIndex);
 	};
@@ -107,22 +123,30 @@ namespace HCSearch
 	class IGlobalFeatures : public StandardFeatures
 	{
 	protected:
-		// Codebook for bag-of-words
+		/*!
+		 * Codebook for bag-of-words.
+		 */
 		struct CodeBook
 		{
-			// Codebook data
-			// rows = codewords, cols = histogram features
+			/*!
+			 * Codebook data
+			 * rows = codewords, cols = histogram features
+			 */
 			MatrixXd data;
 		};
 
-		// Dictionary for global potential
+		/*!
+		 * Dictionary for global potential.
+		 */
 		CodeBook dictionary;
 
 	public:
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y)=0;
 
 	protected:
-		// Compute global term
+		/*!
+		 * @brief Compute global term.
+		 */
 		virtual VectorXd computeGlobalTerm(ImgFeatures& X, ImgLabeling& Y)=0;
 
 		void loadDictionary(string fileName);
@@ -133,15 +157,15 @@ namespace HCSearch
 	 */
 	class SumGlobalFeatures : public IGlobalFeatures
 	{
-	protected:
-		// Dictionary for global potential
-		CodeBook dictionary;
-
 	public:
-		// Construct without loading dictionary
+		/*!
+		 * @brief Construct without loading dictionary.
+		 */
 		SumGlobalFeatures();
 
-		// Construct and load dictionary
+		/*!
+		 * @brief Construct and load dictionary.
+		 */
 		SumGlobalFeatures(string fileName);
 		
 		~SumGlobalFeatures();
@@ -150,7 +174,6 @@ namespace HCSearch
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 
 	protected:
-		// Compute global term
 		virtual VectorXd computeGlobalTerm(ImgFeatures& X, ImgLabeling& Y);
 	};
 
@@ -159,15 +182,15 @@ namespace HCSearch
 	 */
 	class MaxGlobalFeatures : public IGlobalFeatures
 	{
-	protected:
-		// Dictionary for global potential
-		CodeBook dictionary;
-
 	public:
-		// Construct without loading dictionary
+		/*!
+		 * @brief Construct without loading dictionary.
+		 */
 		MaxGlobalFeatures();
 
-		// Construct and load dictionary
+		/*!
+		 * @brief Construct and load dictionary.
+		 */
 		MaxGlobalFeatures(string fileName);
 
 		~MaxGlobalFeatures();
@@ -176,7 +199,6 @@ namespace HCSearch
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 
 	protected:
-		// Compute global term
 		virtual VectorXd computeGlobalTerm(ImgFeatures& X, ImgLabeling& Y);
 	};
 
@@ -191,17 +213,23 @@ namespace HCSearch
 		static const double BINARY_CONFIDENCE_THRESHOLD;
 
 	public:
-		// Construct without training classifier
+		/*!
+		 * @brief Construct without training classifier.
+		 */
 		LogRegInit();
 
-		// Construct and train classifier
+		/*!
+		 * @brief Construct and train classifier.
+		 */
 		LogRegInit(string fileName);
 		
 		~LogRegInit();
 
 		virtual ImgLabeling getInitialPrediction(ImgFeatures& X);
 
-		// Train logistic regression model
+		/*!
+		 * @brief Train logistic regression model.
+		 */
 		void trainClassifier(string fileName);
 
 	protected:
@@ -209,7 +237,9 @@ namespace HCSearch
 		static void liblinear2imglabeling(ImgLabeling& Y, string filename);
 		bool hasForegroundNeighbors(ImgLabeling& Y, int node);
 
-		// eliminate 1-islands
+		/*!
+		 * @brief Eliminate 1-islands.
+		 */
 		void eliminateIslands(ImgLabeling& Y);
 	};
 
@@ -238,8 +268,8 @@ namespace HCSearch
 	class StochasticSuccessor : public ISuccessorFunction
 	{
 		static const double DEFAULT_T_PARM;
-		double cutParam; // temperature
-		bool cutEdgesIndependently;
+		double cutParam; //!< temperature parameter
+		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
 
 	public:
 		StochasticSuccessor();
@@ -309,7 +339,7 @@ namespace HCSearch
 		SearchSpace();
 
 		/*!
-		 * Construct a SearchSpace from already defined functions. Only use this constructor.
+		 * @brief Construct a SearchSpace from already defined functions. Only use this constructor.
 		 * @param[in] heuristicFeatureFunction Heuristic feature function
 		 * @param[in] costFeatureFunction Cost feature function
 		 * @param[in] initialPredictionFunction Initial prediction function
@@ -323,7 +353,7 @@ namespace HCSearch
 		~SearchSpace();
 
 		/*!
-		 * Compute heuristic features from image features and current labeling.
+		 * @brief Compute heuristic features from image features and current labeling.
 		 * @param[in] X Structured image features
 		 * @param[in] Y Structured output labeling
 		 * @return Heuristic features for ranking
@@ -331,7 +361,7 @@ namespace HCSearch
 		RankFeatures computeHeuristicFeatures(ImgFeatures& X, ImgLabeling& Y);
 
 		/*!
-		 * Compute cost features from image features and current labeling.
+		 * @brief Compute cost features from image features and current labeling.
 		 * @param[in] X Structured image features
 		 * @param[in] Y Structured output labeling
 		 * @return Cost features for ranking
@@ -339,23 +369,22 @@ namespace HCSearch
 		RankFeatures computeCostFeatures(ImgFeatures& X, ImgLabeling& Y);
 
 		/*!
-		 * Get the initial labeling from image features.
+		 * @brief Get the initial labeling from image features.
 		 * @param[in] X Structured image features
 		 * @return Predicted structured output labeling
 		 */
 		ImgLabeling getInitialPrediction(ImgFeatures& X);
 
 		/*!
-		 * Generate a list of successors from a current labeling.
+		 * @brief Generate a list of successors from a current labeling.
 		 * @param[in] X Structured image features
 		 * @param[in] YPred Current structured output labeling
 		 * @return List of successors, which are structured output labelings
 		 */
 		vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 
-		// Compute loss
 		/*!
-		 * Compute the loss between a predicted labeling and its groundtruth labeling.
+		 * @brief Compute the loss between a predicted labeling and its groundtruth labeling.
 		 * @param[in] YPred Predicted structured output labeling
 		 * @param[in] YTruth Groundtruth structured output labeling
 		 * @return Loss value
@@ -366,7 +395,7 @@ namespace HCSearch
 	/*! @} */
 
 	/*
-	 * Compare class for SearchNode.
+	 * @brief Compare class for SearchNode.
 	 */
 	class CompareConfidences
 	{
