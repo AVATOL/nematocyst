@@ -95,6 +95,11 @@ namespace HCSearch
 		 */
 		FeatureGraph graph;
 
+		/*!
+		 * File name of this image.
+		 */
+		string filename;
+
 	public:
 		ImgFeatures();
 		~ImgFeatures();
@@ -118,6 +123,12 @@ namespace HCSearch
 		 * @return Returns the feature component of the node
 		 */
 		double getFeature(int node, int featIndex);
+
+		/*!
+		 * Get the file name that the features came from.
+		 * @return Returns the file name
+		 */
+		string getFileName();
 	};
 
 	/*!

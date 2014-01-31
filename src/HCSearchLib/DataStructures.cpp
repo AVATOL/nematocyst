@@ -37,6 +37,11 @@ namespace HCSearch
 		return this->graph.nodesData(node, featIndex);
 	}
 
+	string ImgFeatures::getFileName()
+	{
+		return this->filename;
+	}
+
 	ImgLabeling::ImgLabeling()
 	{
 		this->confidencesAvailable = false;
