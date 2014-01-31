@@ -57,7 +57,7 @@ void demo(MyProgramOptions::ProgramOptions po)
 	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
 
 	// params
-	enum HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK;
+	HCSearch::RankerType rankerType = HCSearch::ONLINE_RANK;
 
 	// datasets
 	vector< HCSearch::ImgFeatures* > XTrain;
@@ -205,7 +205,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	HCSearch::ISearchProcedure* searchProcedure = setupSearchProcedure(po);
 
 	// run the appropriate mode
-	typedef enum MyProgramOptions::ProgramOptions::Modes Modes_t;
+	typedef MyProgramOptions::ProgramOptions::Modes Modes_t;
 	for (vector< Modes_t >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
