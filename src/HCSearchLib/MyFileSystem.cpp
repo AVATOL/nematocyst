@@ -1,4 +1,5 @@
 #include "MyFileSystem.hpp"
+#include "Globals.hpp"
 
 namespace MyFileSystem
 {
@@ -34,6 +35,11 @@ namespace MyFileSystem
 	string FileSystem::normalizeDirString(string dir)
 	{
 		return removeTrailingSlash(normalizeSlashes(dir));
+	}
+
+	int FileSystem::createFolder(string dir)
+	{
+		Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " " + dir);
 	}
 
 	/**************** Executable ****************/

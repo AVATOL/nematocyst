@@ -21,6 +21,9 @@ namespace MyFileSystem
 
 		// Normalize slash direction and remove trailing slash
 		static string normalizeDirString(string dir);
+
+		// Create a folder
+		static int createFolder(string dir);
 	};
 
 	/**************** Executable ****************/
