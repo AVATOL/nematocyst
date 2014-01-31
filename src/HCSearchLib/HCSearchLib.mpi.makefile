@@ -15,8 +15,8 @@ Debug_Libraries=
 Release_Libraries=
 
 # Preprocessor definitions...
-Debug_Preprocessor_Definitions=-D GCC_BUILD -D _DEBUG -D _LIB 
-Release_Preprocessor_Definitions=-D GCC_BUILD -D NDEBUG -D _LIB 
+Debug_Preprocessor_Definitions=-D GCC_BUILD -D _DEBUG -D _LIB -D USE_MPI 
+Release_Preprocessor_Definitions=-D GCC_BUILD -D NDEBUG -D _LIB -D USE_MPI 
 
 # Implictly linked object files...
 Debug_Implicitly_Linked_Objects=
