@@ -176,6 +176,13 @@ namespace HCSearch
 		 * @return Returns the set of labels of neighboring nodes
 		 */
 		set<int> getNeighborLabels(int node);
+
+		/*!
+		 * Convenience function to get node's neighbors.
+		 * @param[in] node Node index
+		 * @return Returns the set of neighboring nodes (indices)
+		 */
+		set<int> getNeighbors(int node);
 	};
 
 	/**************** Rank Features ****************/
