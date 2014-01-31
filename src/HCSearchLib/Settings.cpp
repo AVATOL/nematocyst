@@ -1,5 +1,6 @@
 #include <iostream>
 #include <sstream>
+#include <cstdlib>
 #include "Settings.hpp"
 
 namespace HCSearch
