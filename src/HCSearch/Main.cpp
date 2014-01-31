@@ -13,6 +13,14 @@ int main(int argc, char* argv[])
 	// parse arguments
 	MyProgramOptions::ProgramOptions po = MyProgramOptions::ProgramOptions::parseArguments(argc, argv);
 
+	// print usage
+	if (po.printUsageMode)
+	{
+		MyProgramOptions::ProgramOptions::printUsage();
+		HCSearch::Setup::finalize();
+		return 0;
+	}
+
 	// configure settings
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 

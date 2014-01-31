@@ -36,6 +36,7 @@ namespace MyProgramOptions
 
 		// schedule or demo
 
+		bool printUsageMode;
 		bool demoMode;
 		vector< Modes > schedule;
 

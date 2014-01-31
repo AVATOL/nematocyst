@@ -17,6 +17,7 @@ namespace MyProgramOptions
 
 		// schedule or demo
 
+		printUsageMode = false;
 		demoMode = false;
 		schedule = vector< Modes >();
 
@@ -38,6 +39,14 @@ namespace MyProgramOptions
 	{
 		ProgramOptions po;
 
+		if ((argc >= 2 && strcmp(argv[1], "--help") == 0) || 
+			(argc >= 3 && strcmp(argv[2], "--help") == 0) || 
+			(argc >= 4 && strcmp(argv[3], "--help") == 0))
+		{
+			po.printUsageMode = true;
+			return po;
+		}
+
 		if (argc < 4)
 		{
 			cerr << "Too few arguments!" << endl;
@@ -50,10 +59,14 @@ namespace MyProgramOptions
 
 		for (int i = 4; i < argc; i++)
 		{
-			if (strcmp(argv[i], "--demo") == 0)
+			if (strcmp(argv[i], "--help") == 0)
 			{
-				po.schedule.clear();
+				po.printUsageMode = true;
 				break;
+			}
+			else if (strcmp(argv[i], "--demo") == 0)
+			{
+				po.demoMode = true;
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
 			{
@@ -153,8 +166,10 @@ namespace MyProgramOptions
 		}
 
 		// demo mode if nothing specified or used --demo flag
-		if (po.schedule.empty())
+		if (po.schedule.empty() && !po.demoMode)
 			po.demoMode = true;
+		else if (po.demoMode)
+			po.schedule.clear();
 
 		return po;
 	}
@@ -163,7 +178,7 @@ namespace MyProgramOptions
 	{
 		cerr << endl;
 		cerr << "Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND "
-			<< "[--demo] [--learn [H|C|COH]]* [--infer [HC|HL|LC|LL]]* ... [--option=value]" << endl;
+			<< "[--learn [H|C|COH]]* [--infer [HC|HL|LC|LL]]* ... [--option=value]" << endl;
 
 		cerr << "Allowed options:" << endl;
 		cerr << "\t--help\t\t" << ": produce help message" << endl;
