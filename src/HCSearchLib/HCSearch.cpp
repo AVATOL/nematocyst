@@ -585,6 +585,9 @@ namespace HCSearch
 
 	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
 	{
+		if (model == NULL)
+			return;
+
 		if (rankerType == ONLINE_RANK)
 		{
 			OnlineRankModel* modelCast = dynamic_cast<OnlineRankModel*>(model);
