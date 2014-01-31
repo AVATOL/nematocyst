@@ -467,19 +467,21 @@ namespace HCSearch
 				{
 					// parse line
 					istringstream iss(line);
-					string token;
 
 					// get node1
-					getline(iss, token, ' ');
-					int node1 = atoi(token.c_str());
+					string token1;
+					getline(iss, token1, ' ');
+					int node1 = atoi(token1.c_str());
 
 					// get node2
-					getline(iss, token, ' ');
-					int node2 = atoi(token.c_str());
+					string token2;
+					getline(iss, token2, ' ');
+					int node2 = atoi(token2.c_str());
 
 					// get 1 (or weight)
-					getline(iss, token, ' ');
-					double edgeWeight = atof(token.c_str());
+					string token3;
+					getline(iss, token3, ' ');
+					double edgeWeight = atof(token3.c_str());
 
 					// add to map
 					if (edges.count(node1) == 0)
