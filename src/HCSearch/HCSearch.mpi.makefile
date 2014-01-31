@@ -1,5 +1,5 @@
 # Compiler flags...
-CPP_COMPILER = g++
+CPP_COMPILER = mpic++
 C_COMPILER = gcc
 
 # Include paths...
@@ -11,6 +11,8 @@ Debug_Library_Path=-L"../gccDebug"
 Release_Library_Path=-L"../gccRelease" 
 
 # Additional libraries...
+# Debug_Libraries=-Wl,--start-group -lmsmpi -lmsmpifec -lmsmpifes -lmsmpifmc -lmsmpifms -lHCSearchLib  -Wl,--end-group
+# Release_Libraries=-Wl,--start-group -lmsmpi -lmsmpifec -lmsmpifes -lmsmpifmc -lmsmpifms -lHCSearchLib  -Wl,--end-group
 Debug_Libraries=-Wl,--start-group -lHCSearchLib  -Wl,--end-group
 Release_Libraries=-Wl,--start-group -lHCSearchLib  -Wl,--end-group
 
@@ -33,7 +35,7 @@ build_all_configurations: Debug Release
 # Builds the Debug configuration...
 .PHONY: Debug
 Debug: create_folders gccDebug/Main.o gccDebug/MyProgramOptions.o 
-	g++ gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch
+	mpic++ gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch
 
 # Compiles file Main.cpp for the Debug configuration...
 -include gccDebug/Main.d
@@ -50,7 +52,7 @@ gccDebug/MyProgramOptions.o: MyProgramOptions.cpp
 # Builds the Release configuration...
 .PHONY: Release
 Release: create_folders gccRelease/Main.o gccRelease/MyProgramOptions.o 
-	g++ gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch
+	mpic++ gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch
 
 # Compiles file Main.cpp for the Release configuration...
 -include gccRelease/Main.d
