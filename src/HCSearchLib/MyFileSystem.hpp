@@ -15,6 +15,12 @@ namespace MyFileSystem
 	public:
 		// Normalize slash direction
 		static string normalizeSlashes(string dir);
+		
+		// Remove trailing slash
+		static string removeTrailingSlash(string dir);
+
+		// Normalize slash direction and remove trailing slash
+		static string normalizeDirString(string dir);
 	};
 
 	/**************** Executable ****************/

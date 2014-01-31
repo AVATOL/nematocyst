@@ -23,6 +23,19 @@ namespace MyFileSystem
 		return dir;
 	}
 
+	string FileSystem::removeTrailingSlash(string dir)
+	{
+		if (dir[dir.length()-1] == '\\' || dir[dir.length()-1] == '/')
+			dir = dir.substr(0, dir.length()-1);
+
+		return dir;
+	}
+
+	string FileSystem::normalizeDirString(string dir)
+	{
+		return removeTrailingSlash(normalizeSlashes(dir));
+	}
+
 	/**************** Executable ****************/
 
 	const int Executable::DEFAULT_NUM_RETRIES = 3;
