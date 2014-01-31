@@ -70,7 +70,15 @@ namespace HCSearch
 
 	set<int> ImgLabeling::getNeighbors(int node)
 	{
-		return this->graph.adjList[node];
+		if (hasNeighbors(node))
+			return this->graph.adjList[node];
+		else
+			return set<int>();
+	}
+
+	bool ImgLabeling::hasNeighbors(int node)
+	{
+		return this->graph.adjList.count(node) != 0;
 	}
 
 	/**************** Rank Features ****************/

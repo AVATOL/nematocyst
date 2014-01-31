@@ -183,6 +183,13 @@ namespace HCSearch
 		 * @return Returns the set of neighboring nodes (indices)
 		 */
 		set<int> getNeighbors(int node);
+
+		/*!
+		 * Convenience function to check if node has neighbors.
+		 * @param[in] node Node index
+		 * @return Returns true if there are neighbors
+		 */
+		bool hasNeighbors(int node);
 	};
 
 	/**************** Rank Features ****************/
