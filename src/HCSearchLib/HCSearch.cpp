@@ -1,26 +1,11 @@
 #include <iostream>
 #include "HCSearch.hpp"
+#include "MyFileSystem.hpp"
 
 using namespace std;
 
 namespace HCSearch
 {
-	void abort()
-	{
-		abort(1);
-	}
-
-	void abort(int errcode)
-	{
-		cerr << "Process [" << Global::settings->RANK << "] is aborting!" << endl;
-
-#ifdef USE_MPI
-		MPI_Abort(MPI_COMM_WORLD, errcode);
-#else
-		exit(errcode);
-#endif
-	}
-
 	/**************** Initialize/Finalize ****************/
 
 	void Setup::initialize(int argc, char* argv[])
@@ -57,7 +42,8 @@ namespace HCSearch
 
 	void Setup::configure(string datasetPath, string outputPath)
 	{
-		Global::settings->refresh(datasetPath, outputPath);
+		Global::settings->refresh(MyFileSystem::FileSystem::normalizeSlashes(datasetPath), 
+			MyFileSystem::FileSystem::normalizeSlashes(outputPath));
 	}
 
 	void Setup::finalize()

@@ -5,6 +5,7 @@
 #include <queue>
 #include "../../external/Eigen/Eigen/Dense"
 #include "DataStructures.hpp"
+#include "MyGraphAlgorithms.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -207,12 +208,17 @@ namespace HCSearch
 		static int imgfeatures2liblinear(ImgFeatures& X, string filename);
 		static int liblinear2imglabeling(ImgLabeling& Y, string filename);
 		bool hasForegroundNeighbors(ImgLabeling& Y, int node);
+
+		// eliminate 1-islands
+		void eliminateIslands(ImgLabeling& Y);
 	};
 
 	/**************** Successor Functions ****************/
 
 	/*!
 	 * @brief Deterministic flipbit successor function.
+	 *
+	 * For each node, flip its label to a label of a neighboring node.
 	 */
 	class FlipbitSuccessor : public ISuccessorFunction
 	{
@@ -224,9 +230,6 @@ namespace HCSearch
 		~FlipbitSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
-
-	protected:
-		bool hasForegroundNeighbors(ImgLabeling& Y, int node);
 	};
 
 	/*!
@@ -235,13 +238,20 @@ namespace HCSearch
 	class StochasticSuccessor : public ISuccessorFunction
 	{
 		static const double DEFAULT_T_PARM;
-		double temperature;
+		double cutParam; // temperature
+		bool cutEdgesIndependently;
 
 	public:
 		StochasticSuccessor();
+		StochasticSuccessor(double cutParam);
 		~StochasticSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+
+	protected:
+		MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
+		vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		static double computeKL(const VectorXd& p, const VectorXd& q);
 	};
 
 	/**************** Loss Functions ****************/

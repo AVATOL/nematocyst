@@ -13,7 +13,8 @@ namespace MyFileSystem
 	class FileSystem
 	{
 	public:
-
+		// Normalize slash direction
+		static string normalizeSlashes(string dir);
 	};
 
 	/**************** Executable ****************/

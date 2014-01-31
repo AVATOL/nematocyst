@@ -198,8 +198,6 @@ namespace HCSearch
 
 	void Settings::refreshExperimentDirectories(string experimentDir)
 	{
-		this->EXPERIMENT_NAME = experimentDir;
-
 		this->paths->EXPERIMENT_DIR = this->paths->BASE_PATH + experimentDir + this->paths->DIR_SEP;
 
 		// experiment directories
@@ -211,9 +209,9 @@ namespace HCSearch
 		this->paths->EXPERIMENT_INITFUNC_MODEL_FILE = this->paths->EXPERIMENT_TEMP_DIR + "initfunc_model.txt";
 		this->paths->EXPERIMENT_PAIRWISE_MODEL_FILE = this->paths->EXPERIMENT_TEMP_DIR + "pairwise_model.txt";
 
-		this->paths->EXPERIMENT_HEURISTIC_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "heuristicModel.txt";
-		this->paths->EXPERIMENT_COST_H_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "costGivenHModel.txt";
-		this->paths->EXPERIMENT_COST_L_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "costGivenLModel.txt";
+		this->paths->EXPERIMENT_HEURISTIC_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "heuristic_model.txt";
+		this->paths->EXPERIMENT_COST_H_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "cost_H_model.txt";
+		this->paths->EXPERIMENT_COST_L_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "cost_L_model.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -286,11 +284,6 @@ namespace HCSearch
 
 		/**************** Configuration Options ****************/
 
-		SEARCH_SPACE_TYPE = SearchSpaceMode::STOCHASTIC;
-		SEARCH_PROCEDURE_TYPE = SearchProcedureMode::GREEDY;
-		FEAT_FUNC_GLOBAL_POTENTIAL_MODE = GlobalPotentialMode::NONE;
-		INIT_FUNC_MODE = InitialFunctionMode::LOG_REG;
-		STOCHASTIC_CUT_MODE = StochasticCutMode::EDGES;
 		USE_ONLINE_LEARNING = true;
 		ONLINE_LEARNING_NUM_ITERATIONS = 1;
 		SAVE_ANYTIME = true;
@@ -299,7 +292,6 @@ namespace HCSearch
 
 		/**************** Experiment Settings ****************/
 
-		EXPERIMENT_NAME = "";
 		CLASSES = ClassMap();
 
 		/**************** MPI-related ****************/

@@ -27,6 +27,18 @@ namespace HCSearch
 		extern unsigned long g_length;
 		extern MTRand_closed unifDist;
 	}
+
+	/**************** Abort ****************/
+
+	/*!
+	 * @brief Abort program cleanly. Especially if using MPI.
+	 */
+	void abort();
+
+	/*!
+	 * @brief Abort program cleanly with error code. Especially if using MPI.
+	 */
+	void abort(int errcode);
 }
 
 #endif

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <ctime>
 #include "Globals.hpp"
 
@@ -16,5 +17,23 @@ namespace HCSearch
 		unsigned long g_init[4] = {(int)time(NULL) % 9999, rand() % 9999, (int)time(NULL) % 8888, rand() % 9999};
 		unsigned long g_length = 4;
 		MTRand_closed unifDist(g_init, g_length);
+	}
+
+	/**************** Abort ****************/
+
+	void abort()
+	{
+		abort(1);
+	}
+
+	void abort(int errcode)
+	{
+		cerr << "Process [" << Global::settings->RANK << "] is aborting!" << endl;
+
+#ifdef USE_MPI
+		MPI_Abort(MPI_COMM_WORLD, errcode);
+#else
+		exit(errcode);
+#endif
 	}
 }

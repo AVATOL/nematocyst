@@ -10,17 +10,15 @@ int main(int argc, char* argv[])
 	// initialize HCSearch
 	HCSearch::Setup::initialize(argc, argv);
 
-	cout << "Rank=" << HCSearch::Global::settings->RANK << endl;
-
 	// parse arguments
 	MyProgramOptions::ProgramOptions po = MyProgramOptions::ProgramOptions::parseArguments(argc, argv);
 
 	// configure settings
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
-	 
+
 	// demo or run full program
 	if (po.demoMode)
-		demo();
+		demo(po);
 	else
 		run(po);
 
@@ -48,15 +46,15 @@ HCSearch::SearchSpace* setupSearchSpace()
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 }
 
-void demo()
+void demo(MyProgramOptions::ProgramOptions po)
 {
 	// time bound
-	int timeBound = 50;
+	int timeBound = po.timeBound;
 
 	// paths
-	string heuristicModelPath = "TODO";
-	string costModelPath = "TODO";
-	string costOracleHModelPath = "TODO";
+	string heuristicModelPath = HCSearch::Global::settings->paths->EXPERIMENT_HEURISTIC_MODEL_FILE;
+	string costModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_H_MODEL_FILE;
+	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK;
@@ -127,30 +125,53 @@ void demo()
 
 HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
-	//TODO
-
 	// use standard CRF features for both heuristic and cost feature functions
 	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
 	// use IID logistic regression as initial state prediction function
-	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
+	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
-	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
+	HCSearch::ISuccessorFunction* successor = NULL;
+	switch (po.successorsMode)
+	{
+	case MyProgramOptions::ProgramOptions::FLIPBIT:
+		successor = new HCSearch::FlipbitSuccessor();
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC:
+		successor = new HCSearch::StochasticSuccessor(po.cutParam);
+		break;
+	default:
+		cerr << "[Error] undefined successor mode." << endl;
+	}
 
 	// use Hamming loss function
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
 
 	// construct search space from these functions that we specified
-	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
+	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, lossFunc);
 }
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
 {
-	//TODO
+	HCSearch::ISearchProcedure* searchProcedure = NULL;
+	switch (po.searchProcedureMode)
+	{
+	case MyProgramOptions::ProgramOptions::GREEDY:
+		searchProcedure = new HCSearch::GreedySearchProcedure();
+		break;
+	case MyProgramOptions::ProgramOptions::BREADTH_BEAM:
+		searchProcedure = new HCSearch::BreadthFirstBeamSearchProcedure(po.beamSize);
+		break;
+	case MyProgramOptions::ProgramOptions::BEST_BEAM:
+		searchProcedure = new HCSearch::BestFirstBeamSearchProcedure(po.beamSize);
+		break;
+	default:
+		cerr << "[Error] undefined search procedure mode." << endl;
+	}
 
-	return new HCSearch::GreedySearchProcedure();
+	return searchProcedure;
 }
 
 void run(MyProgramOptions::ProgramOptions po)
@@ -159,9 +180,9 @@ void run(MyProgramOptions::ProgramOptions po)
 	int timeBound = po.timeBound;
 
 	// paths
-	string heuristicModelPath = "TODO";
-	string costModelPath = "TODO";
-	string costOracleHModelPath = "TODO";
+	string heuristicModelPath = HCSearch::Global::settings->paths->EXPERIMENT_HEURISTIC_MODEL_FILE;
+	string costModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_H_MODEL_FILE;
+	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK; //TODO
@@ -195,7 +216,6 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
-			//TODO
 			break;
 			}
 		case Modes_t::LEARN_C:
@@ -203,14 +223,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			HCSearch::IRankModel* heuristicModel = heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
-			//TODO
 			break;
 			}
 		case Modes_t::LEARN_C_ORACLE_H:
 			{
 			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
-			//TODO
 			break;
 			}
 		case Modes_t::INFER_LL:

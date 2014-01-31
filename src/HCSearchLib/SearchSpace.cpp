@@ -5,6 +5,7 @@
 #include "Settings.hpp"
 #include "Globals.hpp"
 #include "MyLogger.hpp"
+#include "MyGraphAlgorithms.hpp"
 
 using namespace std;
 
@@ -173,10 +174,6 @@ namespace HCSearch
 	//TODO: test
 	ImgLabeling LogRegInit::getInitialPrediction(ImgFeatures& X)
 	{
-		// This implements logistic regression
-
-		const int numNodes = X.getNumNodes();
-
 		// output features
 		imgfeatures2liblinear(X, Global::settings->paths->EXPERIMENT_INITFUNC_FEATURES_FILE);
 		
@@ -186,11 +183,11 @@ namespace HCSearch
 			<< Global::settings->paths->EXPERIMENT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->EXPERIMENT_INITFUNC_MODEL_FILE 
 			<< " " << Global::settings->paths->EXPERIMENT_INITFUNC_PREDICT_FILE;
 
-		int retcode = MyFileSystem::Executable::execute(ssPredictInitFuncCmd.str().c_str());
+		int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
 		if (retcode != 0)
 		{
 			cerr << "[Error] Initial prediction failed!" << endl;
-			exit(1);
+			abort();
 		}
 
 		ImgLabeling Y = ImgLabeling();
@@ -199,11 +196,18 @@ namespace HCSearch
 		Y.graph.nodesData = VectorXi::Ones(X.getNumNodes());
 
 		// now need to get labels data and confidences...
-
 		// read in initial prediction
 		liblinear2imglabeling(Y, Global::settings->paths->EXPERIMENT_INITFUNC_PREDICT_FILE);
 
 		// eliminate 1-islands
+		eliminateIslands(Y);
+
+		return Y;
+	}
+
+	void LogRegInit::eliminateIslands(ImgLabeling& Y)
+	{
+		const int numNodes = Y.getNumNodes();
 		for (int node = 0; node < numNodes; node++)
 		{
 			if (!Global::settings->CLASSES.classLabelIsBackground(Y.getLabel(node)) && !hasForegroundNeighbors(Y, node))
@@ -216,8 +220,6 @@ namespace HCSearch
 				}
 			}
 		}
-
-		return Y;
 	}
 
 	// Train logistic regression model
@@ -415,107 +417,38 @@ namespace HCSearch
 	
 	vector< ImgLabeling > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
-		// This implements "smart" flip bit successors
-
-		vector< ImgLabeling > successors = vector< ImgLabeling >();
+		vector<ImgLabeling> successors;
 
 		// for all nodes
 		const int numNodes = YPred.getNumNodes();
 		for (int node = 0; node < numNodes; node++)
 		{
-			// set up label sets for convenience
-			set<int> allLabelsSet = Global::settings->CLASSES.getLabels();
-			set<int> foregroundLabelsSet = Global::settings->CLASSES.getForegroundLabels();
-			set<int> backgroundLabelsSet = Global::settings->CLASSES.getBackgroundLabels();
+			// set up candidate label set
+			set<int> candidateLabelsSet;
 
-			// variables for current node
-			set<int> candidateLabelsSet = set<int>();
+			// add only neighboring labels to candidate label set
 			int nodeLabel = YPred.getLabel(node);
-
-			// if confidences are available, use them
-			// otherwise generate all labels except for the current node label
-			if (YPred.confidencesAvailable)
+			candidateLabelsSet.insert(nodeLabel);
+			set<int> neighborLabels = YPred.getNeighborLabels(node);
+			for (set<int>::iterator it2 = neighborLabels.begin(); 
+				it2 != neighborLabels.end(); ++it2)
 			{
-				VectorXd confidences = YPred.confidences.row(node);
-
-				const int numClasses = allLabelsSet.size();
-				if (numClasses == 2)
-				{
-					// get the other label and check if greater than some confidence threshold
-					int otherClassIndex = 1 - Global::settings->CLASSES.getClassIndex(nodeLabel); // this ilookup should return 0 or 1
-					if (confidences(otherClassIndex) > BINARY_CONFIDENCE_THRESHOLD)
-					{
-						candidateLabelsSet.insert(Global::settings->CLASSES.getClassLabel(otherClassIndex));
-					}
-				}
-				else
-				{
-					// sort by confidences
-					mypq_confidences confidencesSorted = mypq_confidences();
-					for (int i = 0; i < confidences.size(); i++)
-					{
-						if (Global::settings->CLASSES.getClassLabel(i) != nodeLabel)
-						{
-							ConfidenceIndexPair_t pair = ConfidenceIndexPair_t(confidences(i), i);
-							confidencesSorted.push(pair);
-						}
-					}
-
-					// get top K labels
-					bool sameLabelFound = false;
-					for (int i = 0; i < NUM_TOP_LABELS_KEEP; i++)
-					{
-						if (confidencesSorted.empty())
-							break;
-
-						ConfidenceIndexPair_t topConfidence = confidencesSorted.top();
-						confidencesSorted.pop();
-						candidateLabelsSet.insert(Global::settings->CLASSES.getClassLabel(topConfidence.second));
-					}
-				}
+				candidateLabelsSet.insert(*it2);
 			}
-			else
+			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
+
+			// for each candidate label, add to successors list for returning
+			for (set<int>::iterator it2 = candidateLabelsSet.begin(); it2 != candidateLabelsSet.end(); ++it2)
 			{
-				//cout << "successors checkpoint 2.1" << endl;
-
-				// if current node is background, only consider foreground successors
-				// otherwise consider everything
-				if (backgroundLabelsSet.count(nodeLabel) == 1)
-				{
-					cout << "successors checkpoint 3.1.1" << endl;
-
-					// if has foreground neighbors then add foreground labels to successors
-					// otherwise current node is background and neighbor is background, so no successor
-					if (hasForegroundNeighbors(YPred, node))
-					{
-						candidateLabelsSet = foregroundLabelsSet;
-					}
-				}
-				else
-				{
-					candidateLabelsSet = allLabelsSet;
-					candidateLabelsSet.erase(nodeLabel);
-				}
-			}
-
-			// don't flip the current node to the same label
-			if (candidateLabelsSet.count(nodeLabel) == 1)
-			{
-				candidateLabelsSet.erase(nodeLabel);
-			}
-
-			// for each candidate, add to successors list for returning
-			for (set<int>::iterator it = candidateLabelsSet.begin(); it != candidateLabelsSet.end(); ++it)
-			{
-				int candidateLabel = *it;
+				int candidateLabel = *it2;
 
 				// form successor object
-				LabelGraph graphNew = LabelGraph();
+				LabelGraph graphNew;
 				graphNew.nodesData = YPred.graph.nodesData;
-				graphNew.nodesData(node) = candidateLabel;
+				graphNew.nodesData(node) = candidateLabel; // flip bit node
 				graphNew.adjList = YPred.graph.adjList;
 
-				ImgLabeling YNew = ImgLabeling();
+				ImgLabeling YNew;
 				YNew.confidences = YPred.confidences;
 				YNew.confidencesAvailable = YPred.confidencesAvailable;
 				YNew.graph = graphNew;
@@ -525,35 +458,23 @@ namespace HCSearch
 			}
 		}
 
+		cout << "num successors=" << successors.size() << endl;
+
 		return successors;
-	}
-
-	bool FlipbitSuccessor::hasForegroundNeighbors(ImgLabeling& Y, int node)
-	{
-		int nodeLabel = Y.getLabel(node);
-		NeighborSet_t neighbors = Y.graph.adjList[node];
-		const int numNeighbors = neighbors.size();
-
-		bool hasNeighbors = false;
-
-		for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
-		{
-			int neighborLabel = Y.getLabel(*it);
-
-			if (!Global::settings->CLASSES.classLabelIsBackground(neighborLabel))
-			{
-				hasNeighbors = true;
-				break;
-			}
-		}
-
-		return hasNeighbors;
 	}
 
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+	}
+
+	StochasticSuccessor::StochasticSuccessor(double cutParam)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = true;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()
@@ -562,8 +483,188 @@ namespace HCSearch
 	
 	vector< ImgLabeling > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
-		//TODO
-		return vector< ImgLabeling >();
+		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
+		cout << "Using threshold=" << threshold << endl;
+
+		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+
+		cout << "generating successors..." << endl;
+
+		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+
+		cout << "num successors=" << successors.size() << endl;
+
+		return successors;
+	}
+
+	MyGraphAlgorithms::SubgraphSet* StochasticSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	{
+		const int numNodes = X.getNumNodes();
+		map< int, set<int> > edges = YPred.graph.adjList;
+
+		// store new cut edges
+		map< int, set<int> > cutEdges;
+
+		// convert to format storing (node1, node2) pairs
+		vector< MyPrimitives::Pair< int, int > > edgeNodes;
+
+		// edge weights using KL divergence measure
+		vector<double> edgeWeights;
+
+		// iterate over all edges to store
+		for (map< int, set<int> >::iterator it = edges.begin();
+			it != edges.end(); ++it)
+		{
+			int node1 = it->first;
+			set<int> neighbors = it->second;
+		
+			// loop over neighbors
+			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it)
+			{
+				int node2 = *it2;
+
+				// get features and labels
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+				// compute weights already
+				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				edgeWeights.push_back(weight);
+
+				// add
+				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+				edgeNodes.push_back(nodePair);
+			}
+		}
+
+		// given the edge weights, do the actual cutting!
+		const int numEdges = edgeNodes.size();
+		for (int i = 0; i < numEdges; i++)
+		{
+			MyPrimitives::Pair< int, int > nodePair = edgeNodes[i];
+			int node1 = nodePair.first;
+			int node2 = nodePair.second;
+
+			bool decideToCut;
+			if (!cutEdgesIndependently)
+			{
+				// uniform state
+				decideToCut = edgeWeights[i] <= threshold;
+			}
+			else
+			{
+				// bernoulli independent
+				double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
+				decideToCut = biasedCoin <= 1-edgeWeights[i];
+			}
+
+			if (!decideToCut)
+			{
+				// keep these uncut edges
+				if (cutEdges.count(node1) == 0)
+				{
+					cutEdges[node1] = set<int>();
+				}
+				if (cutEdges.count(node2) == 0)
+				{
+					cutEdges[node2] = set<int>();
+				}
+				cutEdges[node1].insert(node2);
+				cutEdges[node2].insert(node1);
+			}
+		}
+
+		// create subgraphs
+		ImgLabeling Ycopy;
+		Ycopy.confidences = YPred.confidences;
+		Ycopy.confidencesAvailable = YPred.confidencesAvailable;
+		Ycopy.graph = YPred.graph;
+
+		cout << "Getting subgraphs..." << endl;
+
+		MyGraphAlgorithms::SubgraphSet* subgraphs = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
+
+		return subgraphs;
+	}
+
+	vector< ImgLabeling > StochasticSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	{
+		using namespace MyGraphAlgorithms;
+
+		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
+
+		// successors set
+		vector< ImgLabeling > successors;
+
+		// loop over each sub graph
+		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// loop over each connected component
+			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			{
+				ConnectedComponent* cc = *it2;
+
+				// loop over each neighbor label
+				set<int> neighborLabels = cc->getNeighborLabels();
+				for (set<int>::iterator it3 = neighborLabels.begin(); it3 != neighborLabels.end(); ++it3)
+				{
+					int label = *it3;
+
+					// form successor object
+					ImgLabeling YNew;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = YPred.confidencesAvailable;
+					YNew.stochasticCuts = subgraphs->getCuts();
+					YNew.stochasticCutsAvailable = true;
+					YNew.graph = YPred.graph;
+
+					// make changes
+					set<int> component = cc->getNodes();
+					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+					{
+						int node = *it4;
+						YNew.graph.nodesData(node) = label;
+					}
+
+					successors.push_back(YNew);
+				}
+			}
+		}
+
+		return successors;
+	}
+
+	double StochasticSuccessor::computeKL(const VectorXd& p, const VectorXd& q)
+	{
+		if (p.size() != q.size())
+		{
+			cerr << "dimensions of p and q are not the same!" << endl;
+		}
+
+		double KL = 0;
+
+		VectorXd pn = p.normalized();
+		VectorXd qn = q.normalized();
+
+		for (int i = 0; i < p.size(); i++)
+		{
+			if (p(i) != 0)
+			{
+				if (q(i) == 0) // && p(i) != 0
+				{
+					// warning: q(i) = 0 does not imply p(i) = 0
+				}
+				else
+				{
+					KL += p(i) * log(p(i) / q(i));
+				}
+			}
+		}
+
+		return KL;
 	}
 
 	/**************** Loss Functions ****************/
@@ -578,7 +679,7 @@ namespace HCSearch
 
 	double HammingLoss::computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)
 	{
-		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.leftCols(1).array() != YTruth.graph.nodesData.leftCols(1).array();
+		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.array() != YTruth.graph.nodesData.array();
 		double loss = 0.0;
 		for (int i = 0; i < diff.size(); i++)
 		{
@@ -619,7 +720,7 @@ namespace HCSearch
 		if (this->heuristicFeatureFunction == NULL)
 		{
 			cerr << "[ERROR] heuristic feature function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->heuristicFeatureFunction->computeFeatures(X, Y);
@@ -630,7 +731,7 @@ namespace HCSearch
 		if (this->costFeatureFunction == NULL)
 		{
 			cerr << "[ERROR] cost feature function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->costFeatureFunction->computeFeatures(X, Y);
@@ -641,7 +742,7 @@ namespace HCSearch
 		if (this->initialPredictionFunction == NULL)
 		{
 			cerr << "[ERROR] initial pred feature function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->initialPredictionFunction->getInitialPrediction(X);
@@ -652,7 +753,7 @@ namespace HCSearch
 		if (this->successorFunction == NULL)
 		{
 			cerr << "[ERROR] successor function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->successorFunction->generateSuccessors(X, YPred);
@@ -663,7 +764,7 @@ namespace HCSearch
 		if (this->lossFunction == NULL)
 		{
 			cerr << "[ERROR] loss function is null" << endl;
-			exit(1);
+			abort();
 		}
 
 		return this->lossFunction->computeLoss(YPred, YTruth);

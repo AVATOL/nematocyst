@@ -60,11 +60,14 @@ namespace HCSearch
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
 	IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
+		CompareSearchNode compareCost(CompareSearchNodeType::COST);
+		CompareSearchNode compareHeuristic(CompareSearchNodeType::HEURISTIC);
+
 		// set up priority queues
 		// maintain open set for search
 		// maintain cost set for returning best cost in the end
-		SearchNodePQ costSet(CompareSearchNodeType::COST);
-		SearchNodePQ openSet(CompareSearchNodeType::HEURISTIC);
+		SearchNodePQ costSet(compareCost);
+		SearchNodePQ openSet(compareHeuristic);
 
 		// push initial state into queue
 		ISearchNode* root = NULL;
@@ -134,7 +137,7 @@ namespace HCSearch
 
 		if (costSet.empty())
 		{
-			cerr << "the cost set is empty!" << endl;
+			cerr << "[Error] the cost set is empty, which is not possible!" << endl;
 		}
 
 		// search done, so get lowest cost node

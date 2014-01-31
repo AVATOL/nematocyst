@@ -2,7 +2,7 @@
 #include "CppUnitTest.h"
 
 #include <iostream>
-#include "..\HCSearchLib\HCSearch.hpp"
+#include "HCSearch.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 using namespace HCSearch;
@@ -18,7 +18,6 @@ namespace Testing
 			Settings* settings = new Settings();
 			settings->refresh("input", "output");
 
-			Assert::AreEqual(0, settings->EXPERIMENT_NAME.compare("output"));
 			Assert::AreEqual(0, settings->paths->EXPERIMENT_DIR.compare("output\\"));
 			Assert::AreEqual(0, settings->paths->DATA_DIR.compare("input\\"));
 		}
