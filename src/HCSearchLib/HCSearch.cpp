@@ -42,8 +42,8 @@ namespace HCSearch
 
 	void Setup::configure(string datasetPath, string outputPath)
 	{
-		Global::settings->refresh(MyFileSystem::FileSystem::normalizeSlashes(datasetPath), 
-			MyFileSystem::FileSystem::normalizeSlashes(outputPath));
+		Global::settings->refresh(MyFileSystem::FileSystem::normalizeDirString(datasetPath), 
+			MyFileSystem::FileSystem::normalizeDirString(outputPath));
 	}
 
 	void Setup::finalize()
