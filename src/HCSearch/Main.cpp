@@ -1,7 +1,7 @@
 #include <iostream>
-#include "HCSearch.hpp" 
-#include "Main.hpp"
+#include "../HCSearchLib/HCSearch.hpp"
 #include "MyProgramOptions.hpp"
+#include "Main.hpp"
 
 using namespace std;
 

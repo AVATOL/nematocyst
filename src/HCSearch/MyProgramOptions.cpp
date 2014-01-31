@@ -1,6 +1,6 @@
 #include <iostream>
 #include "MyProgramOptions.hpp"
-#include "HCSearch.hpp" 
+#include "../HCSearchLib/HCSearch.hpp"
 
 namespace MyProgramOptions
 {
