@@ -340,6 +340,9 @@ namespace HCSearch
 
 		/*!
 		 * @brief Construct a SearchSpace from already defined functions. Only use this constructor.
+		 *
+		 * Note that the destructor will destroy the objects passed into this constructor!
+		 *
 		 * @param[in] heuristicFeatureFunction Heuristic feature function
 		 * @param[in] costFeatureFunction Cost feature function
 		 * @param[in] initialPredictionFunction Initial prediction function
@@ -350,6 +353,9 @@ namespace HCSearch
 			IInitialPredictionFunction* initialPredictionFunction, ISuccessorFunction* successorFunction,
 			ILossFunction* lossFunction);
 
+		/*!
+		 * Note that the destructor will destroy the objects passed into the constructor!
+		 */
 		~SearchSpace();
 
 		/*!
