@@ -15,6 +15,7 @@ HCSearchLib:
 .PHONY: HCSearch
 HCSearch: HCSearchLib 
 	make --directory="HCSearch/" --file=HCSearch.makefile
+	cp gccRelease/HCSearch ../HCSearch
 
 # Builds project 'HCSearchLib' with MPI enabled...
 .PHONY: HCSearchLibMPI
@@ -25,6 +26,7 @@ HCSearchLibMPI:
 .PHONY: HCSearchMPI
 HCSearchMPI: HCSearchLibMPI 
 	make --directory="HCSearch/" --file=HCSearch.mpi.makefile
+	cp gccRelease/HCSearch ../HCSearch
 
 # Cleans all projects...
 .PHONY: clean
