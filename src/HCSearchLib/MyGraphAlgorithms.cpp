@@ -315,6 +315,11 @@ namespace MyGraphAlgorithms
 		return this->subgraphSet->getOriginalLabeling();
 	}
 
+	vector< ConnectedComponent* > Subgraph::getConnectedComponents()
+	{
+		return this->connectedComponents->getConnectedComponents();
+	}
+
 	/**************** Subgraph Set ****************/
 
 	SubgraphSet::SubgraphSet()

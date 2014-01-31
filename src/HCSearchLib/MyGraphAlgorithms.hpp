@@ -94,6 +94,7 @@ namespace MyGraphAlgorithms
 		void addNode(int node);
 		void processConnectedComponents();
 		HCSearch::ImgLabeling getOriginalLabeling();
+		vector< ConnectedComponent* > getConnectedComponents();
 	};
 
 	/**************** Subgraph Set ****************/
