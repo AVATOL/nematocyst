@@ -185,7 +185,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
 
 	// params
-	HCSearch::RankerType rankerType = HCSearch::RankerType::ONLINE_RANK; //TODO
+	HCSearch::RankerType rankerType = HCSearch::ONLINE_RANK; //TODO
 
 	// datasets
 	vector< HCSearch::ImgFeatures* > XTrain;
