@@ -710,6 +710,11 @@ namespace HCSearch
 
 	SearchSpace::~SearchSpace()
 	{
+		delete this->heuristicFeatureFunction;
+		delete this->costFeatureFunction;
+		delete this->initialPredictionFunction;
+		delete this->successorFunction;
+		delete this->lossFunction;
 	}
 
 	RankFeatures SearchSpace::computeHeuristicFeatures(ImgFeatures& X, ImgLabeling& Y)
