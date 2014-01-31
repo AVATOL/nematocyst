@@ -49,8 +49,11 @@ namespace MyProgramOptions
 
 		if (argc < 4)
 		{
-			cerr << "Too few arguments!" << endl;
-			printUsage();
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				cerr << "Too few arguments!" << endl;
+				printUsage();
+			}
 			HCSearch::abort();
 		}
 		po.inputDir = argv[1];

@@ -16,7 +16,8 @@ int main(int argc, char* argv[])
 	// print usage
 	if (po.printUsageMode)
 	{
-		MyProgramOptions::ProgramOptions::printUsage();
+		if (HCSearch::Global::settings->RANK == 0)
+			MyProgramOptions::ProgramOptions::printUsage();
 		HCSearch::Setup::finalize();
 		return 0;
 	}
