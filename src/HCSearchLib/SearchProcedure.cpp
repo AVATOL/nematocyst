@@ -60,8 +60,8 @@ namespace HCSearch
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
 	IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
-		CompareSearchNode compareCost(CompareSearchNodeType::COST);
-		CompareSearchNode compareHeuristic(CompareSearchNodeType::HEURISTIC);
+		CompareSearchNode compareCost(COST);
+		CompareSearchNode compareHeuristic(HEURISTIC);
 
 		// set up priority queues
 		// maintain open set for search
