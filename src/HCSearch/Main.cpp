@@ -269,7 +269,12 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				//TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.setType = HCSearch::TEST;
+				meta.exampleName = XTest[i]->getFileName();
+				meta.iter = 0; //TODO
+
+				HCSearch::Inference::runLLSearch(XTest[i], YTest[i], timeBound, searchSpace, searchProcedure, meta);
 			}
 
 			break;
@@ -284,7 +289,12 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				//TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.setType = HCSearch::TEST;
+				meta.exampleName = XTest[i]->getFileName();
+				meta.iter = 0; //TODO
+
+				HCSearch::Inference::runHLSearch(XTest[i], YTest[i], timeBound, searchSpace, searchProcedure, heuristicModel, meta);
 			}
 
 			delete heuristicModel;
@@ -300,7 +310,12 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				//TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.setType = HCSearch::TEST;
+				meta.exampleName = XTest[i]->getFileName();
+				meta.iter = 0; //TODO
+
+				HCSearch::Inference::runLCSearch(XTest[i], YTest[i], timeBound, searchSpace, searchProcedure, costModel, meta);
 			}
 
 			delete costModel;
@@ -317,7 +332,12 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				//TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.setType = HCSearch::TEST;
+				meta.exampleName = XTest[i]->getFileName();
+				meta.iter = 0; //TODO
+
+				HCSearch::Inference::runHCSearch(XTest[i], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
 			}
 
 			delete heuristicModel;
