@@ -3,6 +3,9 @@
 
 #include <string>
 
+// Define USE_MPI in Makefile or Visual Studio project
+// It is defined by default in the Visual Studio project
+// It is defined when using "make mpi" and not when using "make"
 #ifdef USE_MPI
 #include <mpi.h>
 #endif
