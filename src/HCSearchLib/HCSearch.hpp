@@ -151,11 +151,19 @@ using namespace std;
  * 
  * The following are Windows installation instructions.
  * 
- * @section mpi_sec Installing MPI (Optional)
+ * @section mpi_sec Installing with MPI (Optional)
  * 
  * To take advantage of parallelism, you need to install MPICH2. 
  * Check out the following website for downloading: 
  * http://www.mpich.org/downloads/
+ * 
+ * Other than that, just use the provided binary called 'HCSearchMPI.exe' instead of 'HCSearch.exe'.
+ * 
+ * To build from source, make sure the USE_MPI preprocessor flag is defined. 
+ * In Microsoft Visual Studio 2012, open up the property pages for each project and edit Preprocessor Definitions.
+ *
+ * To run, you need to prepend the command with `mpiexec -n NUM_PROCESSORS `. For instance, to run 
+ * with 4 parallel processes, run `mpiexec -n 4 ./HCSearch inputDir outputDir timeBound`.
  */
 
   /*!
@@ -165,7 +173,7 @@ using namespace std;
  * 
  * The following are Linux installation instructions.
  * 
- * @section mpi_sec Installing MPI (Optional)
+ * @section mpi_sec Installing with MPI (Optional)
  * 
  * To take advantage of parallelism, you need to install MPICH2. 
  * On Ubuntu and Debian-like systems, you can run the following command:
@@ -174,6 +182,11 @@ using namespace std;
  * 
  * Alternatively, check out the following website: 
  * http://www.mpich.org/downloads/
+ * 
+ * To build from source, run `make mpi` instead of `make`.
+ * 
+ * To run, you need to prepend the command with `mpiexec -n NUM_PROCESSORS `. For instance, to run 
+ * with 4 parallel processes, run `mpiexec -n 4 ./HCSearch inputDir outputDir timeBound`.
  */
 
   /*!
