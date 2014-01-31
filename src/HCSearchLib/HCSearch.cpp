@@ -199,7 +199,7 @@ namespace HCSearch
 	{
 		// read in training data
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
-		cout << "Reading from " << trainSplitFile << "..." << endl;
+		cout << endl << "Reading from " << trainSplitFile << "..." << endl;
 		vector<string> trainFiles = readSplitsFile(trainSplitFile);
 		for (vector<string>::iterator it = trainFiles.begin(); it != trainFiles.end(); ++it)
 		{
@@ -219,7 +219,7 @@ namespace HCSearch
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			cout << "Loading " << edgesFile << "..." << endl;
+			cout << "Loading " << edgesFile << "..." << endl << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
 
@@ -244,7 +244,7 @@ namespace HCSearch
 
 		// read in validation data
 		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
-		cout << "Reading from " << validSplitFile << "..." << endl;
+		cout << endl << "Reading from " << validSplitFile << "..." << endl;
 		vector<string> validFiles = readSplitsFile(validSplitFile);
 		for (vector<string>::iterator it = validFiles.begin(); it != validFiles.end(); ++it)
 		{
@@ -264,7 +264,7 @@ namespace HCSearch
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			cout << "Loading " << edgesFile << "..." << endl;
+			cout << "Loading " << edgesFile << "..." << endl << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
 
@@ -289,7 +289,7 @@ namespace HCSearch
 
 		// read in test data
 		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
-		cout << "Reading from " << testSplitFile << "..." << endl;
+		cout << endl << "Reading from " << testSplitFile << "..." << endl;
 		vector<string> testFiles = readSplitsFile(testSplitFile);
 		for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); ++it)
 		{
@@ -309,7 +309,7 @@ namespace HCSearch
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			cout << "Loading " << edgesFile << "..." << endl;
+			cout << "Loading " << edgesFile << "..." << endl << endl;
 			AdjList_t edges;
 			readEdgesFile(edgesFile, edges);
 
