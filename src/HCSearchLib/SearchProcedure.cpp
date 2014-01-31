@@ -10,49 +10,49 @@ namespace HCSearch
 	ImgLabeling ISearchProcedure::llSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, SearchMetadata searchMetadata)
 	{
-		return searchProcedure(SearchType::LL, X, YTruth, timeBound, 
+		return searchProcedure(LL, X, YTruth, timeBound, 
 			searchSpace, NULL, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling ISearchProcedure::hlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, IRankModel* heuristicModel, SearchMetadata searchMetadata)
 	{
-		return searchProcedure(SearchType::HL, X, YTruth, timeBound, 
+		return searchProcedure(HL, X, YTruth, timeBound, 
 			searchSpace, heuristicModel, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling ISearchProcedure::lcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
-		return searchProcedure(SearchType::LC, X, YTruth, timeBound, 
+		return searchProcedure(LC, X, YTruth, timeBound, 
 			searchSpace, NULL, costModel, NULL, searchMetadata);
 	}
 
 	ImgLabeling ISearchProcedure::hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
-		return searchProcedure(SearchType::HC, X, NULL, timeBound, 
+		return searchProcedure(HC, X, NULL, timeBound, 
 			searchSpace, heuristicModel, costModel, NULL, searchMetadata);
 	}
 
 	void ISearchProcedure::learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
-		searchProcedure(SearchType::LEARN_H, X, YTruth, timeBound, 
+		searchProcedure(LEARN_H, X, YTruth, timeBound, 
 			searchSpace, NULL, NULL, learningModel, searchMetadata);
 	}
 
 	void ISearchProcedure::learnC(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* heuristicModel, IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
-		searchProcedure(SearchType::LEARN_H, X, YTruth, timeBound, 
+		searchProcedure(LEARN_H, X, YTruth, timeBound, 
 			searchSpace, heuristicModel, NULL, learningModel, searchMetadata);
 	}
 
 	void ISearchProcedure::learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
-		searchProcedure(SearchType::LEARN_H, X, YTruth, timeBound, 
+		searchProcedure(LEARN_H, X, YTruth, timeBound, 
 			searchSpace, NULL, NULL, learningModel, searchMetadata);
 	}
 
@@ -336,43 +336,43 @@ namespace HCSearch
 			ImgLabeling YPred = *it;
 			switch (getType())
 			{
-			case SearchType::LL:
+			case LL:
 				{
 					LLSearchNode* successor = new LLSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
-			case SearchType::HL:
+			case HL:
 				{
 					HLSearchNode* successor = new HLSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
-			case SearchType::LC:
+			case LC:
 				{
 					LCSearchNode* successor = new LCSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
-			case SearchType::HC:
+			case HC:
 				{
 					HCSearchNode* successor = new HCSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
-			case SearchType::LEARN_H:
+			case LEARN_H:
 				{
 					LearnHSearchNode* successor = new LearnHSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
-			case SearchType::LEARN_C:
+			case LEARN_C:
 				{
 					LearnCSearchNode* successor = new LearnCSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
-			case SearchType::LEARN_C_ORACLE_H:
+			case LEARN_C_ORACLE_H:
 				{
 					LearnCOracleHSearchNode* successor = new LearnCOracleHSearchNode(this, YPred);
 					successors.push_back(successor);
@@ -444,7 +444,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::LLSearchNode::getType()
 	{
-		return SearchType::LL;
+		return LL;
 	}
 
 	/**************** HL Search Node ****************/
@@ -500,7 +500,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::HLSearchNode::getType()
 	{
-		return SearchType::HL;
+		return HL;
 	}
 
 	/**************** LC Search Node ****************/
@@ -555,7 +555,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::LCSearchNode::getType()
 	{
-		return SearchType::LC;
+		return LC;
 	}
 
 	/**************** HC Search Node ****************/
@@ -618,7 +618,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::HCSearchNode::getType()
 	{
-		return SearchType::HC;
+		return HC;
 	}
 
 	/**************** Learn H Search Node ****************/
@@ -660,7 +660,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::LearnHSearchNode::getType()
 	{
-		return SearchType::LEARN_H;
+		return LEARN_H;
 	}
 
 	/**************** Learn C Search Node ****************/
@@ -708,7 +708,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::LearnCSearchNode::getType()
 	{
-		return SearchType::LEARN_C;
+		return LEARN_C;
 	}
 
 	/**************** Learn C Given Oracle H Search Node ****************/
@@ -750,7 +750,7 @@ namespace HCSearch
 
 	SearchType ISearchProcedure::LearnCOracleHSearchNode::getType()
 	{
-		return SearchType::LEARN_C_ORACLE_H;
+		return LEARN_C_ORACLE_H;
 	}
 
 	/**************** Compare Search Node ****************/
