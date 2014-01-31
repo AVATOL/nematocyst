@@ -420,7 +420,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open meta file for initializing data structures!" << endl;
+			cerr << "[Error] cannot open meta file!" << endl;
 			abort();
 		}
 	}
@@ -516,7 +516,8 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to nodes data!" << endl;
+			cerr << "[Error] cannot open file to edges data!" << endl;
+			abort();
 		}
 	}
 
