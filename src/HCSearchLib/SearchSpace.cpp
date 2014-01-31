@@ -5,6 +5,7 @@
 #include "Settings.hpp"
 #include "Globals.hpp"
 #include "MyLogger.hpp"
+#include "MyGraphAlgorithms.hpp"
 
 using namespace std;
 
@@ -467,11 +468,13 @@ namespace HCSearch
 	StochasticSuccessor::StochasticSuccessor()
 	{
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
 	}
 
 	StochasticSuccessor::StochasticSuccessor(double cutParam)
 	{
 		this->cutParam = cutParam;
+		this->cutEdgesIndependently = true;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()
@@ -480,8 +483,188 @@ namespace HCSearch
 	
 	vector< ImgLabeling > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
-		//TODO
-		return vector< ImgLabeling >();
+		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
+		cout << "Using threshold=" << threshold << endl;
+
+		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+
+		cout << "generating successors..." << endl;
+
+		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+
+		cout << "num successors=" << successors.size() << endl;
+
+		return successors;
+	}
+
+	MyGraphAlgorithms::SubgraphSet* StochasticSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	{
+		const int numNodes = X.getNumNodes();
+		map< int, set<int> > edges = YPred.graph.adjList;
+
+		// store new cut edges
+		map< int, set<int> > cutEdges;
+
+		// convert to format storing (node1, node2) pairs
+		vector< MyPrimitives::Pair< int, int > > edgeNodes;
+
+		// edge weights using KL divergence measure
+		vector<double> edgeWeights;
+
+		// iterate over all edges to store
+		for (map< int, set<int> >::iterator it = edges.begin();
+			it != edges.end(); ++it)
+		{
+			int node1 = it->first;
+			set<int> neighbors = it->second;
+		
+			// loop over neighbors
+			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it)
+			{
+				int node2 = *it2;
+
+				// get features and labels
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+				// compute weights already
+				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				edgeWeights.push_back(weight);
+
+				// add
+				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+				edgeNodes.push_back(nodePair);
+			}
+		}
+
+		// given the edge weights, do the actual cutting!
+		const int numEdges = edgeNodes.size();
+		for (int i = 0; i < numEdges; i++)
+		{
+			MyPrimitives::Pair< int, int > nodePair = edgeNodes[i];
+			int node1 = nodePair.first;
+			int node2 = nodePair.second;
+
+			bool decideToCut;
+			if (!cutEdgesIndependently)
+			{
+				// uniform state
+				decideToCut = edgeWeights[i] <= threshold;
+			}
+			else
+			{
+				// bernoulli independent
+				double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
+				decideToCut = biasedCoin <= 1-edgeWeights[i];
+			}
+
+			if (!decideToCut)
+			{
+				// keep these uncut edges
+				if (cutEdges.count(node1) == 0)
+				{
+					cutEdges[node1] = set<int>();
+				}
+				if (cutEdges.count(node2) == 0)
+				{
+					cutEdges[node2] = set<int>();
+				}
+				cutEdges[node1].insert(node2);
+				cutEdges[node2].insert(node1);
+			}
+		}
+
+		// create subgraphs
+		ImgLabeling Ycopy;
+		Ycopy.confidences = YPred.confidences;
+		Ycopy.confidencesAvailable = YPred.confidencesAvailable;
+		Ycopy.graph = YPred.graph;
+
+		cout << "Getting subgraphs..." << endl;
+
+		MyGraphAlgorithms::SubgraphSet* subgraphs = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
+
+		return subgraphs;
+	}
+
+	vector< ImgLabeling > StochasticSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	{
+		using namespace MyGraphAlgorithms;
+
+		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
+
+		// successors set
+		vector< ImgLabeling > successors;
+
+		// loop over each sub graph
+		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// loop over each connected component
+			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			{
+				ConnectedComponent* cc = *it2;
+
+				// loop over each neighbor label
+				set<int> neighborLabels = cc->getNeighborLabels();
+				for (set<int>::iterator it3 = neighborLabels.begin(); it3 != neighborLabels.end(); ++it3)
+				{
+					int label = *it3;
+
+					// form successor object
+					ImgLabeling YNew;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = YPred.confidencesAvailable;
+					YNew.stochasticCuts = subgraphs->getCuts();
+					YNew.stochasticCutsAvailable = true;
+					YNew.graph = YPred.graph;
+
+					// make changes
+					set<int> component = cc->getNodes();
+					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+					{
+						int node = *it4;
+						YNew.graph.nodesData(node) = label;
+					}
+
+					successors.push_back(YNew);
+				}
+			}
+		}
+
+		return successors;
+	}
+
+	double StochasticSuccessor::computeKL(const VectorXd& p, const VectorXd& q)
+	{
+		if (p.size() != q.size())
+		{
+			cerr << "dimensions of p and q are not the same!" << endl;
+		}
+
+		double KL = 0;
+
+		VectorXd pn = p.normalized();
+		VectorXd qn = q.normalized();
+
+		for (int i = 0; i < p.size(); i++)
+		{
+			if (p(i) != 0)
+			{
+				if (q(i) == 0) // && p(i) != 0
+				{
+					// warning: q(i) = 0 does not imply p(i) = 0
+				}
+				else
+				{
+					KL += p(i) * log(p(i) / q(i));
+				}
+			}
+		}
+
+		return KL;
 	}
 
 	/**************** Loss Functions ****************/

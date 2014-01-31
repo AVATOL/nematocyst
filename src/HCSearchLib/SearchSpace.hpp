@@ -5,6 +5,7 @@
 #include <queue>
 #include "../../external/Eigen/Eigen/Dense"
 #include "DataStructures.hpp"
+#include "MyGraphAlgorithms.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -238,6 +239,7 @@ namespace HCSearch
 	{
 		static const double DEFAULT_T_PARM;
 		double cutParam; // temperature
+		bool cutEdgesIndependently;
 
 	public:
 		StochasticSuccessor();
@@ -245,6 +247,11 @@ namespace HCSearch
 		~StochasticSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+
+	protected:
+		MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
+		vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		static double computeKL(const VectorXd& p, const VectorXd& q);
 	};
 
 	/**************** Loss Functions ****************/
