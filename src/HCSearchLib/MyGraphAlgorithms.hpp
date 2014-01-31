@@ -20,7 +20,7 @@ namespace MyGraphAlgorithms
 	/**************** Disjoint Set ****************/
 
 	/*!
-	 * @brief DisjointSet class for union-find.
+	 * @brief %DisjointSet class for union-find.
 	 */
 	class DisjointSet
 	{
@@ -132,7 +132,7 @@ namespace MyGraphAlgorithms
 	/**************** Subgraphs ****************/
 
 	/*!
-	 * @brief Subgraph contains some nodes with connected components.
+	 * @brief %Subgraph contains some nodes with connected components.
 	 */
 	class Subgraph
 	{
@@ -182,7 +182,7 @@ namespace MyGraphAlgorithms
 	/**************** Subgraph Set ****************/
 
 	/*!
-	 * @brief Subgraph set contains a set of subgraphs, which are partitions of a labeling.
+	 * @brief %Subgraph set contains a set of subgraphs, which are partitions of a labeling.
 	 */
 	class SubgraphSet
 	{
