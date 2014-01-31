@@ -205,8 +205,8 @@ namespace HCSearch
 		void trainClassifier(string fileName);
 
 	protected:
-		static int imgfeatures2liblinear(ImgFeatures& X, string filename);
-		static int liblinear2imglabeling(ImgLabeling& Y, string filename);
+		static void imgfeatures2liblinear(ImgFeatures& X, string filename);
+		static void liblinear2imglabeling(ImgLabeling& Y, string filename);
 		bool hasForegroundNeighbors(ImgLabeling& Y, int node);
 
 		// eliminate 1-islands

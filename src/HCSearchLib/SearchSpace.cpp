@@ -171,7 +171,6 @@ namespace HCSearch
 	{
 	}
 
-	//TODO: test
 	ImgLabeling LogRegInit::getInitialPrediction(ImgFeatures& X)
 	{
 		// output features
@@ -250,7 +249,7 @@ namespace HCSearch
 		}
 	}
 
-	int LogRegInit::imgfeatures2liblinear(ImgFeatures& X, string filename)
+	void LogRegInit::imgfeatures2liblinear(ImgFeatures& X, string filename)
 	{
 		const int numNodes = X.getNumNodes();
 		const int featureDim = X.getFeatureDim();
@@ -271,16 +270,15 @@ namespace HCSearch
 				fh << endl;
 			}
 			fh.close();
-			return 0;
 		}
 		else
 		{
 			cerr << "[Error] cannot open file for writing LIBLINEAR/LIBSVM features!" << endl;
-			return -1;
+			abort();
 		}
 	}
 
-	int LogRegInit::liblinear2imglabeling(ImgLabeling& Y, string filename)
+	void LogRegInit::liblinear2imglabeling(ImgLabeling& Y, string filename)
 	{
 		const int numClasses = Global::settings->CLASSES.numClasses();
 		const int numNodes = Y.getNumNodes();
@@ -311,7 +309,7 @@ namespace HCSearch
 							{
 								cerr << "[Error] parsing invalid prediction file while trying to get liblinear confidences!" << endl;
 								fh.close();
-								return 1;
+								abort();
 							}
 							columnIndex++;
 							continue;
@@ -337,7 +335,7 @@ namespace HCSearch
 
 						cerr << "[Error] parsing invalid prediction file while trying to get liblinear confidences!" << endl;
 						fh.close();
-						return 2;
+						abort();
 					}
 					else
 					{
@@ -371,12 +369,11 @@ namespace HCSearch
 				lineIndex++;
 			}
 			fh.close();
-			return 0;
 		}
 		else
 		{
 			cerr << "[Error] cannot open file for reading LIBLINEAR/LIBSVM confidences!" << endl;
-			return 3;
+			abort();
 		}
 	}
 
