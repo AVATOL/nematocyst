@@ -35,7 +35,7 @@ build_all_configurations: Debug Release
 # Builds the Debug configuration...
 .PHONY: Debug
 Debug: create_folders gccDebug/Main.o gccDebug/MyProgramOptions.o 
-	g++ gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch.exe
+	g++ gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch
 
 # Compiles file Main.cpp for the Debug configuration...
 -include gccDebug/Main.d
@@ -52,7 +52,7 @@ gccDebug/MyProgramOptions.o: MyProgramOptions.cpp
 # Builds the Release configuration...
 .PHONY: Release
 Release: create_folders gccRelease/Main.o gccRelease/MyProgramOptions.o 
-	g++ gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch.exe
+	g++ gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch
 
 # Compiles file Main.cpp for the Release configuration...
 -include gccRelease/Main.d
@@ -83,10 +83,12 @@ clean:
 	rm -f ../gccDebug/*.so
 	rm -f ../gccDebug/*.dll
 	rm -f ../gccDebug/*.exe
+	rm -f ../gccDebug/HCSearch
 	rm -f gccRelease/*.o
 	rm -f gccRelease/*.d
 	rm -f ../gccRelease/*.a
 	rm -f ../gccRelease/*.so
 	rm -f ../gccRelease/*.dll
 	rm -f ../gccRelease/*.exe
+	rm -f ../gccRelease/HCSearch
 
