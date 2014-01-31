@@ -455,7 +455,46 @@ namespace HCSearch
 
 	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
 	{
-		//TODO
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			// current line = current node
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+					string token;
+
+					// get node1
+					getline(iss, token, ' ');
+					int node1 = atoi(token.c_str());
+
+					// get node2
+					getline(iss, token, ' ');
+					int node2 = atoi(token.c_str());
+
+					// get 1 (or weight)
+					getline(iss, token, ' ');
+					double edgeWeight = atof(token.c_str());
+
+					// add to map
+					if (edges.count(node1) == 0)
+					{
+						edges[node1] = set<int>();
+					}
+					edges[node1].insert(node2);
+				}
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open file to nodes data!" << endl;
+		}
 	}
 
 	/**************** Model ****************/
