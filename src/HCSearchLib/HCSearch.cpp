@@ -374,7 +374,34 @@ namespace HCSearch
 
 	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures)
 	{
-		//TODO
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			while (fh.good())
+			{
+				getline(fh, line);
+				stringstream ss(line);
+				string tag;
+				string num;
+				getline(ss, tag, '=');
+				getline(ss, num, '=');
+				if (tag.compare("nodes") == 0)
+				{
+					numNodes = atoi(num.c_str());
+				}
+				else if (tag.compare("features") == 0)
+				{
+					numFeatures = atoi(num.c_str());
+				}
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open meta file for initializing data structures!" << endl;
+			abort();
+		}
 	}
 
 	void Dataset::readNodesFile(string filename, int numNodes, int numFeatures, VectorXi& labels, MatrixXd& features)
