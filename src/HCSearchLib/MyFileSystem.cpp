@@ -39,7 +39,7 @@ namespace MyFileSystem
 
 	int FileSystem::createFolder(string dir)
 	{
-		Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " " + dir);
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " " + dir);
 	}
 
 	/**************** Executable ****************/
