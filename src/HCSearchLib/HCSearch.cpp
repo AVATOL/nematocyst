@@ -197,14 +197,68 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
-		//TODO
+		// read in training data
+		vector<string> trainFiles = readSplitsFile(Global::settings->paths->INPUT_SPLITS_TRAIN_FILE);
+		for (vector<string>::iterator it = trainFiles.begin(); it != trainFiles.end(); ++it)
+		{
+			string filename = *it;
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			int numNodes, numFeatures;
+			readMetaFile(metaFile, numNodes, numFeatures);
 
-		XTrain = vector< ImgFeatures* >();
-		YTrain = vector< ImgLabeling* >();
-		XValidation = vector< ImgFeatures* >();
-		YValidation = vector< ImgLabeling* >();
-		XTest = vector< ImgFeatures* >();
-		YTest = vector< ImgLabeling* >();
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			VectorXi labels;
+			MatrixXd features;
+			readNodesFile(nodesFile, numNodes, numFeatures, labels, features);
+
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			AdjList_t edges;
+			readEdgesFile(edgesFile, edges);
+
+			//TODO
+		}
+
+		// read in validation data
+		vector<string> validFiles = readSplitsFile(Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE);
+		for (vector<string>::iterator it = validFiles.begin(); it != validFiles.end(); ++it)
+		{
+			string filename = *it;
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			int numNodes, numFeatures;
+			readMetaFile(metaFile, numNodes, numFeatures);
+
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			VectorXi labels;
+			MatrixXd features;
+			readNodesFile(nodesFile, numNodes, numFeatures, labels, features);
+
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			AdjList_t edges;
+			readEdgesFile(edgesFile, edges);
+
+			//TODO
+		}
+
+		// read in test data
+		vector<string> testFiles = readSplitsFile(Global::settings->paths->INPUT_SPLITS_TEST_FILE);
+		for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); ++it)
+		{
+			string filename = *it;
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename;
+			int numNodes, numFeatures;
+			readMetaFile(metaFile, numNodes, numFeatures);
+
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename;
+			VectorXi labels;
+			MatrixXd features;
+			readNodesFile(nodesFile, numNodes, numFeatures, labels, features);
+
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename;
+			AdjList_t edges;
+			readEdgesFile(edgesFile, edges);
+
+			//TODO
+		}
 	}
 
 	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
@@ -253,6 +307,27 @@ namespace HCSearch
 				delete object;
 		}
 		XTest.clear();
+	}
+
+	vector<string> Dataset::readSplitsFile(string filename)
+	{
+		//TODO
+		return vector<string>();
+	}
+
+	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures)
+	{
+		//TODO
+	}
+
+	void Dataset::readNodesFile(string filename, int numNodes, int numFeatures, VectorXi& labels, MatrixXd& features)
+	{
+		//TODO
+	}
+
+	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
+	{
+		//TODO
 	}
 
 	/**************** Model ****************/

@@ -309,6 +309,12 @@ namespace HCSearch
 		static void unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
+
+	private:
+		static vector<string> readSplitsFile(string filename);
+		static void readMetaFile(string filename, int& numNodes, int& numFeatures);
+		static void readNodesFile(string filename, int numNodes, int numFeatures, VectorXi& labels, MatrixXd& features);
+		static void readEdgesFile(string filename, AdjList_t& edges);
 	};
 
 	/*! @} */
