@@ -174,13 +174,13 @@ namespace HCSearch
 	ImgLabeling LogRegInit::getInitialPrediction(ImgFeatures& X)
 	{
 		// output features
-		imgfeatures2liblinear(X, Global::settings->paths->EXPERIMENT_INITFUNC_FEATURES_FILE);
+		imgfeatures2liblinear(X, Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE);
 		
 		// perform IID SVM prediction on patches
 		stringstream ssPredictInitFuncCmd;
 		ssPredictInitFuncCmd << Global::settings->cmds->LIBLINEAR_PREDICT_CMD << " -b 1 " 
-			<< Global::settings->paths->EXPERIMENT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->EXPERIMENT_INITFUNC_MODEL_FILE 
-			<< " " << Global::settings->paths->EXPERIMENT_INITFUNC_PREDICT_FILE;
+			<< Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE 
+			<< " " << Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE;
 
 		int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
 		if (retcode != 0)
@@ -196,7 +196,7 @@ namespace HCSearch
 
 		// now need to get labels data and confidences...
 		// read in initial prediction
-		liblinear2imglabeling(Y, Global::settings->paths->EXPERIMENT_INITFUNC_PREDICT_FILE);
+		liblinear2imglabeling(Y, Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE);
 
 		// eliminate 1-islands
 		eliminateIslands(Y);
@@ -235,7 +235,7 @@ namespace HCSearch
 			ssTrainInitFuncCmd << Global::settings->cmds->LIBLINEAR_TRAIN_CMD << " -s 7 -c " << DEFAULT_C << " ";
 
 			// the rest of the training cmd
-			ssTrainInitFuncCmd << Global::settings->paths->DATA_INITFUNC_TRAINING_FILE << " " + Global::settings->paths->EXPERIMENT_INITFUNC_MODEL_FILE;
+			ssTrainInitFuncCmd << Global::settings->paths->INPUT_INITFUNC_TRAINING_FILE << " " + Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE;
 
 			// run command
 			MyFileSystem::Executable::executeRetries(ssTrainInitFuncCmd.str());

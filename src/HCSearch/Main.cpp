@@ -61,9 +61,9 @@ void demo(MyProgramOptions::ProgramOptions po)
 	int timeBound = po.timeBound;
 
 	// paths
-	string heuristicModelPath = HCSearch::Global::settings->paths->EXPERIMENT_HEURISTIC_MODEL_FILE;
-	string costModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_H_MODEL_FILE;
-	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
+	string heuristicModelPath = HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE;
+	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
+	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_L_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = HCSearch::ONLINE_RANK;
@@ -189,9 +189,9 @@ void run(MyProgramOptions::ProgramOptions po)
 	int timeBound = po.timeBound;
 
 	// paths
-	string heuristicModelPath = HCSearch::Global::settings->paths->EXPERIMENT_HEURISTIC_MODEL_FILE;
-	string costModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_H_MODEL_FILE;
-	string costOracleHModelPath = HCSearch::Global::settings->paths->EXPERIMENT_COST_L_MODEL_FILE;
+	string heuristicModelPath = HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE;
+	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
+	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_L_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = HCSearch::ONLINE_RANK; //TODO

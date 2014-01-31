@@ -18,8 +18,8 @@ namespace Testing
 			Settings* settings = new Settings();
 			settings->refresh("input", "output");
 
-			Assert::AreEqual(0, settings->paths->EXPERIMENT_DIR.compare("output\\"));
-			Assert::AreEqual(0, settings->paths->DATA_DIR.compare("input\\"));
+			Assert::AreEqual(0, settings->paths->OUTPUT_DIR.compare("output\\"));
+			Assert::AreEqual(0, settings->paths->INPUT_DIR.compare("input\\"));
 		}
 	};
 }

@@ -126,58 +126,11 @@ namespace HCSearch
 		// basic directories
 		BASE_PATH = ""; // must end in DIR_SEP if not empty
 		EXTERNAL_DIR = BASE_PATH + "external" + DIR_SEP;
-		DATA_DIR;
-		EXPERIMENT_DIR;
 
 		// external directories
 		LIBLINEAR_DIR = EXTERNAL_DIR + "liblinear" + DIR_SEP;
 		LIBSVM_DIR = EXTERNAL_DIR + "libsvm" + DIR_SEP;
 		SVMRANK_DIR = EXTERNAL_DIR + "svm_rank" + DIR_SEP;
-		RANKLIB_DIR + EXTERNAL_DIR;
-
-		// data directories
-		DATA_ALLDATA_DIR;
-		DATA_INITFUNC_DIR;
-		DATA_METADATA_FILE;
-		DATA_CODEBOOK_FILE;
-		DATA_INITFUNC_TRAINING_FILE;
-		DATA_PAIRWISE_TRAINING_FILE;
-
-		// data directories: file name bases
-		DATA_NODES_FILE_BASE = "nodes";
-		DATA_EDGES_FILE_BASE = "edges";
-		DATA_SEGMENTS_FILE_BASE = "segments";
-
-		// experiment directories
-		EXPERIMENT_LOGS_DIR;
-		EXPERIMENT_MODELS_DIR;
-		EXPERIMENT_RESULTS_DIR;
-		EXPERIMENT_TEMP_DIR;
-
-		EXPERIMENT_HEURISTIC_FEATURES_FILE;
-		EXPERIMENT_COST_H_FEATURES_FILE;
-		EXPERIMENT_COST_L_FEATURES_FILE;
-
-		EXPERIMENT_HEURISTIC_ONLINE_WEIGHTS_FILE;
-		EXPERIMENT_COST_H_ONLINE_WEIGHTS_FILE;
-		EXPERIMENT_COST_L_ONLINE_WEIGHTS_FILE;
-
-		EXPERIMENT_HEURISTIC_MODEL_FILE;
-		EXPERIMENT_COST_H_MODEL_FILE;
-		EXPERIMENT_COST_L_MODEL_FILE;
-
-		EXPERIMENT_LOG_FILE;
-
-		EXPERIMENT_INITFUNC_MODEL_FILE;
-		EXPERIMENT_INITFUNC_FEATURES_FILE;
-		EXPERIMENT_INITFUNC_PREDICT_FILE;
-
-		EXPERIMENT_PAIRWISE_MODEL_FILE;
-		EXPERIMENT_PAIRWISE_FEATURES_FILE;
-		EXPERIMENT_PAIRWISE_PREDICT_FILE;
-
-		EXPERIMENT_RANKLIB_FEATURES_FILE;
-		EXPERIMENT_RANKLIB_SCORE_FILE;
 	}
 
 	Paths::~Paths()
@@ -186,57 +139,64 @@ namespace HCSearch
 
 	void Settings::refreshDataDirectories(string dataDir)
 	{
-		this->paths->DATA_DIR = this->paths->BASE_PATH + dataDir + this->paths->DIR_SEP;
+		this->paths->INPUT_DIR = this->paths->BASE_PATH + dataDir + this->paths->DIR_SEP;
 
 		// data directories
-		this->paths->DATA_ALLDATA_DIR = this->paths->DATA_DIR + "allData" + this->paths->DIR_SEP;
-		this->paths->DATA_INITFUNC_DIR = this->paths->DATA_DIR + "initfunc" + this->paths->DIR_SEP;
-		this->paths->DATA_METADATA_FILE = this->paths->DATA_DIR + "metadata.txt";
-		this->paths->DATA_CODEBOOK_FILE = this->paths->DATA_DIR + "codebook.txt";
-		this->paths->DATA_INITFUNC_TRAINING_FILE = this->paths->DATA_DIR + "initfunc_training.txt";
-		this->paths->DATA_PAIRWISE_TRAINING_FILE = this->paths->DATA_DIR + "pairwise_training.txt";
+		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + "nodes" + this->paths->DIR_SEP;
+		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + "edges" + this->paths->DIR_SEP;
+		this->paths->INPUT_META_DIR = this->paths->INPUT_DIR + "meta" + this->paths->DIR_SEP;
+		this->paths->INPUT_SEGMENTS_DIR = this->paths->INPUT_DIR + "segments" + this->paths->DIR_SEP;
+		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + "splits" + this->paths->DIR_SEP;
+
+		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + "Train.txt" + this->paths->DIR_SEP;
+		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + "Valid.txt" + this->paths->DIR_SEP;
+		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + "Test.txt" + this->paths->DIR_SEP;
+
+		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";
+		this->paths->INPUT_CODEBOOK_FILE = this->paths->INPUT_DIR + "codebook.txt";
+		this->paths->INPUT_INITFUNC_TRAINING_FILE = this->paths->INPUT_DIR + "initfunc_training.txt";
 	}
 
 	void Settings::refreshExperimentDirectories(string experimentDir)
 	{
-		this->paths->EXPERIMENT_DIR = this->paths->BASE_PATH + experimentDir + this->paths->DIR_SEP;
+		this->paths->OUTPUT_DIR = this->paths->BASE_PATH + experimentDir + this->paths->DIR_SEP;
 
 		// experiment directories
-		this->paths->EXPERIMENT_LOGS_DIR = this->paths->EXPERIMENT_DIR + "logs" + this->paths->DIR_SEP;
-		this->paths->EXPERIMENT_MODELS_DIR = this->paths->EXPERIMENT_DIR + "models" + this->paths->DIR_SEP;
-		this->paths->EXPERIMENT_RESULTS_DIR = this->paths->EXPERIMENT_DIR + "results" + this->paths->DIR_SEP;
-		this->paths->EXPERIMENT_TEMP_DIR = this->paths->EXPERIMENT_DIR + "temp" + this->paths->DIR_SEP;
+		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + "logs" + this->paths->DIR_SEP;
+		this->paths->OUTPUT_MODELS_DIR = this->paths->OUTPUT_DIR + "models" + this->paths->DIR_SEP;
+		this->paths->OUTPUT_RESULTS_DIR = this->paths->OUTPUT_DIR + "results" + this->paths->DIR_SEP;
+		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + "temp" + this->paths->DIR_SEP;
 
-		this->paths->EXPERIMENT_INITFUNC_MODEL_FILE = this->paths->EXPERIMENT_TEMP_DIR + "initfunc_model.txt";
-		this->paths->EXPERIMENT_PAIRWISE_MODEL_FILE = this->paths->EXPERIMENT_TEMP_DIR + "pairwise_model.txt";
+		this->paths->OUTPUT_INITFUNC_MODEL_FILE = this->paths->OUTPUT_TEMP_DIR + "initfunc_model.txt";
+		this->paths->OUTPUT_PAIRWISE_MODEL_FILE = this->paths->OUTPUT_TEMP_DIR + "pairwise_model.txt";
 
-		this->paths->EXPERIMENT_HEURISTIC_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "heuristic_model.txt";
-		this->paths->EXPERIMENT_COST_H_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "cost_H_model.txt";
-		this->paths->EXPERIMENT_COST_L_MODEL_FILE = this->paths->EXPERIMENT_MODELS_DIR + "cost_L_model.txt";
+		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "heuristic_model.txt";
+		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_H_model.txt";
+		this->paths->OUTPUT_COST_L_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_L_model.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
 	{
 		this->RANK = rankID;
 
-		this->paths->EXPERIMENT_LOG_FILE = updateRankIDHelper(this->paths->EXPERIMENT_LOGS_DIR, "log", rankID);
+		this->paths->OUTPUT_LOG_FILE = updateRankIDHelper(this->paths->OUTPUT_LOGS_DIR, "log", rankID);
 
-		this->paths->EXPERIMENT_INITFUNC_FEATURES_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "initfunc_features", rankID);
-		this->paths->EXPERIMENT_INITFUNC_PREDICT_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "initfunc_predict", rankID);
+		this->paths->OUTPUT_INITFUNC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "initfunc_features", rankID);
+		this->paths->OUTPUT_INITFUNC_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "initfunc_predict", rankID);
 
-		this->paths->EXPERIMENT_PAIRWISE_FEATURES_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "pairwise_features", rankID);
-		this->paths->EXPERIMENT_PAIRWISE_PREDICT_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "pairwise_predict", rankID);
+		this->paths->OUTPUT_PAIRWISE_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "pairwise_features", rankID);
+		this->paths->OUTPUT_PAIRWISE_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "pairwise_predict", rankID);
 
-		this->paths->EXPERIMENT_RANKLIB_FEATURES_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "ranklib_features", rankID);
-		this->paths->EXPERIMENT_RANKLIB_SCORE_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "ranklib_score", rankID);
+		this->paths->OUTPUT_RANKLIB_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "ranklib_features", rankID);
+		this->paths->OUTPUT_RANKLIB_SCORE_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "ranklib_score", rankID);
 
-		this->paths->EXPERIMENT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "heuristicFeatures", rankID);
-		this->paths->EXPERIMENT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "costGivenHFeatures", rankID);
-		this->paths->EXPERIMENT_COST_L_FEATURES_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "costGivenLFeatures", rankID);
+		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristicFeatures", rankID);
+		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenHFeatures", rankID);
+		this->paths->OUTPUT_COST_L_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenLFeatures", rankID);
 
-		this->paths->EXPERIMENT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "heuristicOnlineWeights", rankID);
-		this->paths->EXPERIMENT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "costGivenHOnlineWeights", rankID);
-		this->paths->EXPERIMENT_COST_L_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->EXPERIMENT_TEMP_DIR, "costGivenLOnlineWeights", rankID);
+		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristicOnlineWeights", rankID);
+		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenHOnlineWeights", rankID);
+		this->paths->OUTPUT_COST_L_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "costGivenLOnlineWeights", rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
@@ -268,8 +228,6 @@ namespace HCSearch
 		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "windows" + paths->DIR_SEP + "svm-train";
 
 		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
-
-		RANKLIB_CMD = "java -jar " + paths->RANKLIB_DIR + "RankLib.jar";
 	}
 
 	Commands::~Commands()
