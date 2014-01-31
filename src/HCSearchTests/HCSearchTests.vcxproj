@@ -92,6 +92,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="MyGraphAlgorithmsTests.cpp" />
     <ClCompile Include="SearchSpaceTests.cpp" />
     <ClCompile Include="SettingsTests.cpp" />
     <ClCompile Include="stdafx.cpp">
