@@ -6,8 +6,13 @@ namespace MyFileSystem
 
 	string FileSystem::normalizeSlashes(string dir)
 	{
+#if USE_WINDOWS
 		string toReplace = "/";
 		string replaceWith = "\\";
+#else
+		string toReplace = "\\";
+		string replaceWith = "/";
+#endif
 		return (dir.replace(dir.find(toReplace), toReplace.length(), replaceWith));
 	}
 
