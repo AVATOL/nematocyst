@@ -105,7 +105,7 @@ void demo(MyProgramOptions::ProgramOptions po)
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
 	searchMetadata.exampleName; //TODO
 	searchMetadata.iter; //TODO
-	searchMetadata.setType = HCSearch::DatasetType::TEST;
+	searchMetadata.setType = HCSearch::TEST;
 
 	// infer LL
 	HCSearch::Inference::runLLSearch(XTest[0], YTest[0], timeBound, searchSpace, searchProcedure, searchMetadata);
@@ -205,48 +205,48 @@ void run(MyProgramOptions::ProgramOptions po)
 	HCSearch::ISearchProcedure* searchProcedure = setupSearchProcedure(po);
 
 	// run the appropriate mode
-	typedef MyProgramOptions::ProgramOptions::Modes Modes_t;
-	for (vector< Modes_t >::iterator it = po.schedule.begin();
+	typedef MyProgramOptions::ProgramOptions ProgramOptions_t;
+	for (vector< ProgramOptions_t::Modes >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
-		Modes_t mode = *it;
+		ProgramOptions_t::Modes mode = *it;
 		switch (mode)
 		{
-		case Modes_t::LEARN_H:
+		case ProgramOptions_t::LEARN_H:
 			{
 			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
 			break;
 			}
-		case Modes_t::LEARN_C:
+		case ProgramOptions_t::LEARN_C:
 			{
 			HCSearch::IRankModel* heuristicModel = heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
 			break;
 			}
-		case Modes_t::LEARN_C_ORACLE_H:
+		case ProgramOptions_t::LEARN_C_ORACLE_H:
 			{
 			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
 			break;
 			}
-		case Modes_t::INFER_LL:
+		case ProgramOptions_t::INFER_LL:
 			{
 			//TODO
 			break;
 			}
-		case Modes_t::INFER_HL:
+		case ProgramOptions_t::INFER_HL:
 			{
 			//TODO
 			break;
 			}
-		case Modes_t::INFER_LC:
+		case ProgramOptions_t::INFER_LC:
 			{
 			//TODO
 			break;
 			}
-		case Modes_t::INFER_HC:
+		case ProgramOptions_t::INFER_HC:
 			{
 			//TODO
 			break;
