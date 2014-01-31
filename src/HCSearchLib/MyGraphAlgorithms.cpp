@@ -404,4 +404,9 @@ namespace MyGraphAlgorithms
 	{
 		return this->subgraphs;
 	}
+
+	map< int, set<int> > SubgraphSet::getCuts()
+	{
+		return this->cuts;
+	}
 }

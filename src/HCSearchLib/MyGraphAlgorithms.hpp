@@ -114,6 +114,7 @@ namespace MyGraphAlgorithms
 		int size();
 		HCSearch::ImgLabeling getOriginalLabeling();
 		vector< Subgraph* > getSubgraphs();
+		map< int, set<int> > getCuts();
 	};
 }
 
