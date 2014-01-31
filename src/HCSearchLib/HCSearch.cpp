@@ -380,6 +380,28 @@ namespace HCSearch
 		XTest.clear();
 	}
 
+	void Dataset::computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end)
+	{
+		if (rank >= numTasks)
+		{
+			start = 0;
+			end = 0;
+		}
+		else
+		{
+			if (rank < numTasks%numProcesses)
+			{
+				start = (int)( rank*ceil(1.0*numTasks/numProcesses) );
+				end = (int)( (rank+1)*ceil(1.0*numTasks/numProcesses) );
+			}
+			else
+			{
+				start = (int)( (numTasks%numProcesses)*ceil(1.0*numTasks/numProcesses) + (rank - numTasks%numProcesses)*floor(1.0*numTasks/numProcesses) );
+				end = (int)( (numTasks%numProcesses)*ceil(1.0*numTasks/numProcesses) + (rank+1 - numTasks%numProcesses)*floor(1.0*numTasks/numProcesses) );
+			}
+		}
+	}
+
 	vector<string> Dataset::readSplitsFile(string filename)
 	{
 		vector<string> filenames;
@@ -581,6 +603,7 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
 	{
+		cout << "Learning the heuristic function..." << endl;
 		//TODO
 		return NULL;
 	}
@@ -589,6 +612,7 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
 	{
+		cout << "Learning the cost function with learned heuristic..." << endl;
 		//TODO
 		return NULL;
 	}
@@ -597,6 +621,7 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
 	{
+		cout << "Learning the cost function with oracle heuristic..." << endl;
 		//TODO
 		return NULL;
 	}

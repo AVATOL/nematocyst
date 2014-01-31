@@ -310,6 +310,16 @@ namespace HCSearch
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest);
 
+		/*!
+		 * Computes the range of tasks for rank to perform. Used for scheduling parallel processes.
+		 * @param[in] rank Rank
+		 * @param[in] numTasks Number of tasks
+		 * @param[in] numProcesses Number of processes
+		 * @param[out] start starting range
+		 * @param[out] end ending range (exclusive)
+		 */
+		static void computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end);
+
 	private:
 		/*!
 		 * Read split file (Train.txt, Validation.txt, Test.txt).
