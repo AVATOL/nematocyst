@@ -56,6 +56,8 @@ namespace MyGraphAlgorithms
 		set<int> getNeighborLabels();
 	};
 
+	/**************** Connected Component Set ****************/
+
 	class ConnectedComponentSet
 	{
 	private:
@@ -91,6 +93,7 @@ namespace MyGraphAlgorithms
 		set<int> getNodes();
 		void addNode(int node);
 		void processConnectedComponents();
+		HCSearch::ImgLabeling getOriginalLabeling();
 	};
 
 	class SubgraphSet
@@ -106,6 +109,7 @@ namespace MyGraphAlgorithms
 		~SubgraphSet();
 
 		int size();
+		HCSearch::ImgLabeling getOriginalLabeling();
 		vector< Subgraph* > getSubgraphs();
 	};
 }
