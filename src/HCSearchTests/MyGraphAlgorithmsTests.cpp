@@ -112,5 +112,22 @@ namespace Testing
 					Assert::AreEqual(cc->size(), 3);
 			}
 		}
+
+		TEST_METHOD(DijsointSetUnionTest)
+		{
+			MyGraphAlgorithms::DisjointSet ds(10);
+			ds.Union(1,2);
+			Assert::AreEqual(ds.FindSet(1), ds.FindSet(2));
+			Assert::AreNotEqual(ds.FindSet(1), ds.FindSet(3));
+
+			ds.Union(1,2);
+			Assert::AreEqual(ds.FindSet(1), ds.FindSet(2));
+			Assert::AreNotEqual(ds.FindSet(1), ds.FindSet(3));
+
+			ds.Union(2,3);
+			Assert::AreEqual(ds.FindSet(1), ds.FindSet(2));
+			Assert::AreEqual(ds.FindSet(2), ds.FindSet(3));
+			Assert::AreEqual(ds.FindSet(1), ds.FindSet(3));
+		}
 	};
 }
