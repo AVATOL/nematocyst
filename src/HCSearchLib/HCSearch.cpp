@@ -259,13 +259,13 @@ namespace HCSearch
 
 	IRankModel* Model::loadModel(string fileName, RankerType rankerType)
 	{
-		if (rankerType == RankerType::ONLINE_RANK)
+		if (rankerType == ONLINE_RANK)
 		{
 			OnlineRankModel* model = new OnlineRankModel();
 			model->load(fileName);
 			return model;
 		}
-		else if (rankerType == RankerType::SVM_RANK)
+		else if (rankerType == SVM_RANK)
 		{
 			SVMRankModel* model = new SVMRankModel();
 			model->load(fileName);
@@ -280,12 +280,12 @@ namespace HCSearch
 
 	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
 	{
-		if (rankerType == RankerType::ONLINE_RANK)
+		if (rankerType == ONLINE_RANK)
 		{
 			OnlineRankModel* modelCast = dynamic_cast<OnlineRankModel*>(model);
 			modelCast->save(fileName);
 		}
-		else if (rankerType == RankerType::SVM_RANK)
+		else if (rankerType == SVM_RANK)
 		{
 			//TODO
 		}
