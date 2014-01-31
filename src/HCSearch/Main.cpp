@@ -227,7 +227,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		switch (mode)
 		{
 		case ProgramOptions_t::LEARN_H:
-			{
+		{
+			// learn heuristic, save heuristic model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -235,10 +236,11 @@ void run(MyProgramOptions::ProgramOptions po)
 			
 			delete heuristicModel;
 			break;
-			}
+		}
 		case ProgramOptions_t::LEARN_C:
-			{
-			HCSearch::IRankModel* heuristicModel = heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
+		{
+			// load heuristic, learn cost, save cost model
+			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -247,9 +249,10 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete heuristicModel;
 			delete costModel;
 			break;
-			}
+		}
 		case ProgramOptions_t::LEARN_C_ORACLE_H:
-			{
+		{
+			// learn cost, save cost model
 			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			
 			if (HCSearch::Global::settings->RANK == 0)
@@ -257,27 +260,70 @@ void run(MyProgramOptions::ProgramOptions po)
 			
 			delete costOracleHModel;
 			break;
-			}
+		}
 		case ProgramOptions_t::INFER_LL:
+		{
+			// run LL search on test examples
+			int start, end;
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+				HCSearch::Global::settings->NUM_PROCESSES, start, end);
+			for (int i = start; i < end; i++)
 			{
-			//TODO
-			break;
+				//TODO
 			}
+
+			break;
+		}
 		case ProgramOptions_t::INFER_HL:
+		{
+			// load heuristic, run HL search on test examples
+			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
+
+			int start, end;
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+				HCSearch::Global::settings->NUM_PROCESSES, start, end);
+			for (int i = start; i < end; i++)
 			{
-			//TODO
-			break;
+				//TODO
 			}
+
+			delete heuristicModel;
+			break;
+		}
 		case ProgramOptions_t::INFER_LC:
+		{
+			// load cost oracle H, run LC search on test examples
+			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
+
+			int start, end;
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+				HCSearch::Global::settings->NUM_PROCESSES, start, end);
+			for (int i = start; i < end; i++)
 			{
-			//TODO
-			break;
+				//TODO
 			}
+
+			delete costModel;
+			break;
+		}
 		case ProgramOptions_t::INFER_HC:
+		{
+			// load heuristic and cost, run HC search on test examples
+			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
+			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
+
+			int start, end;
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+				HCSearch::Global::settings->NUM_PROCESSES, start, end);
+			for (int i = start; i < end; i++)
 			{
-			//TODO
-			break;
+				//TODO
 			}
+
+			delete heuristicModel;
+			delete costModel;
+			break;
+		}
 		default:
 			cerr << "Error!" << endl;
 		}
