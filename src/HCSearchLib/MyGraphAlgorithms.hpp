@@ -69,6 +69,7 @@ namespace MyGraphAlgorithms
 		~ConnectedComponentSet();
 
 		int size();
+		HCSearch::ImgLabeling getOriginalLabeling();
 		vector< ConnectedComponent* > getConnectedComponents();
 	};
 

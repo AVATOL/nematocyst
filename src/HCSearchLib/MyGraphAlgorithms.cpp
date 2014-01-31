@@ -60,4 +60,64 @@ namespace MyGraphAlgorithms
 
 		return r;
 	}
+
+	/**************** Connected Components ****************/
+
+	ConnectedComponent::ConnectedComponent()
+	{
+	}
+
+	ConnectedComponent::ConnectedComponent(ConnectedComponentSet* ccSet)
+	{
+		this->ccSet = ccSet;
+	}
+
+	ConnectedComponent::~ConnectedComponent()
+	{
+	}
+
+	int ConnectedComponent::size()
+	{
+		return this->nodes.size();
+	}
+
+	set<int> ConnectedComponent::getNodes()
+	{
+		return this->nodes;
+	}
+
+	void ConnectedComponent::addNode(int node)
+	{
+		this->nodes.insert(node);
+	}
+
+	int ConnectedComponent::getLabel()
+	{
+		return this->label;
+	}
+
+	set<int> ConnectedComponent::getNeighborLabels()
+	{
+		set<int> labels;
+		labels.insert(this->label);
+
+		HCSearch::ImgLabeling original = this->ccSet->getOriginalLabeling();
+
+		// get nodes in connected component
+		for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			int node1 = *it;
+
+			// get neighbors
+			set<int> neighborLabels = original.getNeighborLabels(node1);
+			for (set<int>::iterator it2 = neighborLabels.begin(); 
+				it2 != neighborLabels.end(); ++it2)
+			{
+				labels.insert(*it2);
+			}
+		}
+
+		labels.erase(this->label);
+		return labels;
+	}
 }
