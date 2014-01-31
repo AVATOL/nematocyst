@@ -251,6 +251,11 @@ namespace MyGraphAlgorithms
 
 	ConnectedComponentSet::~ConnectedComponentSet()
 	{
+		for (vector< ConnectedComponent* >::iterator it = connectedComponents.begin(); it != connectedComponents.end(); ++it)
+		{
+			ConnectedComponent* cc = *it;
+			delete cc;
+		}
 	}
 
 	int ConnectedComponentSet::size()
@@ -266,5 +271,47 @@ namespace MyGraphAlgorithms
 	vector< ConnectedComponent* > ConnectedComponentSet::getConnectedComponents()
 	{
 		return this->connectedComponents;
+	}
+
+	/**************** Subgraphs ****************/
+
+	Subgraph::Subgraph()
+	{
+		this->subgraphSet = NULL;
+	}
+
+	Subgraph::Subgraph(SubgraphSet* subgraphSet)
+	{
+		this->subgraphSet = subgraphSet;
+	}
+
+	Subgraph::~Subgraph()
+	{
+		delete connectedComponents;
+	}
+
+	int Subgraph::size()
+	{
+		return this->nodes.size();
+	}
+
+	set<int> Subgraph::getNodes()
+	{
+		return this->nodes;
+	}
+
+	void Subgraph::addNode(int node)
+	{
+		this->nodes.insert(node);
+	}
+
+	void Subgraph::processConnectedComponents()
+	{
+		this->connectedComponents = new ConnectedComponentSet(this);
+	}
+
+	HCSearch::ImgLabeling Subgraph::getOriginalLabeling()
+	{
+		return this->subgraphSet->getOriginalLabeling();
 	}
 }
