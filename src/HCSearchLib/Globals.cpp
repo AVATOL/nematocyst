@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ctime>
+#include <cstdlib>
 #include "Globals.hpp"
 
 namespace HCSearch
