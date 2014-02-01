@@ -9,7 +9,7 @@
  * - Loading dataset
  * - Learning the heuristic and cost models
  * - Saving and loading models
- * - Inference on an image using HC search
+ * - Inference on test images using HC search
  * - Unloading dataset
  */
 void demo(int timeBound);
