@@ -140,21 +140,34 @@ void demo(MyProgramOptions::ProgramOptions po)
 
 HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
-	// use standard CRF features for both heuristic and cost feature functions
+	cout << "=== Search Space ===" << endl;
+
+	// use standard CRF features for heuristic feature function
+	cout << "Heuristic feature function: ";
+	cout << "standard CRF features" << endl;
 	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
+
+	// use standard CRF features for cost feature function
+	cout << "Cost feature function: ";
+	cout << "standard CRF features" << endl;
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
 	// use IID logistic regression as initial state prediction function
+	cout << "Initial state prediction function: ";
+	cout << "IID logistic regression" << endl;
 	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
+	cout << "Successor function: ";
 	HCSearch::ISuccessorFunction* successor = NULL;
 	switch (po.successorsMode)
 	{
 	case MyProgramOptions::ProgramOptions::FLIPBIT:
+		cout << "flipbit" << endl;
 		successor = new HCSearch::FlipbitSuccessor();
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
+		cout << "stochastic" << endl;
 		successor = new HCSearch::StochasticSuccessor(po.cutParam);
 		break;
 	default:
@@ -162,7 +175,11 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	}
 
 	// use Hamming loss function
+	cout << "Loss function: ";
+	cout << "Hamming loss" << endl;
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+
+	cout << endl;
 
 	// construct search space from these functions that we specified
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, lossFunc);
@@ -170,16 +187,23 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
 {
+	cout << "=== Search Procedure ===" << endl;
+
 	HCSearch::ISearchProcedure* searchProcedure = NULL;
 	switch (po.searchProcedureMode)
 	{
 	case MyProgramOptions::ProgramOptions::GREEDY:
+		cout << "Using greedy search." << endl;
 		searchProcedure = new HCSearch::GreedySearchProcedure();
 		break;
 	case MyProgramOptions::ProgramOptions::BREADTH_BEAM:
+		cout << "Using breadth-first beam search." << endl;
+		cout << "Beam size=" << po.beamSize << endl;
 		searchProcedure = new HCSearch::BreadthFirstBeamSearchProcedure(po.beamSize);
 		break;
 	case MyProgramOptions::ProgramOptions::BEST_BEAM:
+		cout << "Using best-first beam search." << endl;
+		cout << "Beam size=" << po.beamSize << endl;
 		searchProcedure = new HCSearch::BestFirstBeamSearchProcedure(po.beamSize);
 		break;
 	default:
