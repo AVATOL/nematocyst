@@ -83,7 +83,7 @@ namespace HCSearch
 		// initialize logger
 		Global::log = new MyLogger::Logger();
 
-		cout << "done!" << endl;
+		cout << "done!" << endl << endl;
 	}
 
 	void Setup::finalizeHelper()
