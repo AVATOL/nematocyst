@@ -174,7 +174,7 @@ namespace HCSearch
 			{
 				int label = *it;
 				Global::settings->CLASSES.setBackgroundLabel(label);
-				cout << "Default Background Label: " << *label << endl;
+				cout << "Default Background Label: " << label << endl;
 			}
 		}
 
