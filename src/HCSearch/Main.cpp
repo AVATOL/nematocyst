@@ -285,8 +285,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				
 				// save the prediction
 				stringstream ssPredictNodes;
-				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
-					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
 					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					<< "_time" << timeBound 
 						<< "_fold" << meta.iter 
@@ -321,8 +321,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				
 				// save the prediction
 				stringstream ssPredictNodes;
-				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
-					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
 					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					<< "_time" << timeBound 
 						<< "_fold" << meta.iter 
@@ -358,8 +358,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				
 				// save the prediction
 				stringstream ssPredictNodes;
-				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
-					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
 					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					<< "_time" << timeBound 
 						<< "_fold" << meta.iter 
@@ -396,7 +396,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 				// save the prediction
 				stringstream ssPredictNodes;
-				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
 					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
 					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					<< "_time" << timeBound 
