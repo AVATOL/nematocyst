@@ -191,7 +191,7 @@ namespace HCSearch
 		int timeStep = 0;
 		while (!openSet.empty() && timeStep < timeBound)
 		{
-			// save best if anytime prediction enabled
+			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
 
 			// *** pick some subset of elements from the open set *** 
