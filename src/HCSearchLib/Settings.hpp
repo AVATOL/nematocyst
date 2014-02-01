@@ -23,8 +23,6 @@ namespace HCSearch
 	class ClassMap
 	{
 	protected:
-		static const int DEFAULT_BACKGROUND_LABEL;
-		
 		MyPrimitives::Bimap<int> allClasses; // class index <-> class label
 		map<int, bool> backgroundClasses; // label -> is background? true/false
 

@@ -7,22 +7,8 @@ namespace HCSearch
 {
 	/**************** Class Map ****************/
 
-	const int ClassMap::DEFAULT_BACKGROUND_LABEL = -1;
-
 	ClassMap::ClassMap()
 	{
-		//TODO
-		this->allClasses = MyPrimitives::Bimap<int>();
-		this->allClasses.insert(0, 1);
-		this->allClasses.insert(1, 0);
-		this->allClasses.insert(2, -1);
-		this->backgroundClasses[1] = false;
-		this->backgroundClasses[0] = false;
-		this->backgroundClasses[-1] = true;
-		this->backgroundExists = true;
-		this->numBackground = 1;
-
-		this->backgroundLabel = DEFAULT_BACKGROUND_LABEL;
 	}
 
 	ClassMap::~ClassMap()
@@ -118,14 +104,18 @@ namespace HCSearch
 
 	void ClassMap::addClass(int classIndex, int classLabel, bool isBackground)
 	{
-		if (!this->allClasses.exists(classIndex) && this->allClasses.exists(classLabel))
+		if (!this->allClasses.exists(classIndex) && !this->allClasses.iexists(classLabel))
 		{
 			this->allClasses.insert(classIndex, classLabel);
-			this->backgroundClasses[classIndex] = isBackground;
+			this->backgroundClasses[classLabel] = isBackground;
 			if (isBackground)
 			{
 				this->numBackground++;
 			}
+		}
+		else
+		{
+			cerr << "[Error] class already exists!" << endl;
 		}
 	}
 

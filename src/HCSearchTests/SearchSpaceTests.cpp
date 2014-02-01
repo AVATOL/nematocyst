@@ -79,6 +79,11 @@ namespace Testing
 		TEST_METHOD(FeatureFunctionTest)
 		{
 			Global::settings = new Settings();
+			Global::settings->CLASSES.addClass(0, 1, false);
+			Global::settings->CLASSES.addClass(1, 0, false);
+			Global::settings->CLASSES.addClass(2, -1, true);
+			Global::settings->CLASSES.setBackgroundLabel(-1);
+
 			double EPSILON = 0.0001;
 
 			AdjList_t edgeNeighbors = AdjList_t();
