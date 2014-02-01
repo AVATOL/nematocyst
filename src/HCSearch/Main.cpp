@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
 
 	// demo or run full program
 	if (po.demoMode)
-		demo(po);
+		demo(po.timeBound);
 	else
 		run(po);
 
