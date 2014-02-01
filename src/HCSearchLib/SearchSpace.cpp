@@ -352,7 +352,7 @@ namespace HCSearch
 						if (columnIndex == 0)
 						{
 							int nodeIndex = lineIndex-1;
-							Y.graph.nodesData(nodeIndex-1) = atoi(token.c_str());
+							Y.graph.nodesData(nodeIndex) = atoi(token.c_str());
 						}
 						else if (Y.confidencesAvailable)
 						{
