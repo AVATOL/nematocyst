@@ -75,11 +75,11 @@ namespace MyProgramOptions
 			{
 				if (i + 1 != argc)
 				{
-					if (strcmp(argv[i+1], "H") == 0)
+					if (strcmp(argv[i+1], "H") == 0 || strcmp(argv[i+1], "h") == 0)
 						po.schedule.push_back(HCSearch::LEARN_H);
-					else if (strcmp(argv[i+1], "C") == 0)
+					else if (strcmp(argv[i+1], "C") == 0 || strcmp(argv[i+1], "c") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C);
-					else if (strcmp(argv[i+1], "COH") == 0)
+					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 					else
 					{
@@ -99,13 +99,13 @@ namespace MyProgramOptions
 			{
 				if (i + 1 != argc)
 				{
-					if (strcmp(argv[i+1], "HC") == 0)
+					if (strcmp(argv[i+1], "HC") == 0 || strcmp(argv[i+1], "hc") == 0)
 						po.schedule.push_back(HCSearch::HC);
-					else if (strcmp(argv[i+1], "HL") == 0)
+					else if (strcmp(argv[i+1], "HL") == 0 || strcmp(argv[i+1], "hl") == 0)
 						po.schedule.push_back(HCSearch::HL);
-					else if (strcmp(argv[i+1], "LC") == 0)
+					else if (strcmp(argv[i+1], "LC") == 0 || strcmp(argv[i+1], "lc") == 0)
 						po.schedule.push_back(HCSearch::LC);
-					else if (strcmp(argv[i+1], "LL") == 0)
+					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
 					else
 					{
