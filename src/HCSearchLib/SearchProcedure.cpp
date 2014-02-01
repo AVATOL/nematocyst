@@ -417,7 +417,11 @@ namespace HCSearch
 		{
 			ISearchNode* current = openSet.top();
 			openSet.pop();
-			candidateSet.push(current);
+
+			if (!isDuplicate(current, candidateSet) && !isDuplicate(current, costSet))
+			{
+				candidateSet.push(current);
+			}
 		}
 		
 		// side effect: openSet now empty
