@@ -229,6 +229,7 @@ namespace HCSearch
 		if (costSet.empty())
 		{
 			cerr << "[Error] the cost set is empty, which is not possible!" << endl;
+			abort();
 		}
 
 		// search done, so get lowest cost node
