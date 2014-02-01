@@ -353,6 +353,11 @@ namespace HCSearch
 		 */
 		void finishTraining(string modelFileName);
 
+		/*!
+		 * Cancel learning. Closes training file.
+		 */
+		void cancelTraining();
+
 	private:
 		/*!
 		 * Load weights from file. 

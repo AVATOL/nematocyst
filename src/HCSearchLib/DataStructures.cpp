@@ -178,8 +178,16 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName)
 	{
+		if (qid <= 1)
+		{
+			cerr << "[Error] no training data available for learning!" << endl;
+			return;
+		}
+
+		// compute C
 		double C = 1.0 * (this->qid-1);
 
+		// close ranking file
 		this->rankingFile->close();
 		delete this->rankingFile;
 
@@ -189,10 +197,21 @@ namespace HCSearch
 			<< this->rankingFileName << " " << modelFileName;
 		MyFileSystem::Executable::executeRetries(ssLearn.str());
 
+		// no longer learning
 		this->learningMode = false;
 
 		// Load weights into model and initialize
 		load(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+	}
+
+	void SVMRankModel::cancelTraining()
+	{
+		// close ranking file
+		this->rankingFile->close();
+		delete this->rankingFile;
+
+		// no longer learning
+		this->learningMode = false;
 	}
 
 	VectorXd SVMRankModel::parseModelFile(string fileName)
