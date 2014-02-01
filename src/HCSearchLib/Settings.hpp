@@ -50,6 +50,9 @@ namespace HCSearch
 		set<int> getForegroundLabels();
 
 		int getBackgroundLabel();
+
+		void addClass(int classIndex, int classLabel, bool isBackground);
+		void setBackgroundLabel(int classLabel);
 	};
 
 	/**************** Directory/File Paths Class ****************/

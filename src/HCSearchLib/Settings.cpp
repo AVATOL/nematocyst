@@ -116,6 +116,25 @@ namespace HCSearch
 		}
 	}
 
+	void ClassMap::addClass(int classIndex, int classLabel, bool isBackground)
+	{
+		if (!this->allClasses.exists(classIndex) && this->allClasses.exists(classLabel))
+		{
+			this->allClasses.insert(classIndex, classLabel);
+			this->backgroundClasses[classIndex] = isBackground;
+			if (isBackground)
+			{
+				this->numBackground++;
+			}
+		}
+	}
+
+	void ClassMap::setBackgroundLabel(int classLabel)
+	{
+		this->backgroundLabel = classLabel;
+		this->backgroundExists = true;
+	}
+
 	/**************** Directory/File Paths Class ****************/
 
 	Paths::Paths()
