@@ -305,10 +305,8 @@ namespace HCSearch
 			ISearchNode* current = openSet.top();
 			openSet.pop();
 			subsetOpenSet.push_back(current);
+			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 		}
-
-		if (!subsetOpenSet.empty())
-			cout << "heuristic=" << subsetOpenSet[0]->getHeuristic() << ", cost=" << subsetOpenSet[0]->getCost() << endl;
 
 		return subsetOpenSet;
 	}
@@ -386,7 +384,7 @@ namespace HCSearch
 			openSet.pop();
 			subsetOpenSet.push_back(current);
 
-			cout << "heuristic=" << current->getHeuristic() << ", cost=" << current->getCost() << endl;
+			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 		}
 
 		return subsetOpenSet;
