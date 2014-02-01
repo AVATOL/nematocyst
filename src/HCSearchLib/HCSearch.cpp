@@ -586,7 +586,10 @@ namespace HCSearch
 	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
 	{
 		if (model == NULL)
+		{
+			cerr << "[Error] rank model is NULL, so cannot save it." << endl;
 			return;
+		}
 
 		if (rankerType == ONLINE_RANK)
 		{
