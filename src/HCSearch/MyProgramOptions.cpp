@@ -10,6 +10,7 @@ namespace MyProgramOptions
 
 		inputDir = "";
 		outputDir = "";
+		splitsDir = "";
 
 		// time bound
 
@@ -70,6 +71,13 @@ namespace MyProgramOptions
 			else if (strcmp(argv[i], "--demo") == 0)
 			{
 				po.demoMode = true;
+			}
+			else if (strcmp(argv[i], "--splitspath") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsDir = argv[i+1];
+				}
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
 			{

@@ -27,6 +27,7 @@ namespace MyProgramOptions
 
 		string inputDir;
 		string outputDir;
+		string splitsDir;
 
 		// time bound
 
