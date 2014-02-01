@@ -489,6 +489,7 @@ namespace HCSearch
 
 		cout << "num successors=" << successors.size() << endl;
 
+		delete subgraphs;
 		return successors;
 	}
 
