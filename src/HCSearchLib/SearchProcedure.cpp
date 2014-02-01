@@ -135,8 +135,8 @@ namespace HCSearch
 		{
 			// save best if anytime prediction enabled
 
-			ISearchNode* state = costSet.top();
-			saveAnyTimePrediction(state->getY(), timeBound, searchMetadata, searchType);
+			ImgLabeling currentBestY = costSet.top()->getY();
+			saveAnyTimePrediction(currentBestY, timeBound, searchMetadata, searchType);
 
 			// *** pick some subset of elements from the open set *** 
 
