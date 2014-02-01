@@ -191,7 +191,7 @@ namespace HCSearch
 		int timeStep = 0;
 		while (!openSet.empty() && timeStep < timeBound)
 		{
-			cout << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep << " out of " << timeBound << "..." << endl;
+			cout << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep << " out of " << timeBound << "..." << endl;
 
 			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
@@ -305,6 +305,9 @@ namespace HCSearch
 			subsetOpenSet.push_back(current);
 		}
 
+		if (!subsetOpenSet.empty())
+			cout << "heuristic=" << subsetOpenSet[0]->getHeuristic() << ", cost=" << subsetOpenSet[0]->getCost() << endl;
+
 		return subsetOpenSet;
 	}
 
@@ -375,9 +378,14 @@ namespace HCSearch
 		vector< ISearchNode* > subsetOpenSet;
 		
 		// only add top element
-		ISearchNode* current = openSet.top();
-		openSet.pop();
-		subsetOpenSet.push_back(current);
+		if (!openSet.empty())
+		{
+			ISearchNode* current = openSet.top();
+			openSet.pop();
+			subsetOpenSet.push_back(current);
+
+			cout << "heuristic=" << current->getHeuristic() << ", cost=" << current->getCost() << endl;
+		}
 
 		return subsetOpenSet;
 	}
