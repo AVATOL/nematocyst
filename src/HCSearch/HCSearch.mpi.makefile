@@ -33,7 +33,7 @@ build_all_configurations: Debug Release
 # Builds the Debug configuration...
 .PHONY: Debug
 Debug: create_folders gccDebug/Demo.o gccDebug/Main.o gccDebug/MyProgramOptions.o 
-	mpic++ gccDebug/Demo.o gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch.exe
+	mpic++ gccDebug/Demo.o gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch
 
 # Compiles file Demo.cpp for the Debug configuration...
 -include gccDebug/Demo.d
@@ -56,7 +56,7 @@ gccDebug/MyProgramOptions.o: MyProgramOptions.cpp
 # Builds the Release configuration...
 .PHONY: Release
 Release: create_folders gccRelease/Demo.o gccRelease/Main.o gccRelease/MyProgramOptions.o 
-	mpic++ gccRelease/Demo.o gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch.exe
+	mpic++ gccRelease/Demo.o gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch
 
 # Compiles file Demo.cpp for the Release configuration...
 -include gccRelease/Demo.d
