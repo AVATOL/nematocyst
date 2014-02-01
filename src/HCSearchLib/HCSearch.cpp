@@ -309,6 +309,8 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
+		cout << "=== Loading Dataset ===" << endl;
+
 		// read in training data
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
 		cout << endl << "Reading from " << trainSplitFile << "..." << endl;
@@ -316,7 +318,7 @@ namespace HCSearch
 		for (vector<string>::iterator it = trainFiles.begin(); it != trainFiles.end(); ++it)
 		{
 			string filename = *it;
-			cout << "Loading " << filename << "..." << endl;
+			cout << "\tLoading " << filename << "..." << endl;
 
 			// read meta file
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
@@ -361,7 +363,7 @@ namespace HCSearch
 		for (vector<string>::iterator it = validFiles.begin(); it != validFiles.end(); ++it)
 		{
 			string filename = *it;
-			cout << "Loading " << filename << "..." << endl;
+			cout << "\tLoading " << filename << "..." << endl;
 
 			// read meta file
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
@@ -406,7 +408,7 @@ namespace HCSearch
 		for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); ++it)
 		{
 			string filename = *it;
-			cout << "Loading " << filename << "..." << endl;
+			cout << "\tLoading " << filename << "..." << endl;
 
 			// read meta file
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
