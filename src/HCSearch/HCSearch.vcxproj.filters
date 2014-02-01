@@ -21,12 +21,18 @@
     <ClCompile Include="MyProgramOptions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Demo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Main.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MyProgramOptions.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Demo.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
