@@ -613,8 +613,30 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
 	{
 		cout << "Learning the heuristic function..." << endl;
+		
+		// Setup model for learning
+		IRankModel* learningModel = NULL;//TODO
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			cout << "Heuristic learning: beginning search on " << XTrain[i]->filename << " (example " << i << ")..." << endl;
+
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.setType = HCSearch::TRAIN;
+			meta.exampleName = XTrain[i]->getFileName();
+			meta.iter = 0; //TODO
+
+			searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+		}
+		
+		// Merge and learn step
 		//TODO
-		return NULL;
+
+		return learningModel;
 	}
 
 	IRankModel* Learning::learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
@@ -622,8 +644,30 @@ namespace HCSearch
 		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
 	{
 		cout << "Learning the cost function with learned heuristic..." << endl;
+		
+		// Setup model for learning
+		IRankModel* learningModel = NULL;//TODO
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			cout << "Cost learning: beginning search on " << XTrain[i]->filename << " (example " << i << ")..." << endl;
+
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.setType = HCSearch::TRAIN;
+			meta.exampleName = XTrain[i]->getFileName();
+			meta.iter = 0; //TODO
+
+			searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+		}
+		
+		// Merge and learn step
 		//TODO
-		return NULL;
+
+		return learningModel;
 	}
 
 	IRankModel* Learning::learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
@@ -631,8 +675,30 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
 	{
 		cout << "Learning the cost function with oracle heuristic..." << endl;
+
+		// Setup model for learning
+		IRankModel* learningModel = NULL;//TODO
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			cout << "Cost with oracle H learning: beginning search on " << XTrain[i]->filename << " (example " << i << ")..." << endl;
+
+			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.setType = HCSearch::TRAIN;
+			meta.exampleName = XTrain[i]->getFileName();
+			meta.iter = 0; //TODO
+
+			searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+		}
+		
+		// Merge and learn step
 		//TODO
-		return NULL;
+
+		return learningModel;
 	}
 
 	/**************** Inference ****************/
