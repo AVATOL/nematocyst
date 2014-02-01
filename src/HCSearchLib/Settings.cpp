@@ -144,6 +144,10 @@ namespace HCSearch
 		LIBLINEAR_DIR = EXTERNAL_DIR + "liblinear" + DIR_SEP;
 		LIBSVM_DIR = EXTERNAL_DIR + "libsvm" + DIR_SEP;
 		SVMRANK_DIR = EXTERNAL_DIR + "svm_rank" + DIR_SEP;
+
+		// input directories
+
+		INPUT_SPLITS_FOLDER_NAME = "splits";
 	}
 
 	Paths::~Paths()

@@ -10,7 +10,7 @@ namespace MyProgramOptions
 
 		inputDir = "";
 		outputDir = "";
-		splitsDir = "";
+		splitsFolderName = "splits";
 
 		// time bound
 
@@ -76,7 +76,7 @@ namespace MyProgramOptions
 			{
 				if (i + 1 != argc)
 				{
-					po.splitsDir = argv[i+1];
+					po.splitsFolderName = argv[i+1];
 				}
 			}
 			else if (strcmp(argv[i], "--learn") == 0)

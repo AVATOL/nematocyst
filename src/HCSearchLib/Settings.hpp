@@ -85,6 +85,7 @@ namespace HCSearch
 		string INPUT_META_DIR;
 		string INPUT_SEGMENTS_DIR;
 		string INPUT_SPLITS_DIR;
+		string INPUT_SPLITS_FOLDER_NAME;
 
 		string INPUT_SPLITS_TRAIN_FILE;
 		string INPUT_SPLITS_VALIDATION_FILE;

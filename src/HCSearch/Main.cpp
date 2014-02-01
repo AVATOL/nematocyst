@@ -24,6 +24,7 @@ int main(int argc, char* argv[])
 	}
 
 	// configure settings
+	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsDir;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 
 	// demo or run full program
