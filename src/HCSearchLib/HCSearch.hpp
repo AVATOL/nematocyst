@@ -252,6 +252,8 @@ namespace HCSearch
 	private:
 		static void initializeHelper();
 		static void finalizeHelper();
+		static void setClasses();
+		static set<int> parseList(string str);
 
 #ifdef USE_MPI
 		/*!

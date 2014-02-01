@@ -46,6 +46,9 @@ namespace HCSearch
 		Global::settings->refresh(MyFileSystem::FileSystem::normalizeDirString(datasetPath), 
 			MyFileSystem::FileSystem::normalizeDirString(outputPath));
 
+		// set classes
+		setClasses();
+
 		// create output folders
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_TEMP_DIR);
@@ -93,6 +96,101 @@ namespace HCSearch
 
 		//Global::settings = NULL;
 		//Global::log = NULL;
+	}
+
+	void Setup::setClasses()
+	{
+		set<int> allClassesSet, backgroundClassesSet, foregroundClassesSet;
+		int backgroundLabel;
+		bool foundBackgroundLabel = false;
+		string line;
+		string filename = Global::settings->paths->INPUT_METADATA_FILE;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			while (fh.good())
+			{
+				getline(fh, line);
+				stringstream ss(line);
+				string exampletype;
+				string list;
+				getline(ss, exampletype, '=');
+				getline(ss, list, '=');
+				if (exampletype.compare("classes") == 0)
+				{
+					allClassesSet = parseList(list);
+				}
+				else if (exampletype.compare("backgroundclasses") == 0)
+				{
+					backgroundClassesSet = parseList(list);
+				}
+				else if (exampletype.compare("backgroundlabel") == 0)
+				{
+					stringstream ss(list);
+					string num;
+					getline(ss, num, ',');
+					backgroundLabel = atoi(num.c_str());
+					foundBackgroundLabel = true;
+				}
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open meta file for reading!" << endl;
+		}
+
+		// process class index and labels
+		set_difference(allClassesSet.begin(), allClassesSet.end(), 
+			backgroundClassesSet.begin(), backgroundClassesSet.end(), 
+			inserter(foregroundClassesSet, foregroundClassesSet.end()));
+
+		int classIndex = 0;
+		cout << "Classes: ";
+		for (set<int>::iterator it = foregroundClassesSet.begin(); it != foregroundClassesSet.end(); ++it)
+		{
+			int label = *it;
+			Global::settings->CLASSES.addClass(classIndex, label, false);
+			cout << label << ", ";
+			classIndex++;
+		}
+		cout << endl;
+		cout << "Background Classes: ";
+		for (set<int>::iterator it = backgroundClassesSet.begin(); it != backgroundClassesSet.end(); ++it)
+		{
+			int label = *it;
+			Global::settings->CLASSES.addClass(classIndex, label, true);
+			cout << label << ", ";
+			classIndex++;
+		}
+		if (foundBackgroundLabel)
+		{
+			Global::settings->CLASSES.setBackgroundLabel(backgroundLabel);
+		}
+		else if (backgroundClassesSet.size() == 1)
+		{
+			for (set<int>::iterator it = backgroundClassesSet.begin(); it != backgroundClassesSet.end(); ++it)
+				Global::settings->CLASSES.setBackgroundLabel(*it);
+		}
+
+		cout << endl;
+	}
+
+	set<int> Setup::parseList(string str)
+	{
+		set<int> list = set<int>();
+
+		if (!str.empty())
+		{
+			stringstream ss(str);
+			string num;
+			while (getline(ss, num, ','))
+			{
+				list.insert(atoi(num.c_str()));
+			}
+		}
+
+		return list;
 	}
 
 #ifdef USE_MPI
