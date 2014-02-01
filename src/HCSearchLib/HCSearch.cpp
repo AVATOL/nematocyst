@@ -34,7 +34,7 @@ namespace HCSearch
 
 		cout << "Process [" << Global::settings->RANK << "/" 
 			<< Global::settings->NUM_PROCESSES 
-			<< "]: MPI initialized!" << endl;
+			<< "]: MPI initialized!" << endl << endl;
 #else
 		initializeHelper();
 #endif
