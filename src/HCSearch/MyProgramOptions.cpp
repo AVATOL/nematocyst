@@ -27,7 +27,7 @@ namespace MyProgramOptions
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
 		initialFunctionMode = LOG_REG;
-		successorsMode = FLIPBIT;
+		successorsMode = STOCHASTIC;
 		lossMode = HAMMING;
 
 		stochasticCutMode = STATE;
