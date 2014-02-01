@@ -272,13 +272,26 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				cout << "LL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
 
-				HCSearch::Inference::runLLSearch(XTest[i], YTest[i], timeBound, searchSpace, searchProcedure, meta);
+				// inference
+				HCSearch::ImgLabeling YPred = HCSearch::Inference::runLLSearch(XTest[i], YTest[i], 
+					timeBound, searchSpace, searchProcedure, meta);
+				
+				// save the prediction
+				stringstream ssPredictNodes;
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 			}
 
 			break;
@@ -295,13 +308,26 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				cout << "HL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
 
-				HCSearch::Inference::runHLSearch(XTest[i], YTest[i], timeBound, searchSpace, searchProcedure, heuristicModel, meta);
+				// inference
+				HCSearch::ImgLabeling YPred = HCSearch::Inference::runHLSearch(XTest[i], YTest[i], 
+					timeBound, searchSpace, searchProcedure, heuristicModel, meta);
+				
+				// save the prediction
+				stringstream ssPredictNodes;
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 			}
 
 			delete heuristicModel;
@@ -319,13 +345,26 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				cout << "LC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
 
-				HCSearch::Inference::runLCSearch(XTest[i], YTest[i], timeBound, searchSpace, searchProcedure, costModel, meta);
+				// inference
+				HCSearch::ImgLabeling YPred = HCSearch::Inference::runLCSearch(XTest[i], YTest[i], 
+					timeBound, searchSpace, searchProcedure, costModel, meta);
+				
+				// save the prediction
+				stringstream ssPredictNodes;
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 			}
 
 			delete costModel;
@@ -344,13 +383,26 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				cout << "HC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
 
-				HCSearch::Inference::runHCSearch(XTest[i], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
+				// inference
+				HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTest[i], 
+					timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
+
+				// save the prediction
+				stringstream ssPredictNodes;
+				ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+					<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+					<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					<< "_time" << timeBound 
+						<< "_fold" << meta.iter 
+						<< "_" << meta.exampleName << ".txt";
+				HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 			}
 
 			delete heuristicModel;
