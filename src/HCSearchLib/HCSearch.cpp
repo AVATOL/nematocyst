@@ -619,6 +619,10 @@ namespace HCSearch
 
 	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
 	{
+		// if 1, then node indices in edge file are 1-based
+		// if 0, then node indices in edge file are 0-based
+		const int ONE_OFFSET = 1;
+
 		string line;
 		ifstream fh(filename.c_str());
 		if (fh.is_open())
@@ -635,7 +639,7 @@ namespace HCSearch
 					// get node1
 					string token1;
 					getline(iss, token1, ' ');
-					int node1 = atoi(token1.c_str());
+					int node1 = atoi(token1.c_str()) - ONE_OFFSET;
 
 					// get node2
 					string token2;
@@ -645,7 +649,7 @@ namespace HCSearch
 					// get 1 (or weight)
 					string token3;
 					getline(iss, token3, ' ');
-					double edgeWeight = atof(token3.c_str());
+					double edgeWeight = atof(token3.c_str()) - ONE_OFFSET;
 
 					// add to map
 					if (edges.count(node1) == 0)
