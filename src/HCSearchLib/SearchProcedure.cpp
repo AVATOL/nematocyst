@@ -305,7 +305,6 @@ namespace HCSearch
 			ISearchNode* current = openSet.top();
 			openSet.pop();
 			subsetOpenSet.push_back(current);
-			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 		}
 
 		return subsetOpenSet;
@@ -319,6 +318,8 @@ namespace HCSearch
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
 			ISearchNode* current = *it;
+			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
+
 			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
 
 			// only accept expanded element if not a duplicate state
@@ -383,8 +384,6 @@ namespace HCSearch
 			ISearchNode* current = openSet.top();
 			openSet.pop();
 			subsetOpenSet.push_back(current);
-
-			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 		}
 
 		return subsetOpenSet;
@@ -398,6 +397,8 @@ namespace HCSearch
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
 			ISearchNode* current = *it;
+			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
+
 			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
 
 			// only accept expanded element if not a duplicate state
