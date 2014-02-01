@@ -156,7 +156,7 @@ namespace HCSearch
 	{
 		this->learningMode = true;
 		this->qid = 1;
-		this->rankingFile.open(featuresFileName);
+		this->rankingFile = ofstream(featuresFileName.c_str());
 		this->rankingFileName = featuresFileName;
 	}
 
