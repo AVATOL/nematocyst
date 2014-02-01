@@ -301,9 +301,19 @@ namespace HCSearch
 		ofstream rankingFile;
 
 		/*!
+		 * Training file name
+		 */
+		string rankingFileName;
+
+		/*!
 		 * Cumulative QID for learning
 		 */
 		int qid;
+
+		/*!
+		 * True if currently used for learning
+		 */
+		bool learningMode;
 
 	public:
 		SVMRankModel();
@@ -326,6 +336,23 @@ namespace HCSearch
 		 */
 		void load(string fileName);
 
+		/*!
+		 * Initialize learning.
+		 */
+		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training examples.
+		 */
+		void addTrainingExamples(RankFeatures& better, vector< RankFeatures >& worseSet);
+
+		/*!
+		 * End learning.
+		 *
+		 * Calls SVM Rank program to train on examples and produce model.
+		 */
+		void finishTraining(string modelFileName);
+
 	private:
 		/*!
 		 * Load weights from file. 
@@ -333,6 +360,11 @@ namespace HCSearch
 		 * (weights are on the 12th line).
 		 */
 		static VectorXd parseModelFile(string fileName);
+
+		/*!
+		 * Convert vector into SVM-Rank line.
+		 */
+		static string vector2svmrank(RankFeatures features, int target, int qid);
 	};
 
 	/**************** Online Rank Model ****************/

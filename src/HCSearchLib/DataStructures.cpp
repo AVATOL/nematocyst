@@ -2,6 +2,8 @@
 #include <fstream>
 #include <iostream>
 #include "DataStructures.hpp"
+#include "Globals.hpp"
+#include "MyFileSystem.hpp"
 
 using namespace std;
 
@@ -108,7 +110,8 @@ namespace HCSearch
 
 	SVMRankModel::SVMRankModel()
 	{
-		initialized = false;
+		this->initialized = false;
+		this->learningMode = false;
 	}
 
 	SVMRankModel::SVMRankModel(string fileName)
@@ -118,7 +121,7 @@ namespace HCSearch
 	
 	double SVMRankModel::rank(RankFeatures features)
 	{
-		if (!initialized)
+		if (!this->initialized)
 		{
 			cerr << "[ERROR] svm ranker not initialized for ranking" << endl;
 			exit(1);
@@ -134,7 +137,7 @@ namespace HCSearch
 	
 	VectorXd SVMRankModel::getWeights()
 	{
-		if (!initialized)
+		if (!this->initialized)
 		{
 			cerr << "[ERROR] svm ranker not initialized for getting weights" << endl;
 			exit(1);
@@ -147,6 +150,48 @@ namespace HCSearch
 	{
 		this->weights = parseModelFile(fileName);
 		this->initialized = true;
+	}
+
+	void SVMRankModel::startTraining(string featuresFileName)
+	{
+		this->learningMode = true;
+		this->qid = 1;
+		this->rankingFile.open(featuresFileName);
+		this->rankingFileName = featuresFileName;
+	}
+
+	void SVMRankModel::addTrainingExamples(RankFeatures& better, vector< RankFeatures >& worseSet)
+	{
+		// write good example
+		this->rankingFile << vector2svmrank(better, 1, this->qid) << endl;
+
+		// write bad examples
+		for (vector< RankFeatures >::iterator it = worseSet.begin(); it != worseSet.end(); ++it)
+		{
+			RankFeatures worse = *it;
+			this->rankingFile << vector2svmrank(worse, 2, this->qid) << endl;
+		}
+
+		// increment qid
+		this->qid++;
+	}
+
+	void SVMRankModel::finishTraining(string modelFileName)
+	{
+		double C = 1.0 * (this->qid-1);
+
+		this->rankingFile.close();
+
+		// call SVM-Rank
+		stringstream ssLearn;
+		ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
+			<< this->rankingFileName << " " << modelFileName;
+		MyFileSystem::Executable::executeRetries(ssLearn.str());
+
+		this->learningMode = false;
+
+		// Load weights into model and initialize
+		load(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
 	}
 
 	VectorXd SVMRankModel::parseModelFile(string fileName)
@@ -214,6 +259,27 @@ namespace HCSearch
 		}
 
 		return weights;
+	}
+
+	string SVMRankModel::vector2svmrank(RankFeatures features, int target, int qid)
+	{
+		stringstream ss("");
+		stringstream sparse("");
+
+		VectorXd vector = features.data;
+
+		int nonZeroCounts = 0;
+		for (int i = 0; i < vector.size(); i++)
+		{
+			if (vector(i) != 0)
+			{
+				ss << i+1 << ":" << vector(i) << " ";
+				nonZeroCounts++;
+			}
+		}
+		sparse << target << " qid:" << qid << " " << ss.str();
+
+		return sparse.str();
 	}
 
 	/**************** Online Rank Model ****************/
