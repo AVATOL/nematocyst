@@ -7,6 +7,15 @@
 
 namespace HCSearch
 {
+	/**************** Save Prediction ****************/
+
+	class SavePrediction
+	{
+	public:
+		static void saveLabels(ImgLabeling& YPred, string fileName);
+		static void saveCuts(ImgLabeling& YPred, string fileName);
+	};
+
 	/*!
 	 * @defgroup SearchProcedure Search Procedure
 	 * @brief Provides an interface for setting up a search procedure.

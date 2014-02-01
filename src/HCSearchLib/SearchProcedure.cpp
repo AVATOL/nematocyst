@@ -6,6 +6,61 @@ using namespace std;
 
 namespace HCSearch
 {
+	/**************** Save Prediction ****************/
+
+	void SavePrediction::saveLabels(ImgLabeling& YPred, string fileName)
+	{
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			const int numNodes = YPred.getNumNodes();
+			fh << YPred.getLabel(0);
+			for (int node = 1; node < numNodes; node++)
+			{
+				fh << endl << YPred.getLabel(node);
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open file to write nodes!" << endl;
+		}
+	}
+
+	void SavePrediction::saveCuts(ImgLabeling& YPred, string fileName)
+	{
+		if (!YPred.stochasticCutsAvailable)
+		{
+			cerr << "[Error] no cuts available to write!" << endl;
+			return;
+		}
+
+		map< int, set<int> > edgeNeighbors = YPred.stochasticCuts;
+
+		// write to file
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			for (map< int, set<int> >::iterator it = edgeNeighbors.begin(); it != edgeNeighbors.end(); ++it)
+			{
+				int node1 = it->first;
+				set<int> neighbors = it->second;
+				for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+				{
+					int node2 = *it2;
+
+					fh << node1+1 << " " << node2+1 << " 1" << endl;
+				}
+			}
+
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open file to write edges!" << endl;
+		}
+	}
+
 	/**************** Search Procedure ****************/
 
 	ImgLabeling ISearchProcedure::llSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
@@ -68,7 +123,7 @@ namespace HCSearch
 				<< "_time" << timeBound 
 					<< "_fold" << searchMetadata.iter 
 					<< "_" << searchMetadata.exampleName << ".txt";
-			//Util::writeNodesToFile(YPred, ssPredictNodes.str().c_str());//TODO
+			SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
 			if (!YPred.stochasticCutsAvailable)
 			{
@@ -83,7 +138,7 @@ namespace HCSearch
 			<< "_time" << timeBound 
 				<< "_fold" << searchMetadata.iter 
 				<< "_" << searchMetadata.exampleName << ".txt";
-			//Util::writeEdgesToSparseFile(YPred, ssPredictEdges.str().c_str());//TODO
+			SavePrediction::saveCuts(YPred, ssPredictEdges.str());
 		}
 	}
 
