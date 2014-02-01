@@ -160,11 +160,8 @@ namespace HCSearch
 
 	LogRegInit::LogRegInit()
 	{
-	}
-
-	LogRegInit::LogRegInit(string fileName)
-	{
-		trainClassifier(fileName);
+		if (Global::settings->RANK == 0)
+			trainClassifier();
 	}
 
 	LogRegInit::~LogRegInit()
@@ -222,9 +219,10 @@ namespace HCSearch
 	}
 
 	// Train logistic regression model
-	void LogRegInit::trainClassifier(string fileName)
+	void LogRegInit::trainClassifier()
 	{
 		// train on IID classifier first for initial function
+		string fileName = Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE;
 		ifstream fh(fileName.c_str());
 		if (!fh.is_open())
 		{

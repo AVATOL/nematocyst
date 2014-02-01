@@ -213,16 +213,7 @@ namespace HCSearch
 		static const double BINARY_CONFIDENCE_THRESHOLD;
 
 	public:
-		/*!
-		 * @brief Construct without training classifier.
-		 */
 		LogRegInit();
-
-		/*!
-		 * @brief Construct and train classifier.
-		 */
-		LogRegInit(string fileName);
-		
 		~LogRegInit();
 
 		virtual ImgLabeling getInitialPrediction(ImgFeatures& X);
@@ -230,7 +221,7 @@ namespace HCSearch
 		/*!
 		 * @brief Train logistic regression model.
 		 */
-		void trainClassifier(string fileName);
+		void trainClassifier();
 
 	protected:
 		static void imgfeatures2liblinear(ImgFeatures& X, string filename);
