@@ -9,10 +9,20 @@ namespace HCSearch
 {
 	/**************** Save Prediction ****************/
 
+	/*!
+	 * @brief Convenience functions to save predictions.
+	 */
 	class SavePrediction
 	{
 	public:
+		/*!
+		 * Save the labels of the labeling.
+		 */
 		static void saveLabels(ImgLabeling& YPred, string fileName);
+
+		/*!
+		 * Save the stochastic cuts of the labeling.
+		 */
 		static void saveCuts(ImgLabeling& YPred, string fileName);
 	};
 
