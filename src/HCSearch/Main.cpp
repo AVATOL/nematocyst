@@ -365,11 +365,13 @@ void printSchedule(MyProgramOptions::ProgramOptions po)
 {
 	cout << "=== Program Schedule ===" << endl;
 
+	int cnt = 1;
 	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
 		HCSearch::SearchType mode = *it;
-		cout << HCSearch::SearchTypeStrings[mode] << endl;
+		cout << cnt << ". " << HCSearch::SearchTypeStrings[mode] << endl;
+		cnt++;
 	}
 
 	cout << endl;
