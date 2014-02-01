@@ -168,7 +168,7 @@ namespace HCSearch
 		/*!
 		 * @brief Empty priority queue and delete all elements.
 		 */
-		void emptyAndDeleteQueue(SearchNodePQ& queue);
+		void deleteQueueElements(SearchNodePQ& queue);
 	};
 
 	/**************** Beam Search Procedure ****************/

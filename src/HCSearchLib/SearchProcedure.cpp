@@ -237,7 +237,7 @@ namespace HCSearch
 		ImgLabeling prediction = lowestCost->getY();
 
 		// clean up cost set
-		emptyAndDeleteQueue(costSet);
+		deleteQueueElements(costSet);
 
 		return prediction;
 	}
@@ -268,7 +268,7 @@ namespace HCSearch
 		return isDuplicate;
 	}
 
-	void IBasicSearchProcedure::emptyAndDeleteQueue(SearchNodePQ& queue)
+	void IBasicSearchProcedure::deleteQueueElements(SearchNodePQ& queue)
 	{
 		while (!queue.empty())
 		{
