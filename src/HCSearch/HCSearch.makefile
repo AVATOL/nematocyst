@@ -32,8 +32,14 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/Main.o gccDebug/MyProgramOptions.o 
-	g++ gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch
+Debug: create_folders gccDebug/Demo.o gccDebug/Main.o gccDebug/MyProgramOptions.o 
+	g++ gccDebug/Demo.o gccDebug/Main.o gccDebug/MyProgramOptions.o  $(Debug_Library_Path) $(Debug_Libraries) -Wl,-rpath,./ -o ../gccDebug/HCSearch.exe
+
+# Compiles file Demo.cpp for the Debug configuration...
+-include gccDebug/Demo.d
+gccDebug/Demo.o: Demo.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c Demo.cpp $(Debug_Include_Path) -o gccDebug/Demo.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM Demo.cpp $(Debug_Include_Path) > gccDebug/Demo.d
 
 # Compiles file Main.cpp for the Debug configuration...
 -include gccDebug/Main.d
@@ -49,8 +55,14 @@ gccDebug/MyProgramOptions.o: MyProgramOptions.cpp
 
 # Builds the Release configuration...
 .PHONY: Release
-Release: create_folders gccRelease/Main.o gccRelease/MyProgramOptions.o 
-	g++ gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch
+Release: create_folders gccRelease/Demo.o gccRelease/Main.o gccRelease/MyProgramOptions.o 
+	g++ gccRelease/Demo.o gccRelease/Main.o gccRelease/MyProgramOptions.o  $(Release_Library_Path) $(Release_Libraries) -Wl,-rpath,./ -o ../gccRelease/HCSearch.exe
+
+# Compiles file Demo.cpp for the Release configuration...
+-include gccRelease/Demo.d
+gccRelease/Demo.o: Demo.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c Demo.cpp $(Release_Include_Path) -o gccRelease/Demo.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM Demo.cpp $(Release_Include_Path) > gccRelease/Demo.d
 
 # Compiles file Main.cpp for the Release configuration...
 -include gccRelease/Main.d
