@@ -628,6 +628,7 @@ namespace HCSearch
 			cout << "Heuristic learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = false;
 			meta.setType = HCSearch::TRAIN;
 			meta.exampleName = XTrain[i]->getFileName();
 			meta.iter = 0; //TODO
@@ -661,6 +662,7 @@ namespace HCSearch
 			cout << "Cost learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = false;
 			meta.setType = HCSearch::TRAIN;
 			meta.exampleName = XTrain[i]->getFileName();
 			meta.iter = 0; //TODO
@@ -694,6 +696,7 @@ namespace HCSearch
 			cout << "Cost with oracle H learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 			HCSearch::ISearchProcedure::SearchMetadata meta;
+			meta.saveAnytimePredictions = false;
 			meta.setType = HCSearch::TRAIN;
 			meta.exampleName = XTrain[i]->getFileName();
 			meta.iter = 0; //TODO

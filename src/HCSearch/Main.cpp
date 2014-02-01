@@ -112,6 +112,7 @@ void demo(MyProgramOptions::ProgramOptions po)
 
 	// set up metadata for first test example
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
+	searchMetadata.saveAnytimePredictions = false;
 	searchMetadata.exampleName; //TODO
 	searchMetadata.iter; //TODO
 	searchMetadata.setType = HCSearch::TEST;
@@ -272,6 +273,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				cout << "LL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
@@ -294,6 +296,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				cout << "HL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
@@ -317,6 +320,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				cout << "LC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
@@ -341,6 +345,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				cout << "HC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = true;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO

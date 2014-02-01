@@ -25,6 +25,9 @@ namespace HCSearch
 		// Meta data for an instance of search
 		struct SearchMetadata
 		{
+			// save anytime results during search if true
+			bool saveAnytimePredictions;
+
 			// train, validation or testing
 			DatasetType setType;
 
