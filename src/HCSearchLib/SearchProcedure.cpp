@@ -233,6 +233,9 @@ namespace HCSearch
 		ISearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
 
+		// clean up cost set
+		emptyAndDeleteQueue(costSet);
+
 		return prediction;
 	}
 
@@ -260,6 +263,16 @@ namespace HCSearch
 		pq = temp;
 
 		return isDuplicate;
+	}
+
+	void IBasicSearchProcedure::emptyAndDeleteQueue(SearchNodePQ& queue)
+	{
+		while (!queue.empty())
+		{
+			ISearchNode* state = queue.top();
+			queue.pop();
+			delete state;
+		}
 	}
 
 	/**************** Breadth-First Beam Search Procedure ****************/

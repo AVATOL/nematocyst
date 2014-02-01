@@ -164,6 +164,11 @@ namespace HCSearch
 		 * @brief Checks if the state is duplicate among the states in the priority queue.
 		 */
 		bool isDuplicate(ISearchNode* state, SearchNodePQ& pq);
+
+		/*!
+		 * @brief Empty priority queue and delete all elements.
+		 */
+		void emptyAndDeleteQueue(SearchNodePQ& queue);
 	};
 
 	/**************** Beam Search Procedure ****************/
