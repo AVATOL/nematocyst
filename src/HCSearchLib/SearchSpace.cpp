@@ -146,7 +146,7 @@ namespace HCSearch
 			VectorXd expnegdiffabs2 = 1 - negdiffabs2.array().exp();
 
 			// map node label to indexing value in phi vector
-			classIndex = Global::settings->CLASSES.getClassLabel(nodeLabel1);
+			classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
 
 			// assignment
 			return expnegdiffabs2;
