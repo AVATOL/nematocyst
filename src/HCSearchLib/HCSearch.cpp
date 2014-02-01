@@ -615,7 +615,9 @@ namespace HCSearch
 		cout << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = NULL;//TODO
+		IRankModel* learningModel = new SVMRankModel();
+		SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+		svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
 
 		// Learn on each training example
 		int start, end;
@@ -634,7 +636,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		//TODO
+		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
 
 		return learningModel;
 	}
@@ -646,7 +648,9 @@ namespace HCSearch
 		cout << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = NULL;//TODO
+		IRankModel* learningModel = new SVMRankModel();
+		SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+		svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 
 		// Learn on each training example
 		int start, end;
@@ -665,7 +669,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		//TODO
+		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
 
 		return learningModel;
 	}
@@ -677,7 +681,9 @@ namespace HCSearch
 		cout << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
-		IRankModel* learningModel = NULL;//TODO
+		IRankModel* learningModel = new SVMRankModel();
+		SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+		svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
 
 		// Learn on each training example
 		int start, end;
@@ -696,7 +702,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		//TODO
+		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_L_MODEL_FILE);
 
 		return learningModel;
 	}
