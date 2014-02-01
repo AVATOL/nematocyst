@@ -191,6 +191,8 @@ namespace HCSearch
 		int timeStep = 0;
 		while (!openSet.empty() && timeStep < timeBound)
 		{
+			cout << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep << " out of " << timeBound << "..." << endl;
+
 			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
 
