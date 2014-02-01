@@ -650,6 +650,7 @@ namespace HCSearch
 		this->searchSpace = parentCast->searchSpace;
 
 		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+		this->costModel = parentCast->costModel;
 		this->YTruth = parentCast->YTruth;
 		this->cost = this->costModel->rank(this->costFeatures);
 		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
