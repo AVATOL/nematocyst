@@ -175,7 +175,7 @@ namespace HCSearch
 
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "heuristic_model.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_H_model.txt";
-		this->paths->OUTPUT_COST_L_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_oracleH_model.txt";
+		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "cost_oracleH_model.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)

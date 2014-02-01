@@ -702,7 +702,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_L_MODEL_FILE);
+		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
 
 		return learningModel;
 	}
