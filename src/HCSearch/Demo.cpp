@@ -45,15 +45,19 @@ void demo(int timeBound)
 	heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 	costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
 
-	// set up metadata for first test example
-	HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
-	searchMetadata.saveAnytimePredictions = false;
-	searchMetadata.exampleName = XTest[0]->filename;
-	searchMetadata.iter = 0;
-	searchMetadata.setType = HCSearch::TEST;
+	// run HC search on all test examples
+	for (int i = 0; i < numTestExamples; i++)
+	{
+		// set up metadata
+		HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
+		searchMetadata.saveAnytimePredictions = false;
+		searchMetadata.exampleName = XTest[i]->filename;
+		searchMetadata.iter = 0;
+		searchMetadata.setType = HCSearch::TEST;
 
-	// infer HC
-	HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
+		// infer HC
+		HCSearch::Inference::runHCSearch(XTest[i], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
+	}
 
 	// clean up
 	delete searchSpace;
