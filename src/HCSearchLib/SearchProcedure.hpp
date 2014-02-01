@@ -106,7 +106,7 @@ namespace HCSearch
 			IRankModel* learningModel, SearchMetadata searchMetadata);
 
 	protected:
-		void saveAnyTimePrediction(ImgLabeling& YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
+		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
 	};
 
 	/*!

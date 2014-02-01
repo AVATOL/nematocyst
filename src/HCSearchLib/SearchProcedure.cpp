@@ -57,7 +57,7 @@ namespace HCSearch
 			searchSpace, NULL, NULL, learningModel, searchMetadata);
 	}
 
-	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling& YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
+	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
 	{
 		if (searchMetadata.saveAnytimePredictions)
 		{
@@ -70,17 +70,20 @@ namespace HCSearch
 					<< "_" << searchMetadata.exampleName << ".txt";
 			//Util::writeNodesToFile(YPred, ssPredictNodes.str().c_str());//TODO
 
-			if (YPred.stochasticCutsAvailable)
+			if (!YPred.stochasticCutsAvailable)
 			{
-				stringstream ssPredictEdges;
-				ssPredictEdges << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
-				<< "_" << SearchTypeStrings[searchType] 
-				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
-				<< "_time" << timeBound 
-					<< "_fold" << searchMetadata.iter 
-					<< "_" << searchMetadata.exampleName << ".txt";
-				//Util::writeEdgesToSparseFile(YPred, ssPredictEdges.str().c_str());//TODO
+				YPred.stochasticCuts = YPred.graph.adjList;
+				YPred.stochasticCutsAvailable = true;
 			}
+
+			stringstream ssPredictEdges;
+			ssPredictEdges << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
+			<< "_" << SearchTypeStrings[searchType] 
+			<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+			<< "_time" << timeBound 
+				<< "_fold" << searchMetadata.iter 
+				<< "_" << searchMetadata.exampleName << ".txt";
+			//Util::writeEdgesToSparseFile(YPred, ssPredictEdges.str().c_str());//TODO
 		}
 	}
 
@@ -134,9 +137,7 @@ namespace HCSearch
 		while (!openSet.empty() && timeStep < timeBound)
 		{
 			// save best if anytime prediction enabled
-
-			ImgLabeling currentBestY = costSet.top()->getY();
-			saveAnyTimePrediction(currentBestY, timeBound, searchMetadata, searchType);
+			saveAnyTimePrediction(costSet.top()->getY(), timeBound, searchMetadata, searchType);
 
 			// *** pick some subset of elements from the open set *** 
 
