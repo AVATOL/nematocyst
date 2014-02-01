@@ -514,7 +514,7 @@ namespace HCSearch
 			set<int> neighbors = it->second;
 		
 			// loop over neighbors
-			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it)
+			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
 			{
 				int node2 = *it2;
 
