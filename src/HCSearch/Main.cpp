@@ -210,7 +210,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = true;
+				meta.saveAnytimePredictions = po.saveAnytimePredictions;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
@@ -248,7 +248,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = true;
+				meta.saveAnytimePredictions = po.saveAnytimePredictions;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
@@ -287,7 +287,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = true;
+				meta.saveAnytimePredictions = po.saveAnytimePredictions;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO
@@ -327,7 +327,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = true;
+				meta.saveAnytimePredictions = po.saveAnytimePredictions;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
 				meta.iter = 0; //TODO

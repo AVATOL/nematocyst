@@ -269,7 +269,6 @@ namespace HCSearch
 
 		USE_ONLINE_LEARNING = true;
 		ONLINE_LEARNING_NUM_ITERATIONS = 1;
-		SAVE_ANYTIME = true;
 		OFFLINE_SAVE_FEATURES = false;
 		USE_DAGGER = false;
 

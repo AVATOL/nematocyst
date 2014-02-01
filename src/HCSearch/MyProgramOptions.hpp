@@ -52,6 +52,8 @@ namespace MyProgramOptions
 		int beamSize;
 		double cutParam;
 
+		bool saveAnytimePredictions;
+
 	public:
 		ProgramOptions();
 

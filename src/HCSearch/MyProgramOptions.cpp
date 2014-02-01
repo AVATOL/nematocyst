@@ -34,6 +34,8 @@ namespace MyProgramOptions
 		stochasticCutMode = STATE;
 		beamSize = 1;
 		cutParam = 1.0;
+
+		saveAnytimePredictions = true;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -174,6 +176,15 @@ namespace MyProgramOptions
 					po.cutParam = atof(argv[i+1]);
 				}
 			}
+			else if (strcmp(argv[i], "--anytime") == 0)
+			{
+				po.saveAnytimePredictions = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.saveAnytimePredictions = false;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -191,7 +202,7 @@ namespace MyProgramOptions
 		cerr << "Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND "
 			<< "[--learn [H|C|COH]]* [--infer [HC|HL|LC|LL]]* ... [--option=value]" << endl;
 
-		cerr << "Allowed options:" << endl;
+		cerr << "Main options:" << endl;
 		cerr << "\t--help\t\t" << ": produce help message" << endl;
 		cerr << "\t--demo\t\t" << ": run the demo program (ignores --learn and --infer)" << endl;
 		cerr << "\t--learn arg\t" << ": learning" << endl;
@@ -205,6 +216,10 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
 		cerr << "\t\t\t\t(none): short-hand for HC, HL, LC, LL" << endl;
+		cerr << endl;
+
+		cerr << "Advanced options:" << endl;
+		cerr << "\t--anytime arg\t" << ": turn off saving anytime predictions if false" << endl;
 		cerr << endl;
 
 		cerr << "Notes:" << endl;
