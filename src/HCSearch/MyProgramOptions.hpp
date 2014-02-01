@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <string>
+#include "DataStructures.hpp"
 
 using namespace std;
 
@@ -13,9 +14,6 @@ namespace MyProgramOptions
 	{
 	public:
 		// constants
-
-		enum Modes { LEARN_H, LEARN_C, LEARN_C_ORACLE_H, 
-			INFER_HC, INFER_HL, INFER_LC, INFER_LL };
 
 		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
 		enum FeaturesMode { STANDARD };
@@ -38,7 +36,7 @@ namespace MyProgramOptions
 
 		bool printUsageMode;
 		bool demoMode;
-		vector< Modes > schedule;
+		vector< HCSearch::SearchType > schedule;
 
 		// options
 

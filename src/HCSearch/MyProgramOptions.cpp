@@ -19,7 +19,7 @@ namespace MyProgramOptions
 
 		printUsageMode = false;
 		demoMode = false;
-		schedule = vector< Modes >();
+		schedule = vector< HCSearch::SearchType >();
 
 		// options
 
@@ -76,23 +76,23 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					if (strcmp(argv[i+1], "H") == 0)
-						po.schedule.push_back(LEARN_H);
+						po.schedule.push_back(HCSearch::LEARN_H);
 					else if (strcmp(argv[i+1], "C") == 0)
-						po.schedule.push_back(LEARN_C);
+						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0)
-						po.schedule.push_back(LEARN_C_ORACLE_H);
+						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 					else
 					{
-						po.schedule.push_back(LEARN_H);
-						po.schedule.push_back(LEARN_C);
-						po.schedule.push_back(LEARN_C_ORACLE_H);
+						po.schedule.push_back(HCSearch::LEARN_H);
+						po.schedule.push_back(HCSearch::LEARN_C);
+						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 					}
 				}
 				else
 				{
-					po.schedule.push_back(LEARN_H);
-					po.schedule.push_back(LEARN_C);
-					po.schedule.push_back(LEARN_C_ORACLE_H);
+					po.schedule.push_back(HCSearch::LEARN_H);
+					po.schedule.push_back(HCSearch::LEARN_C);
+					po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 				}
 			}
 			else if (strcmp(argv[i], "--infer") == 0)
@@ -100,27 +100,27 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					if (strcmp(argv[i+1], "HC") == 0)
-						po.schedule.push_back(INFER_HC);
+						po.schedule.push_back(HCSearch::HC);
 					else if (strcmp(argv[i+1], "HL") == 0)
-						po.schedule.push_back(INFER_HL);
+						po.schedule.push_back(HCSearch::HL);
 					else if (strcmp(argv[i+1], "LC") == 0)
-						po.schedule.push_back(INFER_LC);
+						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0)
-						po.schedule.push_back(INFER_LL);
+						po.schedule.push_back(HCSearch::LL);
 					else
 					{
-						po.schedule.push_back(INFER_HC);
-						po.schedule.push_back(INFER_HL);
-						po.schedule.push_back(INFER_LC);
-						po.schedule.push_back(INFER_LL);
+						po.schedule.push_back(HCSearch::HC);
+						po.schedule.push_back(HCSearch::HL);
+						po.schedule.push_back(HCSearch::LC);
+						po.schedule.push_back(HCSearch::LL);
 					}
 				}
 				else
 				{
-					po.schedule.push_back(INFER_HC);
-					po.schedule.push_back(INFER_HL);
-					po.schedule.push_back(INFER_LC);
-					po.schedule.push_back(INFER_LL);
+					po.schedule.push_back(HCSearch::HC);
+					po.schedule.push_back(HCSearch::HL);
+					po.schedule.push_back(HCSearch::LC);
+					po.schedule.push_back(HCSearch::LL);
 				}
 			}
 			else if (strcmp(argv[i], "--search") == 0)

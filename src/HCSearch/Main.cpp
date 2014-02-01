@@ -148,14 +148,13 @@ void run(MyProgramOptions::ProgramOptions po)
 	printSchedule(po);
 
 	// run the appropriate mode
-	typedef MyProgramOptions::ProgramOptions ProgramOptions_t;
-	for (vector< ProgramOptions_t::Modes >::iterator it = po.schedule.begin();
+	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
-		ProgramOptions_t::Modes mode = *it;
+		HCSearch::SearchType mode = *it;
 		switch (mode)
 		{
-		case ProgramOptions_t::LEARN_H:
+		case HCSearch::LEARN_H:
 		{
 			cout << "=== Learning H ===" << endl;
 
@@ -168,7 +167,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete heuristicModel;
 			break;
 		}
-		case ProgramOptions_t::LEARN_C:
+		case HCSearch::LEARN_C:
 		{
 			cout << "=== Learning C with Learned H ===" << endl;
 
@@ -183,7 +182,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costModel;
 			break;
 		}
-		case ProgramOptions_t::LEARN_C_ORACLE_H:
+		case HCSearch::LEARN_C_ORACLE_H:
 		{
 			cout << "=== Learning C with Oracle H ===" << endl;
 
@@ -196,7 +195,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costOracleHModel;
 			break;
 		}
-		case ProgramOptions_t::INFER_LL:
+		case HCSearch::LL:
 		{
 			cout << "=== Inference LL ===" << endl;
 
@@ -232,7 +231,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			break;
 		}
-		case ProgramOptions_t::INFER_HL:
+		case HCSearch::HL:
 		{
 			cout << "=== Inference HL ===" << endl;
 
@@ -271,7 +270,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete heuristicModel;
 			break;
 		}
-		case ProgramOptions_t::INFER_LC:
+		case HCSearch::LC:
 		{
 			cout << "=== Inference LC ===" << endl;
 
@@ -310,7 +309,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			delete costModel;
 			break;
 		}
-		case ProgramOptions_t::INFER_HC:
+		case HCSearch::HC:
 		{
 			cout << "=== Inference HC ===" << endl;
 
@@ -366,11 +365,10 @@ void printSchedule(MyProgramOptions::ProgramOptions po)
 {
 	cout << "=== Program Schedule ===" << endl;
 
-	typedef MyProgramOptions::ProgramOptions ProgramOptions_t;
-	for (vector< ProgramOptions_t::Modes >::iterator it = po.schedule.begin();
+	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
-		ProgramOptions_t::Modes mode = *it;
+		HCSearch::SearchType mode = *it;
 		cout << HCSearch::SearchTypeStrings[mode] << endl;
 	}
 
