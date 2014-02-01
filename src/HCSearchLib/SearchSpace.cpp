@@ -212,7 +212,7 @@ namespace HCSearch
 				double probEstimate = Y.confidences(node, Global::settings->CLASSES.getClassIndex(label));
 				if (probEstimate < BINARY_CONFIDENCE_THRESHOLD)
 				{
-					Y.graph.nodesData(node, 1) = Global::settings->CLASSES.getBackgroundLabel();
+					Y.graph.nodesData(node) = Global::settings->CLASSES.getBackgroundLabel();
 				}
 			}
 		}
