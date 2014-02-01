@@ -144,6 +144,9 @@ void run(MyProgramOptions::ProgramOptions po)
 	// load search procedure
 	HCSearch::ISearchProcedure* searchProcedure = setupSearchProcedure(po);
 
+	// print schedule
+	printSchedule(po);
+
 	// run the appropriate mode
 	typedef MyProgramOptions::ProgramOptions ProgramOptions_t;
 	for (vector< ProgramOptions_t::Modes >::iterator it = po.schedule.begin();
@@ -357,4 +360,19 @@ void run(MyProgramOptions::ProgramOptions po)
 	delete searchSpace;
 	delete searchProcedure;
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+}
+
+void printSchedule(MyProgramOptions::ProgramOptions po)
+{
+	cout << "=== Program Schedule ===" << endl;
+
+	typedef MyProgramOptions::ProgramOptions ProgramOptions_t;
+	for (vector< ProgramOptions_t::Modes >::iterator it = po.schedule.begin();
+		it != po.schedule.end(); ++it)
+	{
+		ProgramOptions_t::Modes mode = *it;
+		cout << HCSearch::SearchTypeStrings[mode] << endl;
+	}
+
+	cout << endl;
 }
