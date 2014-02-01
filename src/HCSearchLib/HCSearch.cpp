@@ -166,11 +166,16 @@ namespace HCSearch
 		if (foundBackgroundLabel)
 		{
 			Global::settings->CLASSES.setBackgroundLabel(backgroundLabel);
+			cout << "Default Background Label: " << backgroundLabel << endl;
 		}
 		else if (backgroundClassesSet.size() == 1)
 		{
 			for (set<int>::iterator it = backgroundClassesSet.begin(); it != backgroundClassesSet.end(); ++it)
-				Global::settings->CLASSES.setBackgroundLabel(*it);
+			{
+				int label = *it;
+				Global::settings->CLASSES.setBackgroundLabel(label);
+				cout << "Default Background Label: " << *label << endl;
+			}
 		}
 
 		cout << endl;
