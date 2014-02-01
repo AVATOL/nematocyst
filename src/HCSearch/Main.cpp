@@ -229,6 +229,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		{
 		case ProgramOptions_t::LEARN_H:
 		{
+			cout << "=== Learning H ===" << endl;
+
 			// learn heuristic, save heuristic model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			
@@ -240,6 +242,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case ProgramOptions_t::LEARN_C:
 		{
+			cout << "=== Learning C with Learned H ===" << endl;
+
 			// load heuristic, learn cost, save cost model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
@@ -253,6 +257,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case ProgramOptions_t::LEARN_C_ORACLE_H:
 		{
+			cout << "=== Learning C with Oracle H ===" << endl;
+
 			// learn cost, save cost model
 			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
 			
@@ -264,13 +270,15 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case ProgramOptions_t::INFER_LL:
 		{
+			cout << "=== Inference LL ===" << endl;
+
 			// run LL search on test examples
 			int start, end;
 			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				cout << "LL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+				cout << end << "LL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -298,6 +306,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case ProgramOptions_t::INFER_HL:
 		{
+			cout << "=== Inference HL ===" << endl;
+
 			// load heuristic, run HL search on test examples
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 
@@ -306,7 +316,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				cout << "HL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+				cout << end << "HL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -335,6 +345,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case ProgramOptions_t::INFER_LC:
 		{
+			cout << "=== Inference LC ===" << endl;
+
 			// load cost oracle H, run LC search on test examples
 			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
 
@@ -343,7 +355,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				cout << "LC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+				cout << end << "LC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -372,6 +384,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case ProgramOptions_t::INFER_HC:
 		{
+			cout << "=== Inference HC ===" << endl;
+
 			// load heuristic and cost, run HC search on test examples
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
 			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
@@ -381,7 +395,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
-				cout << "HC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+				cout << end << "HC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				// setup meta
 				HCSearch::ISearchProcedure::SearchMetadata meta;
