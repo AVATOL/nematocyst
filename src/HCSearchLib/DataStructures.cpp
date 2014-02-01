@@ -156,8 +156,7 @@ namespace HCSearch
 	{
 		this->learningMode = true;
 		this->qid = 1;
-		this->rankingFile = new ofstream();
-		this->rankingFile->open(featuresFileName);
+		this->rankingFile = new ofstream(featuresFileName.c_str());
 		this->rankingFileName = featuresFileName;
 	}
 
@@ -182,6 +181,7 @@ namespace HCSearch
 		double C = 1.0 * (this->qid-1);
 
 		this->rankingFile->close();
+		delete this->rankingFile;
 
 		// call SVM-Rank
 		stringstream ssLearn;
