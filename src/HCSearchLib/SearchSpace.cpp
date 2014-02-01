@@ -281,7 +281,7 @@ namespace HCSearch
 		const int numClasses = Global::settings->CLASSES.numClasses();
 		const int numNodes = Y.getNumNodes();
 
-		vector<int> labelOrderFound = vector<int>();
+		vector<int> labelOrderFound;
 
 		int lineIndex = 0;
 		string line;
@@ -352,7 +352,7 @@ namespace HCSearch
 						if (columnIndex == 0)
 						{
 							int nodeIndex = lineIndex-1;
-							Y.graph.nodesData(nodeIndex-1, 1) = atoi(token.c_str());
+							Y.graph.nodesData(nodeIndex-1) = atoi(token.c_str());
 						}
 						else if (Y.confidencesAvailable)
 						{
