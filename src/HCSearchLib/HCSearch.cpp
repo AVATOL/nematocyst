@@ -145,8 +145,9 @@ namespace HCSearch
 			backgroundClassesSet.begin(), backgroundClassesSet.end(), 
 			inserter(foregroundClassesSet, foregroundClassesSet.end()));
 
+		cout << "=== Class Statistics ===" << endl;
+		cout << "\tClasses: ";
 		int classIndex = 0;
-		cout << "Classes: ";
 		for (set<int>::iterator it = foregroundClassesSet.begin(); it != foregroundClassesSet.end(); ++it)
 		{
 			int label = *it;
@@ -155,7 +156,7 @@ namespace HCSearch
 			classIndex++;
 		}
 		cout << endl;
-		cout << "Background Classes: ";
+		cout << "\tBackground Classes: ";
 		for (set<int>::iterator it = backgroundClassesSet.begin(); it != backgroundClassesSet.end(); ++it)
 		{
 			int label = *it;
@@ -167,7 +168,7 @@ namespace HCSearch
 		if (foundBackgroundLabel)
 		{
 			Global::settings->CLASSES.setBackgroundLabel(backgroundLabel);
-			cout << "Default Background Label: " << backgroundLabel << endl;
+			cout << "\tMain Background Label: " << backgroundLabel << endl;
 		}
 		else if (backgroundClassesSet.size() == 1)
 		{
@@ -175,7 +176,7 @@ namespace HCSearch
 			{
 				int label = *it;
 				Global::settings->CLASSES.setBackgroundLabel(label);
-				cout << "Default Background Label: " << label << endl;
+				cout << "\tMain Background Class: " << label << endl;
 			}
 		}
 		cout << endl;
