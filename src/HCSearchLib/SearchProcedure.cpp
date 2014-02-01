@@ -192,7 +192,7 @@ namespace HCSearch
 		while (!openSet.empty() && timeStep < timeBound)
 		{
 			// save best if anytime prediction enabled
-			saveAnyTimePrediction(costSet.top()->getY(), timeBound, searchMetadata, searchType);
+			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
 
 			// *** pick some subset of elements from the open set *** 
 
