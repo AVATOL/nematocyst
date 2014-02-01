@@ -156,21 +156,20 @@ namespace HCSearch
 	{
 		this->learningMode = true;
 		this->qid = 1;
-		this->rankingFile = new ofstream();
-		this->rankingFile->open(featuresFileName);
+		this->rankingFile.open(featuresFileName);
 		this->rankingFileName = featuresFileName;
 	}
 
 	void SVMRankModel::addTrainingExamples(RankFeatures& better, vector< RankFeatures >& worseSet)
 	{
 		// write good example
-		(*this->rankingFile) << vector2svmrank(better, 1, this->qid) << endl;
+		this->rankingFile << vector2svmrank(better, 1, this->qid) << endl;
 
 		// write bad examples
 		for (vector< RankFeatures >::iterator it = worseSet.begin(); it != worseSet.end(); ++it)
 		{
 			RankFeatures worse = *it;
-			(*this->rankingFile) << vector2svmrank(worse, 2, this->qid) << endl;
+			this->rankingFile << vector2svmrank(worse, 2, this->qid) << endl;
 		}
 
 		// increment qid
@@ -181,7 +180,7 @@ namespace HCSearch
 	{
 		double C = 1.0 * (this->qid-1);
 
-		this->rankingFile->close();
+		this->rankingFile.close();
 
 		// call SVM-Rank
 		stringstream ssLearn;
