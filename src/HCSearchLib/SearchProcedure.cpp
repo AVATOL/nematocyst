@@ -196,21 +196,21 @@ namespace HCSearch
 			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
 
-			// *** pick some subset of elements from the open set *** 
+			/***** pick some subset of elements from the open set *****/
 
 			vector< ISearchNode* > subsetOpenSet = selectSubsetOpenSet(openSet);
 
-			// *** expand these elements *** 
+			/***** expand these elements *****/
 
 			SearchNodePQ candidateSet = expandElements(subsetOpenSet, openSet, costSet);
 
-			// *** choose successors and put them into the open set *** 
-			// *** put these expanded elements into the cost set *** 
+			/***** choose successors and put them into the open set *****/
+			/***** put these expanded elements into the cost set *****/
 
 			vector< ISearchNode* > successorSet = chooseSuccessors(candidateSet, openSet, costSet);
 
-			// *** add remaining "worst states" to cost set *** 
-			// *** and use for learning if applicable *** 
+			/***** add remaining "worst states" to cost set *****/
+			/***** use remaining for learning if applicable *****/
 
 			while (!candidateSet.empty())
 			{
@@ -220,7 +220,7 @@ namespace HCSearch
 				costSet.push(node);
 			}
 
-			// *** increment time step *** 
+			/***** increment time step *****/
 			timeStep++;
 		}
 
