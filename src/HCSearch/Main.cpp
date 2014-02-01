@@ -43,7 +43,11 @@ HCSearch::SearchSpace* setupSearchSpace()
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
 	// use IID logistic regression as initial state prediction function
-	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
+	HCSearch::IInitialPredictionFunction* logRegInitPredFunc;
+	if (HCSearch::Global::settings->RANK == 0)
+		logRegInitPredFunc = new HCSearch::LogRegInit(HCSearch::Global::settings->paths->INPUT_INITFUNC_TRAINING_FILE);
+	else
+		logRegInitPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
 	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
@@ -145,7 +149,11 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
 	// use IID logistic regression as initial state prediction function
-	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
+	HCSearch::IInitialPredictionFunction* initPredFunc;
+	if (HCSearch::Global::settings->RANK == 0)
+		initPredFunc = new HCSearch::LogRegInit(HCSearch::Global::settings->paths->INPUT_INITFUNC_TRAINING_FILE);
+	else
+		initPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
 	HCSearch::ISuccessorFunction* successor = NULL;
