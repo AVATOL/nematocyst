@@ -235,6 +235,7 @@ namespace HCSearch
 		// search done, so get lowest cost node
 		ISearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
+		cout << "Finished search. Cost=" << lowestCost->getCost() << endl;
 
 		// clean up cost set
 		deleteQueueElements(costSet);
