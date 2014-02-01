@@ -298,7 +298,7 @@ namespace HCSearch
 		/*!
 		 * Output stream to training file for learning
 		 */
-		ofstream rankingFile;
+		ofstream* rankingFile;
 
 		/*!
 		 * Training file name
