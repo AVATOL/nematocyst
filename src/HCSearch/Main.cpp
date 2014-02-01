@@ -109,6 +109,8 @@ HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOption
 		cerr << "[Error] undefined search procedure mode." << endl;
 	}
 
+	cout << endl;
+
 	return searchProcedure;
 }
 

@@ -245,7 +245,6 @@ namespace HCSearch
 			cout << "Initial function model found. Using it..." << endl;
 			fh.close();
 		}
-		cout << endl;
 	}
 
 	void LogRegInit::imgfeatures2liblinear(ImgFeatures& X, string filename)
