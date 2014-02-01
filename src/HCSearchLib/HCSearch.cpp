@@ -339,6 +339,7 @@ namespace HCSearch
 			XTest.push_back(X);
 			YTest.push_back(Y);
 		}
+		cout << endl;
 	}
 
 	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
