@@ -269,6 +269,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
+				cout << "LL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
@@ -289,6 +291,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
+				cout << "HL Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
@@ -310,6 +314,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
+				cout << "LC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();
@@ -332,6 +338,8 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::Global::settings->NUM_PROCESSES, start, end);
 			for (int i = start; i < end; i++)
 			{
+				cout << "HC Search: beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.setType = HCSearch::TEST;
 				meta.exampleName = XTest[i]->getFileName();

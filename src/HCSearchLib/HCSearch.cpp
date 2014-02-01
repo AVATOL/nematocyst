@@ -623,7 +623,7 @@ namespace HCSearch
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			cout << "Heuristic learning: beginning search on " << XTrain[i]->filename << " (example " << i << ")..." << endl;
+			cout << "Heuristic learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 			HCSearch::ISearchProcedure::SearchMetadata meta;
 			meta.setType = HCSearch::TRAIN;
@@ -654,7 +654,7 @@ namespace HCSearch
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			cout << "Cost learning: beginning search on " << XTrain[i]->filename << " (example " << i << ")..." << endl;
+			cout << "Cost learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 			HCSearch::ISearchProcedure::SearchMetadata meta;
 			meta.setType = HCSearch::TRAIN;
@@ -685,7 +685,7 @@ namespace HCSearch
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			cout << "Cost with oracle H learning: beginning search on " << XTrain[i]->filename << " (example " << i << ")..." << endl;
+			cout << "Cost with oracle H learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 			HCSearch::ISearchProcedure::SearchMetadata meta;
 			meta.setType = HCSearch::TRAIN;
