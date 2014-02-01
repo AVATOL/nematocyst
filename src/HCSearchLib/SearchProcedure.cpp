@@ -1,5 +1,6 @@
 #include <iostream>
 #include "SearchProcedure.hpp"
+#include "Globals.hpp"
 
 using namespace std;
 
@@ -56,6 +57,33 @@ namespace HCSearch
 			searchSpace, NULL, NULL, learningModel, searchMetadata);
 	}
 
+	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling& YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
+	{
+		if (searchMetadata.saveAnytimePredictions)
+		{
+			stringstream ssPredictNodes;
+			ssPredictNodes << Global::settings->paths->OUTPUT_RESULTS_DIR << "nodes" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+			//Util::writeNodesToFile(YPred, ssPredictNodes.str().c_str());//TODO
+
+			if (YPred.stochasticCutsAvailable)
+			{
+				stringstream ssPredictEdges;
+				ssPredictEdges << Global::settings->paths->OUTPUT_RESULTS_DIR << "edges" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+				//Util::writeEdgesToSparseFile(YPred, ssPredictEdges.str().c_str());//TODO
+			}
+		}
+	}
+
 	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
 	IRankModel* learningModel, SearchMetadata searchMetadata)
@@ -105,21 +133,26 @@ namespace HCSearch
 		int timeStep = 0;
 		while (!openSet.empty() && timeStep < timeBound)
 		{
-			// pick some subset of elements from the open set
+			// save best if anytime prediction enabled
+
+			ISearchNode* state = costSet.top();
+			saveAnyTimePrediction(state->getY(), timeBound, searchMetadata, searchType);
+
+			// *** pick some subset of elements from the open set *** 
 
 			vector< ISearchNode* > subsetOpenSet = selectSubsetOpenSet(openSet);
 
-			// expand these elements
+			// *** expand these elements *** 
 
 			SearchNodePQ candidateSet = expandElements(subsetOpenSet, openSet, costSet);
 
-			// choose successors and put them into the open set
-			// put these expanded elements into the cost set
+			// *** choose successors and put them into the open set *** 
+			// *** put these expanded elements into the cost set *** 
 
 			vector< ISearchNode* > successorSet = chooseSuccessors(candidateSet, openSet, costSet);
 
-			// add remaining "worst states" to cost set
-			// and use for learning if applicable
+			// *** add remaining "worst states" to cost set *** 
+			// *** and use for learning if applicable *** 
 
 			while (!candidateSet.empty())
 			{
@@ -129,7 +162,7 @@ namespace HCSearch
 				costSet.push(node);
 			}
 
-			// increment time step
+			// *** increment time step *** 
 			timeStep++;
 		}
 

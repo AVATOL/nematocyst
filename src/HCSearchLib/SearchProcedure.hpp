@@ -104,6 +104,9 @@ namespace HCSearch
 		 */
 		void learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* learningModel, SearchMetadata searchMetadata);
+
+	protected:
+		void saveAnyTimePrediction(ImgLabeling& YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
 	};
 
 	/*!
