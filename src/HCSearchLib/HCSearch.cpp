@@ -644,12 +644,12 @@ namespace HCSearch
 					// get node2
 					string token2;
 					getline(iss, token2, ' ');
-					int node2 = atoi(token2.c_str());
+					int node2 = atoi(token2.c_str()) - ONE_OFFSET;
 
 					// get 1 (or weight)
 					string token3;
 					getline(iss, token3, ' ');
-					double edgeWeight = atof(token3.c_str()) - ONE_OFFSET;
+					double edgeWeight = atof(token3.c_str());
 
 					// add to map
 					if (edges.count(node1) == 0)
