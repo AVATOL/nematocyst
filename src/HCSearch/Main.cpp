@@ -136,7 +136,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE;
 
 	// params
-	HCSearch::RankerType rankerType = HCSearch::SVM_RANK; //TODO
+	HCSearch::RankerType rankerType = po.rankLearnerType;
 
 	// datasets
 	vector< HCSearch::ImgFeatures* > XTrain;
