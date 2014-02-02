@@ -720,7 +720,7 @@ namespace HCSearch
 	{
 		if (this->heuristicFeatureFunction == NULL)
 		{
-			cerr << "[ERROR] heuristic feature function is null" << endl;
+			cerr << "[Error] heuristic feature function is null" << endl;
 			abort();
 		}
 
@@ -731,7 +731,7 @@ namespace HCSearch
 	{
 		if (this->costFeatureFunction == NULL)
 		{
-			cerr << "[ERROR] cost feature function is null" << endl;
+			cerr << "[Error] cost feature function is null" << endl;
 			abort();
 		}
 
@@ -742,7 +742,7 @@ namespace HCSearch
 	{
 		if (this->initialPredictionFunction == NULL)
 		{
-			cerr << "[ERROR] initial pred feature function is null" << endl;
+			cerr << "[Error] initial pred feature function is null" << endl;
 			abort();
 		}
 
@@ -753,7 +753,7 @@ namespace HCSearch
 	{
 		if (this->successorFunction == NULL)
 		{
-			cerr << "[ERROR] successor function is null" << endl;
+			cerr << "[Error] successor function is null" << endl;
 			abort();
 		}
 
@@ -764,7 +764,7 @@ namespace HCSearch
 	{
 		if (this->lossFunction == NULL)
 		{
-			cerr << "[ERROR] loss function is null" << endl;
+			cerr << "[Error] loss function is null" << endl;
 			abort();
 		}
 

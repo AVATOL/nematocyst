@@ -496,7 +496,7 @@ namespace HCSearch
 				}
 				break;
 			default:
-				cerr << "[ERROR] not a valid search type for generating successor" << endl;
+				cerr << "[Error] not a valid search type for generating successor" << endl;
 			}
 		}
 		return successors;

@@ -123,7 +123,7 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			cerr << "[ERROR] svm ranker not initialized for ranking" << endl;
+			cerr << "[Error] svm ranker not initialized for ranking" << endl;
 			exit(1);
 		}
 
@@ -139,7 +139,7 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			cerr << "[ERROR] svm ranker not initialized for getting weights" << endl;
+			cerr << "[Error] svm ranker not initialized for getting weights" << endl;
 			exit(1);
 		}
 
@@ -260,7 +260,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[ERROR] cannot open model file for reading weights!!" << endl;
+			cerr << "[Error] cannot open model file for reading weights!!" << endl;
 			exit(1);
 		}
 
@@ -268,7 +268,7 @@ namespace HCSearch
 		int valuesSize = values.size();
 		if (valuesSize == 0)
 		{
-			cerr << "[ERROR] assigning empty weights from '" + fileName + "'!" << endl;
+			cerr << "[Error] assigning empty weights from '" + fileName + "'!" << endl;
 			exit(1);
 		}
 
@@ -318,7 +318,7 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[ERROR] online ranker not initialized for ranking" << endl;
+			cerr << "[Error] online ranker not initialized for ranking" << endl;
 			exit(1);
 		}
 
@@ -334,7 +334,7 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[ERROR] online ranker not initialized for getting latest weights" << endl;
+			cerr << "[Error] online ranker not initialized for getting latest weights" << endl;
 			exit(1);
 		}
 
@@ -345,7 +345,7 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[ERROR] online ranker not initialized for getting avg weights" << endl;
+			cerr << "[Error] online ranker not initialized for getting avg weights" << endl;
 			exit(1);
 		}
 
@@ -356,7 +356,7 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[ERROR] online ranker not initialized for updating" << endl;
+			cerr << "[Error] online ranker not initialized for updating" << endl;
 			exit(1);
 		}
 
@@ -365,11 +365,11 @@ namespace HCSearch
 
 		if (tauDenominator == 0 && tauNumerator == 0)
 		{
-			//TODO tau indeterminant form error
+			cerr << "[Warning] tau indeterminant form error" << endl;
 		}
 		else if (tauDenominator == 0 && tauNumerator != 0)
 		{
-			//TODO tau division by zero error
+			cerr << "[Warning] tau division by zero error" << endl;
 		}
 		else
 		{
@@ -474,7 +474,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[ERROR] cannot open model file for reading weights!!" << endl;
+			cerr << "[Error] cannot open model file for reading weights!!" << endl;
 			exit(1);
 		}
 
@@ -482,7 +482,7 @@ namespace HCSearch
 		int valuesSize = values.size();
 		if (valuesSize == 0)
 		{
-			cerr << "[ERROR] assigning empty cumsumweights from '" + fileName + "'!" << endl;
+			cerr << "[Error] assigning empty cumsumweights from '" + fileName + "'!" << endl;
 			exit(1);
 		}
 		for (int i = 0; i < valuesSize; i++)
@@ -495,7 +495,7 @@ namespace HCSearch
 		int valuesSize2 = values2.size();
 		if (valuesSize2 == 0)
 		{
-			cerr << "[ERROR] assigning empty latestweights from '" + fileName + "'!" << endl;
+			cerr << "[Error] assigning empty latestweights from '" + fileName + "'!" << endl;
 			exit(1);
 		}
 		for (int i = 0; i < valuesSize2; i++)
@@ -543,7 +543,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[ERROR] cannot open model file for writing weights!!" << endl;
+			cerr << "[Error] cannot open model file for writing weights!!" << endl;
 			exit(1);
 		}
 	}
