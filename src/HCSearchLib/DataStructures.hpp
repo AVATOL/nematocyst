@@ -6,6 +6,7 @@
 #include <fstream>
 #include "../../external/Eigen/Eigen/Dense"
 #include "MyPrimitives.hpp"
+#include "Settings.hpp"
 
 using namespace Eigen;
 using namespace std;
@@ -15,7 +16,6 @@ namespace HCSearch
 	/**************** Constants ****************/
 
 	enum CompareSearchNodeType { HEURISTIC, COST };
-	enum RankerType { SVM_RANK, ONLINE_RANK };
 	enum SearchType { LL=0, HL, LC, HC, 
 		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };

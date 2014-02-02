@@ -16,6 +16,10 @@ using namespace std;
 
 namespace HCSearch
 {
+	/**************** Constants ****************/
+
+	enum RankerType { SVM_RANK, ONLINE_RANK };
+
 	/**************** Class Map ****************/
 
 	// Stores class labels
