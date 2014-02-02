@@ -203,7 +203,7 @@ namespace HCSearch
 			while (!costSet.empty())
 			{
 				ISearchNode* state = costSet.top();
-				bestFeatures.push_back(state->getCostFeatures());
+				worstFeatures.push_back(state->getCostFeatures());
 				costSet.pop();
 				delete state;
 			}
