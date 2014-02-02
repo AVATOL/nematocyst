@@ -142,7 +142,7 @@ namespace HCSearch
 		}
 	}
 
-	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodePQ& candidateSet, vector< ISearchNode* > successorSet)
+	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< ISearchNode* > successorSet)
 	{
 		if (ranker->rankerType() == SVM_RANK)
 		{
@@ -157,7 +157,7 @@ namespace HCSearch
 			}
 
 			// worst states
-			SearchNodePQ tempSet;
+			SearchNodeHeuristicPQ tempSet;
 			while (!candidateSet.empty())
 			{
 				ISearchNode* state = candidateSet.top();
@@ -182,7 +182,7 @@ namespace HCSearch
 		}
 	}
 
-	void ISearchProcedure::trainCostRanker(IRankModel* ranker, SearchNodePQ& costSet)
+	void ISearchProcedure::trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet)
 	{
 		if (ranker->rankerType() == SVM_RANK)
 		{
@@ -227,14 +227,11 @@ namespace HCSearch
 	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
-		CompareSearchNode compareCost(COST);
-		CompareSearchNode compareHeuristic(HEURISTIC);
-
 		// set up priority queues
 		// maintain open set for search
 		// maintain cost set for returning best cost in the end
-		SearchNodePQ costSet(compareCost);
-		SearchNodePQ openSet(compareHeuristic);
+		SearchNodeCostPQ costSet;
+		SearchNodeHeuristicPQ openSet;
 
 		// push initial state into queue
 		ISearchNode* root = NULL;
@@ -283,7 +280,7 @@ namespace HCSearch
 
 			/***** expand these elements *****/
 
-			SearchNodePQ candidateSet = expandElements(subsetOpenSet, openSet, costSet);
+			SearchNodeHeuristicPQ candidateSet = expandElements(subsetOpenSet, openSet, costSet);
 
 			/***** choose successors and put them into the open set *****/
 			/***** put these expanded elements into the cost set *****/
@@ -335,42 +332,6 @@ namespace HCSearch
 		return prediction;
 	}
 
-	bool IBasicSearchProcedure::isDuplicate(ISearchNode* state, SearchNodePQ& pq)
-	{
-		int size = pq.size();
-		bool isDuplicate = false;
-
-		SearchNodePQ temp;
-
-		for (int i = 0; i < size; i++)
-		{
-			ISearchNode* current = pq.top();
-			pq.pop();
-
-			if (!isDuplicate && current->getY().graph.nodesData == state->getY().graph.nodesData)
-			{
-				isDuplicate = true;
-			}
-
-			temp.push(current);
-		}
-
-		// reset priority queue passed as argument
-		pq = temp;
-
-		return isDuplicate;
-	}
-
-	void IBasicSearchProcedure::deleteQueueElements(SearchNodePQ& queue)
-	{
-		while (!queue.empty())
-		{
-			ISearchNode* state = queue.top();
-			queue.pop();
-			delete state;
-		}
-	}
-
 	/**************** Breadth-First Beam Search Procedure ****************/
 
 	BreadthFirstBeamSearchProcedure::BreadthFirstBeamSearchProcedure()
@@ -387,7 +348,7 @@ namespace HCSearch
 	{
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodePQ& openSet)
+	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)
 	{
 		vector< ISearchNode* > subsetOpenSet;
 		
@@ -402,9 +363,9 @@ namespace HCSearch
 		return subsetOpenSet;
 	}
 
-	ISearchProcedure::SearchNodePQ BreadthFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodePQ& openSet, SearchNodePQ& costSet)
+	ISearchProcedure::SearchNodeHeuristicPQ BreadthFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
 	{
-		SearchNodePQ candidateSet;
+		SearchNodeHeuristicPQ candidateSet;
 		
 		// expand each element
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
@@ -428,7 +389,7 @@ namespace HCSearch
 		return candidateSet;
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchNodePQ& candidateSet, SearchNodePQ& openSet, SearchNodePQ& costSet)
+	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
 	{
 		vector< ISearchNode* > bestSet;
 
@@ -466,7 +427,7 @@ namespace HCSearch
 	{
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BestFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodePQ& openSet)
+	vector< ISearchProcedure::ISearchNode* > BestFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)
 	{
 		vector< ISearchNode* > subsetOpenSet;
 		
@@ -481,9 +442,9 @@ namespace HCSearch
 		return subsetOpenSet;
 	}
 
-	ISearchProcedure::SearchNodePQ BestFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodePQ& openSet, SearchNodePQ& costSet)
+	ISearchProcedure::SearchNodeHeuristicPQ BestFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
 	{
-		SearchNodePQ candidateSet;
+		SearchNodeHeuristicPQ candidateSet;
 		
 		// expand each element
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
@@ -965,20 +926,13 @@ namespace HCSearch
 
 	/**************** Compare Search Node ****************/
 
-	bool ISearchProcedure::CompareSearchNode::operator() (ISearchNode*& lhs, ISearchNode*& rhs) const
+	bool ISearchProcedure::CompareByHeuristic::operator() (ISearchNode*& lhs, ISearchNode*& rhs) const
 	{
-		if (prioritizeBy == HEURISTIC)
-		{
-			return lhs->getHeuristic() > rhs->getHeuristic();
-		}
-		else if (prioritizeBy == COST)
-		{
-			return lhs->getCost() > rhs->getCost();
-		}
-		else
-		{
-			cerr << "prioritizing by something other than heuristic or cost." << endl;
-			return false;
-		}
+		return lhs->getHeuristic() > rhs->getHeuristic();
+	}
+
+	bool ISearchProcedure::CompareByCost::operator() (ISearchNode*& lhs, ISearchNode*& rhs) const
+	{
+		return lhs->getCost() > rhs->getCost();
 	}
 }
