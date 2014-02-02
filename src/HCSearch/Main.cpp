@@ -27,6 +27,14 @@ int main(int argc, char* argv[])
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 
+	// print schedule
+	printSchedule(po);
+
+	// print other useful information
+	cout << "=== Program Options ===" << endl;
+	cout << "Save anytime predictions=" << po.saveAnytimePredictions << endl;
+	cout << endl;
+
 	// demo or run full program
 	if (po.demoMode)
 		demo(po.timeBound);
@@ -144,9 +152,6 @@ void run(MyProgramOptions::ProgramOptions po)
 
 	// load search procedure
 	HCSearch::ISearchProcedure* searchProcedure = setupSearchProcedure(po);
-
-	// print schedule
-	printSchedule(po);
 
 	// run the appropriate mode
 	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
