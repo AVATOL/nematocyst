@@ -162,6 +162,8 @@ namespace HCSearch
 
 	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
 	{
+		cout << "Training with " << betterSet.size() << " best examples and " << worseSet.size() << " worst examples..." << endl;
+
 		// good examples
 		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
 		{
@@ -200,6 +202,7 @@ namespace HCSearch
 		ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
 			<< this->rankingFileName << " " << modelFileName;
 		MyFileSystem::Executable::executeRetries(ssLearn.str());
+		cout << endl;
 
 		// no longer learning
 		this->learningMode = false;
