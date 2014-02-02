@@ -160,20 +160,24 @@ namespace HCSearch
 		this->rankingFileName = featuresFileName;
 	}
 
-	void SVMRankModel::addTrainingExamples(RankFeatures& better, vector< RankFeatures >& worseSet)
+	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
 	{
-		// write good example
-		(*this->rankingFile) << vector2svmrank(better, 1, this->qid) << endl;
-
-		// write bad examples
-		for (vector< RankFeatures >::iterator it = worseSet.begin(); it != worseSet.end(); ++it)
+		// good examples
+		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
 		{
-			RankFeatures worse = *it;
-			(*this->rankingFile) << vector2svmrank(worse, 2, this->qid) << endl;
-		}
+			RankFeatures better = *it;
+			(*this->rankingFile) << vector2svmrank(better, 1, this->qid) << endl;
 
-		// increment qid
-		this->qid++;
+			// bad examples
+			for (vector< RankFeatures >::iterator it2 = worseSet.begin(); it2 != worseSet.end(); ++it2)
+			{
+				RankFeatures worse = *it2;
+				(*this->rankingFile) << vector2svmrank(worse, 2, this->qid) << endl;
+			}
+
+			// increment qid
+			this->qid++;
+		}
 	}
 
 	void SVMRankModel::finishTraining(string modelFileName)

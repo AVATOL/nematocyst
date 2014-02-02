@@ -344,7 +344,7 @@ namespace HCSearch
 		/*!
 		 * Add training examples.
 		 */
-		void addTrainingExamples(RankFeatures& better, vector< RankFeatures >& worseSet);
+		void addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet);
 
 		/*!
 		 * End learning.
