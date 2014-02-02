@@ -42,7 +42,7 @@ namespace MyFileSystem
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " " + dir);
 	}
 
-	int copyFile(string src, string dest)
+	int FileSystem::copyFile(string src, string dest)
 	{
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " " + src + " " + dest);
 	}

@@ -193,6 +193,10 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
+
+		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
+		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
+		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
