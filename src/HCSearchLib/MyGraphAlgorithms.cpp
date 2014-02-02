@@ -159,7 +159,7 @@ namespace MyGraphAlgorithms
 			}
 		}
 
-		// second pass: write to output labeling, record size and components (TODO)
+		// second pass: write to output labeling, record components
 
 		map< int, ConnectedComponent* > ccs; // node index -> cc
 
@@ -222,7 +222,7 @@ namespace MyGraphAlgorithms
 			}
 		}
 
-		// second pass: write to output labeling, record size and components (TODO)
+		// second pass: write to output labeling, record components
 
 		map< int, ConnectedComponent* > ccs; // node index -> cc
 
@@ -353,7 +353,7 @@ namespace MyGraphAlgorithms
 			}
 		}
 
-		// second pass: write to output labeling, record size and components (TODO)
+		// second pass: write to output labeling, record components
 
 		map< int, Subgraph* > subgraphs; // node index -> subgraph
 
