@@ -240,13 +240,14 @@ namespace MyProgramOptions
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
-		cerr << "\t--anytime arg\t" << ": turn off saving anytime predictions if false" << endl;
-		cerr << "\t--splitspath arg" << ": specify alternate path to splits folder" << endl;
-		cerr << "\t--learner arg\t" << ": svmrank|online" << endl;
-		cerr << "\t--search arg\t" << ": greedy|breadthbeam|bestbeam" << endl;
-		cerr << "\t--beamsize arg\t" << ": beam size for beam search" << endl;
-		cerr << "\t--successor arg\t" << ": flipbit|stochastic" << endl;
-		cerr << "\t--cutparam arg\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--anytime arg\t\t" << ": turn off saving anytime predictions if false" << endl;
+		cerr << "\t--beamsize arg\t\t" << ": beam size for beam search" << endl;
+		cerr << "\t--cutparam arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
+		cerr << "\t--savefeatures arg\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
+		cerr << "\t--splitspath arg\t" << ": specify alternate path to splits folder" << endl;
+		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic" << endl;
 		cerr << endl;
 
 		cerr << "Notes:" << endl;
