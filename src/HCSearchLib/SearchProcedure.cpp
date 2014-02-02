@@ -101,14 +101,14 @@ namespace HCSearch
 	void ISearchProcedure::learnC(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* heuristicModel, IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
-		searchProcedure(LEARN_H, X, YTruth, timeBound, 
+		searchProcedure(LEARN_C, X, YTruth, timeBound, 
 			searchSpace, heuristicModel, learningModel, searchMetadata);
 	}
 
 	void ISearchProcedure::learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
-		searchProcedure(LEARN_H, X, YTruth, timeBound, 
+		searchProcedure(LEARN_C_ORACLE_H, X, YTruth, timeBound, 
 			searchSpace, NULL, learningModel, searchMetadata);
 	}
 
