@@ -54,6 +54,7 @@ namespace MyProgramOptions
 
 		bool saveAnytimePredictions;
 		HCSearch::RankerType rankLearnerType;
+		bool saveFeaturesFiles;
 
 	public:
 		ProgramOptions();

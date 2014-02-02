@@ -37,6 +37,7 @@ namespace MyProgramOptions
 
 		saveAnytimePredictions = true;
 		rankLearnerType = HCSearch::SVM_RANK;
+		saveFeaturesFiles = false;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -194,6 +195,15 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "false") == 0)
 						po.saveAnytimePredictions = false;
+				}
+			}
+			else if (strcmp(argv[i], "--savefeatures") == 0)
+			{
+				po.saveFeaturesFiles = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.saveFeaturesFiles = false;
 				}
 			}
 		}

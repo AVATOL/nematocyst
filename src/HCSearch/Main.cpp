@@ -173,8 +173,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			if (HCSearch::Global::settings->RANK == 0)
 			{
 				HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
-				MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE, 
-					HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE);
+				if (po.saveFeaturesFiles)
+					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE, 
+						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE);
 			}
 			
 			delete heuristicModel;
@@ -192,8 +193,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			if (HCSearch::Global::settings->RANK == 0)
 			{
 				HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
-				MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE, 
-					HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE);
+				if (po.saveFeaturesFiles)
+					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE, 
+						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE);
 			}
 			
 			delete heuristicModel;
@@ -211,8 +213,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			if (HCSearch::Global::settings->RANK == 0)
 			{
 				HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
-				MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE, 
-					HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE);
+				if (po.saveFeaturesFiles)
+					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE, 
+						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE);
 			}
 			
 			delete costOracleHModel;
