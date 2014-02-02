@@ -67,49 +67,49 @@ namespace HCSearch
 		SearchSpace* searchSpace, SearchMetadata searchMetadata)
 	{
 		return searchProcedure(LL, X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, NULL, searchMetadata);
+			searchSpace, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling ISearchProcedure::hlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, IRankModel* heuristicModel, SearchMetadata searchMetadata)
 	{
 		return searchProcedure(HL, X, YTruth, timeBound, 
-			searchSpace, heuristicModel, NULL, NULL, searchMetadata);
+			searchSpace, heuristicModel, NULL, searchMetadata);
 	}
 
 	ImgLabeling ISearchProcedure::lcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
 		return searchProcedure(LC, X, YTruth, timeBound, 
-			searchSpace, NULL, costModel, NULL, searchMetadata);
+			searchSpace, NULL, costModel, searchMetadata);
 	}
 
 	ImgLabeling ISearchProcedure::hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
 		return searchProcedure(HC, X, NULL, timeBound, 
-			searchSpace, heuristicModel, costModel, NULL, searchMetadata);
+			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
 	void ISearchProcedure::learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
 		searchProcedure(LEARN_H, X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, learningModel, searchMetadata);
+			searchSpace, learningModel, NULL, searchMetadata);
 	}
 
 	void ISearchProcedure::learnC(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* heuristicModel, IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
 		searchProcedure(LEARN_H, X, YTruth, timeBound, 
-			searchSpace, heuristicModel, NULL, learningModel, searchMetadata);
+			searchSpace, heuristicModel, learningModel, searchMetadata);
 	}
 
 	void ISearchProcedure::learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
 		searchProcedure(LEARN_H, X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, learningModel, searchMetadata);
+			searchSpace, NULL, learningModel, searchMetadata);
 	}
 
 	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
@@ -225,8 +225,7 @@ namespace HCSearch
 	}
 
 	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
-	IRankModel* learningModel, SearchMetadata searchMetadata)
+	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
 		CompareSearchNode compareCost(COST);
 		CompareSearchNode compareHeuristic(HEURISTIC);

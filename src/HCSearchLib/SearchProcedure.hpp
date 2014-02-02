@@ -79,8 +79,7 @@ namespace HCSearch
 		 * Accepts features X and a model (and groudtruth Y if applicable) and performs search.
 		 */
 		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
-			IRankModel* learningModel, SearchMetadata searchMetadata)=0;
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)=0;
 
 		/*!
 		 * @brief Convenience function for LL-search.
@@ -138,8 +137,7 @@ namespace HCSearch
 	{
 	public:
 		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
-			IRankModel* learningModel, SearchMetadata searchMetadata);
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
 
 	protected:
 		/*!
