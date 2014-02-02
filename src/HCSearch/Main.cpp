@@ -33,6 +33,7 @@ int main(int argc, char* argv[])
 
 	// print other useful information
 	cout << "=== Program Options ===" << endl;
+	cout << "Rank learner=" << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
 	cout << "Save anytime predictions=" << po.saveAnytimePredictions << endl;
 	cout << endl;
 

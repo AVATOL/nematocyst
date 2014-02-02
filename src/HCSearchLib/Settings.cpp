@@ -5,6 +5,10 @@
 
 namespace HCSearch
 {
+	/**************** Constants ****************/
+
+	const string RankerTypeStrings[] = {"svm-rank", "online"};
+
 	/**************** Class Map ****************/
 
 	ClassMap::ClassMap()
