@@ -175,44 +175,6 @@ namespace HCSearch
 		void deleteQueueElements(T& queue);
 	};
 
-	template <class T>
-	bool IBasicSearchProcedure::isDuplicate(ISearchNode* state, T& pq)
-	{
-		int size = pq.size();
-		bool isDuplicate = false;
-
-		T temp;
-
-		for (int i = 0; i < size; i++)
-		{
-			ISearchNode* current = pq.top();
-			pq.pop();
-
-			if (!isDuplicate && current->getY().graph.nodesData == state->getY().graph.nodesData)
-			{
-				isDuplicate = true;
-			}
-
-			temp.push(current);
-		}
-
-		// reset priority queue passed as argument
-		pq = temp;
-
-		return isDuplicate;
-	}
-
-	template <class T>
-	void IBasicSearchProcedure::deleteQueueElements(T& queue)
-	{
-		while (!queue.empty())
-		{
-			ISearchNode* state = queue.top();
-			queue.pop();
-			delete state;
-		}
-	}
-
 	/**************** Beam Search Procedure ****************/
 
 	/*!
@@ -633,6 +595,46 @@ namespace HCSearch
 	{
 		bool operator() (ISearchNode*& lhs, ISearchNode*& rhs) const;
 	};
+
+	/**************** Template Definitions ****************/
+
+	template <class T>
+	bool IBasicSearchProcedure::isDuplicate(ISearchNode* state, T& pq)
+	{
+		int size = pq.size();
+		bool isDuplicate = false;
+
+		T temp;
+
+		for (int i = 0; i < size; i++)
+		{
+			ISearchNode* current = pq.top();
+			pq.pop();
+
+			if (!isDuplicate && current->getY().graph.nodesData == state->getY().graph.nodesData)
+			{
+				isDuplicate = true;
+			}
+
+			temp.push(current);
+		}
+
+		// reset priority queue passed as argument
+		pq = temp;
+
+		return isDuplicate;
+	}
+
+	template <class T>
+	void IBasicSearchProcedure::deleteQueueElements(T& queue)
+	{
+		while (!queue.empty())
+		{
+			ISearchNode* state = queue.top();
+			queue.pop();
+			delete state;
+		}
+	}
 }
 
 #endif
