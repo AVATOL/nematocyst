@@ -28,10 +28,12 @@ void demo(int timeBound)
 	HCSearch::ISearchProcedure* searchProcedure = new HCSearch::GreedySearchProcedure();
 
 	// train H
-	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
+	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
+		timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK);
 
 	// train C
-	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
+	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
+		heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK);
 
 	// save model
 	HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);

@@ -721,14 +721,24 @@ namespace HCSearch
 
 	IRankModel* Learning::learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType)
 	{
 		cout << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = new SVMRankModel();
-		SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-		svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+		IRankModel* learningModel;
+		
+		if (rankerType == SVM_RANK)
+		{
+			learningModel = new SVMRankModel();
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+		}
+		else
+		{
+			cerr << "[Error] unsupported rank learner." << endl;
+			abort();
+		}
 
 		// Learn on each training example
 		int start, end;
@@ -748,21 +758,35 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+		if (rankerType == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+		}
 
 		return learningModel;
 	}
 
 	IRankModel* Learning::learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
+		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType)
 	{
 		cout << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = new SVMRankModel();
-		SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-		svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+		IRankModel* learningModel;
+		
+		if (rankerType == SVM_RANK)
+		{
+			learningModel = new SVMRankModel();
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+		}
+		else
+		{
+			cerr << "[Error] unsupported rank learner." << endl;
+			abort();
+		}
 
 		// Learn on each training example
 		int start, end;
@@ -782,21 +806,35 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+		if (rankerType == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+		}
 
 		return learningModel;
 	}
 
 	IRankModel* Learning::learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure)
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType)
 	{
 		cout << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
-		IRankModel* learningModel = new SVMRankModel();
-		SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-		svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+		IRankModel* learningModel;
+		
+		if (rankerType == SVM_RANK)
+		{
+			learningModel = new SVMRankModel();
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+		}
+		else
+		{
+			cerr << "[Error] unsupported rank learner." << endl;
+			abort();
+		}
 
 		// Learn on each training example
 		int start, end;
@@ -816,7 +854,11 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
+		if (rankerType == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
+		}
 
 		return learningModel;
 	}

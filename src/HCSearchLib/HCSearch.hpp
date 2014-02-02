@@ -434,7 +434,7 @@ namespace HCSearch
 		 */
 		static IRankModel* learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure);
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
 
 		/*!
 		 * Learn cost function given learned heuristic function. 
@@ -453,7 +453,7 @@ namespace HCSearch
 		 */
 		static IRankModel* learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure);
+			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
 
 		/*!
 		 * Learn cost function given oracle heuristic function.
@@ -471,7 +471,7 @@ namespace HCSearch
 		 */
 		static IRankModel* learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure);
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
     };
 
 	/*! @} */

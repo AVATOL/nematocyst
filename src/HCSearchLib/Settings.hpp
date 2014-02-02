@@ -175,11 +175,6 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		/*!
-		 * @brief Select rank learner type: SVM-Rank or online ranker.
-		 */
-		RankerType RANK_LEARNER_TYPE;
-
-		/*!
 		 * @brief Number of iterations to train online learner for each image.
 		 */
 		int ONLINE_LEARNING_NUM_ITERATIONS;

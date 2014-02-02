@@ -25,7 +25,6 @@ int main(int argc, char* argv[])
 
 	// configure settings
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
-	HCSearch::Global::settings->RANK_LEARNER_TYPE = po.rankLearnerType;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 
 	// print schedule
@@ -167,7 +166,8 @@ void run(MyProgramOptions::ProgramOptions po)
 			cout << "=== Learning H ===" << endl;
 
 			// learn heuristic, save heuristic model
-			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
+			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
+				timeBound, searchSpace, searchProcedure, po.rankLearnerType);
 			
 			if (HCSearch::Global::settings->RANK == 0)
 				HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
@@ -181,7 +181,8 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			// load heuristic, learn cost, save cost model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
-			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, heuristicModel, timeBound, searchSpace, searchProcedure);
+			HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
+				heuristicModel, timeBound, searchSpace, searchProcedure, po.rankLearnerType);
 			
 			if (HCSearch::Global::settings->RANK == 0)
 				HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
@@ -195,7 +196,8 @@ void run(MyProgramOptions::ProgramOptions po)
 			cout << "=== Learning C with Oracle H ===" << endl;
 
 			// learn cost, save cost model
-			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, timeBound, searchSpace, searchProcedure);
+			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, 
+				timeBound, searchSpace, searchProcedure, po.rankLearnerType);
 			
 			if (HCSearch::Global::settings->RANK == 0)
 				HCSearch::Model::saveModel(costOracleHModel, costOracleHModelPath, rankerType);
