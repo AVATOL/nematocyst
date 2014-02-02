@@ -472,6 +472,11 @@ namespace HCSearch
 		static IRankModel* learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
+
+	private:
+		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
+
+		static void finishLearning(IRankModel* learningModel, SearchType searchType);
     };
 
 	/*! @} */

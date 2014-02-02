@@ -726,7 +726,7 @@ namespace HCSearch
 		cout << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = Learner::initializeLearning(rankerType, LEARN_H);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_H);
 
 		// Learn on each training example
 		int start, end;
@@ -746,7 +746,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		Learner::finishLearning(learningModel, LEARN_H);
+		finishLearning(learningModel, LEARN_H);
 
 		return learningModel;
 	}
@@ -758,7 +758,7 @@ namespace HCSearch
 		cout << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = Learner::initializeLearning(rankerType, LEARN_C);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C);
 
 		// Learn on each training example
 		int start, end;
@@ -778,7 +778,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		Learner::finishLearning(learningModel, LEARN_C);
+		finishLearning(learningModel, LEARN_C);
 
 		return learningModel;
 	}
@@ -790,7 +790,7 @@ namespace HCSearch
 		cout << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
-		IRankModel* learningModel = Learner::initializeLearning(rankerType, LEARN_C_ORACLE_H);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_ORACLE_H);
 
 		// Learn on each training example
 		int start, end;
@@ -810,9 +810,71 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		Learner::finishLearning(learningModel, LEARN_C_ORACLE_H);
+		finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		return learningModel;
+	}
+
+	IRankModel* Learning::initializeLearning(RankerType rankerType, SearchType searchType)
+	{
+		// Setup model for learning
+		IRankModel* learningModel = NULL;
+		
+		if (rankerType == SVM_RANK)
+		{
+			learningModel = new SVMRankModel();
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+			else
+			{
+				cerr << "[Error] unknown search type!" << endl;
+				abort();
+			}
+		}
+		else if (rankerType == ONLINE_RANK)
+		{
+			//TODO
+		}
+		else
+		{
+			cerr << "[Error] unsupported rank learner." << endl;
+			abort();
+		}
+
+		return learningModel;
+	}
+
+	void Learning::finishLearning(IRankModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+			else if (searchType == LEARN_C)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
+			else
+			{
+				cerr << "[Error] unknown search type!" << endl;
+				abort();
+			}
+		}
+		else if (learningModel->rankerType() == ONLINE_RANK)
+		{
+			//TODO
+		}
+		else
+		{
+			cerr << "[Error] unsupported rank learner." << endl;
+			abort();
+		}
 	}
 
 	/**************** Inference ****************/

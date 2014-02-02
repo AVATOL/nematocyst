@@ -26,19 +26,6 @@ namespace HCSearch
 		static void saveCuts(ImgLabeling& YPred, string fileName);
 	};
 
-	/**************** Learner ****************/
-
-	/*!
-	 * @brief Initializes and trains ranking model.
-	 */
-	class Learner
-	{
-	public:
-		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
-
-		static void finishLearning(IRankModel* learningModel, SearchType searchType);
-	};
-
 	/*!
 	 * @defgroup SearchProcedure Search Procedure
 	 * @brief Provides an interface for setting up a search procedure.
