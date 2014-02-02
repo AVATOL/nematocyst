@@ -66,11 +66,9 @@ namespace HCSearch
 		class LearnHSearchNode;
 		class LearnCSearchNode;
 		class LearnCOracleHSearchNode;
-		class CompareByHeuristic;
-		class CompareByCost;
+		class CompareSearchNode;
 
-		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
-		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByCost> SearchNodeCostPQ;
+		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareSearchNode> SearchNodePQ;
 
 	public:
 		virtual ~ISearchProcedure() {}
@@ -127,8 +125,8 @@ namespace HCSearch
 
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
-		void trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< ISearchNode* > successorSet);
-		void trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet);
+		void trainHeuristicRanker(IRankModel* ranker, SearchNodePQ& candidateSet, vector< ISearchNode* > successorSet);
+		void trainCostRanker(IRankModel* ranker, SearchNodePQ& costSet);
 	};
 
 	/*!
@@ -145,14 +143,14 @@ namespace HCSearch
 		/*!
 		 * @brief Stub for selecting a subset of the open set for processing.
 		 */
-		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)=0;
+		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodePQ& openSet)=0;
 
 		/*!
 		 * @brief Stub for expanding the elements.
 		 * 
 		 * openSet may be modified. costSet is used for duplicate checking.
 		 */
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)=0;
+		virtual SearchNodePQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodePQ& openSet, SearchNodePQ& costSet)=0;
 
 		/*!
 		 * @brief Stub for choosing successors among the expanded.
@@ -160,58 +158,18 @@ namespace HCSearch
 		 * Returns the successors and adds the successors to the openSet and costSet.
 		 * Side effect: candidate set has worst states remaining after function call.
 		 */
-		virtual vector< ISearchNode* > chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)=0;
+		virtual vector< ISearchNode* > chooseSuccessors(SearchNodePQ& candidateSet, SearchNodePQ& openSet, SearchNodePQ& costSet)=0;
 
 		/*!
 		 * @brief Checks if the state is duplicate among the states in the priority queue.
 		 */
-		template <class T>
-		bool isDuplicate(ISearchNode* state, T& pq);
+		bool isDuplicate(ISearchNode* state, SearchNodePQ& pq);
 
 		/*!
 		 * @brief Empty priority queue and delete all elements.
 		 */
-		template <class T>
-		void deleteQueueElements(T& queue);
+		void deleteQueueElements(SearchNodePQ& queue);
 	};
-
-	template <class T>
-	bool IBasicSearchProcedure::isDuplicate(ISearchNode* state, T& pq)
-	{
-		int size = pq.size();
-		bool isDuplicate = false;
-
-		T temp;
-
-		for (int i = 0; i < size; i++)
-		{
-			ISearchNode* current = pq.top();
-			pq.pop();
-
-			if (!isDuplicate && current->getY().graph.nodesData == state->getY().graph.nodesData)
-			{
-				isDuplicate = true;
-			}
-
-			temp.push(current);
-		}
-
-		// reset priority queue passed as argument
-		pq = temp;
-
-		return isDuplicate;
-	}
-
-	template <class T>
-	void IBasicSearchProcedure::deleteQueueElements(T& queue)
-	{
-		while (!queue.empty())
-		{
-			ISearchNode* state = queue.top();
-			queue.pop();
-			delete state;
-		}
-	}
 
 	/**************** Beam Search Procedure ****************/
 
@@ -238,9 +196,9 @@ namespace HCSearch
 		BreadthFirstBeamSearchProcedure(int beamSize);
 		~BreadthFirstBeamSearchProcedure();
 
-		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
-		virtual vector< ISearchNode* > chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodePQ& openSet);
+		virtual SearchNodePQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodePQ& openSet, SearchNodePQ& costSet);
+		virtual vector< ISearchNode* > chooseSuccessors(SearchNodePQ& candidateSet, SearchNodePQ& openSet, SearchNodePQ& costSet);
 	};
 
 	/**************** Best-First Beam Search Procedure ****************/
@@ -255,8 +213,8 @@ namespace HCSearch
 		BestFirstBeamSearchProcedure(int beamSize);
 		~BestFirstBeamSearchProcedure();
 
-		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodePQ& openSet);
+		virtual SearchNodePQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodePQ& openSet, SearchNodePQ& costSet);
 	};
 
 	/**************** Greedy Procedure ****************/
@@ -624,13 +582,16 @@ namespace HCSearch
 
 	/**************** Compare Search Node ****************/
 
-	class ISearchProcedure::CompareByHeuristic
+	class ISearchProcedure::CompareSearchNode
 	{
-		bool operator() (ISearchNode*& lhs, ISearchNode*& rhs) const;
-	};
+		CompareSearchNodeType prioritizeBy;
 
-	class ISearchProcedure::CompareByCost
-	{
+	public:
+		CompareSearchNode(const CompareSearchNodeType& prioritizeBy = HEURISTIC)
+		{
+			this->prioritizeBy = prioritizeBy;
+		}
+
 		bool operator() (ISearchNode*& lhs, ISearchNode*& rhs) const;
 	};
 }
