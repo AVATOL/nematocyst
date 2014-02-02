@@ -829,7 +829,7 @@ namespace HCSearch
 			else if (searchType == LEARN_C)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
 			else
 			{
 				cerr << "[Error] unknown search type!" << endl;
