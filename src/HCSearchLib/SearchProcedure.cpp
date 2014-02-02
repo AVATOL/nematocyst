@@ -163,6 +163,31 @@ namespace HCSearch
 	{
 		if (ranker->rankerType() == SVM_RANK)
 		{
+			vector< RankFeatures > bestFeatures;
+			vector< RankFeatures > worstFeatures;
+
+			// get best states
+			double bestLoss = costSet.top()->getCost();
+			while (!costSet.empty() && costSet.top()->getCost() <= bestLoss)
+			{
+				ISearchNode* state = costSet.top();
+				bestFeatures.push_back(state->getCostFeatures());
+				costSet.pop();
+				delete state;
+			}
+
+			// get worst states
+			while (!costSet.empty())
+			{
+				ISearchNode* state = costSet.top();
+				bestFeatures.push_back(state->getCostFeatures());
+				costSet.pop();
+				delete state;
+			}
+
+			// train
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
+			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
 
 		}
 		else if (ranker->rankerType() == ONLINE_RANK)
