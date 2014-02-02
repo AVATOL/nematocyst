@@ -726,19 +726,7 @@ namespace HCSearch
 		cout << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel;
-		
-		if (rankerType == SVM_RANK)
-		{
-			learningModel = new SVMRankModel();
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
-		}
-		else
-		{
-			cerr << "[Error] unsupported rank learner." << endl;
-			abort();
-		}
+		IRankModel* learningModel = Learner::initializeLearning(rankerType, LEARN_H);
 
 		// Learn on each training example
 		int start, end;
@@ -758,11 +746,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		if (rankerType == SVM_RANK)
-		{
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
-		}
+		Learner::finishLearning(learningModel, LEARN_H);
 
 		return learningModel;
 	}
@@ -774,19 +758,7 @@ namespace HCSearch
 		cout << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel;
-		
-		if (rankerType == SVM_RANK)
-		{
-			learningModel = new SVMRankModel();
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
-		}
-		else
-		{
-			cerr << "[Error] unsupported rank learner." << endl;
-			abort();
-		}
+		IRankModel* learningModel = Learner::initializeLearning(rankerType, LEARN_C);
 
 		// Learn on each training example
 		int start, end;
@@ -806,11 +778,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		if (rankerType == SVM_RANK)
-		{
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
-		}
+		Learner::finishLearning(learningModel, LEARN_C);
 
 		return learningModel;
 	}
@@ -822,19 +790,7 @@ namespace HCSearch
 		cout << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
-		IRankModel* learningModel;
-		
-		if (rankerType == SVM_RANK)
-		{
-			learningModel = new SVMRankModel();
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-		}
-		else
-		{
-			cerr << "[Error] unsupported rank learner." << endl;
-			abort();
-		}
+		IRankModel* learningModel = Learner::initializeLearning(rankerType, LEARN_C_ORACLE_H);
 
 		// Learn on each training example
 		int start, end;
@@ -854,11 +810,7 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		if (rankerType == SVM_RANK)
-		{
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
-		}
+		Learner::finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		return learningModel;
 	}
