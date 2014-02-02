@@ -24,6 +24,9 @@ namespace MyFileSystem
 
 		// Create a folder
 		static int createFolder(string dir);
+
+		// Copy file
+		static int copyFile(string src, string dest);
 	};
 
 	/**************** Executable ****************/

@@ -42,6 +42,11 @@ namespace MyFileSystem
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " " + dir);
 	}
 
+	int copyFile(string src, string dest)
+	{
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " " + src + " " + dest);
+	}
+
 	/**************** Executable ****************/
 
 	const int Executable::DEFAULT_NUM_RETRIES = 3;
