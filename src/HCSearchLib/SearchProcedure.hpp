@@ -126,6 +126,8 @@ namespace HCSearch
 
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
+		void trainHeuristicRanker(IRankModel* ranker, SearchNodePQ& candidateSet, vector< ISearchNode* > successorSet);
+		void trainCostRanker(IRankModel* ranker, SearchNodePQ& costSet);
 	};
 
 	/*!

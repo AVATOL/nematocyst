@@ -142,6 +142,40 @@ namespace HCSearch
 		}
 	}
 
+	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodePQ& candidateSet, vector< ISearchNode* > successorSet)
+	{
+		if (ranker->rankerType() == SVM_RANK)
+		{
+
+		}
+		else if (ranker->rankerType() == ONLINE_RANK)
+		{
+			//TODO
+		}
+		else
+		{
+			cerr << "[Error] unknown ranker type" << endl;
+			abort();
+		}
+	}
+
+	void ISearchProcedure::trainCostRanker(IRankModel* ranker, SearchNodePQ& costSet)
+	{
+		if (ranker->rankerType() == SVM_RANK)
+		{
+
+		}
+		else if (ranker->rankerType() == ONLINE_RANK)
+		{
+			//TODO
+		}
+		else
+		{
+			cerr << "[Error] unknown ranker type" << endl;
+			abort();
+		}
+	}
+
 	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel,
 	IRankModel* learningModel, SearchMetadata searchMetadata)
@@ -209,8 +243,15 @@ namespace HCSearch
 
 			vector< ISearchNode* > successorSet = chooseSuccessors(candidateSet, openSet, costSet);
 
+			// NOW: successorSet = best nodes
+			// NOW: candidateSet = worst nodes
+
+			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
+
+			if (searchType == LEARN_H)
+				trainHeuristicRanker(heuristicModel, candidateSet, successorSet);
+
 			/***** add remaining "worst states" to cost set *****/
-			/***** use remaining for learning if applicable *****/
 
 			while (!candidateSet.empty())
 			{
@@ -224,7 +265,7 @@ namespace HCSearch
 			timeStep++;
 		}
 
-		// search is done, return the lowest cost search node
+		/***** search is done, return the lowest cost search node *****/
 
 		if (costSet.empty())
 		{
@@ -232,10 +273,14 @@ namespace HCSearch
 			abort();
 		}
 
-		// search done, so get lowest cost node
+		// Get lowest cost node
 		ISearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
 		cout << endl << "Finished search. Cost=" << lowestCost->getCost() << endl << endl;
+
+		// use best/worst cost set candidates as training examples for cost learning (if applicable)
+		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+			trainCostRanker(costModel, costSet);
 
 		// clean up cost set
 		deleteQueueElements(costSet);
