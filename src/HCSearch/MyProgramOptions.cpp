@@ -36,6 +36,7 @@ namespace MyProgramOptions
 		cutParam = 1.0;
 
 		saveAnytimePredictions = true;
+		rankLearnerType = HCSearch::SVM_RANK;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -131,6 +132,16 @@ namespace MyProgramOptions
 					po.schedule.push_back(HCSearch::HL);
 					po.schedule.push_back(HCSearch::LC);
 					po.schedule.push_back(HCSearch::LL);
+				}
+			}
+			else if (strcmp(argv[i], "--learner") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "svmrank") == 0)
+						po.rankLearnerType = HCSearch::SVM_RANK;
+					else if (strcmp(argv[i+1], "online") == 0)
+						po.rankLearnerType = HCSearch::ONLINE_RANK;
 				}
 			}
 			else if (strcmp(argv[i], "--search") == 0)

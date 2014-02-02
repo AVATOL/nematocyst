@@ -25,6 +25,7 @@ int main(int argc, char* argv[])
 
 	// configure settings
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
+	HCSearch::Global::settings->RANK_LEARNER_TYPE = po.rankLearnerType;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 
 	// print schedule

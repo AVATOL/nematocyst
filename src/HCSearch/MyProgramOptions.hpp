@@ -53,6 +53,7 @@ namespace MyProgramOptions
 		double cutParam;
 
 		bool saveAnytimePredictions;
+		HCSearch::RankerType rankLearnerType;
 
 	public:
 		ProgramOptions();
