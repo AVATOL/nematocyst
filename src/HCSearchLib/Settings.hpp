@@ -174,10 +174,9 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		/*!
-		 * @brief Use online passive-aggressive rank learning if true 
-		 * otherwise use SVM-Rank learner.
+		 * @brief Select rank learner type: SVM-Rank or online ranker.
 		 */
-		bool USE_ONLINE_LEARNING;
+		RankerType RANK_LEARNER_TYPE;
 
 		/*!
 		 * @brief Number of iterations to train online learner for each image.

@@ -267,7 +267,7 @@ namespace HCSearch
 
 		/**************** Configuration Options ****************/
 
-		USE_ONLINE_LEARNING = true;
+		RANK_LEARNER_TYPE = SVM_RANK;
 		ONLINE_LEARNING_NUM_ITERATIONS = 1;
 		OFFLINE_SAVE_FEATURES = false;
 		USE_DAGGER = false;
