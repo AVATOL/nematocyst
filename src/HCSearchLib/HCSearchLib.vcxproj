@@ -11,10 +11,29 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HCSearch.h" />
+    <ClInclude Include="DataStructures.hpp" />
+    <ClInclude Include="Globals.hpp" />
+    <ClInclude Include="HCSearch.hpp" />
+    <ClInclude Include="mtrand.h" />
+    <ClInclude Include="MyFileSystem.hpp" />
+    <ClInclude Include="MyGraphAlgorithms.hpp" />
+    <ClInclude Include="MyLogger.hpp" />
+    <ClInclude Include="MyPrimitives.hpp" />
+    <ClInclude Include="SearchProcedure.hpp" />
+    <ClInclude Include="SearchSpace.hpp" />
+    <ClInclude Include="Settings.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DataStructures.cpp" />
+    <ClCompile Include="Globals.cpp" />
     <ClCompile Include="HCSearch.cpp" />
+    <ClCompile Include="mtrand.cpp" />
+    <ClCompile Include="MyFileSystem.cpp" />
+    <ClCompile Include="MyGraphAlgorithms.cpp" />
+    <ClCompile Include="MyLogger.cpp" />
+    <ClCompile Include="SearchProcedure.cpp" />
+    <ClCompile Include="SearchSpace.cpp" />
+    <ClCompile Include="Settings.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8804CE0A-6DAA-45D9-9CBC-901E9E51676A}</ProjectGuid>
@@ -45,14 +64,21 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <IncludePath>C:\Program Files\Microsoft HPC Pack 2012\Inc;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>C:\Program Files\Microsoft HPC Pack 2012\Lib\i386;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Program Files\Microsoft HPC Pack 2012\Inc;$(VCInstallDir)include;$(VCInstallDir)atlmfc\include;$(WindowsSDK_IncludePath);</IncludePath>
+    <LibraryPath>C:\Program Files\Microsoft HPC Pack 2012\Lib\i386;$(VCInstallDir)lib;$(VCInstallDir)atlmfc\lib;$(WindowsSDK_LibraryPath_x86);</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_MPI;USE_WINDOWS;WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -67,7 +93,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>USE_MPI;USE_WINDOWS;WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
