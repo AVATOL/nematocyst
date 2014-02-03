@@ -63,21 +63,26 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 		1. Download from http://eigen.tuxfamily.org
 			- Version 3.2.0 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/Eigen`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
 		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
 		2. Unpack to `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the Makefile is `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
+			- Unpack the directory structure such that the Makefile is `$ROOT$/external/liblinear`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
+			- Unpack the directory structure such that the Makefile is `$ROOT$/external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/vlfeat`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
 2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
 3. If you prefer to compile from source...
 	1. Open `$ROOT$/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
@@ -91,24 +96,29 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 		1. Download from http://eigen.tuxfamily.org
 			- Version 3.2.0 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/Eigen`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
 		2. Unpack to `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the Makefile is `$ROOT$/external/svm_rank`
 		3. Compile by running `make` in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
+			- Unpack the directory structure such that the Makefile is `$ROOT$/external/liblinear`
 		3. Compile by running `make` in `$ROOT$/external/liblinear/`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm/`
+			- Unpack the directory structure such that the Makefile is `$ROOT$/external/libsvm`
 		3. Compile by running `make` in `$ROOT$/external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
-		2. Unpack to `external/vlfeat`
+		2. Unpack to `$ROOT$/external/vlfeat`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
 2. Compile from source by running `make` in the `$ROOT$/src` directory. It should create the binary file `$ROOT$/HCSearch`.
 
 ## Reference
