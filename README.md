@@ -91,7 +91,7 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 
 ### Linux
 
-1. Before compiling the source or running the binary executable, dependencies must be installed in the `external/` directory.
+1. Before compiling the source or running the binary executable, dependencies must be installed in the `$ROOT$/external/` directory.
 	- Eigen matrix libary
 		1. Download from http://eigen.tuxfamily.org
 			- Version 3.2.0 officially supported. Later versions should also work.
