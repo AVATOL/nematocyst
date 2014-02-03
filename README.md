@@ -138,7 +138,7 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 ## HC-Search Command Line Options
 
 ```
-Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND [--learn [H|C|COH]]* [--infer [HC|HL|LC|LL]]* ... [--option=value]
+Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND [--learn (H|C|COH)]* [--infer (HC|HL|LC|LL)]* ... [--option=value]
 Main options:
 	--help		: produce help message
 	--demo		: run the demo program (ignores --learn and --infer)
@@ -155,14 +155,16 @@ Main options:
 				(none): short-hand for HC, HL, LC, LL
 
 Advanced options:
-	--anytime arg		: turn off saving anytime predictions if false
-	--beamsize arg		: beam size for beam search
-	--cutparam arg		: temperature parameter for stochastic cuts
-	--learner arg		: svmrank|online
-	--savefeatures arg	: save rank features during learning if true
-	--search arg		: greedy|breadthbeam|bestbeam
-	--splitspath arg	: specify alternate path to splits folder
-	--successor arg		: flipbit|stochastic
+	--anytime arg			: turn on  saving anytime predictions if true
+	--beam-size arg			: beam size for beam search
+	--cut-param arg			: temperature parameter for stochastic cuts
+	--num-test-iters arg	: number of test iterations
+	--num-train-iters arg	: number of training iterations
+	--learner arg			: svmrank|online
+	--save-features arg		: save rank features during learning if true
+	--search arg			: greedy|breadthbeam|bestbeam
+	--splits-path arg		: specify alternate path to splits folder
+	--successor arg			: flipbit|stochastic
 
 Notes:
 * The first three arguments are required. They are the input directory, output directory and time bound.

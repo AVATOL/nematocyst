@@ -208,7 +208,7 @@ namespace MyProgramOptions
 						po.saveFeaturesFiles = false;
 				}
 			}
-			else if (strcmp(argv[i], "--num-train-iterations") == 0)
+			else if (strcmp(argv[i], "--num-train-iters") == 0)
 			{
 				if (i + 1 != argc)
 				{
@@ -220,7 +220,7 @@ namespace MyProgramOptions
 					}
 				}
 			}
-			else if (strcmp(argv[i], "--num-test-iterations") == 0)
+			else if (strcmp(argv[i], "--num-test-iters") == 0)
 			{
 				if (i + 1 != argc)
 				{
@@ -247,7 +247,7 @@ namespace MyProgramOptions
 	{
 		cerr << endl;
 		cerr << "Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND "
-			<< "[--learn [H|C|COH]]* [--infer [HC|HL|LC|LL]]* ... [--option=value]" << endl;
+			<< "[--learn (H|C|COH)]* [--infer (HC|HL|LC|LL)]* ... [--option=value]" << endl;
 
 		cerr << "Main options:" << endl;
 		cerr << "\t--help\t\t" << ": produce help message" << endl;
@@ -269,8 +269,8 @@ namespace MyProgramOptions
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
-		cerr << "\t--num-test-terations arg\t\t" << ": number of training iterations" << endl;
-		cerr << "\t--num-train-terations arg\t\t" << ": number of training iterations" << endl;
+		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
+		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
