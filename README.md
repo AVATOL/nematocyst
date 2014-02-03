@@ -182,7 +182,7 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 			- Version 0.9.18 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/vlfeat`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
-2. Compile from source by running `make` in the `$ROOT$/src` directory. It should create the binary file `$ROOT$/HCSearch`.
+2. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
 
 ## More Details
 
