@@ -1,5 +1,5 @@
 HC-SEARCH::CV
-==========
+=============
 
 HC-Search Structured Prediction Framework for Computer Vision
 
@@ -81,7 +81,7 @@ If you are just interested in getting something running, then this is the sectio
 ### Setup Images, Groundtruth and Train/Validation/Test Splits
 
 1. Create a folder $ROOT/DataRaw/SomeDataset/. Create additional folders in it: Groundtruth/, Images/ and Splits/
-2. Put the images (.jpg) in the Images/ folder and the groundtruth masks (.jp) in the Groundtruth folder. Corresponding images/groundtruth must have the same file name!
+2. Put the images (.jpg) in the Images/ folder and the groundtruth masks (.jp) in the Groundtruth folder. Corresponding images and groundtruth files must have the same file name!
 3. Create Train.txt, Validation.txt and Test.txt in Splits/. In each file, list the file name in the Images folder (without .jpg extension) that belong in each split you want.
 
 ### Preprocessing
