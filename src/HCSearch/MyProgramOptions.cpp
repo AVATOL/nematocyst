@@ -35,7 +35,7 @@ namespace MyProgramOptions
 		beamSize = 1;
 		cutParam = 1.0;
 
-		saveAnytimePredictions = true;
+		saveAnytimePredictions = false;
 		rankLearnerType = HCSearch::SVM_RANK;
 		saveFeaturesFiles = false;
 	}
@@ -240,7 +240,7 @@ namespace MyProgramOptions
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
-		cerr << "\t--anytime arg\t\t" << ": turn off saving anytime predictions if false" << endl;
+		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beamsize arg\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--cutparam arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
