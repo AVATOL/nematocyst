@@ -47,6 +47,7 @@ using namespace std;
  * @section quickstart_sec Quick Start (Application)
  * 
  * This section shows how to quickly get started if you just want to use the binary executable and not the API. 
+ *  This is useful if you only need to use the built-in search spaces and search procedures. 
  * This section will walk through a sample scenario. Let `$ROOT` denote the root directory containing `src`.
  * 
  * @subsection setup_subsec Setup
@@ -74,7 +75,8 @@ using namespace std;
  * 
  * @section quickstart_api_sec Quick Start (API)
  * 
- * This section shows how to quickly get started if you want to use the API in your C++ program.
+ * This section shows how to quickly get started if you want to use the API in your C++ program. 
+ * This is necessary if you want to define your own search space and search procedure.
  * 
  * The HCSearchLib is a static library. You can build it and then link it to your C++ projects.
  * 
