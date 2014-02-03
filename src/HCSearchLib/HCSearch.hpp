@@ -42,21 +42,21 @@ using namespace std;
  * 
  * The source code and project can also be found on GitHub: https://github.com/mqtlam/hcsearchcv
  * 
- * @section quickstart_sec Quick Start
+ * @section quickstart_sec Quick Start (Application)
  * 
  * This section shows how to quickly get started by walking through a small demo program. Let $ROOT denote the root directory containing src/.
  * 
  * @subsection setup_subsec Setup
  *
- * 1. Create a folder $ROOT/DataRaw/SomeDataset/. Create additional folders in it: Groundtruth/, Images/ and Splits/
- * 2. Put the images (.jpg) in the Images/ folder and the groundtruth masks (.jp) in the Groundtruth folder. Corresponding images and groundtruth files must have the same file name!
+ * 1. Create a folder $ROOT/DataRaw/SomeDataset/. Create additional folders in it: Annotations/, Images/ and Splits/
+ * 2. Put the images (.jpg) in the Images/ folder and the groundtruth masks (.jpg) in the Annotations/ folder. Corresponding images and groundtruth files must have the same file name!
  * 3. Create Train.txt, Validation.txt and Test.txt in Splits/. In each file, list the file name in the Images folder (without .jpg extension) that belong in each split you want.
  *
  * @subsection preprocess_subsec Preprocessing
  * 
  * 1. Create folder $ROOT/DataPreprocessed/.
  * 2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in Matlab: 
- * `preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Groundtruth', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )`
+ * `preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Annotations', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )`
  * This should create files and folders in the $ROOT/DataPreprocessed/SomeDataset/ folder.
  *
  * @subsection hcsearch_subsec HC-Search
