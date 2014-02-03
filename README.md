@@ -58,6 +58,7 @@ Let $ROOT denote the root directory containing src/.
 
 ## Command Line Options
 
+```
 Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND [--learn [H|C|COH]]* [--infer [HC|HL|LC|LL]]* ... [--option=value]
 Main options:
 	--help		: produce help message
@@ -87,6 +88,7 @@ Advanced options:
 Notes:
 * The first three arguments are required. They are the input directory, output directory and time bound.
 * Can use multiple --infer and --learn options in any order to define a schedule. Must come after the mandatory arguments.
+```
 
 ## Technical Documentation
 
