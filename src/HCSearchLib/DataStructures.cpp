@@ -152,6 +152,11 @@ namespace HCSearch
 		this->initialized = true;
 	}
 
+	void SVMRankModel::save(string fileName)
+	{
+		writeModelFile(fileName, this->weights);
+	}
+
 	void SVMRankModel::startTraining(string featuresFileName)
 	{
 		this->learningMode = true;
@@ -307,6 +312,41 @@ namespace HCSearch
 		sparse << target << " qid:" << qid << " " << ss.str();
 
 		return sparse.str();
+	}
+
+	void SVMRankModel::writeModelFile(string fileName, const VectorXd& weights)
+	{
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			// write num to file
+			fh << "SVM-light - generated from HC-Search" << endl;
+
+			// jump to line 12
+			for (int i = 0; i < 10; i++)
+				fh << "#" << endl;
+
+			// write weights to file
+			fh << "1 ";
+			const int weightsLength = weights.size();
+			for (int i = 0; i < weightsLength; i++)
+			{
+				double val = weights(i);
+				if (val != 0)
+				{
+					int ind = i+1;
+					fh << ind << ":" << val << " ";
+				}
+			}
+			fh << endl;
+
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open svmrank model file for writing weights!!" << endl;
+			exit(1);
+		}
 	}
 
 	/**************** Online Rank Model ****************/
@@ -550,7 +590,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open model file for writing weights!!" << endl;
+			cerr << "[Error] cannot open online model file for writing weights!!" << endl;
 			exit(1);
 		}
 	}

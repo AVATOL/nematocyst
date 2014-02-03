@@ -337,6 +337,11 @@ namespace HCSearch
 		void load(string fileName);
 
 		/*!
+		 * Save weights data to file.
+		 */
+		void save(string fileName);
+
+		/*!
 		 * Initialize learning.
 		 */
 		void startTraining(string featuresFileName);
@@ -370,6 +375,15 @@ namespace HCSearch
 		 * Convert vector into SVM-Rank line.
 		 */
 		static string vector2svmrank(RankFeatures features, int target, int qid);
+
+		/*!
+		 * Write weights to file.
+		 * 
+		 * File format:
+		 *     ...
+		 *	   line 12: 1:val 2:val ...
+		 */
+		static void writeModelFile(string fileName, const VectorXd& weights);
 	};
 
 	/**************** Online Rank Model ****************/
