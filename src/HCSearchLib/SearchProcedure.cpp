@@ -174,6 +174,8 @@ namespace HCSearch
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
 			//TODO
+			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
+			abort();
 		}
 		else
 		{
@@ -216,6 +218,8 @@ namespace HCSearch
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
 			//TODO
+			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
+			abort();
 		}
 		else
 		{

@@ -840,6 +840,8 @@ namespace HCSearch
 		else if (rankerType == ONLINE_RANK)
 		{
 			//TODO
+			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
+			abort();
 		}
 		else
 		{
@@ -870,6 +872,8 @@ namespace HCSearch
 		else if (learningModel->rankerType() == ONLINE_RANK)
 		{
 			//TODO
+			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
+			abort();
 		}
 		else
 		{
