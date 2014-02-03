@@ -65,7 +65,7 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 		2. Unpack to `$ROOT$/external/Eigen`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
-		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
 		2. Unpack to `$ROOT$/external/svm_rank`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
