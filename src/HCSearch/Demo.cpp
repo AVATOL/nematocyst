@@ -29,11 +29,11 @@ void demo(int timeBound)
 
 	// train H
 	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
-		timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK);
+		timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
 
 	// train C
 	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
-		heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK);
+		heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
 
 	// save model
 	HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);

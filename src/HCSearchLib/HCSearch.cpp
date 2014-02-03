@@ -722,7 +722,7 @@ namespace HCSearch
 
 	IRankModel* Learning::learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType)
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		cout << "Learning the heuristic function..." << endl;
 		
@@ -735,15 +735,18 @@ namespace HCSearch
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			cout << "Heuristic learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				cout << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-			HCSearch::ISearchProcedure::SearchMetadata meta;
-			meta.saveAnytimePredictions = false;
-			meta.setType = HCSearch::TRAIN;
-			meta.exampleName = XTrain[i]->getFileName();
-			meta.iter = 0; //TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
 
-			searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+			}
 		}
 		
 		// Merge and learn step
@@ -754,7 +757,7 @@ namespace HCSearch
 
 	IRankModel* Learning::learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType)
+		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		cout << "Learning the cost function with learned heuristic..." << endl;
 		
@@ -767,15 +770,18 @@ namespace HCSearch
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			cout << "Cost learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				cout << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-			HCSearch::ISearchProcedure::SearchMetadata meta;
-			meta.saveAnytimePredictions = false;
-			meta.setType = HCSearch::TRAIN;
-			meta.exampleName = XTrain[i]->getFileName();
-			meta.iter = 0; //TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
 
-			searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+				searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+			}
 		}
 		
 		// Merge and learn step
@@ -786,7 +792,7 @@ namespace HCSearch
 
 	IRankModel* Learning::learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType)
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		cout << "Learning the cost function with oracle heuristic..." << endl;
 
@@ -799,15 +805,18 @@ namespace HCSearch
 			HCSearch::Global::settings->NUM_PROCESSES, start, end);
 		for (int i = start; i < end; i++)
 		{
-			cout << "Cost with oracle H learning: beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				cout << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
-			HCSearch::ISearchProcedure::SearchMetadata meta;
-			meta.saveAnytimePredictions = false;
-			meta.setType = HCSearch::TRAIN;
-			meta.exampleName = XTrain[i]->getFileName();
-			meta.iter = 0; //TODO
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
 
-			searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+			}
 		}
 		
 		// Merge and learn step

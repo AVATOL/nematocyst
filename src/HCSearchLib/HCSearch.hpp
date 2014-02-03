@@ -561,12 +561,13 @@ namespace HCSearch
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
-		 * @param[in] SearchMetadata Meta information
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned heuristic model
 		 */
 		static IRankModel* learnH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn cost function given learned heuristic function. 
@@ -580,12 +581,13 @@ namespace HCSearch
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
-		 * @param[in] SearchMetadata Meta information
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost model
 		 */
 		static IRankModel* learnC(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
+			IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		/*!
 		 * Learn cost function given oracle heuristic function.
@@ -598,12 +600,13 @@ namespace HCSearch
 		 * @param[in] timeBound  Time bound for learning
 		 * @param[in] searchSpace Search space definition
 		 * @param[in] searchProcedure Search procedure
-		 * @param[in] SearchMetadata Meta information
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned cost (using oracle H) model
 		 */
 		static IRankModel* learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType);
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);

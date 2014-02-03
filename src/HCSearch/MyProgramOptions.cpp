@@ -38,6 +38,8 @@ namespace MyProgramOptions
 		saveAnytimePredictions = false;
 		rankLearnerType = HCSearch::SVM_RANK;
 		saveFeaturesFiles = false;
+		numTrainIterations = 1;
+		numTestIterations = 1;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -76,7 +78,7 @@ namespace MyProgramOptions
 			{
 				po.demoMode = true;
 			}
-			else if (strcmp(argv[i], "--splitspath") == 0)
+			else if (strcmp(argv[i], "--splits-path") == 0)
 			{
 				if (i + 1 != argc)
 				{
@@ -159,7 +161,7 @@ namespace MyProgramOptions
 						po.searchProcedureMode = BEST_BEAM;
 				}
 			}
-			else if (strcmp(argv[i], "--beamsize") == 0)
+			else if (strcmp(argv[i], "--beam-size") == 0)
 			{
 				if (i + 1 != argc)
 				{
@@ -181,7 +183,7 @@ namespace MyProgramOptions
 						po.successorsMode = STOCHASTIC;
 				}
 			}
-			else if (strcmp(argv[i], "--cutparam") == 0)
+			else if (strcmp(argv[i], "--cut-param") == 0)
 			{
 				if (i + 1 != argc)
 				{
@@ -197,13 +199,37 @@ namespace MyProgramOptions
 						po.saveAnytimePredictions = false;
 				}
 			}
-			else if (strcmp(argv[i], "--savefeatures") == 0)
+			else if (strcmp(argv[i], "--save-features") == 0)
 			{
 				po.saveFeaturesFiles = true;
 				if (i + 1 != argc)
 				{
 					if (strcmp(argv[i+1], "false") == 0)
 						po.saveFeaturesFiles = false;
+				}
+			}
+			else if (strcmp(argv[i], "--num-train-iterations") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.numTrainIterations = atoi(argv[i+1]);
+					if (po.numTrainIterations <= 0)
+					{
+						cerr << "Invalid number of iterations!" << endl;
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--num-test-iterations") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.numTestIterations = atoi(argv[i+1]);
+					if (po.numTestIterations <= 0)
+					{
+						cerr << "Invalid number of iterations!" << endl;
+						HCSearch::abort();
+					}
 				}
 			}
 		}
@@ -241,12 +267,14 @@ namespace MyProgramOptions
 
 		cerr << "Advanced options:" << endl;
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
-		cerr << "\t--beamsize arg\t\t" << ": beam size for beam search" << endl;
-		cerr << "\t--cutparam arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
+		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--num-test-terations arg\t\t" << ": number of training iterations" << endl;
+		cerr << "\t--num-train-terations arg\t\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
-		cerr << "\t--savefeatures arg\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
-		cerr << "\t--splitspath arg\t" << ": specify alternate path to splits folder" << endl;
+		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
 		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic" << endl;
 		cerr << endl;
 

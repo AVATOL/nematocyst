@@ -179,11 +179,6 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		/*!
-		 * @brief Number of iterations to train online learner for each image.
-		 */
-		int ONLINE_LEARNING_NUM_ITERATIONS;
-
-		/*!
 		 * @brief Use DAgger to improve heuristic learning.
 		 */
 		bool USE_DAGGER;
