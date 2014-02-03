@@ -702,14 +702,15 @@ namespace HCSearch
 			return;
 		}
 
-		if (rankerType == ONLINE_RANK)
+		if (rankerType == SVM_RANK)
+		{
+			SVMRankModel* modelCast = dynamic_cast<SVMRankModel*>(model);
+			modelCast->save(fileName);
+		}
+		else if (rankerType == ONLINE_RANK)
 		{
 			OnlineRankModel* modelCast = dynamic_cast<OnlineRankModel*>(model);
 			modelCast->save(fileName);
-		}
-		else if (rankerType == SVM_RANK)
-		{
-			//TODO
 		}
 		else
 		{
