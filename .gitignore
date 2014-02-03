@@ -26,3 +26,4 @@ external/
 doc/
 Data*/
 Results/
+**/gcc*/
