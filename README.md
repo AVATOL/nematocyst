@@ -33,7 +33,7 @@ Let $ROOT denote the root directory containing src/.
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 		2. Unpack to $ROOT/external/vlfeat/
-2. Run the provided binary executable HCSearch.exe (make sure it is in $ROOT/external/).
+2. Run the provided binary executable HCSearch.exe (make sure it is in $ROOT/).
 3. If you prefer to compile from source...
 	1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
 	2. Build the solution. Make sure it is on Release.
