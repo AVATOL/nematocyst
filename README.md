@@ -39,9 +39,11 @@ The next two sections explains how to get started. You can run the HCSearch appl
 ### Preprocessing
 
 1. Create folder `$ROOT/DataPreprocessed`.
-2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in Matlab: 
-`preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Annotations', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )`
-This should create files and folders in the `$ROOT/DataPreprocessed/SomeDataset` folder.
+2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in MATLAB. This should create files and folders in the `$ROOT/DataPreprocessed/SomeDataset` folder.
+```
+preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Annotations', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )
+```
+
 
 ### HC-Search Learn/Infer
 
