@@ -35,3 +35,4 @@ clean:
 	make --directory="src/HCSearch/" --file=HCSearch.makefile clean
 	make --directory="src/HCSearchLib/" --file=HCSearchLib.mpi.makefile clean
 	make --directory="src/HCSearch/" --file=HCSearch.mpi.makefile clean
+	rm -f HCSearch
