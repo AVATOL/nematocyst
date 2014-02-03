@@ -28,28 +28,28 @@ The next two sections explains how to get started. You can run the HCSearch appl
 
 ## Quick Start (Application)
 
- This section shows how to quickly get started if you just want to use the binary executable and not the API. This is useful if you only need to use the built-in search spaces and search procedures. This section will walk through a sample scenario. Let `$ROOT` denote the root directory containing `src`. Please first read the Installation Instructions section.
+ This section shows how to quickly get started if you just want to use the binary executable and not the API. This is useful if you only need to use the built-in search spaces and search procedures. This section will walk through a sample scenario. Let `$ROOT$` denote the root directory containing `src`. Please first read the Installation Instructions section.
 
 ### Setup Images, Groundtruth and Train/Validation/Test Splits
 
-1. Create a folder `$ROOT/DataRaw/SomeDataset`. Create additional folders in it: `Annotations`, `Images` and `Splits`
+1. Create a folder `$ROOT$/DataRaw/SomeDataset`. Create additional folders in it: `Annotations`, `Images` and `Splits`
 2. Put the images (.jpg) in the Images/ folder and the groundtruth masks (.jpg) in the Annotations folder. Corresponding images and groundtruth files must have the same file name!
 3. Create `Train.txt`, `Validation.txt` and `Test.txt` in `Splits`. In each file, list the file name in the Images folder (without .jpg extension) that belong in each split you want.
 
 ### Preprocessing
 
-1. Create folder `$ROOT/DataPreprocessed`.
-2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in MATLAB. This should create files and folders in the `$ROOT/DataPreprocessed/SomeDataset` folder.
+1. Create folder `$ROOT$/DataPreprocessed`.
+2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in MATLAB. This should create files and folders in the `$ROOT$/DataPreprocessed/SomeDataset` folder.
 ```
-preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Annotations', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )
+preprocess('$ROOT$/DataRaw/SomeDataset/Images', '$ROOT$/DataRaw/SomeDataset/Annotations', '$ROOT$/DataRaw/SomeDataset/Splits', '$ROOT$/DataPreprocessed/SomeDataset' )
 ```
 
 
 ### HC-Search Learn/Infer
 
-Run the following command from the command line: `./HCSearch $ROOT/DataPreprocessed/SomeDataset $ROOT/Results 5 --learn --infer`
+Run the following command from the command line: `./HCSearch $ROOT$/DataPreprocessed/SomeDataset $ROOT$/Results 5 --learn --infer`
 This learns a heuristic and cost function and then runs LL/HL/LC/HL search. 
-This should create files and folders in $ROOT/Results/
+This should create files and folders in $ROOT$/Results/
 
 ### Postprocessing
 
@@ -117,54 +117,72 @@ HCSearch::Setup::finalize();
 
 ## Installation Instructions
 
-Let `$ROOT` denote the root directory containing `src`.
+Let `$ROOT$` denote the root directory containing `src` and this README.
 
 ### Windows
 
-1. Before compiling the source or running the binary executable, dependencies must be installed in the $ROOT/external/ directory.
+1. Before compiling the source or running the binary executable, dependencies must be installed in the `$ROOT$/external/` directory.
 	- Eigen matrix libary
 		1. Download from http://eigen.tuxfamily.org
-		2. Unpack to `$ROOT/external/Eigen`
+			- Version 3.2.0 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/Eigen`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
-		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
-		2. Unpack to `$ROOT/external/svm_rank`
+		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+		2. Unpack to `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
-		2. Unpack to `$ROOT/external/liblinear`
+			- Version 1.94 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/liblinear`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-		2. Unpack to `$ROOT/external/libsvm`
+			- Version 3.17 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/libsvm`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
-		2. Unpack to `$ROOT/external/vlfeat`
-2. Run the provided binary executable `HCSearch.exe` (make sure it is in `$ROOT`).
+			- Version 0.9.18 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/vlfeat`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
 3. If you prefer to compile from source...
-	1. Open `$ROOT/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
+	1. Open `$ROOT$/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
 	2. Build the solution. Make sure it is on Release.
-	3. Move `$ROOT/src/Release/HCSearch.exe` to `$ROOT/HCSearch.exe`.
+	3. Move `$ROOT$/src/Release/HCSearch.exe` to `$ROOT$/HCSearch.exe`.
 
 ### Linux
 
-1. Before compiling the source or running the binary executable, dependencies must be installed in the external/ directory.
+1. Before compiling the source or running the binary executable, dependencies must be installed in the `$ROOT$/external/` directory.
 	- Eigen matrix libary
 		1. Download from http://eigen.tuxfamily.org
-		2. Unpack to `$ROOT/external/Eigen`
+			- Version 3.2.0 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/Eigen`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
-		2. Unpack to `$ROOT/external/svm_rank`
-		3. Compile by running `make` in `$ROOT/external/svm_rank`
+		2. Unpack to `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
+		3. Compile by running `make` in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
-		2. Unpack to `$ROOT/external/liblinear`
-		3. Compile by running `make` in `$ROOT/external/liblinear`
+			- Version 1.94 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/liblinear`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
+		3. Compile by running `make` in `$ROOT$/external/liblinear`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-		2. Unpack to `$ROOT/external/libsvm`
-		3. Compile by running `make` in `$ROOT/external/libsvm`
+			- Version 3.17 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/libsvm`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
+		3. Compile by running `make` in `$ROOT$/external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
-		2. Unpack to `$ROOT/external/vlfeat`
-2. Compile from source by running make in `$ROOT/src`.
+			- Version 0.9.18 officially supported. Later versions should also work.
+		2. Unpack to `$ROOT$/external/vlfeat`
+			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+2. Compile from source by running `make` in the `$ROOT$/src` directory. It should create the binary file `$ROOT$/HCSearch`.
 
 ## More Details
 
@@ -172,12 +190,12 @@ Let `$ROOT` denote the root directory containing `src`.
 
 The preprocessing modules are written in MATLAB. Before running them, make sure to set up VLFeat:
 
-1. Download and extract VLFeat to `$ROOT/external/vlfeat` (or some other location) if not already done.
-2. Launch MATLAB. Run the following command in MATLAB: `run('$ROOT/external/vlfeat/toolbox/vl_setsup')` or wherever it is installed.
+1. Download and extract VLFeat to `$ROOT$/external/vlfeat` (or some other location) if not already done.
+2. Launch MATLAB. Run the following command in MATLAB: `run('$ROOT$/external/vlfeat/toolbox/vl_setsup')` or wherever it is installed.
 	- Alternatively, add the line to your `startup.m` file to automatically run this every time MATLAB starts.
 3. Verify it is set up properly by running the following command in MATLAB: `vl_version`
 
-The main preprocessing module is `$ROOT/preprocess/preprocess.m`:
+The main preprocessing module is `$ROOT$/preprocess/preprocess.m`:
 
 ```
 function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPath )
@@ -244,6 +262,6 @@ Coming soon.
 
 ## Technical Documentation
 
-Technical documentation (i.e. how to use the C++ API) is available in the `$ROOT/doc` directory.
+Technical documentation (i.e. how to use the C++ API) is available in the `$ROOT$/doc` directory.
 
 If not available, then use Doxygen (doxygen.org) to generate the documentation from source code. Run the command `doxygen` from the command line in the directory containing the `Doxyfile`.
