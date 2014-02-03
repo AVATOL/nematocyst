@@ -184,11 +184,6 @@ namespace HCSearch
 		int ONLINE_LEARNING_NUM_ITERATIONS;
 
 		/*!
-		 * @brief Save features to file if true for offline learning algorithms.
-		 */
-		bool OFFLINE_SAVE_FEATURES;
-
-		/*!
 		 * @brief Use DAgger to improve heuristic learning.
 		 */
 		bool USE_DAGGER;

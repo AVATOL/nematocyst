@@ -276,7 +276,6 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		ONLINE_LEARNING_NUM_ITERATIONS = 1;
-		OFFLINE_SAVE_FEATURES = false;
 		USE_DAGGER = false;
 
 		/**************** Experiment Settings ****************/
