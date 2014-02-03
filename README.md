@@ -11,57 +11,6 @@ The HC-Search framework allows you to define a search space and search procedure
 
 A search space consists of a heuristic feature function, cost feature function, initial state function, successor function and loss function. A search procedure can be anything that you define, including the commonly used greedy search and beam search. Our implementation allows you to define all of these components.
 
-## Installation Instructions
-
-Let $ROOT denote the root directory containing src/.
-
-### Windows
-
-1. Before compiling the source or running the binary executable, dependencies must be installed in the $ROOT/external/ directory.
-	- Eigen matrix libary
-		1. Download from http://eigen.tuxfamily.org
-		2. Unpack to $ROOT/external/Eigen/
-	- SVM-Rank
-		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
-		2. Unpack to $ROOT/external/svm_rank/
-	- LIBLINEAR
-		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
-		2. Unpack to $ROOT/external/liblinear/
-	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
-		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-		2. Unpack to $ROOT/external/libsvm/
-	- VLFeat (Optional - if you use preprocessing modules)
-		1. Download from http://www.vlfeat.org/
-		2. Unpack to $ROOT/external/vlfeat/
-2. Run the provided binary executable HCSearch.exe (make sure it is in $ROOT/).
-3. If you prefer to compile from source...
-	1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
-	2. Build the solution. Make sure it is on Release.
-	3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
-
-### Linux
-
-1. Before compiling the source or running the binary executable, dependencies must be installed in the external/ directory.
-	- Eigen matrix libary
-		1. Download from http://eigen.tuxfamily.org
-		2. Unpack to $ROOT/external/Eigen/
-	- SVM-Rank
-		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
-		2. Unpack to $ROOT/external/svm_rank/
-		3. Compile by running make in $ROOT/external/svm_rank/
-	- LIBLINEAR
-		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
-		2. Unpack to $ROOT/external/liblinear/
-		3. Compile by running make in $ROOT/external/liblinear/
-	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
-		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-		2. Unpack to $ROOT/external/libsvm/
-		3. Compile by running make in $ROOT/external/libsvm/
-	- VLFeat (Optional - if you use preprocessing modules)
-		1. Download from http://www.vlfeat.org/
-		2. Unpack to $ROOT/external/vlfeat/
-2. Compile from source by running make in $ROOT/.
-
 ## Overview
 
 Usually the following is the pipeline:
@@ -69,8 +18,8 @@ Usually the following is the pipeline:
 Input: Images, groundtruth annotations, and training/validation/test splits
 
 1. (Preprocessing Modules) Extract features from images and put into format ready for the HC-Search program.
-2. (HC-Search Training) Run HC-Search to learn models. Sample usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND --learn H --learn C
-3. (HC-Search Testing) Run HC-Search to perform inference. Sample usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND --infer HC
+2. (HC-Search Training) Run HC-Search to learn models.
+3. (HC-Search Testing) Run HC-Search to perform inference.
 4. (Postprocessing Modules) Convert result files from HC-Search into format suitable for visualization, evaluation and further analysis.
 
 Output: Evaluation, visualization and analysis of inference on test images
@@ -163,6 +112,57 @@ HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest
 // finalize for exiting
 HCSearch::Setup::finalize();
 ```
+
+## Installation Instructions
+
+Let $ROOT denote the root directory containing src/.
+
+### Windows
+
+1. Before compiling the source or running the binary executable, dependencies must be installed in the $ROOT/external/ directory.
+	- Eigen matrix libary
+		1. Download from http://eigen.tuxfamily.org
+		2. Unpack to $ROOT/external/Eigen/
+	- SVM-Rank
+		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+		2. Unpack to $ROOT/external/svm_rank/
+	- LIBLINEAR
+		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
+		2. Unpack to $ROOT/external/liblinear/
+	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+		2. Unpack to $ROOT/external/libsvm/
+	- VLFeat (Optional - if you use preprocessing modules)
+		1. Download from http://www.vlfeat.org/
+		2. Unpack to $ROOT/external/vlfeat/
+2. Run the provided binary executable HCSearch.exe (make sure it is in $ROOT/).
+3. If you prefer to compile from source...
+	1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
+	2. Build the solution. Make sure it is on Release.
+	3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
+
+### Linux
+
+1. Before compiling the source or running the binary executable, dependencies must be installed in the external/ directory.
+	- Eigen matrix libary
+		1. Download from http://eigen.tuxfamily.org
+		2. Unpack to $ROOT/external/Eigen/
+	- SVM-Rank
+		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
+		2. Unpack to $ROOT/external/svm_rank/
+		3. Compile by running make in $ROOT/external/svm_rank/
+	- LIBLINEAR
+		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
+		2. Unpack to $ROOT/external/liblinear/
+		3. Compile by running make in $ROOT/external/liblinear/
+	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+		2. Unpack to $ROOT/external/libsvm/
+		3. Compile by running make in $ROOT/external/libsvm/
+	- VLFeat (Optional - if you use preprocessing modules)
+		1. Download from http://www.vlfeat.org/
+		2. Unpack to $ROOT/external/vlfeat/
+2. Compile from source by running make in $ROOT/.
 
 ## More Details
 
