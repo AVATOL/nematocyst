@@ -19,31 +19,32 @@ Please see the Installation Instructions section before proceeding.
 
 ### Images and Annotation Setup
 
-1. Create a folder to put your dataset in; call this folder $DATASET. Create additional folders in it: $DATASET/Annotations/, $DATASET/Images/ and $DATASET/Splits/
-2. Put the images (.jpg) in the Images folder and the annotations (groundtruth masks, also .jpg) in the Annotations folder. Corresponding image and annotation files must have the same file name!
-3. Create Train.txt, Validation.txt and Test.txt in the Splits folder. Train.txt is a list of images used for training the system. Validation.txt is a list of images used in the system to validate the trained model. Test.txt is a list of images for the system to score characters. For all these list of images, do not add the file extension to the name.
+1. Create a folder to put your dataset in; call this folder `$DATASET$`. Create additional folders: `$DATASET$/Annotations`, `$DATASET$/Images` and `$DATASET$/Splits`
+2. Put the images (.jpg) in the `Images` folder and the annotations (groundtruth masks, also .jpg) in the `Annotations` folder. Corresponding image and annotation files must have the same file name!
+3. Create `Train.txt`, `Validation.txt` and `Test.txt` in the `Splits` folder. `Train.txt` is a list of images used for training the system. `Validation.txt` is a list of images used in the system to validate the trained model. `Test.txt` is a list of images for the system to score characters. For all these list of images, do not add the file extension to the name.
 
 ### Pre-Processing Step
 
 Note: MATLAB is required.
 
-1. Create a folder to put the preprocessed dataset in; call this folder $PREPROCESSED.
-2. Open MATLAB, make sure VLFeat is set up properly (see Installation Instructions), and run the following command in MATLAB: 
-	preprocess('$DATASET/Images', '$DATASET/Annotations', '$DATASET/Splits', '$PREPROCESSED' )
-This should create files and folders in the $PREPROCESSED folder.
+1. Create a folder to put the preprocessed dataset in; call this folder `$PREPROCESSED$`.
+2. Open MATLAB, make sure VLFeat is set up properly (see Installation Instructions), and run the following command in MATLAB. This should create files and folders in the `$PREPROCESSED$` folder.
+```
+preprocess('$DATASET$/Images', '$DATASET$/Annotations', '$DATASET$/Splits', '$PREPROCESSED$' )
+```
 
 ### Training From Annotations
 
-1. Create a folder to put the results from HC-Search; call this folder $RESULTS.
+1. Create a folder to put the results from HC-Search; call this folder `$RESULTS$`.
 2. Run the following command from the command line:
-	./HCSearch $PREPROCESSED $RESULTS 5 --learn H --learn C
-This should create some files in $RESULTS/models
+	`./HCSearch $PREPROCESSED$ $RESULTS$ 5 --learn H --learn C`
+This should create some files in `$RESULTS$/models`
 
 ### Scoring Characters
 
 Run the following command from the command line:
-	./HCSearch $PREPROCESSED $RESULTS 5 --infer HC
-This should create some files in $RESULTS/results
+	`./HCSearch $PREPROCESSED$ $RESULTS$ 5 --infer HC`
+This should create some files in `$RESULTS$/results`
 	
 ### Post-Processing Tasks
 
@@ -53,54 +54,52 @@ In development.
 
 ## Installation Instructions
 
-Let $ROOT denote the root directory containing src/.
-
 ### Windows
 
-1. Before compiling the source or running the binary executable, dependencies must be installed in the $ROOT/external/ directory.
+1. Before compiling the source or running the binary executable, dependencies must be installed in the `external/` directory.
 	- Eigen matrix libary
 		1. Download from http://eigen.tuxfamily.org
-		2. Unpack to $ROOT/external/Eigen/
+		2. Unpack to `external/Eigen`
 	- SVM-Rank
 		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
-		2. Unpack to $ROOT/external/svm_rank/
+		2. Unpack to `external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
-		2. Unpack to $ROOT/external/liblinear/
+		2. Unpack to `external/liblinear`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-		2. Unpack to $ROOT/external/libsvm/
+		2. Unpack to `external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
-		2. Unpack to $ROOT/external/vlfeat/
-2. Run the provided binary executable HCSearch.exe (make sure it is in $ROOT/).
+		2. Unpack to `external/vlfeat`
+2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
 3. If you prefer to compile from source...
-	1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
+	1. Open `src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
 	2. Build the solution. Make sure it is on Release.
-	3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
+	3. Move `src/Release/HCSearch.exe` to the top-most directory containing this README.
 
 ### Linux
 
-1. Before compiling the source or running the binary executable, dependencies must be installed in the external/ directory.
+1. Before compiling the source or running the binary executable, dependencies must be installed in the `external/` directory.
 	- Eigen matrix libary
 		1. Download from http://eigen.tuxfamily.org
-		2. Unpack to $ROOT/external/Eigen/
+		2. Unpack to `external/Eigen`
 	- SVM-Rank
 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
-		2. Unpack to $ROOT/external/svm_rank/
-		3. Compile by running make in $ROOT/external/svm_rank/
+		2. Unpack to `external/svm_rank`
+		3. Compile by running `make` in `external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
-		2. Unpack to $ROOT/external/liblinear/
-		3. Compile by running make in $ROOT/external/liblinear/
+		2. Unpack to `external/liblinear`
+		3. Compile by running `make` in `external/liblinear/`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
-		2. Unpack to $ROOT/external/libsvm/
-		3. Compile by running make in $ROOT/external/libsvm/
+		2. Unpack to `external/libsvm/`
+		3. Compile by running `make` in `external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
-		2. Unpack to $ROOT/external/vlfeat/
-2. Compile from source by running make in $ROOT/.
+		2. Unpack to `external/vlfeat`
+2. Compile from source by running `make` in the `src` directory.
 
 ## Reference
 
@@ -142,7 +141,7 @@ Notes:
 
 ### Preprocessing Module
 
-The main preprocessing module is $ROOT/preprocess/preprocess.m:
+The main preprocessing module is `preprocess/preprocess.m`:
 
 ```
 function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPath )
@@ -169,6 +168,6 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 
 ## Technical Documentation
 
-Technical documentation (i.e. how to use the C++ API) is available in the doc/ directory.
+Technical documentation (i.e. how to use the C++ API) is available in the `doc` directory.
 
-If not available, then use Doxygen (doxygen.org) to generate the documentation from source code. Use the provided Doxyfile. Run the command doxygen from the command line in the directory containing the Doxyfile.
+If not available, then use Doxygen (doxygen.org) to generate the documentation from source code. Run the command `doxygen` from the command line in the directory containing the `Doxyfile`.
