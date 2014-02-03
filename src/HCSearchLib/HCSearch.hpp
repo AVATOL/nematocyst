@@ -151,6 +151,34 @@ using namespace std;
  * 
  * The following are Windows installation instructions.
  * 
+ * @section overview_sec Overview
+ *
+ * Let $ROOT denote the root directory containing src/.
+ * 
+ * 1. Before compiling the source or running the binary executable, 
+ * dependencies must be installed in the external/ directory.
+ * 
+ *	- Eigen matrix libary
+ *		1. Download from http://eigen.tuxfamily.org
+ *		2. Unpack to $ROOT/external/Eigen/
+ *	- SVM-Rank
+ *		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+ *		2. Unpack to $ROOT/external/svm_rank/
+ *	- LIBLINEAR
+ *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
+ *		2. Unpack to $ROOT/external/liblinear/
+ *	- LIBSVM
+ *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+ *		2. Unpack to $ROOT/external/libsvm/
+ * 
+ * 2. Run the provided binary executable `HCSearch.exe` (make sure it is in $ROOT/external/).
+ * 
+ * 3. If you prefer to compile from source...
+ *
+ *		1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
+ *		2. Build the solution. Make sure it is on Release.
+ *		3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
+ * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
  * To take advantage of parallelism, you need to install MPICH2. 
@@ -172,6 +200,32 @@ using namespace std;
  * @tableofcontents
  * 
  * The following are Linux installation instructions.
+ * 
+ * @section overview_sec Overview
+ *
+ * Let $ROOT denote the root directory containing src/.
+ * 
+ * 1. Before compiling the source or running the binary executable, 
+ * dependencies must be installed in the external/ directory.
+ * 
+ *	- Eigen matrix libary
+ *		1. Download from http://eigen.tuxfamily.org
+ *		2. Unpack to $ROOT/external/Eigen/
+ *	- SVM-Rank
+ *		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html.
+ *		Make sure to download the source code version.
+ *		2. Unpack to $ROOT/external/svm_rank/
+ *		3. Compile by running `make` in $ROOT/external/svm_rank/
+ *	- LIBLINEAR
+ *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
+ *		2. Unpack to $ROOT/external/liblinear/
+ *		3. Compile by running `make` in $ROOT/external/liblinear/
+ *	- LIBSVM
+ *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+ *		2. Unpack to $ROOT/external/libsvm/
+ *		3. Compile by running `make` in $ROOT/external/libsvm/
+ * 
+ * 2. Compile from source by running `make` in $ROOT.
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
