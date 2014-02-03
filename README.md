@@ -164,7 +164,7 @@ Let `$ROOT` denote the root directory containing `src`.
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 		2. Unpack to `$ROOT/external/vlfeat`
-2. Compile from source by running make in `$ROOT`.
+2. Compile from source by running make in `$ROOT/src`.
 
 ## More Details
 
@@ -246,4 +246,4 @@ Coming soon.
 
 Technical documentation (i.e. how to use the C++ API) is available in the `$ROOT/doc` directory.
 
-If not available, then use Doxygen (doxygen.org) to generate the documentation from source code. Use the provided `Doxyfile`. Run the command `doxygen` from the command line in the `$ROOT` directory.
+If not available, then use Doxygen (doxygen.org) to generate the documentation from source code. Run the command `doxygen` from the command line in the directory containing the `Doxyfile`.
