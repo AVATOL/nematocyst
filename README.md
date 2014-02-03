@@ -67,17 +67,17 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 	- SVM-Rank
 		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
 		2. Unpack to `$ROOT$/external/svm_rank`
-			- Unpack the directory structure such that the Makefile is `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
-			- Unpack the directory structure such that the Makefile is `$ROOT$/external/liblinear`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
-			- Unpack the directory structure such that the Makefile is `$ROOT$/external/libsvm`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
@@ -100,19 +100,19 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 	- SVM-Rank
 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
 		2. Unpack to `$ROOT$/external/svm_rank`
-			- Unpack the directory structure such that the Makefile is `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
 		3. Compile by running `make` in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
-			- Unpack the directory structure such that the Makefile is `$ROOT$/external/liblinear`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
 		3. Compile by running `make` in `$ROOT$/external/liblinear/`
 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm/`
-			- Unpack the directory structure such that the Makefile is `$ROOT$/external/libsvm`
+			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
 		3. Compile by running `make` in `$ROOT$/external/libsvm`
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
