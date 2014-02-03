@@ -63,6 +63,11 @@ namespace HCSearch
 
 	/**************** Search Procedure ****************/
 
+	ISearchProcedure::SearchMetadata::SearchMetadata()
+	{
+		this->saveAnytimePredictions = false;
+	}
+
 	ImgLabeling ISearchProcedure::llSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, SearchMetadata searchMetadata)
 	{

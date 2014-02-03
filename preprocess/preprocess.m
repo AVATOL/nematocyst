@@ -10,7 +10,7 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 %	imagesPath:	folder path to images folder of *.jpg images
 %                   e.g. 'DataRaw/SomeDataset/Images'
 %	labelsPath:	folder path to groundtruth folder of *.jpg label masks
-%                   e.g. 'DataRaw/SomeDataset/Groundtruth'
+%                   e.g. 'DataRaw/SomeDataset/Annotations'
 %	splitsPath:	folder path that contains Train.txt,
 %               Validation.txt, Test.txt
 %                   e.g. 'DataRaw/SomeDataset/Splits'

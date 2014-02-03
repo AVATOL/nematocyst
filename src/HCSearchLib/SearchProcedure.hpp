@@ -55,6 +55,9 @@ namespace HCSearch
 
 			// stochastic iteration
 			int iter;
+
+		public:
+			SearchMetadata();
 		};
 	
 	protected:
