@@ -42,6 +42,23 @@ using namespace std;
  * 
  * This section shows how to quickly get started by walking through a small demo program.
  * 
+ * @subsection preprocess_sec Preprocessing
+ * 
+ * 1. Create folder $ROOT/DataPreprocessed/.
+ * 2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in Matlab: 
+ * `preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Groundtruth', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )`
+ * This should create files and folders in the $ROOT/DataPreprocessed/SomeDataset/ folder.
+ *
+ * @subsection preprocess_sec HC-Search
+ *
+ * Run the following command from the command line: `./HCSearch $ROOT/DataPreprocessed/SomeDataset $ROOT/Results 5 --learn --infer`
+ *
+ * This learns a heuristic and cost function and then runs LL/HL/LC/HL search with time bound 5. This should create files and folders in $ROOT/Results/
+ * 
+ * @subsection preprocess_sec Postprocessing
+ * 
+ * In development.
+ * 
  * @section api_sec API Overview
  * 
  * @ref api_overview "Check out the API Overview."
@@ -133,7 +150,40 @@ using namespace std;
  * @brief How to use the MATLAB preprocessing modules to extract features and prepare data for HC-Search.
  * @tableofcontents
  * 
- * The following are instructions to use the preprocessing modules.
+ * The purpose of the preprocessing modules is to convert images and groundtruth into a format for the HC-Search program.
+ * 
+ * Note: Make sure VLFeat is set up properly before using a preprocessing module. Check out the installation pages.
+ * 
+ * Let $ROOT denote the root directory containing src/.
+ *
+ * The main preprocessing module is $ROOT/preprocess/preprocess.m 
+ * It accepts three arguments, the path to the images, groundtruth and training/validation/test splits.
+ *
+ * - Put the images (.jpg) in the images folder and the groundtruth masks (.jp) in the groundtruth folder. Corresponding images and groundtruth files must have the same file name!
+ * - Create Train.txt, Validation.txt and Test.txt in the splits folder. In each file, list the file name in the Images folder (without .jpg extension) that belong in each split you want.
+ *
+ * Preprocess function definition reference:
+ * 
+ *		function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPath )
+ *		%PREPROCESS Preprocesses folders of images and groundtruth labels into a
+ *		%data format for HCSearch to work. Performs feature extraction.
+ *		%
+ *		%This implementation creates a regular grid of HOG/SIFT patches.
+ *		%Therefore only need grayscale images.
+ *		%
+ *		%One can change the features (e.g. add color) by editing this file.
+ *		%
+ *		%   imagesPath: folder path to images folder of *.jpg images
+ *		%                   e.g. 'DataRaw/SomeDataset/Images'
+ *		%   labelsPath: folder path to groundtruth folder of *.jpg label masks
+ *		%                   e.g. 'DataRaw/SomeDataset/Groundtruth'
+ *		%   splitsPath: folder path that contains Train.txt,
+ *		%               Validation.txt, Test.txt
+ *		%                   e.g. 'DataRaw/SomeDataset/Splits'
+ *		%   outputPath: folder path to output preprocessed data
+ *		%                   e.g. 'DataPreprocessed/SomeDataset'
+ *		%
+ *		%   allData:    data structure containing all preprocessed data
  */
 
  /*!
@@ -142,6 +192,8 @@ using namespace std;
  * @tableofcontents
  * 
  * The following are instructions to use the postprocessing modules.
+ * 
+ * In development.
  */
 
  /*!
@@ -167,17 +219,24 @@ using namespace std;
  *	- LIBLINEAR
  *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
  *		2. Unpack to $ROOT/external/liblinear/
- *	- LIBSVM
+ *	- LIBSVM (optional - if you use SVM for initial state in HC-Search)
  *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
  *		2. Unpack to $ROOT/external/libsvm/
+ *	- VLFeat (optional - if you use preprocessing modules)
+ *		1. Download from http://www.vlfeat.org/
+ *		2. Unpack to $ROOT/external/vlfeat/
  * 
- * 2. Run the provided binary executable `HCSearch.exe` (make sure it is in $ROOT/external/).
- * 
- * 3. If you prefer to compile from source...
+ * 2. The provided binary executable `HCSearch.exe` should now work (make sure it is in $ROOT/external/). 
+ * If you prefer to compile from source...
  *
  *		1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
  *		2. Build the solution. Make sure it is on Release.
  *		3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
+ *
+ * 3. To set up VLFeat for the preprocessing modules, follow these instructions:
+ *	1. Launch MATLAB. Run the following command in MATLAB: `run('$ROOT/external/vlfeat/toolbox/vl_setsup')` or wherever it is installed.
+ *		- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
+ *	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
@@ -220,12 +279,20 @@ using namespace std;
  *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
  *		2. Unpack to $ROOT/external/liblinear/
  *		3. Compile by running `make` in $ROOT/external/liblinear/
- *	- LIBSVM
+ *	- LIBSVM (optional - if you use SVM for initial state in HC-Search)
  *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
  *		2. Unpack to $ROOT/external/libsvm/
  *		3. Compile by running `make` in $ROOT/external/libsvm/
+ *	- VLFeat (optional - if you use preprocessing modules)
+ *		1. Download from http://www.vlfeat.org/
+ *		2. Unpack to $ROOT/external/vlfeat/
  * 
- * 2. Compile from source by running `make` in $ROOT.
+ * 2. Compile from source by running `make` in $ROOT/.
+ *
+ * 3. To set up VLFeat for the preprocessing modules, follow these instructions:
+ *	1. Launch MATLAB. Run the following command in MATLAB: `run('$ROOT/external/vlfeat/toolbox/vl_setsup')` or wherever it is installed.
+ *		- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
+ *	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
@@ -249,6 +316,8 @@ using namespace std;
  * @tableofcontents
  * 
  * The following are Mac OS X installation instructions.
+ *
+ * In development.
  */
 
 /////////////////////////////////////////////////////////
