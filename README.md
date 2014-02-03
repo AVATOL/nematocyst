@@ -64,19 +64,22 @@ Let $ROOT denote the root directory containing src/.
 
 ## Overview
 
-Usually the pipeline is along the lines of this:
+Usually the following is the pipeline:
 
-Input: Images, groundtruth, and training/validation/test splits
+Input: Images, groundtruth annotations, and training/validation/test splits
 
-1. (Preprocessing Modules) Extract features from images and put into format ready for the HCSearch program.
-2. (HC-Search Learning/Inference) Run HCSearch to learn model and perform inference. Sample usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND --learn --infer
-3. (Postprocessing Modules) Convert result files from HC-Search into format suitable for visualization, evaluation and further analysis.
+1. (Preprocessing Modules) Extract features from images and put into format ready for the HC-Search program.
+2. (HC-Search Training) Run HC-Search to learn models. Sample usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND --learn H --learn C
+3. (HC-Search Testing) Run HC-Search to perform inference. Sample usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND --infer HC
+4. (Postprocessing Modules) Convert result files from HC-Search into format suitable for visualization, evaluation and further analysis.
 
 Output: Evaluation, visualization and analysis of inference on test images
 
-## Quick Demo
+The next two sections explains how to get started. You can run the HCSearch application directly or use the API for your C++ programs.
 
-If you are just interested in getting something running, then this is the section. Please first read the Installation Instructions section.
+## Quick Start (Application)
+
+ This section shows how to quickly get started if you just want to use the binary executable and not the API. This is useful if you only need to use the built-in search spaces and search procedures. This section will walk through a sample scenario. Let `$ROOT` denote the root directory containing `src`. Please first read the Installation Instructions section.
 
 ### Setup Images, Groundtruth and Train/Validation/Test Splits
 
@@ -93,7 +96,7 @@ This should create files and folders in the $ROOT/DataPreprocessed/SomeDataset/ 
 
 ### HC-Search Learn/Infer
 
-1. Run the following command from the command line: ./HCSearch $ROOT/DataPreprocessed/SomeDataset $ROOT/Results 5 --learn --infer
+Run the following command from the command line: ./HCSearch $ROOT/DataPreprocessed/SomeDataset $ROOT/Results 5 --learn --infer
 This learns a heuristic and cost function and then runs LL/HL/LC/HL search. 
 This should create files and folders in $ROOT/Results/
 
@@ -101,14 +104,76 @@ This should create files and folders in $ROOT/Results/
 
 Coming soon.
 
-## Preprocessing Module
+## Quick Start (API)
+
+This section shows how to quickly get started if you want to use the API in your C++ program. This is necessary if you want to define your own search space and search procedure.
+
+The HCSearchLib is a static library. You can build it and then link it to your C++ projects.
+
+The following is a snippet of demo code using the API. It loads the dataset, learns the heuristic and cost models, and performs inference on the first test example.
+
+```
+// initialize HCSearch
+HCSearch::Setup::initialize(argc, argv);
+
+// configure settings
+HCSearch::Setup::configure("path/to/input/dir", "path/to/output/dir");
+
+// datasets
+vector< HCSearch::ImgFeatures* > XTrain;
+vector< HCSearch::ImgLabeling* > YTrain;
+vector< HCSearch::ImgFeatures* > XValidation;
+vector< HCSearch::ImgLabeling* > YValidation;
+vector< HCSearch::ImgFeatures* > XTest;
+vector< HCSearch::ImgLabeling* > YTest;
+
+// load dataset
+HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+
+// load search space functions and search space
+HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
+HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
+HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
+HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
+HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+HCSearch::SearchSpace* searchSpace = new  HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
+
+// load search procedure
+HCSearch::ISearchProcedure* searchProcedure = new HCSearch::GreedySearchProcedure();
+
+// train H
+HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
+timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
+
+// train C
+HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
+heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
+
+// run HC search inference on the first test example for demo
+HCSearch::ISearchProcedure::SearchMetadata searchMetadata; // no meta data needed for this demo
+HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
+
+// save models for later use
+HCSearch::Model::saveModel(heuristicModel, "path/to/heuristic/model.txt", HCSearch::SVM_RANK);
+HCSearch::Model::saveModel(costModel, "path/to/cost/model.txt", HCSearch::SVM_RANK);
+
+// clean up
+HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+
+// finalize for exiting
+HCSearch::Setup::finalize();
+```
+
+## More Details
+
+### Preprocessing Module
 
 The preprocessing modules are written in MATLAB. Before running them, make sure to set up VLFeat:
 
 1. Download and extract VLFeat to $ROOT/external/vlfeat/ (or some other location) if not already done.
 2. Launch MATLAB. Run the following command in MATLAB: run('$ROOT/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
-	- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
-3. Verify is set up properly by running the following command in MATLAB: vl_version
+	- Alternatively, add the line to your startup.m file to automatically run this every time MATLAB starts.
+3. Verify it is set up properly by running the following command in MATLAB: vl_version
 
 The main preprocessing module is $ROOT/preprocess/preprocess.m:
 
@@ -135,7 +200,7 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 %	allData:	data structure containing all preprocessed data
 ```
 
-## HC-Search Command Line Options
+### HC-Search Command Line Options
 
 ```
 Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND [--learn (H|C|COH)]* [--infer (HC|HL|LC|LL)]* ... [--option=value]
@@ -171,7 +236,7 @@ Notes:
 * Can use multiple --infer and --learn options in any order to define a schedule. Must come after the mandatory arguments.
 ```
 
-## Postprocessing Module
+### Postprocessing Module
 
 Coming soon.
 
