@@ -24,9 +24,9 @@ using namespace std;
  * 
  * @section overview_sec HC-Search Overview
  * 
- * HC-Search is a learning and inference framework for structured prediction. This is an implementation of HC-Search primarily geared toward scene labeling for computer vision, but may be adapted to other computer vision tasks.
+ * <b>%HC-Search</b> is a learning and inference framework for structured prediction. This is an implementation of <b>%HC-Search</b> primarily geared toward scene labeling for computer vision, but may be adapted to other computer vision tasks.
  *
- * The HC-Search framework allows you to define a search space and search procedure to perform structured prediction. HC-Search learns a heuristic function to uncover high quality candidates and a cost function to select the best candidate.
+ * The <b>%HC-Search</b> framework allows you to define a search space and search procedure to perform structured prediction. <b>%HC-Search</b> learns a heuristic function to uncover high quality candidates and a cost function to select the best candidate.
  *
  * A search space consists of a heuristic feature function, cost feature function, initial state function, successor function and loss function. A search procedure can be anything that you define, including the commonly used greedy search and beam search. Our implementation allows you to define all of these components.
  * 
@@ -44,22 +44,28 @@ using namespace std;
  * 
  * @section quickstart_sec Quick Start
  * 
- * This section shows how to quickly get started by walking through a small demo program.
+ * This section shows how to quickly get started by walking through a small demo program. Let $ROOT denote the root directory containing src/.
  * 
- * @subsection preprocess_sec Preprocessing
+ * @subsection setup_subsec Setup
+ *
+ * 1. Create a folder $ROOT/DataRaw/SomeDataset/. Create additional folders in it: Groundtruth/, Images/ and Splits/
+ * 2. Put the images (.jpg) in the Images/ folder and the groundtruth masks (.jp) in the Groundtruth folder. Corresponding images and groundtruth files must have the same file name!
+ * 3. Create Train.txt, Validation.txt and Test.txt in Splits/. In each file, list the file name in the Images folder (without .jpg extension) that belong in each split you want.
+ *
+ * @subsection preprocess_subsec Preprocessing
  * 
  * 1. Create folder $ROOT/DataPreprocessed/.
  * 2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in Matlab: 
  * `preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Groundtruth', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )`
  * This should create files and folders in the $ROOT/DataPreprocessed/SomeDataset/ folder.
  *
- * @subsection preprocess_sec HC-Search
+ * @subsection hcsearch_subsec HC-Search
  *
  * Run the following command from the command line: `./HCSearch $ROOT/DataPreprocessed/SomeDataset $ROOT/Results 5 --learn --infer`
  *
  * This learns a heuristic and cost function and then runs LL/HL/LC/HL search with time bound 5. This should create files and folders in $ROOT/Results/
  * 
- * @subsection preprocess_sec Postprocessing
+ * @subsection postprocess_subsec Postprocessing
  * 
  * In development.
  * 
@@ -73,6 +79,7 @@ using namespace std;
  * - SVM-Rank (<http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html>)
  * - LIBLINEAR (<http://www.csie.ntu.edu.tw/~cjlin/liblinear/>)
  * - LIBSVM (<http://www.csie.ntu.edu.tw/~cjlin/libsvm/>)
+ * - VLFeat (<http://www.vlfeat.org/>)
  * - C++ STL (<http://www.sgi.com/tech/stl>)
  * 
  */
@@ -233,9 +240,9 @@ using namespace std;
  * 2. The provided binary executable `HCSearch.exe` should now work (make sure it is in $ROOT/external/). 
  * If you prefer to compile from source...
  *
- *		1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
- *		2. Build the solution. Make sure it is on Release.
- *		3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
+ *	1. Open $ROOT/src/HCSearch.sln in Microsoft Visual Studio 2012 or later.
+ *	2. Build the solution. Make sure it is on Release.
+ *	3. Move $ROOT/src/Release/HCSearch.exe to $ROOT/HCSearch.exe.
  *
  * 3. To set up VLFeat for the preprocessing modules, follow these instructions:
  *	1. Launch MATLAB. Run the following command in MATLAB: `run('$ROOT/external/vlfeat/toolbox/vl_setsup')` or wherever it is installed.
@@ -247,8 +254,6 @@ using namespace std;
  * To take advantage of parallelism, you need to install MPICH2. 
  * Check out the following website for downloading: 
  * http://www.mpich.org/downloads/
- * 
- * Other than that, just use the provided binary called 'HCSearchMPI.exe' instead of 'HCSearch.exe'.
  * 
  * To build from source, make sure the USE_MPI preprocessor flag is defined. 
  * In Microsoft Visual Studio 2012, open up the property pages for each project and edit Preprocessor Definitions.
