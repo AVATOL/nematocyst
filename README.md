@@ -1,7 +1,7 @@
-hcsearchcv
+HC-SEARCH::CV
 ==========
 
-HC-Search Learning and Inference Framework for Computer Vision
+HC-Search Structured Prediction Framework for Computer Vision
 
 ## Introduction
 
@@ -9,7 +9,7 @@ HC-Search is a learning and inference framework for structured prediction. This 
 
 The HC-Search framework allows you to define a search space and search procedure to perform structured prediction. HC-Search learns a heuristic function to uncover high quality candidates and a cost function to select the best candidate.
 
-A search space consists of heuristic feature function, cost feature function, initial state function, successor function and loss function. A search procedure can be anything that you define, including the commonly used greedy search and beam search. Our implementation allows you to define all of these components.
+A search space consists of a heuristic feature function, cost feature function, initial state function, successor function and loss function. A search procedure can be anything that you define, including the commonly used greedy search and beam search. Our implementation allows you to define all of these components.
 
 ## Installation Instructions
 
@@ -87,7 +87,7 @@ If you are just interested in getting something running, then this is the sectio
 ### Preprocessing
 
 1. Create folder $ROOT/DataPreprocessed/.
-2. Open MATLAB, make sure VLFeat is set up properly, and run the following command in Matlab: 
+2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in Matlab: 
 preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Groundtruth', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )
 This should create files and folders in the $ROOT/DataPreprocessed/SomeDataset/ folder.
 
