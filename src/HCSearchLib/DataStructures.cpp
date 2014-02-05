@@ -18,6 +18,8 @@ namespace HCSearch
 
 	ImgFeatures::ImgFeatures()
 	{
+		this->filename = "";
+		this->segmentsAvailable = false;
 	}
 
 	ImgFeatures::~ImgFeatures()

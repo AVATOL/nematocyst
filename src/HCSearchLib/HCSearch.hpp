@@ -525,6 +525,8 @@ namespace HCSearch
 		static void computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end);
 
 	private:
+		static void loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet);
+
 		/*!
 		 * Read split file (Train.txt, Validation.txt, Test.txt).
 		 * @param[in] filename Path to split file
@@ -563,8 +565,6 @@ namespace HCSearch
 		 * @param[out] edges Integer matrix storing node IDs
 		 */
 		static void readSegmentsFile(string filename, MatrixXi& segments);
-
-		static void loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet);
 	};
 
 	/*! @} */

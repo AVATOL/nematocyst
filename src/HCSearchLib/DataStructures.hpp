@@ -100,6 +100,15 @@ namespace HCSearch
 		 */
 		string filename;
 
+		/*!
+		 * Segments matrix that has node IDs.
+		 * Dimensions: original image height x original image width
+		 * Make sure to check if they are available using ImgLabeling::segmentsAvailable.
+		 */
+		MatrixXi segments;
+
+		bool segmentsAvailable;
+
 	public:
 		ImgFeatures();
 		~ImgFeatures();
