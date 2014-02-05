@@ -33,10 +33,7 @@ int main(int argc, char* argv[])
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 
-	// print schedule
-	printSchedule(po);
-
-	// print other useful information
+	// print useful information
 	printInfo(po);
 
 	// demo or run full program
@@ -401,7 +398,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 }
 
-void printSchedule(MyProgramOptions::ProgramOptions po)
+void printInfo(MyProgramOptions::ProgramOptions po)
 {
 	cout << "=== Program Schedule ===" << endl;
 
@@ -415,10 +412,7 @@ void printSchedule(MyProgramOptions::ProgramOptions po)
 	}
 
 	cout << endl;
-}
 
-void printInfo(MyProgramOptions::ProgramOptions po)
-{
 	cout << "=== Program Options ===" << endl;
 	cout << "Rank learner: " << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
 	cout << "Num training iterations: " << po.numTrainIterations << endl;
