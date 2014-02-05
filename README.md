@@ -231,13 +231,15 @@ Main options:
 				H: learn heuristic
 				C: learn cost
 				COH: learn cost with oracle H
-				(none): short-hand for H, C, COH
+				ALL: short-hand for H, C, COH
+				(none): short-hand for H, C
 	--infer arg	: inference
 				HC: learned heuristic and cost
 				HL: learned heuristic and oracle cost
 				LC: oracle heuristic and learned cost
 				LL: oracle heuristic and cost
-				(none): short-hand for HC, HL, LC, LL
+				ALL: short-hand for HC, HL, LC, LL
+				(none): short-hand for HC
 
 Advanced options:
 	--anytime arg			: turn on  saving anytime predictions if true
