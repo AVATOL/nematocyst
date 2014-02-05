@@ -102,7 +102,7 @@ for i = 1:nFiles
     %% write meta file
     fid = fopen([outputPath '/meta/' metaFile], 'w');
     fprintf(fid, 'nodes=%d\n', size(allData{i}.feat2, 1));
-    fprintf(fid, 'features=%d', size(allData{i}.feat2, 2));
+    fprintf(fid, 'features=%d\n', size(allData{i}.feat2, 2));
     fprintf(fid, 'height=%d\n', size(allData{i}.segs2, 1));
     fprintf(fid, 'width=%d', size(allData{i}.segs2, 2));
     fclose(fid);
