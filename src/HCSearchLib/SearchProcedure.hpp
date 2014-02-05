@@ -24,6 +24,11 @@ namespace HCSearch
 		 * Save the stochastic cuts of the labeling.
 		 */
 		static void saveCuts(ImgLabeling& YPred, string fileName);
+
+		/*!
+		 * Save the labeling as a label mask using the segments data.
+		 */
+		static void saveLabelMask(ImgFeatures& X, ImgLabeling& YPred, string fileName);
 	};
 
 	/*!

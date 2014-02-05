@@ -62,6 +62,39 @@ namespace HCSearch
 		}
 	}
 
+	void SavePrediction::saveLabelMask(ImgFeatures& X, ImgLabeling& YPred, string fileName)
+	{
+		if (!X.segmentsAvailable)
+		{
+			cerr << "[Error] no segments data available to write!" << endl;
+			return;
+		}
+
+		// write to file
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			const int height = X.segments.rows();
+			const int width = X.segments.cols();
+			for (int row = 0; row < height; row++)
+			{
+				for (int col = 0; col < width; col++)
+				{
+					int segmentID = X.segments(row, col);
+					int label = YPred.getLabel(segmentID);
+					fh << label << " ";
+				}
+				fh << endl;
+			}
+
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open file to write label mask!" << endl;
+		}
+	}
+
 	/**************** Search Procedure ****************/
 
 	ISearchProcedure::SearchMetadata::SearchMetadata()

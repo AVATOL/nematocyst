@@ -251,12 +251,22 @@ void run(MyProgramOptions::ProgramOptions po)
 					// save the prediction
 					stringstream ssPredictNodes;
 					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
 						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 						<< "_time" << timeBound 
 							<< "_fold" << meta.iter 
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+					// save the prediction mask
+					stringstream ssPredictSegments;
+					ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+						<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+						<< "_time" << timeBound 
+							<< "_fold" << meta.iter 
+							<< "_" << meta.exampleName << ".txt";
+					HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
 				}
 			}
 
@@ -292,12 +302,22 @@ void run(MyProgramOptions::ProgramOptions po)
 					// save the prediction
 					stringstream ssPredictNodes;
 					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
+						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
 						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 						<< "_time" << timeBound 
 							<< "_fold" << meta.iter 
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+					// save the prediction mask
+					stringstream ssPredictSegments;
+					ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+						<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+						<< "_time" << timeBound 
+							<< "_fold" << meta.iter 
+							<< "_" << meta.exampleName << ".txt";
+					HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
 				}
 			}
 
@@ -334,12 +354,22 @@ void run(MyProgramOptions::ProgramOptions po)
 					// save the prediction
 					stringstream ssPredictNodes;
 					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
+						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
 						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 						<< "_time" << timeBound 
 							<< "_fold" << meta.iter 
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+					// save the prediction mask
+					stringstream ssPredictSegments;
+					ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+						<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+						<< "_time" << timeBound 
+							<< "_fold" << meta.iter 
+							<< "_" << meta.exampleName << ".txt";
+					HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
 				}
 			}
 
@@ -377,12 +407,22 @@ void run(MyProgramOptions::ProgramOptions po)
 					// save the prediction
 					stringstream ssPredictNodes;
 					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
 						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 						<< "_time" << timeBound 
 							<< "_fold" << meta.iter 
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+					// save the prediction mask
+					stringstream ssPredictSegments;
+					ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+						<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+						<< "_time" << timeBound 
+							<< "_fold" << meta.iter 
+							<< "_" << meta.exampleName << ".txt";
+					HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
 				}
 			}
 
