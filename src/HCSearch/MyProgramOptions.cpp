@@ -95,18 +95,22 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
-					else
+					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);
 						po.schedule.push_back(HCSearch::LEARN_C);
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
+					}
+					else
+					{
+						po.schedule.push_back(HCSearch::LEARN_H);
+						po.schedule.push_back(HCSearch::LEARN_C);
 					}
 				}
 				else
 				{
 					po.schedule.push_back(HCSearch::LEARN_H);
 					po.schedule.push_back(HCSearch::LEARN_C);
-					po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 				}
 			}
 			else if (strcmp(argv[i], "--infer") == 0)
@@ -121,20 +125,21 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
-					else
+					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::HC);
 						po.schedule.push_back(HCSearch::HL);
 						po.schedule.push_back(HCSearch::LC);
 						po.schedule.push_back(HCSearch::LL);
 					}
+					else
+					{
+						po.schedule.push_back(HCSearch::HC);
+					}
 				}
 				else
 				{
 					po.schedule.push_back(HCSearch::HC);
-					po.schedule.push_back(HCSearch::HL);
-					po.schedule.push_back(HCSearch::LC);
-					po.schedule.push_back(HCSearch::LL);
 				}
 			}
 			else if (strcmp(argv[i], "--learner") == 0)
@@ -256,13 +261,15 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
-		cerr << "\t\t\t\t(none): short-hand for H, C, COH" << endl;
+		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
+		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
 		cerr << "\t--infer arg\t" << ": inference" << endl;
 		cerr << "\t\t\t\tHC: learned heuristic and cost" << endl;
 		cerr << "\t\t\t\tHL: learned heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
-		cerr << "\t\t\t\t(none): short-hand for HC, HL, LC, LL" << endl;
+		cerr << "\t\t\t\tALL: short-hand for HC, HL, LC, LL" << endl;
+		cerr << "\t\t\t\t(none): short-hand for HC" << endl;
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
