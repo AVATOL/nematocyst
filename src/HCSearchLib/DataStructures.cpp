@@ -365,8 +365,8 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[Error] online ranker not initialized for ranking" << endl;
-			exit(1);
+			cout << "Initializing online rank weights..." << endl;
+			initialize(features.data.size());
 		}
 
 		return vectorDot(getAvgWeights(), features.data);
@@ -414,8 +414,8 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[Error] online ranker not initialized for updating" << endl;
-			exit(1);
+			cout << "Initializing online rank weights..." << endl;
+			initialize(featureDiff.size());
 		}
 
 		double tauNumerator = sqrt(delta) - vectorDot(getLatestWeights(), featureDiff);

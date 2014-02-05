@@ -149,38 +149,75 @@ namespace HCSearch
 
 	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< ISearchNode* > successorSet)
 	{
+		vector< RankFeatures > bestFeatures;
+		vector< RankFeatures > worstFeatures;
+		vector< double > bestLosses;
+		vector< double > worstLosses;
+
+		// best states
+		for (vector< ISearchNode* >::iterator it = successorSet.begin(); it != successorSet.end(); ++it)
+		{
+			ISearchNode* state = *it;
+			bestFeatures.push_back(state->getHeuristicFeatures());
+			bestLosses.push_back(state->getHeuristic());
+		}
+
+		// worst states
+		SearchNodeHeuristicPQ tempSet;
+		while (!candidateSet.empty())
+		{
+			ISearchNode* state = candidateSet.top();
+			worstFeatures.push_back(state->getHeuristicFeatures());
+			worstLosses.push_back(state->getHeuristic());
+			tempSet.push(state);
+			candidateSet.pop();
+		}
+		candidateSet = tempSet;
+
+		// train depending on ranker
 		if (ranker->rankerType() == SVM_RANK)
 		{
-			vector< RankFeatures > bestFeatures;
-			vector< RankFeatures > worstFeatures;
-
-			// best states
-			for (vector< ISearchNode* >::iterator it = successorSet.begin(); it != successorSet.end(); ++it)
-			{
-				ISearchNode* state = *it;
-				bestFeatures.push_back(state->getHeuristicFeatures());
-			}
-
-			// worst states
-			SearchNodeHeuristicPQ tempSet;
-			while (!candidateSet.empty())
-			{
-				ISearchNode* state = candidateSet.top();
-				worstFeatures.push_back(state->getHeuristicFeatures());
-				tempSet.push(state);
-				candidateSet.pop();
-			}
-			candidateSet = tempSet;
-
 			// train
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
 		}
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
+
+			// find the best scoring output in the best set according to the current heuristic model
+			RankFeatures bestHeuristicFeature;
+			double bestScore;
+			double bestLoss;
+
+			const int numBestFeatures = bestFeatures.size();
+			for (int i = 0; i < numBestFeatures; i++)
+			{
+				RankFeatures feature = bestFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (i == 0 || score <= bestScore)
+				{
+					bestHeuristicFeature = feature;
+					bestScore = score;
+					bestLoss = bestLosses[i];
+				}
+			}
+
+			// perform update
+			const int numWorstFeatures = worstFeatures.size();
+			for (int i = 0; i < numWorstFeatures; i++)
+			{
+				RankFeatures worseFeature = worstFeatures[i];
+				double score = onlineRankModel->rank(worseFeature);
+				double bestScore = onlineRankModel->rank(bestHeuristicFeature);
+
+				if (score >= bestScore)
+				{
+					double delta = worstLosses[i] - bestLoss;
+					VectorXd featureDiff = bestHeuristicFeature.data - worseFeature.data;
+					onlineRankModel->performOnlineUpdate(delta, featureDiff);
+				}
+			}
 		}
 		else
 		{
@@ -191,30 +228,35 @@ namespace HCSearch
 
 	void ISearchProcedure::trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet)
 	{
+		vector< RankFeatures > bestFeatures;
+		vector< RankFeatures > worstFeatures;
+		vector< double > bestLosses;
+		vector< double > worstLosses;
+
+		// get best states
+		double overallBestLoss = costSet.top()->getCost();
+		while (!costSet.empty() && costSet.top()->getCost() <= overallBestLoss)
+		{
+			ISearchNode* state = costSet.top();
+			bestFeatures.push_back(state->getCostFeatures());
+			bestLosses.push_back(state->getCost());
+			costSet.pop();
+			delete state;
+		}
+
+		// get worst states
+		while (!costSet.empty())
+		{
+			ISearchNode* state = costSet.top();
+			worstFeatures.push_back(state->getCostFeatures());
+			worstLosses.push_back(state->getCost());
+			costSet.pop();
+			delete state;
+		}
+
+		// train depending on ranker
 		if (ranker->rankerType() == SVM_RANK)
 		{
-			vector< RankFeatures > bestFeatures;
-			vector< RankFeatures > worstFeatures;
-
-			// get best states
-			double bestLoss = costSet.top()->getCost();
-			while (!costSet.empty() && costSet.top()->getCost() <= bestLoss)
-			{
-				ISearchNode* state = costSet.top();
-				bestFeatures.push_back(state->getCostFeatures());
-				costSet.pop();
-				delete state;
-			}
-
-			// get worst states
-			while (!costSet.empty())
-			{
-				ISearchNode* state = costSet.top();
-				worstFeatures.push_back(state->getCostFeatures());
-				costSet.pop();
-				delete state;
-			}
-
 			// train
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
@@ -222,9 +264,70 @@ namespace HCSearch
 		}
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
+
+			// find the best scoring output overall according to the current cost model
+			double bestScore;
+			bool fromWorstSet = false;
+
+			const int numBestFeatures = bestFeatures.size();
+			for (int i = 0; i < numBestFeatures; i++)
+			{
+				RankFeatures feature = bestFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (i == 0 || score <= bestScore)
+				{
+					bestScore = score;
+				}
+			}
+			const int numWorstFeatures = worstFeatures.size();
+			for (int i = 0; i < numWorstFeatures; i++)
+			{
+				RankFeatures feature = worstFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (score <= bestScore)
+				{
+					bestScore = score;
+					bool fromWorstSet = true;
+				}
+			}
+
+			// perform update if necessary
+			if (fromWorstSet)
+			{
+				// find best scoring output in the best set according to current weights
+				RankFeatures bestCostFeature;
+				double bestScore;
+				double bestLoss;
+
+				const int numBestFeatures = bestFeatures.size();
+				for (int i = 0; i < numBestFeatures; i++)
+				{
+					RankFeatures feature = bestFeatures[i];
+					double score = onlineRankModel->rank(feature);
+					if (i == 0 || score < bestScore)
+					{
+						bestCostFeature = feature;
+						bestScore = score;
+						bestLoss = bestLosses[i];
+					}
+				}
+
+				// perform update
+				for (int i = 0; i < numWorstFeatures; i++)
+				{
+					RankFeatures worseFeature = worstFeatures[i];
+					double score = onlineRankModel->rank(worseFeature);
+					double bestScore = onlineRankModel->rank(bestCostFeature);
+
+					if (score >= bestScore)
+					{
+						double delta = worstLosses[i] - bestLoss;
+						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
+						onlineRankModel->performOnlineUpdate(delta, featureDiff);
+					}
+				}
+			}
 		}
 		else
 		{

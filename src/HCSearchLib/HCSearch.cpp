@@ -848,9 +848,8 @@ namespace HCSearch
 		}
 		else if (rankerType == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			learningModel = new OnlineRankModel();
+			// at this point, it is still not initialized!
 		}
 		else
 		{
@@ -880,9 +879,7 @@ namespace HCSearch
 		}
 		else if (learningModel->rankerType() == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			// do nothing - online weights just stay persistent
 		}
 		else
 		{
