@@ -418,6 +418,8 @@ namespace HCSearch
 			initialize(featureDiff.size());
 		}
 
+		cout << "Performing online update..." << endl;
+
 		double tauNumerator = sqrt(delta) - vectorDot(getLatestWeights(), featureDiff);
 		double tauDenominator = pow(featureDiff.norm(), 2);
 
