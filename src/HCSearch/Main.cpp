@@ -431,6 +431,15 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 	{
 		cout << "=== Paths ===" << endl;
 
+		cout << "EXTERNAL_DIR: " << HCSearch::Global::settings->paths->EXTERNAL_DIR << endl;
+		cout << "INPUT_DIR: " << HCSearch::Global::settings->paths->INPUT_DIR  << endl;
+		cout << "OUTPUT_DIR: " << HCSearch::Global::settings->paths->OUTPUT_DIR  << endl;
+		cout << "LIBLINEAR_DIR: " << HCSearch::Global::settings->paths->LIBLINEAR_DIR  << endl;
+		cout << "LIBSVM_DIR: " << HCSearch::Global::settings->paths->LIBSVM_DIR  << endl;
+		cout << "SVMRANK_DIR: " << HCSearch::Global::settings->paths->SVMRANK_DIR  << endl;
+
+		cout << endl;
+
 		cout << "INPUT_NODES_DIR: " << HCSearch::Global::settings->paths->INPUT_NODES_DIR << endl;
 		cout << "INPUT_EDGES_DIR: " << HCSearch::Global::settings->paths->INPUT_EDGES_DIR  << endl;
 		cout << "INPUT_META_DIR: " << HCSearch::Global::settings->paths->INPUT_META_DIR  << endl;
