@@ -134,17 +134,6 @@ namespace HCSearch
 	{
 		return SVM_RANK;
 	}
-	
-	VectorXd SVMRankModel::getWeights()
-	{
-		if (!this->initialized)
-		{
-			cerr << "[Error] svm ranker not initialized for getting weights" << endl;
-			exit(1);
-		}
-
-		return this->weights;
-	}
 
 	void SVMRankModel::load(string fileName)
 	{
@@ -155,6 +144,17 @@ namespace HCSearch
 	void SVMRankModel::save(string fileName)
 	{
 		writeModelFile(fileName, this->weights);
+	}
+	
+	VectorXd SVMRankModel::getWeights()
+	{
+		if (!this->initialized)
+		{
+			cerr << "[Error] svm ranker not initialized for getting weights" << endl;
+			exit(1);
+		}
+
+		return this->weights;
 	}
 
 	void SVMRankModel::startTraining(string featuresFileName)
@@ -377,6 +377,17 @@ namespace HCSearch
 		return ONLINE_RANK;
 	}
 
+	void OnlineRankModel::load(string fileName)
+	{
+		parseModelFile(fileName, this->latestWeights, this->cumSumWeights, this->numSum);
+		this->initialized = true;
+	}
+
+	void OnlineRankModel::save(string fileName)
+	{
+		writeModelFile(fileName, this->latestWeights, this->cumSumWeights, this->numSum);
+	}
+
 	VectorXd OnlineRankModel::getLatestWeights()
 	{
 		if (!initialized)
@@ -428,17 +439,6 @@ namespace HCSearch
 			this->cumSumWeights += newWeights;
 			this->numSum += 1;
 		}
-	}
-
-	void OnlineRankModel::load(string fileName)
-	{
-		parseModelFile(fileName, this->latestWeights, this->cumSumWeights, this->numSum);
-		this->initialized = true;
-	}
-
-	void OnlineRankModel::save(string fileName)
-	{
-		writeModelFile(fileName, this->latestWeights, this->cumSumWeights, this->numSum);
 	}
 
 	void OnlineRankModel::initialize(int dim)

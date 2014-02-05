@@ -260,6 +260,16 @@ namespace HCSearch
 		 */
 		virtual RankerType rankerType()=0;
 
+		/*!
+		 * Load weights data from file.
+		 */
+		virtual void load(string fileName)=0;
+
+		/*!
+		 * Save weights data to file.
+		 */
+		virtual void save(string fileName)=0;
+
 	protected:
 		/*!
 		 * Manual implementation of the vector dot product. 
@@ -325,21 +335,13 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
-		
+		virtual void load(string fileName);
+		virtual void save(string fileName);
+
 		/*!
 		 * Get weights.
 		 */
 		VectorXd getWeights();
-
-		/*!
-		 * Load weights from file.
-		 */
-		void load(string fileName);
-
-		/*!
-		 * Save weights data to file.
-		 */
-		void save(string fileName);
 
 		/*!
 		 * Initialize learning.
@@ -422,6 +424,8 @@ namespace HCSearch
 
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual void load(string fileName);
+		virtual void save(string fileName);
 
 		/*!
 		 * Get latest weights.
@@ -439,16 +443,6 @@ namespace HCSearch
 		 * - featureDiff = feature (good) - feature (bad)
 		 */
 		void performOnlineUpdate(double delta, VectorXd featureDiff);
-
-		/*!
-		 * Load weights data from file.
-		 */
-		void load(string fileName);
-
-		/*!
-		 * Save weights data to file.
-		 */
-		void save(string fileName);
 		
 		/*!
 		 * Initialize weights to zero vector with dimension dim.
