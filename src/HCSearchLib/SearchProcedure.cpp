@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "SearchProcedure.hpp"
 #include "Globals.hpp"
 
@@ -339,6 +340,8 @@ namespace HCSearch
 	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
+		clock_t tic = clock();
+
 		// set up priority queues
 		// maintain open set for search
 		// maintain cost set for returning best cost in the end
@@ -432,7 +435,7 @@ namespace HCSearch
 		// Get lowest cost node
 		ISearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
-		cout << endl << "Finished search. Cost=" << lowestCost->getCost() << endl << endl;
+		cout << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
@@ -440,6 +443,9 @@ namespace HCSearch
 
 		// clean up cost set
 		deleteQueueElements(costSet);
+
+		clock_t toc = clock();
+		cout << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return prediction;
 	}

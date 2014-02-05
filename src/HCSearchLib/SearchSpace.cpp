@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <ctime>
 #include "MyFileSystem.hpp"
 #include "SearchSpace.hpp"
 #include "Settings.hpp"
@@ -412,6 +413,8 @@ namespace HCSearch
 	
 	vector< ImgLabeling > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
+		clock_t tic = clock();
+
 		vector<ImgLabeling> successors;
 
 		// for all nodes
@@ -455,6 +458,9 @@ namespace HCSearch
 
 		cout << "num successors=" << successors.size() << endl;
 
+		clock_t toc = clock();
+		cout << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
 		return successors;
 	}
 
@@ -478,6 +484,8 @@ namespace HCSearch
 	
 	vector< ImgLabeling > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
+		clock_t tic = clock();
+
 		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
 		cout << "Using threshold=" << threshold << endl;
 
@@ -488,8 +496,11 @@ namespace HCSearch
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
 		cout << "num successors=" << successors.size() << endl;
-
 		delete subgraphs;
+
+		clock_t toc = clock();
+		cout << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
 		return successors;
 	}
 

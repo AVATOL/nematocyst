@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "HCSearch.hpp"
 #include "MyFileSystem.hpp"
 
@@ -724,6 +725,8 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
+		clock_t tic = clock();
+
 		cout << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
@@ -757,6 +760,9 @@ namespace HCSearch
 		// Merge and learn step
 		finishLearning(learningModel, LEARN_H);
 
+		clock_t toc = clock();
+		cout << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
 		return learningModel;
 	}
 
@@ -764,6 +770,8 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
+		clock_t tic = clock();
+
 		cout << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
@@ -797,6 +805,9 @@ namespace HCSearch
 		// Merge and learn step
 		finishLearning(learningModel, LEARN_C);
 
+		clock_t toc = clock();
+		cout << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
 		return learningModel;
 	}
 
@@ -804,6 +815,8 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
+		clock_t tic = clock();
+
 		cout << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
@@ -836,6 +849,9 @@ namespace HCSearch
 		
 		// Merge and learn step
 		finishLearning(learningModel, LEARN_C_ORACLE_H);
+
+		clock_t toc = clock();
+		cout << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}

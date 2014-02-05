@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "../HCSearchLib/HCSearch.hpp"
 #include "MyFileSystem.hpp"
 #include "MyProgramOptions.hpp"
@@ -126,6 +127,8 @@ HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOption
 
 void run(MyProgramOptions::ProgramOptions po)
 {
+	clock_t tic = clock();
+
 	// time bound
 	int timeBound = po.timeBound;
 
@@ -396,6 +399,9 @@ void run(MyProgramOptions::ProgramOptions po)
 	delete searchSpace;
 	delete searchProcedure;
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
+
+	clock_t toc = clock();
+	cout << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 }
 
 void printInfo(MyProgramOptions::ProgramOptions po)
