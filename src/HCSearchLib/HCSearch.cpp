@@ -745,7 +745,12 @@ namespace HCSearch
 				meta.exampleName = XTrain[i]->getFileName();
 				meta.iter = iter;
 
+				// run search
 				searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -780,7 +785,12 @@ namespace HCSearch
 				meta.exampleName = XTrain[i]->getFileName();
 				meta.iter = iter;
 
+				// run search
 				searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -815,7 +825,12 @@ namespace HCSearch
 				meta.exampleName = XTrain[i]->getFileName();
 				meta.iter = iter;
 
+				// run search
 				searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
