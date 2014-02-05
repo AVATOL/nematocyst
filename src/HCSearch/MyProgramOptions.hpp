@@ -57,6 +57,7 @@ namespace MyProgramOptions
 		bool saveFeaturesFiles;
 		int numTrainIterations;
 		int numTestIterations;
+		bool verboseMode;
 
 	public:
 		ProgramOptions();

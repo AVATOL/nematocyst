@@ -51,3 +51,8 @@ HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOption
  * @brief Convenience function to print schedule.
  */
 void printSchedule(MyProgramOptions::ProgramOptions po);
+
+/*!
+ * @brief Convenience function to print useful info.
+ */
+void printInfo(MyProgramOptions::ProgramOptions po);

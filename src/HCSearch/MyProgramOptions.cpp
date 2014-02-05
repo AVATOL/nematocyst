@@ -40,6 +40,7 @@ namespace MyProgramOptions
 		saveFeaturesFiles = false;
 		numTrainIterations = 1;
 		numTestIterations = 1;
+		verboseMode = false;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -237,6 +238,15 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			else if (strcmp(argv[i], "--verbose") == 0)
+			{
+				po.verboseMode = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.verboseMode = false;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -283,6 +293,7 @@ namespace MyProgramOptions
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
 		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic" << endl;
+		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
 		cerr << "Notes:" << endl;
