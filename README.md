@@ -252,6 +252,7 @@ Advanced options:
 	--search arg			: greedy|breadthbeam|bestbeam
 	--splits-path arg		: specify alternate path to splits folder
 	--successor arg			: flipbit|stochastic
+	--verbose arg			: turn on verbose output if true
 
 Notes:
 * The first three arguments are required. They are the input directory, output directory and time bound.
