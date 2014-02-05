@@ -20,6 +20,7 @@ namespace HCSearch
 
 	enum RankerType { SVM_RANK, ONLINE_RANK };
 	const extern string RankerTypeStrings[];
+	const extern bool RankerTypeSaveable[];
 
 	/**************** Class Map ****************/
 
