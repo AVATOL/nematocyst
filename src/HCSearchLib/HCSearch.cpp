@@ -316,136 +316,20 @@ namespace HCSearch
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
 		cout << endl << "Reading from " << trainSplitFile << "..." << endl;
 		vector<string> trainFiles = readSplitsFile(trainSplitFile);
-		for (vector<string>::iterator it = trainFiles.begin(); it != trainFiles.end(); ++it)
-		{
-			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
-
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures;
-			readMetaFile(metaFile, numNodes, numFeatures);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			
-			// push into list
-			XTrain.push_back(X);
-			YTrain.push_back(Y);
-		}
+		loadDatasetHelper(trainFiles, XTrain, YTrain);
 
 		// read in validation data
 		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
 		cout << endl << "Reading from " << validSplitFile << "..." << endl;
 		vector<string> validFiles = readSplitsFile(validSplitFile);
-		for (vector<string>::iterator it = validFiles.begin(); it != validFiles.end(); ++it)
-		{
-			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
-
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures;
-			readMetaFile(metaFile, numNodes, numFeatures);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			
-			// push into list
-			XValidation.push_back(X);
-			YValidation.push_back(Y);
-		}
+		loadDatasetHelper(validFiles, XValidation, YValidation);
 
 		// read in test data
 		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
 		cout << endl << "Reading from " << testSplitFile << "..." << endl;
 		vector<string> testFiles = readSplitsFile(testSplitFile);
-		for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); ++it)
-		{
-			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
+		loadDatasetHelper(testFiles, XTest, YTest);
 
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures;
-			readMetaFile(metaFile, numNodes, numFeatures);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			
-			// push into list
-			XTest.push_back(X);
-			YTest.push_back(Y);
-		}
 		cout << endl;
 	}
 
@@ -540,7 +424,7 @@ namespace HCSearch
 		return filenames;
 	}
 
-	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures)
+	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures, int& height, int& width)
 	{
 		string line;
 		ifstream fh(filename.c_str());
@@ -561,6 +445,14 @@ namespace HCSearch
 				else if (tag.compare("features") == 0)
 				{
 					numFeatures = atoi(num.c_str());
+				}
+				else if (tag.compare("height") == 0)
+				{
+					height = atoi(num.c_str());
+				}
+				else if (tag.compare("width") == 0)
+				{
+					width = atoi(num.c_str());
 				}
 			}
 			fh.close();
@@ -709,6 +601,50 @@ namespace HCSearch
 		{
 			cerr << "[Error] cannot open file to segments data!" << endl;
 			abort();
+		}
+	}
+
+	void Dataset::loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet)
+	{
+		for (vector<string>::iterator it = files.begin(); it != files.end(); ++it)
+		{
+			string filename = *it;
+			cout << "\tLoading " << filename << "..." << endl;
+
+			// read meta file
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
+			int numNodes, numFeatures, height, width;
+			readMetaFile(metaFile, numNodes, numFeatures, height, width);
+
+			// read nodes file
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
+			VectorXi labels = VectorXi::Zero(numNodes);
+			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+			readNodesFile(nodesFile, labels, features);
+
+			// read edges file
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
+			AdjList_t edges;
+			readEdgesFile(edgesFile, edges);
+
+			// construct ImgFeatures
+			FeatureGraph featureGraph;
+			featureGraph.adjList = edges;
+			featureGraph.nodesData = features;
+			ImgFeatures* X = new ImgFeatures();
+			X->graph = featureGraph;
+			X->filename = filename;
+
+			// construct ImgLabeling
+			LabelGraph labelGraph;
+			labelGraph.adjList = edges;
+			labelGraph.nodesData = labels;
+			ImgLabeling* Y = new ImgLabeling();
+			Y->graph = labelGraph;
+			
+			// push into list
+			XSet.push_back(X);
+			YSet.push_back(Y);
 		}
 	}
 

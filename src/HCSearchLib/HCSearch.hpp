@@ -537,8 +537,10 @@ namespace HCSearch
 		 * @param[in] filename Path to meta file
 		 * @param[out] numNodes Number of nodes in the image
 		 * @param[out] numFeatures Number of features for each node in the image
+		 * @param[out] height Original image height
+		 * @param[out] width Original image width
 		 */
-		static void readMetaFile(string filename, int& numNodes, int& numFeatures);
+		static void readMetaFile(string filename, int& numNodes, int& numFeatures, int& height, int& width);
 
 		/*!
 		 * Read a nodes file for a particular image.
@@ -561,6 +563,8 @@ namespace HCSearch
 		 * @param[out] edges Integer matrix storing node IDs
 		 */
 		static void readSegmentsFile(string filename, MatrixXi& segments);
+
+		static void loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet);
 	};
 
 	/*! @} */
