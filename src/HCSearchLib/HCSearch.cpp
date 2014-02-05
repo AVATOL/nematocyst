@@ -672,6 +672,46 @@ namespace HCSearch
 		}
 	}
 
+	void Dataset::readSegmentsFile(string filename, MatrixXi& segments)
+	{
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			// current line
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+					string token;
+
+					// current column
+					int columnIndex = 0;
+					while (getline(iss, token, ' '))
+					{
+						if (!token.empty())
+						{
+							int value = atoi(token.c_str());
+							segments(lineIndex, columnIndex) = value;
+						}
+						columnIndex++;
+					}
+				}
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			cerr << "[Error] cannot open file to segments data!" << endl;
+			abort();
+		}
+	}
+
 	/**************** Model ****************/
 
 	IRankModel* Model::loadModel(string fileName, RankerType rankerType)

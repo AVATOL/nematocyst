@@ -554,6 +554,13 @@ namespace HCSearch
 		 * @param[out] edges Adjacency list for graph edges of the image
 		 */
 		static void readEdgesFile(string filename, AdjList_t& edges);
+
+		/*!
+		 * Read a segments file for a particular image.
+		 * @param[in] filename Path to segments file
+		 * @param[out] edges Integer matrix storing node IDs
+		 */
+		static void readSegmentsFile(string filename, MatrixXi& segments);
 	};
 
 	/*! @} */
