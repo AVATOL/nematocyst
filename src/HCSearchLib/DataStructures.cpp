@@ -445,7 +445,7 @@ namespace HCSearch
 	{
 		this->latestWeights = VectorXd::Zero(dim);
 		this->cumSumWeights = VectorXd::Zero(dim);
-		this->numSum = 0;
+		this->numSum = 1;
 		this->initialized = true;
 	}
 
