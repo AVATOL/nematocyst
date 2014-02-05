@@ -288,7 +288,7 @@ namespace HCSearch
 				if (score <= bestScore)
 				{
 					bestScore = score;
-					bool fromWorstSet = true;
+					fromWorstSet = true;
 				}
 			}
 
