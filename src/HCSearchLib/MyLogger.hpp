@@ -13,7 +13,7 @@ using namespace std;
 // Usage examples: LOG() << "raw message to log and stdout"
 //	or LOG(WARNING) << "auto formatted warning message to log and stderr"
 //	or LOG(ERROR, FILE_ONLY) << "auto formatted error message only to log file"
-#define LOG MyLogger::Logger::Logger().log
+#define LOG MyLogger::Logger().log
 
 namespace MyLogger
 {
