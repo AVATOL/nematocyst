@@ -212,6 +212,9 @@ namespace HCSearch
 
 	void LogRegInit::eliminateIslands(ImgLabeling& Y)
 	{
+		if (!Global::settings->CLASSES.backgroundClassExists())
+			return;
+
 		const int numNodes = Y.getNumNodes();
 		for (int node = 0; node < numNodes; node++)
 		{

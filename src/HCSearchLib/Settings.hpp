@@ -53,6 +53,7 @@ namespace HCSearch
 		set<int> getBackgroundLabels();
 		set<int> getForegroundLabels();
 
+		bool backgroundClassExists();
 		int getBackgroundLabel();
 
 		void addClass(int classIndex, int classLabel, bool isBackground);

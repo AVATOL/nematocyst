@@ -15,6 +15,8 @@ namespace HCSearch
 
 	ClassMap::ClassMap()
 	{
+		this->numBackground = 0;
+		this->backgroundExists = false;
 	}
 
 	ClassMap::~ClassMap()
@@ -94,9 +96,14 @@ namespace HCSearch
 		return foregrounds;
 	}
 
+	bool ClassMap::backgroundClassExists()
+	{
+		return this->backgroundExists;
+	}
+
 	int ClassMap::getBackgroundLabel()
 	{
-		if (backgroundExists)
+		if (backgroundClassExists())
 		{
 			return this->backgroundLabel;
 		}
