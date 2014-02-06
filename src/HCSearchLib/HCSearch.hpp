@@ -456,13 +456,6 @@ namespace HCSearch
 		static void finalizeHelper();
 		static void setClasses();
 		static set<int> parseList(string str);
-
-#ifdef USE_MPI
-		/*!
-		 * Forces all processes to sync up wherever the function is called.
-		 */
-		static void synchronize_MPI();
-#endif
 	};
 
 	/*! @}*/

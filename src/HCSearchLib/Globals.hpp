@@ -5,6 +5,10 @@
 #include "MyLogger.hpp"
 #include "mtrand.h"
 
+#ifdef USE_MPI
+#include "MPI.hpp"
+#endif
+
 namespace HCSearch
 {
 	/**************** Global ****************/

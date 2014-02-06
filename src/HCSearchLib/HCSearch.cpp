@@ -63,7 +63,8 @@ namespace HCSearch
 #ifdef USE_MPI
 		finalizeHelper();
 
-		synchronize_MPI();
+		MPI::Synchronize::masterWait("DONESTART");
+		MPI::Synchronize::slavesWait("DONEEND");
 
 		cout << "Process [" << Global::settings->RANK << "/" 
 			<< Global::settings->NUM_PROCESSES 
@@ -199,110 +200,6 @@ namespace HCSearch
 
 		return list;
 	}
-
-#ifdef USE_MPI
-	void Setup::synchronize_MPI()
-	{
-		char recvbuff[256];
-
-		char SLAVE_END_CMD[] = "ENDM";
-		char FINISH_CMD[] = "FINISHM";
-
-		int rank = Global::settings->RANK;
-		int numProcesses = Global::settings->NUM_PROCESSES;
-
-		// wait for everyone to finish before exiting program
-		if (rank == 0)
-		{
-			cout << "Master process [" << rank << "] is done and waiting for slaves to finish..." << endl;
-
-			// wait until all slaves are done
-			bool finish[512];
-			finish[0] = true;
-			for (int i = 1; i < numProcesses; i++)
-			{
-				finish[i] = false;
-			}
-
-			// master process is now waiting for all slave processes to finish
-			while (true)
-			{
-				if (numProcesses <= 1)
-					break;
-
-				int msgFlag = 0;
-				MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &msgFlag, Global::settings->MPI_STATUS);
-
-				// if a messsage is available
-				if (msgFlag)
-				{
-					// get the message tag and especially source
-					int messageID = (*Global::settings->MPI_STATUS).MPI_TAG;
-					int messageSource = (*Global::settings->MPI_STATUS).MPI_SOURCE;
-					cout << "A message from process [" << messageSource << "]." << endl;
-
-					// receive the message into the buffer and check if it is the ENDHL command
-					int ierr = MPI_Recv(recvbuff, 4, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
-					if (recvbuff[0] == 'E' &&
-						recvbuff[1] == 'N' &&
-						recvbuff[2] == 'D' &&
-						recvbuff[3] == 'M')
-					{
-						cout << "Received ENDM message from process [" << messageSource << "]." << endl;
-						finish[messageSource] = true;
-
-						// test if every process is finished
-						bool allFinish = true;
-						for (int i = 1; i < numProcesses; i++)
-						{
-							if (!finish[i])
-							{
-								cout << "Process [" << i << "] is still finishing up." << endl;
-								allFinish = false;
-							}
-						}
-						if (allFinish)
-						{
-							break;
-						}
-						cout << "Still waiting for all slaves to finish up." << endl;
-					}
-				}
-			}
-
-			// now tell each slave to continue
-			for (int j = 1; j < numProcesses; j++)
-			{
-				int ierr = MPI_Send(FINISH_CMD, 7, MPI_CHAR, j, 0, MPI_COMM_WORLD);
-			}
-		}
-		else
-		{
-			cout << "Slave process [" << rank << "] is done and waiting for master..." << endl;
-
-			// send finish heuristic learning message to master
-			int ierr = MPI_Send(SLAVE_END_CMD, 4, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-
-			// now wait until master gives the continue signal
-			while (true)
-			{
-				int ierr = MPI_Recv(recvbuff, 7, MPI_CHAR, 0, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
-
-				if (recvbuff[0] == 'F' &&
-					recvbuff[1] == 'I' &&
-					recvbuff[2] == 'N' &&
-					recvbuff[3] == 'I' &&
-					recvbuff[4] == 'S' &&
-					recvbuff[5] == 'H' &&
-					recvbuff[6] == 'M')
-				{
-					cout << "Slave process [" << rank << "] got the FINISHM message." << endl;
-					break;
-				}
-			}
-		}
-	}
-#endif
 
 	/**************** Dataset ****************/
 
