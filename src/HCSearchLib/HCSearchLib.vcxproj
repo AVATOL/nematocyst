@@ -14,6 +14,7 @@
     <ClInclude Include="DataStructures.hpp" />
     <ClInclude Include="Globals.hpp" />
     <ClInclude Include="HCSearch.hpp" />
+    <ClInclude Include="MPI.hpp" />
     <ClInclude Include="mtrand.h" />
     <ClInclude Include="MyFileSystem.hpp" />
     <ClInclude Include="MyGraphAlgorithms.hpp" />
@@ -27,6 +28,7 @@
     <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="HCSearch.cpp" />
+    <ClCompile Include="MPI.cpp" />
     <ClCompile Include="mtrand.cpp" />
     <ClCompile Include="MyFileSystem.cpp" />
     <ClCompile Include="MyGraphAlgorithms.cpp" />
