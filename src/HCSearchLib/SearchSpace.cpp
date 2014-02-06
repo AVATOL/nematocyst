@@ -434,16 +434,26 @@ namespace HCSearch
 		{
 			// set up candidate label set
 			set<int> candidateLabelsSet;
-
-			// add only neighboring labels to candidate label set
 			int nodeLabel = YPred.getLabel(node);
-			candidateLabelsSet.insert(nodeLabel);
-			set<int> neighborLabels = YPred.getNeighborLabels(node);
-			for (set<int>::iterator it2 = neighborLabels.begin(); 
-				it2 != neighborLabels.end(); ++it2)
+
+			if (YPred.hasNeighbors(node))
 			{
-				candidateLabelsSet.insert(*it2);
+				candidateLabelsSet.insert(nodeLabel);
+
+				// add only neighboring labels to candidate label set
+				set<int> neighborLabels = YPred.getNeighborLabels(node);
+				for (set<int>::iterator it2 = neighborLabels.begin(); 
+					it2 != neighborLabels.end(); ++it2)
+				{
+					candidateLabelsSet.insert(*it2);
+				}
 			}
+			else
+			{
+				// if node is isolated without neighbors, then flip to any possible class
+				candidateLabelsSet = Global::settings->CLASSES.getLabels();
+			}
+
 			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
 
 			// for each candidate label, add to successors list for returning
