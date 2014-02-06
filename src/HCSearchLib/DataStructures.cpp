@@ -300,8 +300,6 @@ namespace HCSearch
 					string token;
 					while (getline(iss, token, ' '))
 					{
-						LOG() << "TOKEN='" << token << "'" << endl;
-
 						if (token.find(':') == std::string::npos)
 							continue;
 
