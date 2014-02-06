@@ -4,6 +4,7 @@ namespace MyLogger
 {
 	const string LogLevelStrings[] = {"debug", "info", "WARNING", "ERROR"};
 
+	bool Logger::initialized = false;
 	int Logger::rank = -1;
 	int Logger::numProcesses = 0;
 	ofstream* Logger::logstream = NULL;
@@ -22,8 +23,11 @@ namespace MyLogger
 				os << endl;
 
 			// to file
-			(*this->logstream) << os.str();
-			(*this->logstream).flush();
+			if (Logger::initialized)
+			{
+				(*this->logstream) << os.str();
+				(*this->logstream).flush();
+			}
 			
 			// also output
 			if (outputMode == STD_ERR)
@@ -45,8 +49,8 @@ namespace MyLogger
 		Logger::numProcesses = numProcesses;
 		Logger::minLogLevel = INFO;
 		Logger::logstream = new ofstream(logPath.c_str(), std::ios_base::app);
-
-		(*Logger::logstream) << "==========" << endl;
+		(*Logger::logstream) << endl << "========== " << getDateTime() << " ==========" << endl << endl;
+		Logger::initialized = true;
 	}
 
 	void Logger::setLogLevel(LogLevel level)
@@ -56,6 +60,7 @@ namespace MyLogger
 
 	void Logger::finalize()
 	{
+		Logger::initialized = false;
 		Logger::logstream->close();
 		delete Logger::logstream;
 	}
@@ -77,10 +82,11 @@ namespace MyLogger
 
 	ostringstream& Logger::log(LogLevel level, OutputMode mode)
 	{
-		if (Logger::rank == -1)
-			return os;
-
 		this->embellish = true;
+
+		if (!Logger::initialized)
+			return log();
+
 		this->logLevel = level;
 		this->outputMode = mode;
 		os << "[" << rank << "/" << numProcesses << "] "
@@ -92,5 +98,20 @@ namespace MyLogger
 	double Logger::getTimeElapsed()
 	{
 		return (double)clock()/CLOCKS_PER_SEC;
+	}
+
+	string Logger::getDateTime()
+	{
+		time_t t = time(0);   // get time now
+		struct tm now;
+		localtime_s(&now, &t);
+		stringstream ss;
+		ss << (now.tm_year + 1900) << '-' 
+			 << (now.tm_mon + 1) << '-'
+			 <<  now.tm_mday << " "
+			 << now.tm_hour << ":"
+			 << now.tm_min << ":"
+			 << now.tm_sec;
+		return ss.str();
 	}
 }

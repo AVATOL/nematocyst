@@ -28,6 +28,7 @@ namespace MyLogger
 	{
 		// Globally set settings
 	protected:
+		static bool initialized;
 		static int rank;
 		static int numProcesses;
 		static ofstream* logstream;
@@ -85,7 +86,8 @@ namespace MyLogger
 		ostringstream& log(LogLevel level, OutputMode mode);
 
 	private:
-		double getTimeElapsed();
+		static double getTimeElapsed();
+		static string getDateTime();
 	};
 }
 
