@@ -89,4 +89,6 @@ namespace MyLogger
 	};
 }
 
+using namespace MyLogger;
+
 #endif
