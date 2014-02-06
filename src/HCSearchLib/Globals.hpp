@@ -19,7 +19,6 @@ namespace HCSearch
 	namespace Global
 	{
 		extern Settings* settings;
-		extern MyLogger::Logger* log;
 	}
 
 	/*!

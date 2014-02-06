@@ -10,7 +10,6 @@ namespace HCSearch
 	namespace Global
 	{
 		Settings* settings = NULL;
-		MyLogger::Logger* log = NULL;
 	}
 
 	namespace Rand

@@ -56,6 +56,9 @@ namespace HCSearch
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_RESULTS_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_LOGS_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_MODELS_DIR);
+
+		// set up logging
+		MyLogger::Logger::initialize(Global::settings->RANK, Global::settings->NUM_PROCESSES, Global::settings->paths->OUTPUT_LOG_FILE);
 	}
 
 	void Setup::finalize()
@@ -82,9 +85,6 @@ namespace HCSearch
 		// initialize settings
 		Global::settings = new Settings();
 
-		// initialize logger
-		Global::log = new MyLogger::Logger();
-
 		cout << "done!" << endl << endl;
 	}
 
@@ -92,12 +92,8 @@ namespace HCSearch
 	{
 		if (Global::settings != NULL)
 			delete Global::settings;
-		
-		if (Global::log != NULL)
-			delete Global::log;
 
-		//Global::settings = NULL;
-		//Global::log = NULL;
+		MyLogger::Logger::finalize();
 	}
 
 	void Setup::setClasses()

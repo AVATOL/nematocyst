@@ -7,6 +7,7 @@
 #include "Demo.hpp"
 
 using namespace std;
+using namespace MyLogger;
 
 int main(int argc, char* argv[])
 {
@@ -28,6 +29,8 @@ int main(int argc, char* argv[])
 	// configure settings
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
+	if (po.verboseMode)
+		Logger::setLogLevel(DEBUG);
 
 	// print useful information
 	printInfo(po);
