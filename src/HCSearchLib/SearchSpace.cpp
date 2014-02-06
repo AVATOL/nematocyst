@@ -635,9 +635,23 @@ namespace HCSearch
 			{
 				ConnectedComponent* cc = *it2;
 
-				// loop over each neighbor label
-				set<int> neighborLabels = cc->getNeighborLabels();
-				for (set<int>::iterator it3 = neighborLabels.begin(); it3 != neighborLabels.end(); ++it3)
+				set<int> candidateLabelsSet;
+				int nodeLabel = cc->getLabel();
+				candidateLabelsSet.insert(nodeLabel);
+				if (cc->hasNeighbors())
+				{
+					// add only neighboring labels to candidate label set
+					candidateLabelsSet = cc->getNeighborLabels();
+				}
+				else
+				{
+					// if connected component is isolated without neighboring connected components, then flip to any possible class
+					candidateLabelsSet = Global::settings->CLASSES.getLabels();
+				}
+				candidateLabelsSet.erase(nodeLabel);
+
+				// loop over each candidate label
+				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
 				{
 					int label = *it3;
 
