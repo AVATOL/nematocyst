@@ -367,7 +367,7 @@ namespace HCSearch
 		 *
 		 * Calls SVM Rank program to train on examples and produce model.
 		 */
-		void finishTraining(string modelFileName);
+		void finishTraining(string modelFileName, SearchType searchType);
 
 		/*!
 		 * Cancel learning. Closes training file.
@@ -395,6 +395,11 @@ namespace HCSearch
 		 *	   line 12: 1:val 2:val ...
 		 */
 		static void writeModelFile(string fileName, const VectorXd& weights);
+
+		/*!
+		 * Merge SVM-Rank feature files when using MPI.
+		 */
+		static int mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID);
 	};
 
 	/**************** Online Rank Model ****************/

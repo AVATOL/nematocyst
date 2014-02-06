@@ -112,6 +112,10 @@ namespace HCSearch
 		string OUTPUT_COST_H_FEATURES_FILE;
 		string OUTPUT_COST_ORACLE_H_FEATURES_FILE;
 
+		string OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
+		string OUTPUT_COST_H_FEATURES_FILE_BASE;
+		string OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+
 		string OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE;
 		string OUTPUT_ARCHIVED_COST_H_FEATURES_FILE;
 		string OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE;
@@ -241,8 +245,8 @@ namespace HCSearch
 		 */
 		void refresh(string dataDir, string experimentDir);
 
-	private:
 		string updateRankIDHelper(string path, string fileName, int rank);
+	private:
 		void refreshDataDirectories(string dataDir);
 		void refreshExperimentDirectories(string experimentDir);
 		void refreshRankIDFiles(int rankID);

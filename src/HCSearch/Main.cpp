@@ -181,6 +181,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 			
 			delete heuristicModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNHSTART");
+		MPI::Synchronize::slavesWait("LEARNHEND");
+#endif
+
 			break;
 		}
 		case HCSearch::LEARN_C:
@@ -202,6 +208,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			
 			delete heuristicModel;
 			delete costModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNCSTART");
+		MPI::Synchronize::slavesWait("LEARNCEND");
+#endif
+
 			break;
 		}
 		case HCSearch::LEARN_C_ORACLE_H:
@@ -221,6 +233,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 			
 			delete costOracleHModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNCOHSTART");
+		MPI::Synchronize::slavesWait("LEARNCOHEND");
+#endif
+
 			break;
 		}
 		case HCSearch::LL:
@@ -269,6 +287,11 @@ void run(MyProgramOptions::ProgramOptions po)
 					HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
 				}
 			}
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INFERLLSTART");
+		MPI::Synchronize::slavesWait("INFERLLEND");
+#endif
 
 			break;
 		}
@@ -322,6 +345,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 
 			delete heuristicModel;
+			
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INFERHLSTART");
+		MPI::Synchronize::slavesWait("INFERHLEND");
+#endif
+			
 			break;
 		}
 		case HCSearch::LC:
@@ -374,6 +403,12 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 
 			delete costModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INFERLCSTART");
+		MPI::Synchronize::slavesWait("INFERLCEND");
+#endif
+
 			break;
 		}
 		case HCSearch::HC:
@@ -428,6 +463,12 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			delete heuristicModel;
 			delete costModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INFERHCSTART");
+		MPI::Synchronize::slavesWait("INFERHCEND");
+#endif
+
 			break;
 		}
 		default:

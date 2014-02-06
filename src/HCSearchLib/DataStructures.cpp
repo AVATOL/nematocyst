@@ -189,33 +189,80 @@ namespace HCSearch
 		}
 	}
 
-	void SVMRankModel::finishTraining(string modelFileName)
+	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		{
+			cerr << "[Error] invalid search type for training." << endl;
+			abort();
+		}
+
 		if (qid <= 1)
 		{
 			cerr << "[Error] no training data available for learning!" << endl;
 			return;
 		}
 
-		// compute C
-		double C = 1.0 * (this->qid-1);
-
 		// close ranking file
 		this->rankingFile->close();
 		delete this->rankingFile;
 
-		// call SVM-Rank
-		stringstream ssLearn;
-		ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
-			<< this->rankingFileName << " " << modelFileName;
-		MyFileSystem::Executable::executeRetries(ssLearn.str());
-		cout << endl;
+#ifdef USE_MPI
+		string STARTMSG;
+		string ENDMSG;
+		string featuresFileBase;
+		if (searchType == LEARN_H)
+		{
+			STARTMSG = "MERGEHSTART";
+			ENDMSG = "MERGEHEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C)
+		{
+			STARTMSG = "MERGECSTART";
+			ENDMSG = "MERGECEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_ORACLE_H)
+		{
+			STARTMSG = "MERGECOHSTART";
+			ENDMSG = "MERGECOHEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+		}
+
+		MPI::Synchronize::masterWait(STARTMSG);
+
+		// merge step
+		if (Global::settings->RANK == 0)
+		{
+			this->qid = mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES, this->qid-1);
+		}
+#endif
+
+		// training step
+		if (Global::settings->RANK == 0)
+		{
+			// compute C
+			double C = 1.0 * (this->qid-1);
+
+			// call SVM-Rank
+			stringstream ssLearn;
+			ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
+				<< this->rankingFileName << " " << modelFileName;
+			MyFileSystem::Executable::executeRetries(ssLearn.str());
+		}
+
+#ifdef USE_MPI
+		MPI::Synchronize::slavesWait(ENDMSG);
+#endif
 
 		// no longer learning
 		this->learningMode = false;
 
-		// Load weights into model and initialize
+		// load weights into model and initialize
 		load(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+
+		cout << endl;
 	}
 
 	void SVMRankModel::cancelTraining()
@@ -349,6 +396,95 @@ namespace HCSearch
 			cerr << "[Error] cannot open svmrank model file for writing weights!!" << endl;
 			exit(1);
 		}
+	}
+
+	int SVMRankModel::mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID)
+	{
+		int currentQID = totalMasterQID;
+
+		string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, 0);
+		cout << "Merging to main feature file: " << FEATURES_FILE << endl;
+
+		ofstream ofh;
+		ofh.open(FEATURES_FILE.c_str(), std::ios_base::app);
+
+		if (ofh.is_open())
+		{
+			//ofh << endl; // add extra line
+			for (int i = 1; i < numProcesses; i++)
+			{
+				// open file from process i
+				FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, i);
+
+				ifstream fh;
+				fh.open(FEATURES_FILE.c_str());
+
+				string line;
+				if (fh.is_open())
+				{
+					// loop over lines in file from process i
+					// and append to the master file
+					int prevSlaveQID = -1;
+					while (fh.good())
+					{
+						// get line and split into parts
+						getline(fh, line);
+						if (line.empty())
+							continue;
+
+						stringstream ssLine(line);
+
+						string sRanking;
+						string sQID;
+						string sFeatures;
+
+						getline(ssLine, sRanking, ' ');
+						getline(ssLine, sQID, ' ');
+						getline(ssLine, sFeatures, ';'); // grab all the way to the end of the line
+
+						stringstream ssQID(sQID);
+
+						string sQIDToken;
+						string sQIDValue;
+
+						getline(ssQID, sQIDToken, ':');
+						getline(ssQID, sQIDValue, ' ');
+
+						int currentSlaveQID = atoi(sQIDValue.c_str());
+
+						// adjust qid accordingly
+						if (prevSlaveQID != currentSlaveQID)
+						{
+							currentQID++;
+							prevSlaveQID = currentSlaveQID;
+						}
+
+						// append to master file
+						ofh << sRanking << " " << "qid:" << currentQID << " " << sFeatures << endl;
+					}
+
+					fh.close();
+
+					// delete the slave feature file
+					ostringstream ossRemoveRankingFeatureCmd;
+					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
+						<< " " << FEATURES_FILE;
+					MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
+				}
+				else
+				{
+					cerr << "[Error] master process could not open ranking file from a process: " << i << endl;
+				}
+			}
+
+			ofh.close();
+		}
+		else
+		{
+			cerr << "[Error] master process could not open ranking file!" << endl;
+		}
+
+		return currentQID;
 	}
 
 	/**************** Online Rank Model ****************/

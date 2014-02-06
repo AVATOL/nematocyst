@@ -777,11 +777,11 @@ namespace HCSearch
 		{
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
 			if (searchType == LEARN_H)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
 			else
 			{
 				cerr << "[Error] unknown search type!" << endl;
