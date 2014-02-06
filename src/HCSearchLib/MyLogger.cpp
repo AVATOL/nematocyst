@@ -23,17 +23,18 @@ namespace MyLogger
 
 			// to file
 			(*this->logstream) << os.str();
-				
+			(*this->logstream).flush();
+			
 			// also output
 			if (outputMode == STD_ERR)
 			{
 				cerr << os.str();
-				fflush(stderr);
+				cerr.flush();
 			}
 			else if (outputMode == STD_OUT)
 			{
 				cout << os.str();
-				fflush(stdout);
+				cout.flush();
 			}
 		}
 	}
