@@ -300,6 +300,8 @@ namespace HCSearch
 					string token;
 					while (getline(iss, token, ' '))
 					{
+						LOG() << "TOKEN='" << token << "'" << endl;
+
 						if (token.find(':') == std::string::npos)
 							continue;
 
@@ -325,13 +327,13 @@ namespace HCSearch
 			abort();
 		}
 
-		weights = VectorXd::Zero(indices.back());
 		int valuesSize = values.size();
 		if (valuesSize == 0)
 		{
-			LOG(ERROR) << "assigning empty weights from '" + fileName + "'!";
+			LOG(ERROR) << "found empty weights from '" + fileName + "'!";
 			abort();
 		}
+		weights = VectorXd::Zero(indices.back());
 
 		for (int i = 0; i < valuesSize; i++)
 		{
@@ -665,26 +667,26 @@ namespace HCSearch
 			abort();
 		}
 
-		cumSumWeights = VectorXd::Zero(indices.back());
 		int valuesSize = values.size();
 		if (valuesSize == 0)
 		{
-			LOG(ERROR) << "assigning empty cumsumweights from '" + fileName + "'!";
+			LOG(ERROR) << "found empty cumsumweights from '" + fileName + "'!";
 			abort();
 		}
+		cumSumWeights = VectorXd::Zero(indices.back());
 		for (int i = 0; i < valuesSize; i++)
 		{
 			int ind = indices[i]-1;
 			cumSumWeights(ind) = values[i];
 		}
 
-		latestWeights = VectorXd::Zero(indices.back());
 		int valuesSize2 = values2.size();
 		if (valuesSize2 == 0)
 		{
-			LOG(ERROR) << "assigning empty latestweights from '" + fileName + "'!";
+			LOG(ERROR) << "found empty latestweights from '" + fileName + "'!";
 			abort();
 		}
+		latestWeights = VectorXd::Zero(indices.back());
 		for (int i = 0; i < valuesSize2; i++)
 		{
 			int ind = indices2[i]-1;
