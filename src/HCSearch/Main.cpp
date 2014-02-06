@@ -48,46 +48,46 @@ int main(int argc, char* argv[])
 
 HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
-	cout << "=== Search Space ===" << endl;
+	LOG() << "=== Search Space ===" << endl;
 
 	// use standard CRF features for heuristic feature function
-	cout << "Heuristic feature function: ";
-	cout << "standard CRF features" << endl;
+	LOG() << "Heuristic feature function: ";
+	LOG() << "standard CRF features" << endl;
 	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
 
 	// use standard CRF features for cost feature function
-	cout << "Cost feature function: ";
-	cout << "standard CRF features" << endl;
+	LOG() << "Cost feature function: ";
+	LOG() << "standard CRF features" << endl;
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
 
 	// use IID logistic regression as initial state prediction function
-	cout << "Initial state prediction function: ";
-	cout << "IID logistic regression" << endl;
+	LOG() << "Initial state prediction function: ";
+	LOG() << "IID logistic regression" << endl;
 	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
-	cout << "Successor function: ";
+	LOG() << "Successor function: ";
 	HCSearch::ISuccessorFunction* successor = NULL;
 	switch (po.successorsMode)
 	{
 	case MyProgramOptions::ProgramOptions::FLIPBIT:
-		cout << "flipbit" << endl;
+		LOG() << "flipbit" << endl;
 		successor = new HCSearch::FlipbitSuccessor();
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
-		cout << "stochastic (T=" << po.cutParam << ")" << endl;
+		LOG() << "stochastic (T=" << po.cutParam << ")" << endl;
 		successor = new HCSearch::StochasticSuccessor(po.cutParam);
 		break;
 	default:
-		cerr << "[Error] undefined successor mode." << endl;
+		LOG(ERROR) << "undefined successor mode.";
 	}
 
 	// use Hamming loss function
-	cout << "Loss function: ";
-	cout << "Hamming loss" << endl;
+	LOG() << "Loss function: ";
+	LOG() << "Hamming loss" << endl;
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
 
-	cout << endl;
+	LOG() << endl;
 
 	// construct search space from these functions that we specified
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, lossFunc);
@@ -95,30 +95,30 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
 {
-	cout << "=== Search Procedure ===" << endl;
+	LOG() << "=== Search Procedure ===" << endl;
 
 	HCSearch::ISearchProcedure* searchProcedure = NULL;
 	switch (po.searchProcedureMode)
 	{
 	case MyProgramOptions::ProgramOptions::GREEDY:
-		cout << "Using greedy search." << endl;
+		LOG() << "Using greedy search." << endl;
 		searchProcedure = new HCSearch::GreedySearchProcedure();
 		break;
 	case MyProgramOptions::ProgramOptions::BREADTH_BEAM:
-		cout << "Using breadth-first beam search." << endl;
-		cout << "Beam size=" << po.beamSize << endl;
+		LOG() << "Using breadth-first beam search." << endl;
+		LOG() << "Beam size=" << po.beamSize << endl;
 		searchProcedure = new HCSearch::BreadthFirstBeamSearchProcedure(po.beamSize);
 		break;
 	case MyProgramOptions::ProgramOptions::BEST_BEAM:
-		cout << "Using best-first beam search." << endl;
-		cout << "Beam size=" << po.beamSize << endl;
+		LOG() << "Using best-first beam search." << endl;
+		LOG() << "Beam size=" << po.beamSize << endl;
 		searchProcedure = new HCSearch::BestFirstBeamSearchProcedure(po.beamSize);
 		break;
 	default:
-		cerr << "[Error] undefined search procedure mode." << endl;
+		LOG(ERROR) << "undefined search procedure mode.";
 	}
 
-	cout << endl;
+	LOG() << endl;
 
 	return searchProcedure;
 }
@@ -164,7 +164,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		{
 		case HCSearch::LEARN_H:
 		{
-			cout << "=== Learning H ===" << endl;
+			LOG() << "=== Learning H ===" << endl;
 
 			// learn heuristic, save heuristic model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
@@ -189,7 +189,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::LEARN_C:
 		{
-			cout << "=== Learning C with Learned H ===" << endl;
+			LOG() << "=== Learning C with Learned H ===" << endl;
 
 			// load heuristic, learn cost, save cost model
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
@@ -216,7 +216,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::LEARN_C_ORACLE_H:
 		{
-			cout << "=== Learning C with Oracle H ===" << endl;
+			LOG() << "=== Learning C with Oracle H ===" << endl;
 
 			// learn cost, save cost model
 			HCSearch::IRankModel* costOracleHModel = HCSearch::Learning::learnCWithOracleH(XTrain, YTrain, XValidation, YValidation, 
@@ -241,7 +241,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::LL:
 		{
-			cout << "=== Inference LL ===" << endl;
+			LOG() << "=== Inference LL ===" << endl;
 
 			// run LL search on test examples
 			int start, end;
@@ -251,7 +251,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
-					cout << endl << "LL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -295,7 +295,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::HL:
 		{
-			cout << "=== Inference HL ===" << endl;
+			LOG() << "=== Inference HL ===" << endl;
 
 			// load heuristic, run HL search on test examples
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
@@ -307,7 +307,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
-					cout << endl << "HL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -353,7 +353,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::LC:
 		{
-			cout << "=== Inference LC ===" << endl;
+			LOG() << "=== Inference LC ===" << endl;
 
 			// load cost oracle H, run LC search on test examples
 			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costOracleHModelPath, rankerType);
@@ -365,7 +365,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
-					cout << endl << "LC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -411,7 +411,7 @@ void run(MyProgramOptions::ProgramOptions po)
 		}
 		case HCSearch::HC:
 		{
-			cout << "=== Inference HC ===" << endl;
+			LOG() << "=== Inference HC ===" << endl;
 
 			// load heuristic and cost, run HC search on test examples
 			HCSearch::IRankModel* heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
@@ -424,7 +424,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
-					cout << endl << "HC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
 					HCSearch::ISearchProcedure::SearchMetadata meta;
@@ -470,7 +470,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			break;
 		}
 		default:
-			cerr << "Error!" << endl;
+			LOG(ERROR) << "invalid mode!";
 		}
 	}
 
@@ -480,89 +480,89 @@ void run(MyProgramOptions::ProgramOptions po)
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
 
 	clock_t toc = clock();
-	cout << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+	LOG() << "total run time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 }
 
 void printInfo(MyProgramOptions::ProgramOptions po)
 {
-	cout << "=== Program Schedule ===" << endl;
+	LOG() << "=== Program Schedule ===" << endl;
 
 	int cnt = 1;
 	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
 		HCSearch::SearchType mode = *it;
-		cout << cnt << ". " << HCSearch::SearchTypeStrings[mode] << endl;
+		LOG() << cnt << ". " << HCSearch::SearchTypeStrings[mode] << endl;
 		cnt++;
 	}
 
-	cout << endl;
+	LOG() << endl;
 
-	cout << "=== Program Options ===" << endl;
-	cout << "Rank learner: " << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
-	cout << "Num training iterations: " << po.numTrainIterations << endl;
-	cout << "Num testing iterations: " << po.numTestIterations << endl;
-	cout << "Save anytime predictions: " << po.saveAnytimePredictions << endl;
-	cout << "Save features files: " << po.saveFeaturesFiles << endl;
-	cout << endl;
+	LOG() << "=== Program Options ===" << endl;
+	LOG() << "Rank learner: " << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
+	LOG() << "Num training iterations: " << po.numTrainIterations << endl;
+	LOG() << "Num testing iterations: " << po.numTestIterations << endl;
+	LOG() << "Save anytime predictions: " << po.saveAnytimePredictions << endl;
+	LOG() << "Save features files: " << po.saveFeaturesFiles << endl;
+	LOG() << endl;
 
 	if (po.verboseMode)
 	{
-		cout << "=== Paths ===" << endl;
+		LOG() << "=== Paths ===" << endl;
 
-		cout << "EXTERNAL_DIR: " << HCSearch::Global::settings->paths->EXTERNAL_DIR << endl;
-		cout << "INPUT_DIR: " << HCSearch::Global::settings->paths->INPUT_DIR  << endl;
-		cout << "OUTPUT_DIR: " << HCSearch::Global::settings->paths->OUTPUT_DIR  << endl;
-		cout << "LIBLINEAR_DIR: " << HCSearch::Global::settings->paths->LIBLINEAR_DIR  << endl;
-		cout << "LIBSVM_DIR: " << HCSearch::Global::settings->paths->LIBSVM_DIR  << endl;
-		cout << "SVMRANK_DIR: " << HCSearch::Global::settings->paths->SVMRANK_DIR  << endl;
+		LOG() << "EXTERNAL_DIR: " << HCSearch::Global::settings->paths->EXTERNAL_DIR << endl;
+		LOG() << "INPUT_DIR: " << HCSearch::Global::settings->paths->INPUT_DIR  << endl;
+		LOG() << "OUTPUT_DIR: " << HCSearch::Global::settings->paths->OUTPUT_DIR  << endl;
+		LOG() << "LIBLINEAR_DIR: " << HCSearch::Global::settings->paths->LIBLINEAR_DIR  << endl;
+		LOG() << "LIBSVM_DIR: " << HCSearch::Global::settings->paths->LIBSVM_DIR  << endl;
+		LOG() << "SVMRANK_DIR: " << HCSearch::Global::settings->paths->SVMRANK_DIR  << endl;
 
-		cout << endl;
+		LOG() << endl;
 
-		cout << "INPUT_NODES_DIR: " << HCSearch::Global::settings->paths->INPUT_NODES_DIR << endl;
-		cout << "INPUT_EDGES_DIR: " << HCSearch::Global::settings->paths->INPUT_EDGES_DIR  << endl;
-		cout << "INPUT_META_DIR: " << HCSearch::Global::settings->paths->INPUT_META_DIR  << endl;
-		cout << "INPUT_SEGMENTS_DIR: " << HCSearch::Global::settings->paths->INPUT_SEGMENTS_DIR  << endl;
-		cout << "INPUT_SPLITS_DIR: " << HCSearch::Global::settings->paths->INPUT_SPLITS_DIR  << endl;
-		cout << "INPUT_SPLITS_FOLDER_NAME: " << HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME  << endl;
+		LOG() << "INPUT_NODES_DIR: " << HCSearch::Global::settings->paths->INPUT_NODES_DIR << endl;
+		LOG() << "INPUT_EDGES_DIR: " << HCSearch::Global::settings->paths->INPUT_EDGES_DIR  << endl;
+		LOG() << "INPUT_META_DIR: " << HCSearch::Global::settings->paths->INPUT_META_DIR  << endl;
+		LOG() << "INPUT_SEGMENTS_DIR: " << HCSearch::Global::settings->paths->INPUT_SEGMENTS_DIR  << endl;
+		LOG() << "INPUT_SPLITS_DIR: " << HCSearch::Global::settings->paths->INPUT_SPLITS_DIR  << endl;
+		LOG() << "INPUT_SPLITS_FOLDER_NAME: " << HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME  << endl;
 
-		cout << "INPUT_SPLITS_TRAIN_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_TRAIN_FILE << endl;
-		cout << "INPUT_SPLITS_VALIDATION_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE  << endl;
-		cout << "INPUT_SPLITS_TEST_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_TEST_FILE  << endl;
+		LOG() << "INPUT_SPLITS_TRAIN_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_TRAIN_FILE << endl;
+		LOG() << "INPUT_SPLITS_VALIDATION_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE  << endl;
+		LOG() << "INPUT_SPLITS_TEST_FILE: " << HCSearch::Global::settings->paths->INPUT_SPLITS_TEST_FILE  << endl;
 
-		cout << "INPUT_METADATA_FILE: " << HCSearch::Global::settings->paths->INPUT_METADATA_FILE  << endl;
-		cout << "INPUT_CODEBOOK_FILE: " << HCSearch::Global::settings->paths->INPUT_CODEBOOK_FILE  << endl;
-		cout << "INPUT_SPLITS_FOLDER_NAME: " << HCSearch::Global::settings->paths->INPUT_INITFUNC_TRAINING_FILE  << endl;
+		LOG() << "INPUT_METADATA_FILE: " << HCSearch::Global::settings->paths->INPUT_METADATA_FILE  << endl;
+		LOG() << "INPUT_CODEBOOK_FILE: " << HCSearch::Global::settings->paths->INPUT_CODEBOOK_FILE  << endl;
+		LOG() << "INPUT_SPLITS_FOLDER_NAME: " << HCSearch::Global::settings->paths->INPUT_INITFUNC_TRAINING_FILE  << endl;
 
-		cout << endl;
+		LOG() << endl;
 
-		cout << "OUTPUT_LOGS_DIR: " << HCSearch::Global::settings->paths->OUTPUT_LOGS_DIR << endl;
-		cout << "OUTPUT_MODELS_DIR: " << HCSearch::Global::settings->paths->OUTPUT_MODELS_DIR  << endl;
-		cout << "OUTPUT_RESULTS_DIR: " << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR  << endl;
-		cout << "OUTPUT_TEMP_DIR: " << HCSearch::Global::settings->paths->OUTPUT_TEMP_DIR  << endl;
+		LOG() << "OUTPUT_LOGS_DIR: " << HCSearch::Global::settings->paths->OUTPUT_LOGS_DIR << endl;
+		LOG() << "OUTPUT_MODELS_DIR: " << HCSearch::Global::settings->paths->OUTPUT_MODELS_DIR  << endl;
+		LOG() << "OUTPUT_RESULTS_DIR: " << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR  << endl;
+		LOG() << "OUTPUT_TEMP_DIR: " << HCSearch::Global::settings->paths->OUTPUT_TEMP_DIR  << endl;
 
-		cout << "OUTPUT_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE  << endl;
-		cout << "OUTPUT_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE  << endl;
-		cout << "OUTPUT_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE << endl;
+		LOG() << "OUTPUT_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE  << endl;
+		LOG() << "OUTPUT_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE  << endl;
+		LOG() << "OUTPUT_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE << endl;
 
-		cout << "OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE  << endl;
-		cout << "OUTPUT_ARCHIVED_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE  << endl;
-		cout << "OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE  << endl;
+		LOG() << "OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE  << endl;
+		LOG() << "OUTPUT_ARCHIVED_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE  << endl;
+		LOG() << "OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE  << endl;
 
-		cout << "OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE  << endl;
-		cout << "OUTPUT_COST_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE  << endl;
-		cout << "OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE << endl;
+		LOG() << "OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE  << endl;
+		LOG() << "OUTPUT_COST_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE  << endl;
+		LOG() << "OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE << endl;
 
-		cout << "OUTPUT_HEURISTIC_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE  << endl;
-		cout << "OUTPUT_COST_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE  << endl;
-		cout << "OUTPUT_COST_ORACLE_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE  << endl;
+		LOG() << "OUTPUT_HEURISTIC_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE  << endl;
+		LOG() << "OUTPUT_COST_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE  << endl;
+		LOG() << "OUTPUT_COST_ORACLE_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE  << endl;
 
-		cout << "OUTPUT_LOG_FILE: " << HCSearch::Global::settings->paths->OUTPUT_LOG_FILE  << endl;
+		LOG() << "OUTPUT_LOG_FILE: " << HCSearch::Global::settings->paths->OUTPUT_LOG_FILE  << endl;
 
-		cout << "OUTPUT_INITFUNC_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE  << endl;
-		cout << "OUTPUT_INITFUNC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE << endl;
-		cout << "OUTPUT_INITFUNC_PREDICT_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE  << endl;
+		LOG() << "OUTPUT_INITFUNC_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE  << endl;
+		LOG() << "OUTPUT_INITFUNC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE << endl;
+		LOG() << "OUTPUT_INITFUNC_PREDICT_FILE: " << HCSearch::Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE  << endl;
 
-		cout << endl;
+		LOG() << endl;
 	}
 }

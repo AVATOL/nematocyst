@@ -191,7 +191,7 @@ namespace HCSearch
 		int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
 		if (retcode != 0)
 		{
-			cerr << "[Error] Initial prediction failed!" << endl;
+			LOG(ERROR) << "Initial prediction failed!";
 			abort();
 		}
 
@@ -235,7 +235,7 @@ namespace HCSearch
 		ifstream fh(fileName.c_str());
 		if (!fh.is_open())
 		{
-			cout << "Training log reg initial function model..." << endl;
+			LOG() << "Training log reg initial function model..." << endl;
 			stringstream ssTrainInitFuncCmd;
 
 			// LOGISTIC REGRESSION
@@ -247,11 +247,11 @@ namespace HCSearch
 			// run command
 			MyFileSystem::Executable::executeRetries(ssTrainInitFuncCmd.str());
 
-			cout << "...Finished training initial function model." << endl;
+			LOG() << "...Finished training initial function model." << endl;
 		}
 		else
 		{
-			cout << "Initial function model found. Using it..." << endl;
+			LOG() << "Initial function model found. Using it..." << endl;
 			fh.close();
 		}
 	}
@@ -280,7 +280,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file for writing LIBLINEAR/LIBSVM features!" << endl;
+			LOG(ERROR) << "cannot open file for writing LIBLINEAR/LIBSVM features!";
 			abort();
 		}
 	}
@@ -314,7 +314,7 @@ namespace HCSearch
 						{
 							if (token.compare("labels") != 0)
 							{
-								cerr << "[Error] parsing invalid prediction file while trying to get liblinear confidences!" << endl;
+								LOG(ERROR) << "parsing invalid prediction file while trying to get liblinear confidences!";
 								fh.close();
 								abort();
 							}
@@ -335,12 +335,12 @@ namespace HCSearch
 					}
 					else if (numClassesFound != numClasses)
 					{
-						cerr << "[Error] number of classes found in prediction file while trying to get liblinear confidences is not correct!" << endl;
-						cerr << "\texpected: " << numClasses << endl;
-						cerr << "\tfound: " << numClassesFound << endl;
-						cerr << "\tglobal: " << Global::settings->CLASSES.numClasses() << endl;
+						LOG(ERROR) << "number of classes found in prediction file while trying to get liblinear confidences is not correct!" << endl
+							<< "\texpected: " << numClasses << endl
+							<< "\tfound: " << numClassesFound << endl
+							<< "\tglobal: " << Global::settings->CLASSES.numClasses();
 
-						cerr << "[Error] parsing invalid prediction file while trying to get liblinear confidences!" << endl;
+						LOG(ERROR) << "parsing invalid prediction file while trying to get liblinear confidences!";
 						fh.close();
 						abort();
 					}
@@ -379,7 +379,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file for reading LIBLINEAR/LIBSVM confidences!" << endl;
+			LOG(ERROR) << "cannot open file for reading LIBLINEAR/LIBSVM confidences!";
 			abort();
 		}
 	}
@@ -464,10 +464,10 @@ namespace HCSearch
 			}
 		}
 
-		cout << "num successors=" << successors.size() << endl;
+		LOG() << "num successors=" << successors.size() << endl;
 
 		clock_t toc = clock();
-		cout << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
 		return successors;
 	}
@@ -495,19 +495,19 @@ namespace HCSearch
 		clock_t tic = clock();
 
 		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
-		cout << "Using threshold=" << threshold << endl;
+		LOG() << "Using threshold=" << threshold << endl;
 
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
 
-		cout << "generating successors..." << endl;
+		LOG() << "generating successors..." << endl;
 
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
-		cout << "num successors=" << successors.size() << endl;
+		LOG() << "num successors=" << successors.size() << endl;
 		delete subgraphs;
 
 		clock_t toc = clock();
-		cout << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
 		return successors;
 	}
@@ -595,7 +595,7 @@ namespace HCSearch
 		Ycopy.confidencesAvailable = YPred.confidencesAvailable;
 		Ycopy.graph = YPred.graph;
 
-		cout << "Getting subgraphs..." << endl;
+		LOG() << "Getting subgraphs..." << endl;
 
 		MyGraphAlgorithms::SubgraphSet* subgraphs = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
 
@@ -656,7 +656,7 @@ namespace HCSearch
 	{
 		if (p.size() != q.size())
 		{
-			cerr << "dimensions of p and q are not the same!" << endl;
+			LOG(WARNING) << "dimensions of p and q are not the same!" << endl;
 		}
 
 		double KL = 0;
@@ -739,7 +739,7 @@ namespace HCSearch
 	{
 		if (this->heuristicFeatureFunction == NULL)
 		{
-			cerr << "[Error] heuristic feature function is null" << endl;
+			LOG(ERROR) << "heuristic feature function is null";
 			abort();
 		}
 
@@ -750,7 +750,7 @@ namespace HCSearch
 	{
 		if (this->costFeatureFunction == NULL)
 		{
-			cerr << "[Error] cost feature function is null" << endl;
+			LOG(ERROR) << "cost feature function is null";
 			abort();
 		}
 
@@ -761,7 +761,7 @@ namespace HCSearch
 	{
 		if (this->initialPredictionFunction == NULL)
 		{
-			cerr << "[Error] initial pred feature function is null" << endl;
+			LOG(ERROR) << "initial pred feature function is null";
 			abort();
 		}
 
@@ -772,7 +772,7 @@ namespace HCSearch
 	{
 		if (this->successorFunction == NULL)
 		{
-			cerr << "[Error] successor function is null" << endl;
+			LOG(ERROR) << "successor function is null";
 			abort();
 		}
 
@@ -783,7 +783,7 @@ namespace HCSearch
 	{
 		if (this->lossFunction == NULL)
 		{
-			cerr << "[Error] loss function is null" << endl;
+			LOG(ERROR) << "loss function is null";
 			abort();
 		}
 

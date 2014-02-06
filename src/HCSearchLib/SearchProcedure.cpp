@@ -24,7 +24,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to write nodes!" << endl;
+			LOG(ERROR) << "cannot open file to write nodes!";
 		}
 	}
 
@@ -32,7 +32,7 @@ namespace HCSearch
 	{
 		if (!YPred.stochasticCutsAvailable)
 		{
-			cerr << "[Error] no cuts available to write!" << endl;
+			LOG(ERROR) << "no cuts available to write!";
 			return;
 		}
 
@@ -58,7 +58,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to write edges!" << endl;
+			LOG(ERROR) << "cannot open file to write edges!";
 		}
 	}
 
@@ -66,7 +66,7 @@ namespace HCSearch
 	{
 		if (!X.segmentsAvailable)
 		{
-			cerr << "[Error] no segments data available to write!" << endl;
+			LOG(ERROR) << "no segments data available to write!";
 			return;
 		}
 
@@ -91,7 +91,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to write label mask!" << endl;
+			LOG(ERROR) << "cannot open file to write label mask!";
 		}
 	}
 
@@ -255,7 +255,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] unknown ranker type" << endl;
+			LOG(ERROR) << "unknown ranker type";
 			abort();
 		}
 	}
@@ -365,7 +365,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] unknown ranker type" << endl;
+			LOG(ERROR) << "unknown ranker type";
 			abort();
 		}
 	}
@@ -407,7 +407,7 @@ namespace HCSearch
 				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
 				break;
 			default:
-				cerr << "searchType constant is invalid." << endl;
+				LOG(ERROR) << "searchType constant is invalid.";
 		}
 		openSet.push(root);
 		costSet.push(root);
@@ -417,7 +417,7 @@ namespace HCSearch
 		int timeStep = 0;
 		while (!openSet.empty() && timeStep < timeBound)
 		{
-			cout << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
+			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
 
 			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
@@ -461,14 +461,14 @@ namespace HCSearch
 
 		if (costSet.empty())
 		{
-			cerr << "[Error] the cost set is empty, which is not possible!" << endl;
+			LOG(ERROR) << "the cost set is empty, which is not possible!";
 			abort();
 		}
 
 		// Get lowest cost node
 		ISearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
-		cout << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
+		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
@@ -478,7 +478,7 @@ namespace HCSearch
 		deleteQueueElements(costSet);
 
 		clock_t toc = clock();
-		cout << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return prediction;
 	}
@@ -522,7 +522,7 @@ namespace HCSearch
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
 			ISearchNode* current = *it;
-			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
+			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
 			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
 
@@ -601,7 +601,7 @@ namespace HCSearch
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
 			ISearchNode* current = *it;
-			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
+			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
 			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
 
@@ -700,7 +700,7 @@ namespace HCSearch
 				}
 				break;
 			default:
-				cerr << "[Error] not a valid search type for generating successor" << endl;
+				LOG(ERROR) << "not a valid search type for generating successor";
 			}
 		}
 		return successors;
@@ -708,13 +708,13 @@ namespace HCSearch
 
 	RankFeatures ISearchProcedure::ISearchNode::getHeuristicFeatures()
 	{
-		cerr << "[Error] heuristic features are not defined" << endl;
+		LOG(ERROR) << "heuristic features are not defined";
 		return RankFeatures();
 	}
 
 	RankFeatures ISearchProcedure::ISearchNode::getCostFeatures()
 	{
-		cerr << "[Error] cost features are not defined" << endl;
+		LOG(ERROR) << "cost features are not defined";
 		return RankFeatures();
 	}
 

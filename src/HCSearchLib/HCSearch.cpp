@@ -17,7 +17,7 @@ namespace HCSearch
 		int rc = MPI_Init(&argc, &argv);
 		if (rc != MPI_SUCCESS)
 		{
-			cerr << "error starting MPI program. Terminating." << endl;
+			LOG(ERROR) << "error starting MPI program. Terminating.";
 			exit(1);
 		}
 
@@ -33,7 +33,7 @@ namespace HCSearch
 		Global::settings->NUM_PROCESSES = size;
 		Global::settings->MPI_STATUS = new MPI_Status();
 
-		cout << "Process [" << Global::settings->RANK << "/" 
+		LOG() << "Process [" << Global::settings->RANK << "/" 
 			<< Global::settings->NUM_PROCESSES 
 			<< "]: MPI initialized!" << endl << endl;
 #else
@@ -47,9 +47,6 @@ namespace HCSearch
 		Global::settings->refresh(MyFileSystem::FileSystem::normalizeDirString(datasetPath), 
 			MyFileSystem::FileSystem::normalizeDirString(outputPath));
 
-		// set classes
-		setClasses();
-
 		// create output folders
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_TEMP_DIR);
@@ -59,17 +56,20 @@ namespace HCSearch
 
 		// set up logging
 		MyLogger::Logger::initialize(Global::settings->RANK, Global::settings->NUM_PROCESSES, Global::settings->paths->OUTPUT_LOG_FILE);
+
+		// set classes
+		setClasses();
 	}
 
 	void Setup::finalize()
 	{
 #ifdef USE_MPI
-		finalizeHelper();
-
 		MPI::Synchronize::masterWait("DONESTART");
 		MPI::Synchronize::slavesWait("DONEEND");
 
-		cout << "Process [" << Global::settings->RANK << "/" 
+		finalizeHelper();
+
+		LOG() << "Process [" << Global::settings->RANK << "/" 
 			<< Global::settings->NUM_PROCESSES 
 			<< "] is DONE and exiting..." << endl;
 		MPI_Finalize();
@@ -80,12 +80,12 @@ namespace HCSearch
 
 	void Setup::initializeHelper()
 	{
-		cout << "Initializing HCSearch... ";
+		LOG() << "Initializing HCSearch... ";
 
 		// initialize settings
 		Global::settings = new Settings();
 
-		cout << "done!" << endl << endl;
+		LOG() << "done!" << endl << endl;
 	}
 
 	void Setup::finalizeHelper()
@@ -135,7 +135,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open meta file for reading!" << endl;
+			LOG(ERROR) << "cannot open meta file for reading!";
 		}
 
 		// process class index and labels
@@ -143,30 +143,30 @@ namespace HCSearch
 			backgroundClassesSet.begin(), backgroundClassesSet.end(), 
 			inserter(foregroundClassesSet, foregroundClassesSet.end()));
 
-		cout << "=== Class Statistics ===" << endl;
-		cout << "Class Labels: ";
+		LOG() << "=== Class Statistics ===" << endl;
+		LOG() << "Class Labels: ";
 		int classIndex = 0;
 		for (set<int>::iterator it = foregroundClassesSet.begin(); it != foregroundClassesSet.end(); ++it)
 		{
 			int label = *it;
 			Global::settings->CLASSES.addClass(classIndex, label, false);
-			cout << label << ", ";
+			LOG() << label << ", ";
 			classIndex++;
 		}
-		cout << endl;
-		cout << "Background Class Labels: ";
+		LOG() << endl;
+		LOG() << "Background Class Labels: ";
 		for (set<int>::iterator it = backgroundClassesSet.begin(); it != backgroundClassesSet.end(); ++it)
 		{
 			int label = *it;
 			Global::settings->CLASSES.addClass(classIndex, label, true);
-			cout << label << ", ";
+			LOG() << label << ", ";
 			classIndex++;
 		}
-		cout << endl;
+		LOG() << endl;
 		if (foundBackgroundLabel)
 		{
 			Global::settings->CLASSES.setBackgroundLabel(backgroundLabel);
-			cout << "Main Background Label: " << backgroundLabel << endl;
+			LOG() << "Main Background Label: " << backgroundLabel << endl;
 		}
 		else if (backgroundClassesSet.size() == 1)
 		{
@@ -174,10 +174,10 @@ namespace HCSearch
 			{
 				int label = *it;
 				Global::settings->CLASSES.setBackgroundLabel(label);
-				cout << "Main Background Class: " << label << endl;
+				LOG() << "Main Background Class: " << label << endl;
 			}
 		}
-		cout << endl;
+		LOG() << endl;
 	}
 
 	set<int> Setup::parseList(string str)
@@ -203,27 +203,27 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
-		cout << "=== Loading Dataset ===" << endl;
+		LOG() << "=== Loading Dataset ===" << endl;
 
 		// read in training data
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
-		cout << endl << "Reading from " << trainSplitFile << "..." << endl;
+		LOG() << endl << "Reading from " << trainSplitFile << "..." << endl;
 		vector<string> trainFiles = readSplitsFile(trainSplitFile);
 		loadDatasetHelper(trainFiles, XTrain, YTrain);
 
 		// read in validation data
 		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
-		cout << endl << "Reading from " << validSplitFile << "..." << endl;
+		LOG() << endl << "Reading from " << validSplitFile << "..." << endl;
 		vector<string> validFiles = readSplitsFile(validSplitFile);
 		loadDatasetHelper(validFiles, XValidation, YValidation);
 
 		// read in test data
 		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
-		cout << endl << "Reading from " << testSplitFile << "..." << endl;
+		LOG() << endl << "Reading from " << testSplitFile << "..." << endl;
 		vector<string> testFiles = readSplitsFile(testSplitFile);
 		loadDatasetHelper(testFiles, XTest, YTest);
 
-		cout << endl;
+		LOG() << endl;
 	}
 
 	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
@@ -295,7 +295,7 @@ namespace HCSearch
 		for (vector<string>::iterator it = files.begin(); it != files.end(); ++it)
 		{
 			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
+			LOG() << "\tLoading " << filename << "..." << endl;
 
 			// read meta file
 			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
@@ -361,7 +361,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open splits file!" << endl;
+			LOG(ERROR) << "cannot open splits file!";
 			abort();
 		}
 
@@ -403,7 +403,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open meta file!" << endl;
+			LOG(ERROR) << "cannot open meta file!";
 			abort();
 		}
 	}
@@ -452,7 +452,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to nodes data!" << endl;
+			LOG(ERROR) << "cannot open file to nodes data!";
 			abort();
 		}
 	}
@@ -503,7 +503,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to edges data!" << endl;
+			LOG(ERROR) << "cannot open file to edges data!";
 			abort();
 		}
 	}
@@ -543,7 +543,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to segments data!" << endl;
+			LOG(ERROR) << "cannot open file to segments data!";
 			abort();
 		}
 	}
@@ -566,7 +566,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] ranker type is invalid for loading model" << endl;
+			LOG(ERROR) << "ranker type is invalid for loading model";
 			return NULL;
 		}
 	}
@@ -575,7 +575,7 @@ namespace HCSearch
 	{
 		if (model == NULL)
 		{
-			cerr << "[Error] rank model is NULL, so cannot save it." << endl;
+			LOG(ERROR) << "rank model is NULL, so cannot save it.";
 			return;
 		}
 
@@ -591,7 +591,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] ranker type is invalid for saving model" << endl;
+			LOG(ERROR) << "ranker type is invalid for saving model";
 		}
 	}
 
@@ -603,7 +603,7 @@ namespace HCSearch
 	{
 		clock_t tic = clock();
 
-		cout << "Learning the heuristic function..." << endl;
+		LOG() << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
 		IRankModel* learningModel = initializeLearning(rankerType, LEARN_H);
@@ -616,7 +616,7 @@ namespace HCSearch
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				cout << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -637,7 +637,7 @@ namespace HCSearch
 		finishLearning(learningModel, LEARN_H);
 
 		clock_t toc = clock();
-		cout << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+		LOG() << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -648,7 +648,7 @@ namespace HCSearch
 	{
 		clock_t tic = clock();
 
-		cout << "Learning the cost function with learned heuristic..." << endl;
+		LOG() << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
 		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C);
@@ -661,7 +661,7 @@ namespace HCSearch
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				cout << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -682,7 +682,7 @@ namespace HCSearch
 		finishLearning(learningModel, LEARN_C);
 
 		clock_t toc = clock();
-		cout << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+		LOG() << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -693,7 +693,7 @@ namespace HCSearch
 	{
 		clock_t tic = clock();
 
-		cout << "Learning the cost function with oracle heuristic..." << endl;
+		LOG() << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
 		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_ORACLE_H);
@@ -706,7 +706,7 @@ namespace HCSearch
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				cout << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -727,7 +727,7 @@ namespace HCSearch
 		finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		clock_t toc = clock();
-		cout << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -749,7 +749,7 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
 			else
 			{
-				cerr << "[Error] unknown search type!" << endl;
+				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
 		}
@@ -760,7 +760,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] unsupported rank learner." << endl;
+			LOG(ERROR) << "unsupported rank learner.";
 			abort();
 		}
 
@@ -780,7 +780,7 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
 			else
 			{
-				cerr << "[Error] unknown search type!" << endl;
+				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
 		}
@@ -790,7 +790,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] unsupported rank learner." << endl;
+			LOG(ERROR) << "unsupported rank learner.";
 			abort();
 		}
 	}

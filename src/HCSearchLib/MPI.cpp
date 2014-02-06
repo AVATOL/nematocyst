@@ -19,7 +19,7 @@ namespace MPI
 		const int rank = Global::settings->RANK;
 		if (rank == 0)
 		{
-			cout << "Master process [" << rank << "] is waiting to get " << slaveBroadcastMsg << " message from all slaves..." << endl;
+			LOG() << "Master process [" << rank << "] is waiting to get " << slaveBroadcastMsg << " message from all slaves..." << endl;
 
 			// wait until all slaves are done
 			bool finish[512];
@@ -44,7 +44,7 @@ namespace MPI
 					// get the message tag and especially source
 					int messageID = (*Global::settings->MPI_STATUS).MPI_TAG;
 					int messageSource = (*Global::settings->MPI_STATUS).MPI_SOURCE;
-					cout << "A message from process [" << messageSource << "]." << endl;
+					LOG() << "A message from process [" << messageSource << "]." << endl;
 
 					// receive the message into the buffer and check if it is the correct command
 					int ierr = MPI_Recv(recvbuff, SLAVEBROADCASTMSG_SIZE, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
@@ -62,7 +62,7 @@ namespace MPI
 					
 					if (correctMessage)
 					{
-						cout << "Received " << slaveBroadcastMsg << " message from process [" << messageSource << "]." << endl;
+						LOG() << "Received " << slaveBroadcastMsg << " message from process [" << messageSource << "]." << endl;
 						finish[messageSource] = true;
 
 						// test if every process is finished
@@ -71,7 +71,7 @@ namespace MPI
 						{
 							if (!finish[i])
 							{
-								cout << "Process [" << i << "] is still not here yet..." << endl;
+								LOG() << "Process [" << i << "] is still not here yet..." << endl;
 								allFinish = false;
 							}
 						}
@@ -79,23 +79,23 @@ namespace MPI
 						{
 							break;
 						}
-						cout << "Still waiting for all slaves to get here with the master..." << endl;
+						LOG() << "Still waiting for all slaves to get here with the master..." << endl;
 					}
 				}
 			}
 		
 			// MASTER CAN DO STUFF HERE BEFORE SLAVES PROCEED
 
-			cout << "Master process [" << rank << "] has continued..." << endl;
+			LOG() << "Master process [" << rank << "] has continued..." << endl;
 		}
 		else
 		{
-			cout << "Slave process [" << rank << "] is sending arrival message to master..." << endl;
+			LOG() << "Slave process [" << rank << "] is sending arrival message to master..." << endl;
 
 			// send finish heuristic learning message to master
 			int ierr = MPI_Send(const_cast<char*>(SLAVEBROADCASTMSG), SLAVEBROADCASTMSG_SIZE, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
 
-			cout << "Slave process [" << rank << "] has continued..." << endl;
+			LOG() << "Slave process [" << rank << "] has continued..." << endl;
 		}
 	}
 
@@ -113,7 +113,7 @@ namespace MPI
 		const int rank = Global::settings->RANK;
 		if (rank == 0)
 		{
-			cout << "Master process [" << rank << "] is telling slave processes to continue..." << endl;
+			LOG() << "Master process [" << rank << "] is telling slave processes to continue..." << endl;
 
 			// tell each slave to continue
 			for (int j = 1; j < numProcesses; j++)
@@ -121,11 +121,11 @@ namespace MPI
 				int ierr = MPI_Send(const_cast<char*>(MASTERBROADCASTMSG), MASTERBROADCASTMSG_SIZE, MPI_CHAR, j, 0, MPI_COMM_WORLD);
 			}
 
-			cout << "Master process [" << rank << "] is released..." << endl;
+			LOG() << "Master process [" << rank << "] is released..." << endl;
 		}
 		else
 		{
-			cout << "Slave process [" << rank << "] is waiting for master..." << endl;
+			LOG() << "Slave process [" << rank << "] is waiting for master..." << endl;
 
 			// now wait until master gives the continue signal
 			while (true)
@@ -145,12 +145,12 @@ namespace MPI
 
 				if (correctMessage)
 				{
-					cout << "Slave process [" << rank << "] got the " << masterBroadcastMsg << " message." << endl;
+					LOG() << "Slave process [" << rank << "] got the " << masterBroadcastMsg << " message." << endl;
 					break;
 				}
 			}
 
-			cout << "Slave process [" << rank << "] is released..." << endl;
+			LOG() << "Slave process [" << rank << "] is released..." << endl;
 		}
 	}
 

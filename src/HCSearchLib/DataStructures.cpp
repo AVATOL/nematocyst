@@ -125,8 +125,8 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			cerr << "[Error] svm ranker not initialized for ranking" << endl;
-			exit(1);
+			LOG(ERROR) << "svm ranker not initialized for ranking";
+			abort();
 		}
 
 		return vectorDot(getWeights(), features.data);
@@ -152,8 +152,8 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			cerr << "[Error] svm ranker not initialized for getting weights" << endl;
-			exit(1);
+			LOG(ERROR) << "svm ranker not initialized for getting weights";
+			abort();
 		}
 
 		return this->weights;
@@ -169,7 +169,7 @@ namespace HCSearch
 
 	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
 	{
-		cout << "Training with " << betterSet.size() << " best examples and " << worseSet.size() << " worst examples..." << endl;
+		LOG() << "Training with " << betterSet.size() << " best examples and " << worseSet.size() << " worst examples..." << endl;
 
 		// good examples
 		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
@@ -193,13 +193,13 @@ namespace HCSearch
 	{
 		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
 		{
-			cerr << "[Error] invalid search type for training." << endl;
+			LOG(ERROR) << "invalid search type for training.";
 			abort();
 		}
 
 		if (qid <= 1)
 		{
-			cerr << "[Error] no training data available for learning!" << endl;
+			LOG(ERROR) << "no training data available for learning!";
 			return;
 		}
 
@@ -262,7 +262,7 @@ namespace HCSearch
 		// load weights into model and initialize
 		load(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
 
-		cout << endl;
+		LOG() << endl;
 	}
 
 	void SVMRankModel::cancelTraining()
@@ -321,16 +321,16 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open model file for reading weights!!" << endl;
-			exit(1);
+			LOG(ERROR) << "cannot open model file for reading weights!!";
+			abort();
 		}
 
 		weights = VectorXd::Zero(indices.back());
 		int valuesSize = values.size();
 		if (valuesSize == 0)
 		{
-			cerr << "[Error] assigning empty weights from '" + fileName + "'!" << endl;
-			exit(1);
+			LOG(ERROR) << "assigning empty weights from '" + fileName + "'!";
+			abort();
 		}
 
 		for (int i = 0; i < valuesSize; i++)
@@ -393,8 +393,8 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open svmrank model file for writing weights!!" << endl;
-			exit(1);
+			LOG(ERROR) << "cannot open svmrank model file for writing weights!!";
+			abort();
 		}
 	}
 
@@ -403,7 +403,7 @@ namespace HCSearch
 		int currentQID = totalMasterQID;
 
 		string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, 0);
-		cout << "Merging to main feature file: " << FEATURES_FILE << endl;
+		LOG() << "Merging to main feature file: " << FEATURES_FILE << endl;
 
 		ofstream ofh;
 		ofh.open(FEATURES_FILE.c_str(), std::ios_base::app);
@@ -473,7 +473,7 @@ namespace HCSearch
 				}
 				else
 				{
-					cerr << "[Error] master process could not open ranking file from a process: " << i << endl;
+					LOG(ERROR) << "master process could not open ranking file from a process: " << i;
 				}
 			}
 
@@ -481,7 +481,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] master process could not open ranking file!" << endl;
+			LOG(ERROR) << "master process could not open ranking file!";
 		}
 
 		return currentQID;
@@ -503,7 +503,7 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cout << "Initializing online rank weights..." << endl;
+			LOG() << "Initializing online rank weights..." << endl;
 			initialize(features.data.size());
 		}
 
@@ -530,8 +530,8 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[Error] online ranker not initialized for getting latest weights" << endl;
-			exit(1);
+			LOG(ERROR) << "online ranker not initialized for getting latest weights";
+			abort();
 		}
 
 		return this->latestWeights;
@@ -541,8 +541,8 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cerr << "[Error] online ranker not initialized for getting avg weights" << endl;
-			exit(1);
+			LOG(ERROR) << "online ranker not initialized for getting avg weights";
+			abort();
 		}
 
 		return (1.0/this->numSum)*this->cumSumWeights;
@@ -552,22 +552,22 @@ namespace HCSearch
 	{
 		if (!initialized)
 		{
-			cout << "Initializing online rank weights..." << endl;
+			LOG() << "Initializing online rank weights..." << endl;
 			initialize(featureDiff.size());
 		}
 
-		cout << "Performing online update..." << endl;
+		LOG() << "Performing online update..." << endl;
 
 		double tauNumerator = sqrt(delta) - vectorDot(getLatestWeights(), featureDiff);
 		double tauDenominator = pow(featureDiff.norm(), 2);
 
 		if (tauDenominator == 0 && tauNumerator == 0)
 		{
-			cerr << "[Warning] tau indeterminant form error" << endl;
+			LOG(WARNING) << "tau indeterminant form error";
 		}
 		else if (tauDenominator == 0 && tauNumerator != 0)
 		{
-			cerr << "[Warning] tau division by zero error" << endl;
+			LOG(WARNING) << "tau division by zero error";
 		}
 		else
 		{
@@ -661,16 +661,16 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open model file for reading weights!!" << endl;
-			exit(1);
+			LOG(ERROR) << "cannot open model file for reading weights!!";
+			abort();
 		}
 
 		cumSumWeights = VectorXd::Zero(indices.back());
 		int valuesSize = values.size();
 		if (valuesSize == 0)
 		{
-			cerr << "[Error] assigning empty cumsumweights from '" + fileName + "'!" << endl;
-			exit(1);
+			LOG(ERROR) << "assigning empty cumsumweights from '" + fileName + "'!";
+			abort();
 		}
 		for (int i = 0; i < valuesSize; i++)
 		{
@@ -682,8 +682,8 @@ namespace HCSearch
 		int valuesSize2 = values2.size();
 		if (valuesSize2 == 0)
 		{
-			cerr << "[Error] assigning empty latestweights from '" + fileName + "'!" << endl;
-			exit(1);
+			LOG(ERROR) << "assigning empty latestweights from '" + fileName + "'!";
+			abort();
 		}
 		for (int i = 0; i < valuesSize2; i++)
 		{
@@ -730,8 +730,8 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open online model file for writing weights!!" << endl;
-			exit(1);
+			LOG(ERROR) << "cannot open online model file for writing weights!!";
+			abort();
 		}
 	}
 }

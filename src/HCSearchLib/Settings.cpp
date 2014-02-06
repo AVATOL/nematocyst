@@ -2,6 +2,7 @@
 #include <sstream>
 #include <cstdlib>
 #include "Settings.hpp"
+#include "MyLogger.hpp"
 
 namespace HCSearch
 {
@@ -34,7 +35,7 @@ namespace HCSearch
 	{
 		if (!this->allClasses.iexists(classLabel))
 		{
-			cerr << "[Error] class label does not exist in mapping: " << classLabel << endl;
+			LOG(ERROR) << "class label does not exist in mapping: " << classLabel;
 			exit(1);
 		}
 
@@ -45,7 +46,7 @@ namespace HCSearch
 	{
 		if (!this->allClasses.exists(classIndex))
 		{
-			cerr << "[Error] class index does not exist in mapping: " << classIndex << endl;
+			LOG(ERROR) << "class index does not exist in mapping: " << classIndex;
 			exit(1);
 		}
 
@@ -101,7 +102,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] background does not exist in this problem!" << endl;
+			LOG(ERROR) << "background does not exist in this problem!";
 			exit(1);
 			return 0;
 		}
@@ -120,7 +121,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] class already exists!" << endl;
+			LOG(ERROR) << "class already exists!";
 		}
 	}
 

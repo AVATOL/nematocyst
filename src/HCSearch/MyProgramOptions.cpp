@@ -59,7 +59,7 @@ namespace MyProgramOptions
 		{
 			if (HCSearch::Global::settings->RANK == 0)
 			{
-				cerr << "Too few arguments!" << endl;
+				LOG(ERROR) << "Too few arguments!";
 				printUsage();
 			}
 			HCSearch::abort();
@@ -174,7 +174,7 @@ namespace MyProgramOptions
 					po.beamSize = atoi(argv[i+1]);
 					if (po.beamSize <= 0)
 					{
-						cerr << "Invalid beam size!" << endl;
+						LOG(ERROR) << "Invalid beam size!";
 						HCSearch::abort();
 					}
 				}
@@ -221,7 +221,7 @@ namespace MyProgramOptions
 					po.numTrainIterations = atoi(argv[i+1]);
 					if (po.numTrainIterations <= 0)
 					{
-						cerr << "Invalid number of iterations!" << endl;
+						LOG(ERROR) << "Invalid number of iterations!";
 						HCSearch::abort();
 					}
 				}
@@ -233,7 +233,7 @@ namespace MyProgramOptions
 					po.numTestIterations = atoi(argv[i+1]);
 					if (po.numTestIterations <= 0)
 					{
-						cerr << "Invalid number of iterations!" << endl;
+						LOG(ERROR) << "Invalid number of iterations!";
 						HCSearch::abort();
 					}
 				}

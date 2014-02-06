@@ -364,7 +364,6 @@ namespace MyGraphAlgorithms
 			// record subgraphs
 			if (subgraphs.count(index) == 0)
 			{
-				//cout << "new subgraph." << endl;
 				subgraphs[index] = new Subgraph(this);
 			}
 			subgraphs[index]->addNode(node);
