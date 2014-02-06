@@ -463,6 +463,11 @@ namespace HCSearch
 		 */
 		void initialize(int dim);
 
+		/*!
+		 * Merge online rank models.
+		 */
+		void performMerge(string modelFileBase, SearchType searchType);
+
 	private:
 		/*!
 		 * Load weights from file.
@@ -483,6 +488,16 @@ namespace HCSearch
 		 *	   line 3 (latestweights): 1:val 2:val ...
 		 */
 		static void writeModelFile(string fileName, const VectorXd& latestWeights, const VectorXd& cumSumWeights, int numSum);
+
+		/*!
+		 * Merge online rank model files when using MPI.
+		 * @param[out] masterLatestWeights
+		 * @param[out] masterCumSumWeights
+		 * @param[out] masterNumSum
+		 * @param[in] fileNameBase
+		 * @param[in] numProcesses
+		 */
+		static void mergeRankingFiles(VectorXd& masterLatestWeights, VectorXd& masterCumSumWeights, int& masterNumSum, string fileNameBase, int numProcesses);
 	};
 }
 

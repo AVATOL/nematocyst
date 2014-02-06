@@ -589,6 +589,12 @@ namespace HCSearch
 		this->initialized = true;
 	}
 
+	void OnlineRankModel::performMerge(string modelFileBase, SearchType searchType)
+	{
+		mergeRankingFiles(this->latestWeights, this->cumSumWeights, this->numSum, modelFileBase, Global::settings->NUM_PROCESSES);
+		this->initialized = true;
+	}
+
 	void OnlineRankModel::parseModelFile(string fileName, VectorXd& latestWeights, VectorXd& cumSumWeights, int& numSum)
 	{
 		string line;
@@ -733,5 +739,48 @@ namespace HCSearch
 			LOG(ERROR) << "cannot open online model file for writing weights!!";
 			abort();
 		}
+	}
+
+	void OnlineRankModel::mergeRankingFiles(VectorXd& masterLatestWeights, VectorXd& masterCumSumWeights, int& masterNumSum, string fileNameBase, int numProcesses)
+	{
+		LOG() << "Merging online model files...";
+
+		vector< VectorXd > latestWeights;
+		vector< VectorXd > weights;
+		vector< int > sums;
+		int largestDim = 0;
+
+		for (int rank = 0; rank < numProcesses; rank++)
+		{
+			string WEIGHTS_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, rank);
+			cout << WEIGHTS_FILE << endl;
+
+			VectorXd lw;
+			VectorXd w;
+			int s;
+			parseModelFile(WEIGHTS_FILE, lw, w, s);
+
+			if (w.size() > largestDim)
+				largestDim = w.size();
+
+			latestWeights.push_back(lw);
+			weights.push_back(w);
+			sums.push_back(s);
+		}
+
+		masterLatestWeights = VectorXd::Zero(largestDim);
+		masterCumSumWeights = VectorXd::Zero(largestDim);
+		masterNumSum = 0;
+
+		for (int rank = 0; rank < numProcesses; rank++)
+		{
+			masterLatestWeights += latestWeights[rank];
+			masterCumSumWeights += weights[rank];
+			masterNumSum += sums[rank];
+		}
+
+		masterLatestWeights /= numProcesses;
+
+		LOG() << "...done merging online model files." << endl;
 	}
 }

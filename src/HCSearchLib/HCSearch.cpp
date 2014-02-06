@@ -787,6 +787,45 @@ namespace HCSearch
 		else if (learningModel->rankerType() == ONLINE_RANK)
 		{
 			// do nothing - online weights just stay persistent
+			// ...unless using MPI, then merge...
+#ifdef USE_MPI
+		string STARTMSG;
+		string ENDMSG;
+		string onlineModelFileBase;
+		if (searchType == LEARN_H)
+		{
+			STARTMSG = "MERGEHSTART";
+			ENDMSG = "MERGEHEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else if (searchType == LEARN_C)
+		{
+			STARTMSG = "MERGECSTART";
+			ENDMSG = "MERGECEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_ORACLE_H)
+		{
+			STARTMSG = "MERGECOHSTART";
+			ENDMSG = "MERGECOHEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else
+		{
+			LOG(ERROR) << "unknown search type!";
+			abort();
+		}
+
+		MPI::Synchronize::masterWait(STARTMSG);
+
+		if (Global::settings->RANK == 0)
+		{
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
+			onlineRankModel->performMerge(onlineModelFileBase, searchType);
+		}
+
+		MPI::Synchronize::slavesWait(ENDMSG);
+#endif
 		}
 		else
 		{
