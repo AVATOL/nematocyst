@@ -122,6 +122,36 @@ namespace MyGraphAlgorithms
 		return labels;
 	}
 
+	bool ConnectedComponent::hasNeighbors()
+	{
+		bool hasNeighbors = false;
+
+		HCSearch::ImgLabeling original = this->ccSet->getOriginalLabeling();
+
+		// get nodes in connected component
+		for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			int node1 = *it;
+			
+			// get neighbors
+			set<int> neighbors = original.graph.adjList[node1];
+			set<int> uniqueNeighbors;
+
+			// find left overs to see if "outside" neighbors of connected component exist
+			set_difference(neighbors.begin(), neighbors.end(), 
+				nodes.begin(), nodes.end(), 
+				inserter(uniqueNeighbors, uniqueNeighbors.end()));
+
+			if (!uniqueNeighbors.empty())
+			{
+				hasNeighbors = true;
+				break;
+			}
+		}
+
+		return hasNeighbors;
+	}
+
 	/**************** Connected Component Set ****************/
 	
 	ConnectedComponentSet::ConnectedComponentSet()

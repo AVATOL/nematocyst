@@ -83,6 +83,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get the labels of the connected component's neighbors.
 		 */
 		set<int> getNeighborLabels();
+
+		/*!
+		 * @brief Returns if this connected component has neighboring connected components.
+		 */
+		bool hasNeighbors();
 	};
 
 	/**************** Connected Component Set ****************/
