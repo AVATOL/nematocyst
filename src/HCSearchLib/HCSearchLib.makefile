@@ -32,8 +32,8 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/DataStructures.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o 
-	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o  $(Debug_Implicitly_Linked_Objects)
+Debug: create_folders gccDebug/DataStructures.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o 
+	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o  $(Debug_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Debug configuration...
 -include gccDebug/DataStructures.d
@@ -52,6 +52,12 @@ gccDebug/Globals.o: Globals.cpp
 gccDebug/HCSearch.o: HCSearch.cpp
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c HCSearch.cpp $(Debug_Include_Path) -o gccDebug/HCSearch.o
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM HCSearch.cpp $(Debug_Include_Path) > gccDebug/HCSearch.d
+
+# Compiles file MPI.cpp for the Debug configuration...
+-include gccDebug/MPI.d
+gccDebug/MPI.o: MPI.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c MPI.cpp $(Debug_Include_Path) -o gccDebug/MPI.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM MPI.cpp $(Debug_Include_Path) > gccDebug/MPI.d
 
 # Compiles file mtrand.cpp for the Debug configuration...
 -include gccDebug/mtrand.d
@@ -97,8 +103,8 @@ gccDebug/Settings.o: Settings.cpp
 
 # Builds the Release configuration...
 .PHONY: Release
-Release: create_folders gccRelease/DataStructures.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o 
-	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o  $(Release_Implicitly_Linked_Objects)
+Release: create_folders gccRelease/DataStructures.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o 
+	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o  $(Release_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Release configuration...
 -include gccRelease/DataStructures.d
@@ -117,6 +123,12 @@ gccRelease/Globals.o: Globals.cpp
 gccRelease/HCSearch.o: HCSearch.cpp
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c HCSearch.cpp $(Release_Include_Path) -o gccRelease/HCSearch.o
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM HCSearch.cpp $(Release_Include_Path) > gccRelease/HCSearch.d
+
+# Compiles file MPI.cpp for the Release configuration...
+-include gccRelease/MPI.d
+gccRelease/MPI.o: MPI.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c MPI.cpp $(Release_Include_Path) -o gccRelease/MPI.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM MPI.cpp $(Release_Include_Path) > gccRelease/MPI.d
 
 # Compiles file mtrand.cpp for the Release configuration...
 -include gccRelease/mtrand.d
