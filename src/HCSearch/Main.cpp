@@ -13,11 +13,6 @@ int main(int argc, char* argv[])
 	// initialize HCSearch
 	HCSearch::Setup::initialize(argc, argv);
 
-#ifdef USE_MPI
-	//TODO
-	cout << "Warning: this MPI implementation is under development. It may not work..." << endl << endl;
-#endif
-
 	// parse arguments
 	MyProgramOptions::ProgramOptions po = MyProgramOptions::ProgramOptions::parseArguments(argc, argv);
 
