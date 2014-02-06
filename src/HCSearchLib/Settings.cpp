@@ -43,7 +43,7 @@ namespace HCSearch
 
 	int ClassMap::getClassLabel(int classIndex)
 	{
-		if (!this->allClasses.iexists(classIndex))
+		if (!this->allClasses.exists(classIndex))
 		{
 			cerr << "[Error] class index does not exist in mapping: " << classIndex << endl;
 			exit(1);
