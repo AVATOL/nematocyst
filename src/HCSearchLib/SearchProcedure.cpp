@@ -392,6 +392,7 @@ namespace HCSearch
 		while (!openSet.empty() && timeStep < timeBound)
 		{
 			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
+			clock_t ticInside = clock();
 
 			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
@@ -426,6 +427,9 @@ namespace HCSearch
 
 				costSet.push(node);
 			}
+
+			clock_t tocInside = clock();
+			LOG() << "search step " << timeStep << " total time: " << (double)(tocInside - ticInside)/CLOCKS_PER_SEC << endl;
 
 			/***** increment time step *****/
 			timeStep++;
