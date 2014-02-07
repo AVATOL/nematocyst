@@ -61,8 +61,11 @@ namespace MyLogger
 	void Logger::finalize()
 	{
 		Logger::initialized = false;
-		Logger::logstream->close();
-		delete Logger::logstream;
+		if (Logger::logstream != NULL)
+		{
+			Logger::logstream->close();
+			delete Logger::logstream;
+		}
 	}
 
 	ostringstream& Logger::log()
