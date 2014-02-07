@@ -21,6 +21,8 @@ namespace HCSearch
 		return computeFeatures(X, Y).data.size();
 	}
 
+	const int ISuccessorFunction::MAX_NUM_SUCCESSOR_CANDIDATES = 1000;
+
 	/**************** Feature Functions ****************/
 
 	StandardFeatures::StandardFeatures()
@@ -416,6 +418,12 @@ namespace HCSearch
 
 	FlipbitSuccessor::FlipbitSuccessor()
 	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+	}
+
+	FlipbitSuccessor::FlipbitSuccessor(int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 	}
 
 	FlipbitSuccessor::~FlipbitSuccessor()
@@ -477,6 +485,15 @@ namespace HCSearch
 			}
 		}
 
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+		}
+
 		LOG() << "num successors=" << successors.size() << endl;
 
 		clock_t toc = clock();
@@ -489,12 +506,14 @@ namespace HCSearch
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
 	}
 
-	StochasticSuccessor::StochasticSuccessor(double cutParam)
+	StochasticSuccessor::StochasticSuccessor(double cutParam, int maxNumSuccessorCandidates)
 	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = true;
 	}
@@ -507,14 +526,26 @@ namespace HCSearch
 	{
 		clock_t tic = clock();
 
+		// generate random threshold
 		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
 		LOG() << "Using threshold=" << threshold << endl;
 
+		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
 
 		LOG() << "generating successors..." << endl;
 
+		// generate candidates
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+		}
 
 		LOG() << "num successors=" << successors.size() << endl;
 		delete subgraphs;

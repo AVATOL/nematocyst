@@ -62,6 +62,10 @@ namespace HCSearch
 	 */
 	class ISuccessorFunction
 	{
+	protected:
+		static const int MAX_NUM_SUCCESSOR_CANDIDATES;
+		int maxNumSuccessorCandidates;
+
 	public:
 		virtual ~ISuccessorFunction() {}
 		
@@ -248,6 +252,7 @@ namespace HCSearch
 
 	public:
 		FlipbitSuccessor();
+		FlipbitSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -264,7 +269,7 @@ namespace HCSearch
 
 	public:
 		StochasticSuccessor();
-		StochasticSuccessor(double cutParam);
+		StochasticSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~StochasticSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);

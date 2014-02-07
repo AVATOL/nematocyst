@@ -71,12 +71,12 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	switch (po.successorsMode)
 	{
 	case MyProgramOptions::ProgramOptions::FLIPBIT:
-		LOG() << "flipbit" << endl;
-		successor = new HCSearch::FlipbitSuccessor();
+		LOG() << "flipbit (B=" << po.boundSuccessorCandidates << ")" << endl;
+		successor = new HCSearch::FlipbitSuccessor(po.boundSuccessorCandidates);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
-		LOG() << "stochastic (T=" << po.cutParam << ")" << endl;
-		successor = new HCSearch::StochasticSuccessor(po.cutParam);
+		LOG() << "stochastic (T=" << po.cutParam << ", B=" << po.boundSuccessorCandidates << ")" << endl;
+		successor = new HCSearch::StochasticSuccessor(po.cutParam, po.boundSuccessorCandidates);
 		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";

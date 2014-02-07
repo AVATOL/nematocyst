@@ -58,6 +58,7 @@ namespace MyProgramOptions
 		int numTrainIterations;
 		int numTestIterations;
 		bool verboseMode;
+		int boundSuccessorCandidates;
 
 	public:
 		ProgramOptions();

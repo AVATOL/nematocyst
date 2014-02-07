@@ -41,6 +41,7 @@ namespace MyProgramOptions
 		numTrainIterations = 1;
 		numTestIterations = 1;
 		verboseMode = false;
+		boundSuccessorCandidates = 1000;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -247,6 +248,18 @@ namespace MyProgramOptions
 						po.verboseMode = false;
 				}
 			}
+			else if (strcmp(argv[i], "--bound-successor") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.boundSuccessorCandidates = atoi(argv[i+1]);
+					if (po.boundSuccessorCandidates <= 0)
+					{
+						LOG(ERROR) << "Invalid bound!";
+						HCSearch::abort();
+					}
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -285,6 +298,7 @@ namespace MyProgramOptions
 		cerr << "Advanced options:" << endl;
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
+		cerr << "\t--bound-successor arg\t" << ": number of maximum successor candidates (default=1000)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
