@@ -244,7 +244,7 @@ Main options:
 Advanced options:
 	--anytime arg			: turn on  saving anytime predictions if true
 	--beam-size arg			: beam size for beam search
-	--bound-successor arg	: number of maximum successor candidates (default=1000)
+	--bound-successor arg	: maximum number of successor candidates (default=1000)
 	--cut-param arg			: temperature parameter for stochastic cuts
 	--num-test-iters arg	: number of test iterations
 	--num-train-iters arg	: number of training iterations

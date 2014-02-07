@@ -298,7 +298,7 @@ namespace MyProgramOptions
 		cerr << "Advanced options:" << endl;
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
-		cerr << "\t--bound-successor arg\t" << ": number of maximum successor candidates (default=1000)" << endl;
+		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
