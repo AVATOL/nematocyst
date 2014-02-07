@@ -47,6 +47,11 @@ namespace MyFileSystem
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " " + src + " " + dest);
 	}
 
+	int FileSystem::deleteFile(string path)
+	{
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_RM_CMD + " " + path);
+	}
+
 	/**************** Executable ****************/
 
 	const int Executable::DEFAULT_NUM_RETRIES = 3;
