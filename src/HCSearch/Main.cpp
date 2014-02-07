@@ -178,6 +178,7 @@ void run(MyProgramOptions::ProgramOptions po)
 						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE);
 			}
 			
+			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
 			delete heuristicModel;
 
 #ifdef USE_MPI
@@ -204,6 +205,7 @@ void run(MyProgramOptions::ProgramOptions po)
 						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE);
 			}
 			
+			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			delete heuristicModel;
 			delete costModel;
 
@@ -230,6 +232,7 @@ void run(MyProgramOptions::ProgramOptions po)
 						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE);
 			}
 			
+			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
 			delete costOracleHModel;
 
 #ifdef USE_MPI
