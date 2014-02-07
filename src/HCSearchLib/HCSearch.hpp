@@ -61,17 +61,20 @@ using namespace std;
  * 1. Create folder `$ROOT$/DataPreprocessed`.
  * 2. Open MATLAB, make sure VLFeat is set up properly and run the following command in MATLAB. This should create files and folders in the `$ROOT$/DataPreprocessed/SomeDataset` folder.
  *
- *		preprocess('$ROOT$/DataRaw/SomeDataset/Images', '$ROOT$/DataRaw/SomeDataset/Annotations', '$ROOT$/DataRaw/SomeDataset/Splits', '$ROOT$/DataPreprocessed/SomeDataset' )
+ *		preprocess('$ROOT$/DataRaw/SomeDataset/Images', '$ROOT$/DataRaw/SomeDataset/Annotations', '$ROOT$/DataRaw/SomeDataset/Splits', '$ROOT$/DataPreprocessed/SomeDataset');
  *
  * @subsection hcsearch_subsec HC-Search
  *
- * Run the following command from the command line: `./HCSearch $ROOT$/DataPreprocessed/SomeDataset $ROOT$/Results 10 --learn H --learn C --infer HC`
+ * Run the following command from the command line: `./HCSearch $ROOT$/DataPreprocessed/SomeDataset $ROOT$/Results/SomeExperiment 10 --learn --infer`
  *
- * This learns a heuristic and cost function and then runs HC search inference with time bound equal to 10 search steps. This should create files and folders in `$ROOT$/Results`.
+ * This learns a heuristic and cost function and then runs HC search inference with time bound equal to 10 search steps. This should create files and folders in `$ROOT$/Results/SomeExperiment`.
  * 
  * @subsection postprocess_subsec Postprocessing
  * 
- * Under development.
+ * 1. Create folder `$ROOT$/ResultsPreprocessed`.
+ * 2. Open in MATLAB, make sure LIBSVM is set up properly, and run the following command in MATLAB. This should create visualization files and folders in the `$ROOT$/ResultsPreprocessed/SomeExperiment` folder.
+ *
+ *		visualize_results('$ROOT$/DataRaw/SomeDataset', '$ROOT$/DataPreprocessed/SomeDataset', '$ROOT$/Results/SomeExperiment', '$ROOT$/ResultsPostprocessed/SomeExperiment', 0:4, 0);
  * 
  * @section quickstart_api_sec Quick Start (API)
  * 
@@ -266,7 +269,30 @@ using namespace std;
  * 
  * The following are instructions to use the postprocessing modules.
  * 
- * Under development.
+ * The purpose of the postprocessing modules is to visualize and evaluate the results from the HC-Search program.
+ * 
+ * Note: Make sure LIBSVM is set up properly before using a preprocessing module. Check out the installation pages.
+ * 
+ * Let `$ROOT$` denote the root directory containing `src`.
+ *
+ * The main visualization postprocessing module is `$ROOT$/postprocess/visualize_results.m`.
+ *
+ * Preprocess function definition reference:
+ * 
+ *		%VISUALIZE_RESULTS Visualize results folder.
+ *		%
+ *		%	rawDir:             folder path containing original images and annotations
+ *		%                           e.g. 'DataRaw/SomeDataset'
+ *		%	preprocessedDir:	folder path containing preprocessed data
+ *		%                           e.g. 'DataPreprocessed/SomeDataset'
+ *		%	resultsDir:         folder path containing HC-Search results
+ *		%                           e.g. 'Results/SomeExperiment'
+ *		%	outputDir:          folder path to output visualization
+ *		%                           e.g. 'ResultsPostprocessed/SomeExperiment'
+ *		%   timeRange:          range of time bound
+ *		%   foldRange:          range of folds
+ *		%   splitsName:         (optional) alternate name to splits folder
+ *		%	allData:            (optional) data structure containing all preprocessed data
  */
 
  /*!
@@ -295,25 +321,33 @@ using namespace std;
  * 			- Version 1.94 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/liblinear`
  * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
- * 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+ * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
  * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
  * 			- Version 3.17 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/libsvm`
  * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
+ * 		3. Set up in MATLAB (optional - if you use postprocessing modules):
+ * 			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+ * 			2. Run the `make` command in MATLAB.
+ * 			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
  * 	- VLFeat (Optional - if you use preprocessing modules)
  * 		1. Download from http://www.vlfeat.org/
  * 			- Version 0.9.18 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/vlfeat`
  * 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+ * 		3. Set up in MATLAB:
+ * 			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+ * 			2. Run the `vl_setup` command in MATLAB.
+ * 			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
  * 2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
  * 3. If you prefer to compile from source...
  * 	1. Open `$ROOT$/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
  * 	2. Build the solution. Make sure it is on Release.
  * 	3. Move `$ROOT$/src/Release/HCSearch.exe` to `$ROOT$/HCSearch.exe`.
  * 4. To set up VLFeat for the preprocessing modules, follow these instructions:
- *	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT$/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
- *		- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
- *	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
+ * 	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT$/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
+ * 		- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
+ * 	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
@@ -356,22 +390,30 @@ using namespace std;
  * 		2. Unpack to `$ROOT$/external/liblinear`
  * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
  * 		3. Compile by running `make` in `$ROOT$/external/liblinear`
- * 	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+ * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
  * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
  * 			- Version 3.17 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/libsvm`
  * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
  * 		3. Compile by running `make` in `$ROOT$/external/libsvm`
+ * 		4. Set up in MATLAB (optional - if you use postprocessing modules):
+ * 			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+ * 			2. Run the `make` command in MATLAB.
+ * 			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
  * 	- VLFeat (Optional - if you use preprocessing modules)
  * 		1. Download from http://www.vlfeat.org/
  * 			- Version 0.9.18 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/vlfeat`
  * 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+ * 		3. Set up in MATLAB:
+ * 			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+ * 			2. Run the `vl_setup` command in MATLAB.
+ * 			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
  * 2. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
  * 3. To set up VLFeat for the preprocessing modules, follow these instructions:
- *	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT$/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
- *		- Alternatively, add the line to your `startup.m` file to automatically run this everytime MATLAB starts.
- *	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
+ * 	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT$/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
+ * 		- Alternatively, add the line to your `startup.m` file to automatically run this everytime MATLAB starts.
+ * 	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 

@@ -28,7 +28,7 @@ The next two sections explains how to get started. You can run the HCSearch appl
 
 ## Quick Start (Application)
 
- This section shows how to quickly get started if you just want to use the binary executable and not the API. This is useful if you only need to use the built-in search spaces and search procedures. This section will walk through a sample scenario. Let `$ROOT$` denote the root directory containing `src`. Please first read the Installation Instructions section.
+ This section shows how to quickly get started if you just want to use the binary executable and not the API. **This is sufficient if you only need to use the built-in search spaces and search procedures.** This section will walk through a sample scenario. Let `$ROOT$` denote the root directory containing `src`. Please first read the Installation Instructions section.
 
 ### Setup Images, Groundtruth and Train/Validation/Test Splits
 
@@ -52,15 +52,15 @@ This should create files and folders in $ROOT$/Results/
 
 ### Postprocessing
 
-1. Create folder `$ROOT$`/ResultsPreprocessed`.
-2. Open in MATLAB, make sure LIBSVM is set up properly, and run the following command in MATLAB to save the visualization results.
+1. Create folder `$ROOT$/ResultsPreprocessed`.
+2. Open in MATLAB, make sure LIBSVM is set up properly, and run the following command in MATLAB. This should create visualization files and folders in the `$ROOT$/ResultsPreprocessed/SomeExperiment` folder.
 ```
 visualize_results('$ROOT$/DataRaw/SomeDataset', '$ROOT$/DataPreprocessed/SomeDataset', '$ROOT$/Results/SomeExperiment', '$ROOT$/ResultsPostprocessed/SomeExperiment', 0:4, 0);
 ```
 
 ## Quick Start (API)
 
-This section shows how to quickly get started if you want to use the API in your C++ program. This is necessary if you want to define your own search space and search procedure.
+This section shows how to quickly get started if you want to use the API in your C++ program. **This is necessary if you want to define your own search space and search procedure.**
 
 The HCSearchLib is a static library. You can build it and then link it to your C++ projects.
 
