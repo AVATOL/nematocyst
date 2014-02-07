@@ -382,33 +382,7 @@ namespace HCSearch
 		SearchNodeHeuristicPQ openSet;
 
 		// push initial state into queue
-		ISearchNode* root = NULL;
-		switch (searchType)
-		{
-			case LL:
-				root = new LLSearchNode(&X, YTruth, searchSpace);
-				break;
-			case HL:
-				root = new HLSearchNode(&X, YTruth, searchSpace, heuristicModel);
-				break;
-			case LC:
-				root = new LCSearchNode(&X, YTruth, searchSpace, costModel);
-				break;
-			case HC:
-				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
-				break;
-			case LEARN_H:
-				root = new LearnHSearchNode(&X, YTruth, searchSpace);
-				break;
-			case LEARN_C:
-				root = new LearnCSearchNode(&X, YTruth, searchSpace, heuristicModel);
-				break;
-			case LEARN_C_ORACLE_H:
-				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
-				break;
-			default:
-				LOG(ERROR) << "searchType constant is invalid.";
-		}
+		ISearchNode* root = createRootNode(searchType, X, YTruth, searchSpace, heuristicModel, costModel);
 		openSet.push(root);
 		costSet.push(root);
 
@@ -481,6 +455,39 @@ namespace HCSearch
 		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return prediction;
+	}
+
+	ISearchProcedure::ISearchNode* IBasicSearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
+	{
+		ISearchNode* root = NULL;
+		switch (searchType)
+		{
+			case LL:
+				root = new LLSearchNode(&X, YTruth, searchSpace);
+				break;
+			case HL:
+				root = new HLSearchNode(&X, YTruth, searchSpace, heuristicModel);
+				break;
+			case LC:
+				root = new LCSearchNode(&X, YTruth, searchSpace, costModel);
+				break;
+			case HC:
+				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
+				break;
+			case LEARN_H:
+				root = new LearnHSearchNode(&X, YTruth, searchSpace);
+				break;
+			case LEARN_C:
+				root = new LearnCSearchNode(&X, YTruth, searchSpace, heuristicModel);
+				break;
+			case LEARN_C_ORACLE_H:
+				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
+				break;
+			default:
+				LOG(ERROR) << "searchType constant is invalid.";
+		}
+		return root;
 	}
 
 	/**************** Breadth-First Beam Search Procedure ****************/

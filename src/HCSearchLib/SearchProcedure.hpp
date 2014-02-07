@@ -151,6 +151,12 @@ namespace HCSearch
 
 	protected:
 		/*!
+		 * @brief Create the root node of the search tree.
+		 */
+		ISearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
+
+		/*!
 		 * @brief Stub for selecting a subset of the open set for processing.
 		 */
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)=0;
