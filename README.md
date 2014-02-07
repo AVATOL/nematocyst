@@ -41,19 +41,22 @@ The next two sections explains how to get started. You can run the HCSearch appl
 1. Create folder `$ROOT$/DataPreprocessed`.
 2. Open MATLAB, make sure VLFeat is set up properly (run vl_setup), and run the following command in MATLAB. This should create files and folders in the `$ROOT$/DataPreprocessed/SomeDataset` folder.
 ```
-preprocess('$ROOT$/DataRaw/SomeDataset/Images', '$ROOT$/DataRaw/SomeDataset/Annotations', '$ROOT$/DataRaw/SomeDataset/Splits', '$ROOT$/DataPreprocessed/SomeDataset' )
+preprocess('$ROOT$/DataRaw/SomeDataset/Images', '$ROOT$/DataRaw/SomeDataset/Annotations', '$ROOT$/DataRaw/SomeDataset/Splits', '$ROOT$/DataPreprocessed/SomeDataset');
 ```
-
 
 ### HC-Search Learn/Infer
 
-Run the following command from the command line: `./HCSearch $ROOT$/DataPreprocessed/SomeDataset $ROOT$/Results 5 --learn --infer`
+Run the following command from the command line: `./HCSearch $ROOT$/DataPreprocessed/SomeDataset $ROOT$/Results/SomeExperiment 5 --learn --infer`
 This learns a heuristic and cost function and then runs LL/HL/LC/HL search. 
 This should create files and folders in $ROOT$/Results/
 
 ### Postprocessing
 
-Coming soon.
+1. Create folder `$ROOT$`/ResultsPreprocessed`.
+2. Open in MATLAB, make sure LIBSVM is set up properly, and run the following command in MATLAB to save the visualization results.
+```
+visualize_results('$ROOT$/DataRaw/SomeDataset', '$ROOT$/DataPreprocessed/SomeDataset', '$ROOT$/Results/SomeExperiment', '$ROOT$/ResultsPostprocessed/SomeExperiment', 0:4, 0);
+```
 
 ## Quick Start (API)
 
@@ -136,16 +139,24 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
-	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
+		3. Set up in MATLAB (optional - if you use postprocessing modules):
+			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+			2. Run the `make` command in MATLAB.
+			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/vlfeat`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+		3. Set up in MATLAB:
+			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+			2. Run the `vl_setup` command in MATLAB.
+			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
 2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
 3. If you prefer to compile from source...
 	1. Open `$ROOT$/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
@@ -171,29 +182,32 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 		2. Unpack to `$ROOT$/external/liblinear`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
 		3. Compile by running `make` in `$ROOT$/external/liblinear`
-	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
 		3. Compile by running `make` in `$ROOT$/external/libsvm`
+		4. Set up in MATLAB (optional - if you use postprocessing modules):
+			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+			2. Run the `make` command in MATLAB.
+			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/vlfeat`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+		3. Set up in MATLAB:
+			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+			2. Run the `vl_setup` command in MATLAB.
+			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
 2. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
 
 ## More Details
 
 ### Preprocessing Module
 
-The preprocessing modules are written in MATLAB. Before running them, make sure to set up VLFeat:
-
-1. Download and extract VLFeat to `$ROOT$/external/vlfeat` (or some other location) if not already done.
-2. Launch MATLAB. Run the following command in MATLAB: `run('$ROOT$/external/vlfeat/toolbox/vl_setsup')` or wherever it is installed.
-	- Alternatively, add the line to your `startup.m` file to automatically run this every time MATLAB starts.
-3. Verify it is set up properly by running the following command in MATLAB: `vl_version`
+The preprocessing modules are written in MATLAB. Before running them, make sure to set up VLFeat.
 
 The main preprocessing module is `$ROOT$/preprocess/preprocess.m`:
 
@@ -262,7 +276,26 @@ Notes:
 
 ### Postprocessing Module
 
-Coming soon.
+The postprocessing modules are written in MATLAB. Before running them, make sure to set up LIBSVM.
+
+The main visualization postprocessing module is `$ROOT$/postprocess/visualize_results.m`:
+
+```
+%VISUALIZE_RESULTS Visualize results folder.
+%
+%	rawDir:             folder path containing original images and annotations
+%                           e.g. 'DataRaw/SomeDataset'
+%	preprocessedDir:	folder path containing preprocessed data
+%                           e.g. 'DataPreprocessed/SomeDataset'
+%	resultsDir:         folder path containing HC-Search results
+%                           e.g. 'Results/SomeExperiment'
+%	outputDir:          folder path to output visualization
+%                           e.g. 'ResultsPostprocessed/SomeExperiment'
+%   timeRange:          range of time bound
+%   foldRange:          range of folds
+%   splitsName:         (optional) alternate name to splits folder
+%	allData:            (optional) data structure containing all preprocessed data
+```
 
 ## Technical Documentation
 
