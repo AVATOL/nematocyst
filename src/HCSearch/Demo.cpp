@@ -2,12 +2,7 @@
 
 void demo(int timeBound)
 {
-	// paths
-	string heuristicModelPath = HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE;
-	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
-
-	// params
-	HCSearch::RankerType rankerType = HCSearch::SVM_RANK;
+	// This demo appears in the Quick Start (API) guide.
 
 	// datasets
 	vector< HCSearch::ImgFeatures* > XTrain;
@@ -19,47 +14,33 @@ void demo(int timeBound)
 
 	// load dataset
 	HCSearch::Dataset::loadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
-	const int numTestExamples = XTest.size();
 
 	// load search space functions and search space
-	HCSearch::SearchSpace* searchSpace = setupSearchSpace();
+	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
+	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
+	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
+	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
+	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+	HCSearch::SearchSpace* searchSpace = new  HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 
 	// load search procedure
 	HCSearch::ISearchProcedure* searchProcedure = new HCSearch::GreedySearchProcedure();
 
 	// train H
 	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
-		timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
+	timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
 
 	// train C
 	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
-		heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
+	heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
 
-	// save model
-	HCSearch::Model::saveModel(heuristicModel, heuristicModelPath, rankerType);
-	HCSearch::Model::saveModel(costModel, costModelPath, rankerType);
+	// run HC search inference on the first test example for demo
+	HCSearch::ISearchProcedure::SearchMetadata searchMetadata; // no meta data needed for this demo
+	HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
 
-	// to demonstrate loading...
-	delete heuristicModel;
-	delete costModel;
-
-	// load model
-	heuristicModel = HCSearch::Model::loadModel(heuristicModelPath, rankerType);
-	costModel = HCSearch::Model::loadModel(costModelPath, rankerType);
-
-	// run HC search on all test examples
-	for (int i = 0; i < numTestExamples; i++)
-	{
-		// set up metadata
-		HCSearch::ISearchProcedure::SearchMetadata searchMetadata;
-		searchMetadata.saveAnytimePredictions = false;
-		searchMetadata.exampleName = XTest[i]->filename;
-		searchMetadata.iter = 0;
-		searchMetadata.setType = HCSearch::TEST;
-
-		// infer HC
-		HCSearch::Inference::runHCSearch(XTest[i], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
-	}
+	// save models for later use
+	HCSearch::Model::saveModel(heuristicModel, "path/to/heuristic/model.txt", HCSearch::SVM_RANK);
+	HCSearch::Model::saveModel(costModel, "path/to/cost/model.txt", HCSearch::SVM_RANK);
 
 	// clean up
 	delete searchSpace;
@@ -67,23 +48,4 @@ void demo(int timeBound)
 	delete heuristicModel;
 	delete costModel;
 	HCSearch::Dataset::unloadDataset(XTrain, YTrain, XValidation, YValidation, XTest, YTest);
-}
-
-HCSearch::SearchSpace* setupSearchSpace()
-{
-	// use standard CRF features for both heuristic and cost feature functions
-	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
-	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
-
-	// use IID logistic regression as initial state prediction function
-	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
-
-	// use stochastic successor function
-	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
-
-	// use Hamming loss function
-	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
-
-	// construct search space from these functions that we specified
-	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
 }
