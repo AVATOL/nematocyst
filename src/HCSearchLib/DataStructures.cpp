@@ -172,14 +172,26 @@ namespace HCSearch
 		LOG() << "Training with " << betterSet.size() << " best examples and " << worseSet.size() << " worst examples..." << endl;
 
 		// good examples
+		bool firstBest = true;
 		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
 		{
+			double randValue = Rand::unifDist();
+			if (Global::settings->PRUNE_SVM_RANK_EXAMPLES && !firstBest && randValue < Global::settings->PRUNE_SVM_RANK_THRESHOLD)
+				continue;
+			firstBest = false;
+
 			RankFeatures better = *it;
 			(*this->rankingFile) << vector2svmrank(better, 1, this->qid) << endl;
 
 			// bad examples
+			bool firstWorst = true;
 			for (vector< RankFeatures >::iterator it2 = worseSet.begin(); it2 != worseSet.end(); ++it2)
 			{
+				double randValue = Rand::unifDist();
+				if (Global::settings->PRUNE_SVM_RANK_EXAMPLES && !firstWorst && randValue < Global::settings->PRUNE_SVM_RANK_THRESHOLD)
+					continue;
+				firstWorst = false;
+
 				RankFeatures worse = *it2;
 				(*this->rankingFile) << vector2svmrank(worse, 2, this->qid) << endl;
 			}

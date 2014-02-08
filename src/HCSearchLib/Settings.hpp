@@ -193,6 +193,16 @@ namespace HCSearch
 		 */
 		bool USE_DAGGER;
 
+		/*!
+		 * @brief Randomly prune SVM Rank examples to keep features file size low.
+		 */
+		bool PRUNE_SVM_RANK_EXAMPLES;
+
+		/*!
+		 * @brief Threshold controlling proportion of examples to keep.
+		 */
+		double PRUNE_SVM_RANK_THRESHOLD;
+
 		/**************** Experiment Settings ****************/
 
 		/*!
