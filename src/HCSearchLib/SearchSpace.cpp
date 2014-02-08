@@ -895,6 +895,205 @@ namespace HCSearch
 		return successors;
 	}
 
+	/**************** Cut Schedule Neighbor Successor Function ****************/
+
+	const int CutScheduleNeighborSuccessor::NUM_GOOD_SUBGRAPHS_THRESHOLD = 8;
+	const double CutScheduleNeighborSuccessor::FINAL_THRESHOLD = 0.975;
+	const double CutScheduleNeighborSuccessor::THRESHOLD_INCREMENT = 0.025;
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::~CutScheduleNeighborSuccessor()
+	{
+	}
+	
+	MyGraphAlgorithms::SubgraphSet* CutScheduleNeighborSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	{
+		MyGraphAlgorithms::SubgraphSet* subgraphs = NULL;
+
+		const int numNodes = X.getNumNodes();
+		map< int, set<int> > edges = YPred.graph.adjList;
+
+		// convert to format storing (node1, node2) pairs
+		vector< MyPrimitives::Pair< int, int > > edgeNodes;
+
+		// edge weights using KL divergence measure
+		vector<double> edgeWeights;
+
+		// iterate over all edges to store
+		for (map< int, set<int> >::iterator it = edges.begin();
+			it != edges.end(); ++it)
+		{
+			int node1 = it->first;
+			set<int> neighbors = it->second;
+		
+			// loop over neighbors
+			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+			{
+				int node2 = *it2;
+
+				// get features and labels
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+				// compute weights already
+				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				edgeWeights.push_back(weight);
+
+				// add
+				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+				edgeNodes.push_back(nodePair);
+			}
+		}
+		
+		// increase threshold until good cuts; also cut by state
+		for (double thresholdAttempt = threshold; thresholdAttempt <= 1.0; thresholdAttempt += THRESHOLD_INCREMENT)
+		{
+			// store new cut edges
+			map< int, set<int> > cutEdges;
+
+			LOG() << "Attempting threshold=" << thresholdAttempt << endl;
+			// given the edge weights, do the actual cutting!
+			const int numEdges = edgeNodes.size();
+			for (int i = 0; i < numEdges; i++)
+			{
+				MyPrimitives::Pair< int, int > nodePair = edgeNodes[i];
+				int node1 = nodePair.first;
+				int node2 = nodePair.second;
+
+				bool decideToCut;
+				if (!cutEdgesIndependently)
+				{
+					// uniform state
+					decideToCut = edgeWeights[i] <= threshold;
+				}
+				else
+				{
+					// bernoulli independent
+					double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
+					decideToCut = biasedCoin <= 1-edgeWeights[i];
+				}
+
+				if (!decideToCut)
+				{
+					// keep these uncut edges
+					if (cutEdges.count(node1) == 0)
+					{
+						cutEdges[node1] = set<int>();
+					}
+					if (cutEdges.count(node2) == 0)
+					{
+						cutEdges[node2] = set<int>();
+					}
+					cutEdges[node1].insert(node2);
+					cutEdges[node2].insert(node1);
+				}
+			}
+
+			// create subgraphs
+			ImgLabeling Ycopy;
+			Ycopy.confidences = YPred.confidences;
+			Ycopy.confidencesAvailable = YPred.confidencesAvailable;
+			Ycopy.graph = YPred.graph;
+
+			MyGraphAlgorithms::SubgraphSet* subgraphsTemp = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
+
+			LOG() << "\tnum exactly one positive cc subgraphs=" << subgraphsTemp->getExactlyOnePositiveCCSubgraphs().size() << endl;
+			if (subgraphsTemp->getExactlyOnePositiveCCSubgraphs().size() > NUM_GOOD_SUBGRAPHS_THRESHOLD)
+			{
+				subgraphs = subgraphsTemp;
+				break;
+			}
+
+			if (thresholdAttempt >= FINAL_THRESHOLD)
+			{
+				cout << "reached final threshold" << endl;
+				subgraphs = subgraphsTemp;
+				break;
+			}
+
+			delete subgraphsTemp;
+		}
+
+		return subgraphs;
+	}
+
+	vector< ImgLabeling > CutScheduleNeighborSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	{
+		using namespace MyGraphAlgorithms;
+
+		vector< Subgraph* > subgraphset = subgraphs->getExactlyOnePositiveCCSubgraphs();
+
+		// successors set
+		vector< ImgLabeling > successors;
+
+		// loop over each sub graph
+		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// loop over each connected component
+			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			{
+				ConnectedComponent* cc = *it2;
+
+				set<int> candidateLabelsSet;
+				int nodeLabel = cc->getLabel();
+				candidateLabelsSet.insert(nodeLabel);
+				if (cc->hasNeighbors())
+				{
+					// add only neighboring labels to candidate label set
+					candidateLabelsSet = cc->getNeighborLabels();
+				}
+				else
+				{
+					// if connected component is isolated without neighboring connected components, then flip to any possible class
+					candidateLabelsSet = Global::settings->CLASSES.getLabels();
+				}
+				candidateLabelsSet.erase(nodeLabel);
+
+				// loop over each candidate label
+				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
+				{
+					int label = *it3;
+
+					// form successor object
+					ImgLabeling YNew;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = YPred.confidencesAvailable;
+					YNew.stochasticCuts = subgraphs->getCuts();
+					YNew.stochasticCutsAvailable = true;
+					YNew.graph = YPred.graph;
+
+					// make changes
+					set<int> component = cc->getNodes();
+					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+					{
+						int node = *it4;
+						YNew.graph.nodesData(node) = label;
+					}
+
+					successors.push_back(YNew);
+				}
+			}
+		}
+
+		return successors;
+	}
+
 	/**************** Loss Functions ****************/
 
 	HammingLoss::HammingLoss()

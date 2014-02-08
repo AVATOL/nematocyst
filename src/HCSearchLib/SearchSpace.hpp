@@ -301,7 +301,7 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Stochastic successor function.
+	 * @brief Stochastic successor function using neighbor labels.
 	 * 
 	 * Stochastically cut edges to form subgraphs. 
 	 * For each subgraph, flip its label to a label of a neighboring node.
@@ -313,6 +313,27 @@ namespace HCSearch
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticNeighborSuccessor();
 
+		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+	};
+
+	/*!
+	 * @brief Cut schedule successor function using neighbor labels.
+	 * 
+	 * Schedule to find the best cut for forming subgraphs. 
+	 * For each subgraph, flip its label to a label of a neighboring node.
+	 */
+	class CutScheduleNeighborSuccessor : public StochasticNeighborSuccessor
+	{
+		static const int NUM_GOOD_SUBGRAPHS_THRESHOLD;
+		static const double FINAL_THRESHOLD;
+		static const double THRESHOLD_INCREMENT;
+
+	public:
+		CutScheduleNeighborSuccessor();
+		CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
+		~CutScheduleNeighborSuccessor();
+
+		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
 		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
 	};
 
