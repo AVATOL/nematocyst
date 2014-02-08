@@ -289,7 +289,7 @@ namespace HCSearch
 
 	public:
 		StochasticSuccessor();
-		StochasticSuccessor(double cutParam, int maxNumSuccessorCandidates);
+		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -310,7 +310,7 @@ namespace HCSearch
 	{
 	public:
 		StochasticNeighborSuccessor();
-		StochasticNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
+		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticNeighborSuccessor();
 
 		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
