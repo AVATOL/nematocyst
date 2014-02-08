@@ -1,4 +1,4 @@
-function visualize_results( rawDir, preprocessedDir, resultsDir, outputDir, timeRange, foldRange, splitsName, allData )
+function visualize_results( rawDir, preprocessedDir, resultsDir, outputDir, label2color, timeRange, foldRange, searchTypes, splitsName, allData )
 %VISUALIZE_RESULTS Visualize results folder.
 %
 %	rawDir:             folder path containing original images and annotations
@@ -9,35 +9,42 @@ function visualize_results( rawDir, preprocessedDir, resultsDir, outputDir, time
 %                           e.g. 'Results/SomeExperiment'
 %	outputDir:          folder path to output visualization
 %                           e.g. 'ResultsPostprocessed/SomeExperiment'
+%   label2color:        mapping from labels to colors (use containers.Map)
 %   timeRange:          range of time bound
 %   foldRange:          range of folds
+%   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
 %   splitsName:         (optional) alternate name to splits folder
 %	allData:            (optional) data structure containing all preprocessed data
 
-narginchk(6, 8);
+narginchk(7, 10);
 
 allDataAvailable = 0;
-if nargin > 7
+if nargin > 9
     allDataAvailable = 1;
 end
-if nargin < 7
+if nargin < 9
     splitsName = 'splits';
+end
+if nargin < 8
+    searchTypes = [1 2 3 4];
 end
 
 %% constants
 ANNOTATIONS_EXTENSION = '.jpg';
 
-%% label2color mapping from labels to colors
-label2color = [255 0 0; 28 255 28; 56 56 255; 255 84 84; ...
-    112 255 112; 140 140 255; 255 168 168; 0 196 196; ...
-    224 0 224; 252 252 0];
+% %% label2color mapping from labels to colors
+% label2color = containers.Map({0, 1, 2, 3, 4, 5, 6, 7, 8}, ...
+%     {[0 0 0], [128 128 128], [128 128 0], [128 64 128], ...
+%     [0 128 0], [0 0 128], [128 0 0], [128 80 0], ...
+%     [255 128 0]});
+% label2color = containers.Map({-1, 1}, {[64 64 64], [0 128 0]});
 
 %% search types
-searchTypes = cell(1, 4);
-searchTypes{1} = 'hc';
-searchTypes{2} = 'hl';
-searchTypes{3} = 'lc';
-searchTypes{4} = 'll';
+searchTypesCollection = cell(1, 4);
+searchTypesCollection{1} = 'hc';
+searchTypesCollection{2} = 'hl';
+searchTypesCollection{3} = 'lc';
+searchTypesCollection{4} = 'll';
 
 %% test files
 testSplitsFile = [preprocessedDir '/' splitsName '/Test.txt'];
@@ -51,8 +58,8 @@ for fold = foldRange
     fprintf('On fold %d...\n', fold);
     
     %% for each search type
-    for s = 1:length(searchTypes)
-        searchType = searchTypes{s};
+    for s = searchTypes
+        searchType = searchTypesCollection{s};
         fprintf('On search type %s...\n', searchType);
         
         if ~exist([outputDir '/' searchType], 'dir')

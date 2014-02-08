@@ -33,7 +33,7 @@ for row = 1:height
     for col = 1:width
         segmentId = segMat(row, col);
         label = labels(segmentId);
-        color = label2color(label+1, :); % TODO
+        color = label2color(label);
         
         %% if boundary between segments, color as segment boundary
         
@@ -42,7 +42,7 @@ for row = 1:height
             prevSegmentId = segMat(row-1, col);
             if prevSegmentId ~= segmentId
                 if ~cutAvailable
-                    boundary = 2;
+                    boundary = 0;
                 elseif cutMat(prevSegmentId, segmentId) ~= 0
                     boundary = 1;
                 else
@@ -54,7 +54,7 @@ for row = 1:height
             prevSegmentId = segMat(row, col-1);
             if prevSegmentId ~= segmentId
                 if ~cutAvailable
-                    boundary = 2;
+                    boundary = 0;
                 elseif cutMat(prevSegmentId, segmentId) ~= 0
                     boundary = 1;
                 else
