@@ -40,8 +40,8 @@ namespace MyProgramOptions
 		saveFeaturesFiles = false;
 		numTrainIterations = 1;
 		numTestIterations = 1;
-		verboseMode = false;
-		boundSuccessorCandidates = 1000;
+		verboseMode = true;
+		boundSuccessorCandidates = 100;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
