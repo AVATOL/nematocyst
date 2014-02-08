@@ -50,6 +50,11 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
 	LOG() << "=== Search Space ===" << endl;
 
+	// use Hamming loss function
+	LOG() << "Loss function: ";
+	LOG() << "Hamming loss" << endl;
+	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+
 	// use standard CRF features for heuristic feature function
 	LOG() << "Heuristic feature function: ";
 	LOG() << "standard CRF features" << endl;
@@ -59,11 +64,6 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	LOG() << "Cost feature function: ";
 	LOG() << "standard CRF features" << endl;
 	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
-
-	// use IID logistic regression as initial state prediction function
-	LOG() << "Initial state prediction function: ";
-	LOG() << "IID logistic regression" << endl;
-	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
 
 	// use stochastic successor function
 	LOG() << "Successor function: ";
@@ -78,14 +78,22 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "stochastic (T=" << po.cutParam << ", B=" << po.boundSuccessorCandidates << ")" << endl;
 		successor = new HCSearch::StochasticSuccessor(po.cutParam, po.boundSuccessorCandidates);
 		break;
+	case MyProgramOptions::ProgramOptions::FLIPBIT_NEIGHBORS:
+		LOG() << "flipbit neighbors (B=" << po.boundSuccessorCandidates << ")" << endl;
+		successor = new HCSearch::FlipbitNeighborSuccessor(po.boundSuccessorCandidates);
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_NEIGHBORS:
+		LOG() << "stochastic neighbors (T=" << po.cutParam << ", B=" << po.boundSuccessorCandidates << ")" << endl;
+		successor = new HCSearch::StochasticNeighborSuccessor(po.cutParam, po.boundSuccessorCandidates);
+		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";
 	}
 
-	// use Hamming loss function
-	LOG() << "Loss function: ";
-	LOG() << "Hamming loss" << endl;
-	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+	// use IID logistic regression as initial state prediction function
+	LOG() << "Initial state prediction function: ";
+	LOG() << "IID logistic regression" << endl;
+	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
 
 	LOG() << endl;
 

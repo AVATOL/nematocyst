@@ -243,10 +243,11 @@ namespace HCSearch
 	/*!
 	 * @brief Deterministic flipbit successor function.
 	 *
-	 * For each node, flip its label to a label of a neighboring node.
+	 * For each node, flip its label to all possible classes.
 	 */
 	class FlipbitSuccessor : public ISuccessorFunction
 	{
+	protected:
 		static const int NUM_TOP_LABELS_KEEP;
 		static const double BINARY_CONFIDENCE_THRESHOLD;
 
@@ -259,10 +260,29 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Deterministic flipbit successor function using neighbor labels.
+	 *
+	 * For each node, flip its label to a label of a neighboring node.
+	 */
+	class FlipbitNeighborSuccessor : public FlipbitSuccessor
+	{
+	public:
+		FlipbitNeighborSuccessor();
+		FlipbitNeighborSuccessor(int maxNumSuccessorCandidates);
+		~FlipbitNeighborSuccessor();
+		
+		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+	};
+
+	/*!
 	 * @brief Stochastic successor function.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to all possible classes.
 	 */
 	class StochasticSuccessor : public ISuccessorFunction
 	{
+	protected:
 		static const double DEFAULT_T_PARM;
 		double cutParam; //!< temperature parameter
 		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
@@ -275,9 +295,25 @@ namespace HCSearch
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 
 	protected:
-		MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
-		vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
+		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
 		static double computeKL(const VectorXd& p, const VectorXd& q);
+	};
+
+	/*!
+	 * @brief Stochastic successor function.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to a label of a neighboring node.
+	 */
+	class StochasticNeighborSuccessor : public StochasticSuccessor
+	{
+	public:
+		StochasticNeighborSuccessor();
+		StochasticNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
+		~StochasticNeighborSuccessor();
+
+		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
 	};
 
 	/**************** Loss Functions ****************/

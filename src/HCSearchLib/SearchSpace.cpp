@@ -413,6 +413,8 @@ namespace HCSearch
 
 	/**************** Successor Functions ****************/
 
+	/**************** Flipbit Successor Function ****************/
+
 	const int FlipbitSuccessor::NUM_TOP_LABELS_KEEP = 2;
 	const double FlipbitSuccessor::BINARY_CONFIDENCE_THRESHOLD = 0.75;
 
@@ -443,11 +445,84 @@ namespace HCSearch
 			// set up candidate label set
 			set<int> candidateLabelsSet;
 			int nodeLabel = YPred.getLabel(node);
+			candidateLabelsSet.insert(nodeLabel);
+
+			// flip to any possible class
+			candidateLabelsSet = Global::settings->CLASSES.getLabels();
+
+			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
+
+			// for each candidate label, add to successors list for returning
+			for (set<int>::iterator it2 = candidateLabelsSet.begin(); it2 != candidateLabelsSet.end(); ++it2)
+			{
+				int candidateLabel = *it2;
+
+				// form successor object
+				LabelGraph graphNew;
+				graphNew.nodesData = YPred.graph.nodesData;
+				graphNew.nodesData(node) = candidateLabel; // flip bit node
+				graphNew.adjList = YPred.graph.adjList;
+
+				ImgLabeling YNew;
+				YNew.confidences = YPred.confidences;
+				YNew.confidencesAvailable = YPred.confidencesAvailable;
+				YNew.graph = graphNew;
+
+				// add candidate to successors
+				successors.push_back(YNew);
+			}
+		}
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+		}
+
+		LOG() << "num successors=" << successors.size() << endl;
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	/**************** Flipbit Neighbor Successor Function ****************/
+
+	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+	}
+
+	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor(int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+	}
+
+	FlipbitNeighborSuccessor::~FlipbitNeighborSuccessor()
+	{
+	}
+	
+	vector< ImgLabeling > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		vector<ImgLabeling> successors;
+
+		// for all nodes
+		const int numNodes = YPred.getNumNodes();
+		for (int node = 0; node < numNodes; node++)
+		{
+			// set up candidate label set
+			set<int> candidateLabelsSet;
+			int nodeLabel = YPred.getLabel(node);
+			candidateLabelsSet.insert(nodeLabel);
 
 			if (YPred.hasNeighbors(node))
 			{
-				candidateLabelsSet.insert(nodeLabel);
-
 				// add only neighboring labels to candidate label set
 				set<int> neighborLabels = YPred.getNeighborLabels(node);
 				for (set<int>::iterator it2 = neighborLabels.begin(); 
@@ -501,6 +576,8 @@ namespace HCSearch
 
 		return successors;
 	}
+
+	/**************** Stochastic Successor Function ****************/
 
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
@@ -669,16 +746,10 @@ namespace HCSearch
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
 				candidateLabelsSet.insert(nodeLabel);
-				if (cc->hasNeighbors())
-				{
-					// add only neighboring labels to candidate label set
-					candidateLabelsSet = cc->getNeighborLabels();
-				}
-				else
-				{
-					// if connected component is isolated without neighboring connected components, then flip to any possible class
-					candidateLabelsSet = Global::settings->CLASSES.getLabels();
-				}
+
+				// flip to any possible class
+				candidateLabelsSet = Global::settings->CLASSES.getLabels();
+
 				candidateLabelsSet.erase(nodeLabel);
 
 				// loop over each candidate label
@@ -738,6 +809,90 @@ namespace HCSearch
 		}
 
 		return KL;
+	}
+
+	/**************** Stochastic Neighbor Successor Function ****************/
+
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+	}
+
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = true;
+	}
+
+	StochasticNeighborSuccessor::~StochasticNeighborSuccessor()
+	{
+	}
+
+	vector< ImgLabeling > StochasticNeighborSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	{
+		using namespace MyGraphAlgorithms;
+
+		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
+
+		// successors set
+		vector< ImgLabeling > successors;
+
+		// loop over each sub graph
+		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// loop over each connected component
+			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			{
+				ConnectedComponent* cc = *it2;
+
+				set<int> candidateLabelsSet;
+				int nodeLabel = cc->getLabel();
+				candidateLabelsSet.insert(nodeLabel);
+				if (cc->hasNeighbors())
+				{
+					// add only neighboring labels to candidate label set
+					candidateLabelsSet = cc->getNeighborLabels();
+				}
+				else
+				{
+					// if connected component is isolated without neighboring connected components, then flip to any possible class
+					candidateLabelsSet = Global::settings->CLASSES.getLabels();
+				}
+				candidateLabelsSet.erase(nodeLabel);
+
+				// loop over each candidate label
+				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
+				{
+					int label = *it3;
+
+					// form successor object
+					ImgLabeling YNew;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = YPred.confidencesAvailable;
+					YNew.stochasticCuts = subgraphs->getCuts();
+					YNew.stochasticCutsAvailable = true;
+					YNew.graph = YPred.graph;
+
+					// make changes
+					set<int> component = cc->getNodes();
+					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+					{
+						int node = *it4;
+						YNew.graph.nodesData(node) = label;
+					}
+
+					successors.push_back(YNew);
+				}
+			}
+		}
+
+		return successors;
 	}
 
 	/**************** Loss Functions ****************/

@@ -28,7 +28,7 @@ namespace MyProgramOptions
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
 		initialFunctionMode = LOG_REG;
-		successorsMode = STOCHASTIC;
+		successorsMode = STOCHASTIC_NEIGHBORS;
 		lossMode = HAMMING;
 
 		stochasticCutMode = STATE;
@@ -188,6 +188,10 @@ namespace MyProgramOptions
 						po.successorsMode = FLIPBIT;
 					else if (strcmp(argv[i+1], "stochastic") == 0)
 						po.successorsMode = STOCHASTIC;
+					else if (strcmp(argv[i+1], "flipbit-neighbors") == 0)
+						po.successorsMode = FLIPBIT_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_NEIGHBORS;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
@@ -306,7 +310,7 @@ namespace MyProgramOptions
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
-		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic" << endl;
+		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic|flipbit-neighbors|stochastic-neighbors" << endl;
 		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
