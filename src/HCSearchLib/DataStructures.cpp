@@ -272,7 +272,7 @@ namespace HCSearch
 		this->learningMode = false;
 
 		// load weights into model and initialize
-		load(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+		load(modelFileName);
 
 		LOG() << endl;
 	}
