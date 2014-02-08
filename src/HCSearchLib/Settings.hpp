@@ -199,9 +199,15 @@ namespace HCSearch
 		bool PRUNE_SVM_RANK_EXAMPLES;
 
 		/*!
-		 * @brief Threshold controlling proportion of examples to keep.
+		 * @brief Ratio controlling proportion of examples to keep.
+		 * 100% = keep everything
 		 */
-		double PRUNE_SVM_RANK_THRESHOLD;
+		double PRUNE_SVM_RANK_RATIO;
+
+		/*!
+		 * @brief Minimum number of examples before using pruning ratio.
+		 */
+		int PRUNE_SVM_RANK_MIN_EXAMPLES;
 
 		/**************** Experiment Settings ****************/
 
