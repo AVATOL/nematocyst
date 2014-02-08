@@ -206,7 +206,7 @@ namespace MyGraphAlgorithms
 			{
 				ccs[index] = new ConnectedComponent(this);
 
-				if (HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
+				if (!HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
 				{
 					numForeground++;
 					foregroundCC = ccs[index];
@@ -291,7 +291,7 @@ namespace MyGraphAlgorithms
 			{
 				ccs[index] = new ConnectedComponent(this);
 
-				if (HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
+				if (!HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
 				{
 					numForeground++;
 					foregroundCC = ccs[index];
