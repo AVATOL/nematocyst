@@ -135,7 +135,8 @@ namespace HCSearch
 
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
-		void trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< ISearchNode* > successorSet);
+		void trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
+			vector< RankFeatures > worstFeatures, vector< double > worstLosses);
 		void trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet);
 	};
 
@@ -172,9 +173,11 @@ namespace HCSearch
 		 * @brief Stub for choosing successors among the expanded.
 		 * 
 		 * Returns the successors and adds the successors to the openSet and costSet.
-		 * Side effect: candidate set has worst states remaining after function call.
+		 * 
+		 * @post candidateSet becomes empty, openSet contains best states, costSet contains best and worst states
 		 */
-		virtual vector< ISearchNode* > chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)=0;
+		virtual void chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)=0;
 
 		/*!
 		 * @brief Checks if the state is duplicate among the states in the priority queue.
@@ -216,7 +219,8 @@ namespace HCSearch
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
-		virtual vector< ISearchNode* > chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual void chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
 	};
 
 	/**************** Best-First Beam Search Procedure ****************/
