@@ -169,29 +169,54 @@ namespace HCSearch
 
 	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
 	{
-		LOG() << "Training with " << betterSet.size() << " best examples and " << worseSet.size() << " worst examples..." << endl;
+		int betterSetSize = betterSet.size();
+		int worseSetSize = worseSet.size();
+
+		LOG() << "Training with " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
+
+		// Prune examples for efficiency vs. accuracy trade-off
+		if (Global::settings->PRUNE_SVM_RANK_EXAMPLES)
+		{
+			// prune best set
+			if (betterSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+			{
+				int newBetterSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * betterSetSize);
+				if (newBetterSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+					newBetterSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
+
+				random_shuffle(betterSet.begin(), betterSet.end());
+				for (int i = 0; i < betterSetSize - newBetterSize; i++)
+					betterSet.pop_back();
+
+				betterSetSize = betterSet.size();
+			}
+
+			// prune worst set
+			if (worseSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+			{
+				int newWorseSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * worseSetSize);
+				if (newWorseSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+					newWorseSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
+
+				random_shuffle(worseSet.begin(), worseSet.end());
+				for (int i = 0; i < worseSetSize - newWorseSize; i++)
+					worseSet.pop_back();
+
+				worseSetSize = worseSet.size();
+			}
+
+			LOG() << "\tPruned to " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
+		}
 
 		// good examples
-		bool firstBest = true;
 		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
 		{
-			double randValue = Rand::unifDist();
-			if (Global::settings->PRUNE_SVM_RANK_EXAMPLES && !firstBest && randValue < Global::settings->PRUNE_SVM_RANK_THRESHOLD)
-				continue;
-			firstBest = false;
-
 			RankFeatures better = *it;
 			(*this->rankingFile) << vector2svmrank(better, 1, this->qid) << endl;
 
 			// bad examples
-			bool firstWorst = true;
 			for (vector< RankFeatures >::iterator it2 = worseSet.begin(); it2 != worseSet.end(); ++it2)
 			{
-				double randValue = Rand::unifDist();
-				if (Global::settings->PRUNE_SVM_RANK_EXAMPLES && !firstWorst && randValue < Global::settings->PRUNE_SVM_RANK_THRESHOLD)
-					continue;
-				firstWorst = false;
-
 				RankFeatures worse = *it2;
 				(*this->rankingFile) << vector2svmrank(worse, 2, this->qid) << endl;
 			}
@@ -272,7 +297,7 @@ namespace HCSearch
 		this->learningMode = false;
 
 		// load weights into model and initialize
-		load(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+		load(modelFileName);
 
 		LOG() << endl;
 	}
