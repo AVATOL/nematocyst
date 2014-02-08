@@ -1,4 +1,5 @@
 #include "MyGraphAlgorithms.hpp"
+#include "Globals.hpp"
 
 namespace MyGraphAlgorithms
 {
@@ -165,6 +166,9 @@ namespace MyGraphAlgorithms
 
 		const int numNodes = this->original.getNumNodes();
 
+		int numForeground = 0;
+		ConnectedComponent* foregroundCC = NULL;
+
 		// first pass: union-find
 		DisjointSet ds = DisjointSet(numNodes);
 		for (int node1 = 0; node1 < numNodes; node1++)
@@ -201,6 +205,12 @@ namespace MyGraphAlgorithms
 			if (ccs.count(index) == 0)
 			{
 				ccs[index] = new ConnectedComponent(this);
+
+				if (HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
+				{
+					numForeground++;
+					foregroundCC = ccs[index];
+				}
 			}
 			ccs[index]->addNode(node);
 		}
@@ -212,6 +222,17 @@ namespace MyGraphAlgorithms
 			ConnectedComponent* cc = it->second;
 			this->connectedComponents.push_back(cc);
 		}
+
+		if (numForeground == 1)
+		{
+			this->exactlyOnePositiveCC = true;
+			this->foreground = foregroundCC;
+		}
+		else
+		{
+			this->exactlyOnePositiveCC = false;
+			this->foreground = NULL;
+		}
 	}
 
 	ConnectedComponentSet::ConnectedComponentSet(Subgraph* subgraph)
@@ -220,6 +241,9 @@ namespace MyGraphAlgorithms
 		this->original = subgraph->getOriginalLabeling();
 
 		const int numNodes = this->original.getNumNodes();
+
+		int numForeground = 0;
+		ConnectedComponent* foregroundCC = NULL;
 
 		// first pass: union-find
 		DisjointSet ds = DisjointSet(numNodes);
@@ -266,6 +290,12 @@ namespace MyGraphAlgorithms
 			if (ccs.count(index) == 0)
 			{
 				ccs[index] = new ConnectedComponent(this);
+
+				if (HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
+				{
+					numForeground++;
+					foregroundCC = ccs[index];
+				}
 			}
 			ccs[index]->addNode(node);
 		}
@@ -276,6 +306,17 @@ namespace MyGraphAlgorithms
 		{
 			ConnectedComponent* cc = it->second;
 			this->connectedComponents.push_back(cc);
+		}
+
+		if (numForeground == 1)
+		{
+			this->exactlyOnePositiveCC = true;
+			this->foreground = foregroundCC;
+		}
+		else
+		{
+			this->exactlyOnePositiveCC = false;
+			this->foreground = NULL;
 		}
 	}
 
@@ -301,6 +342,11 @@ namespace MyGraphAlgorithms
 	vector< ConnectedComponent* > ConnectedComponentSet::getConnectedComponents()
 	{
 		return this->connectedComponents;
+	}
+
+	bool ConnectedComponentSet::hasExactlyOnePositiveCC()
+	{
+		return this->exactlyOnePositiveCC;
 	}
 
 	/**************** Subgraphs ****************/
@@ -348,6 +394,11 @@ namespace MyGraphAlgorithms
 	vector< ConnectedComponent* > Subgraph::getConnectedComponents()
 	{
 		return this->connectedComponents->getConnectedComponents();
+	}
+
+	bool Subgraph::hasExactlyOnePositiveCC()
+	{
+		return this->connectedComponents->hasExactlyOnePositiveCC();
 	}
 
 	/**************** Subgraph Set ****************/
@@ -407,6 +458,11 @@ namespace MyGraphAlgorithms
 			Subgraph* sub = it->second;
 			sub->processConnectedComponents();
 			this->subgraphs.push_back(sub);
+
+			if (sub->hasExactlyOnePositiveCC())
+			{
+				this->exactlyOnePositiveCCSubgraphs.push_back(sub);
+			}
 		}
 	}
 
@@ -437,5 +493,10 @@ namespace MyGraphAlgorithms
 	map< int, set<int> > SubgraphSet::getCuts()
 	{
 		return this->cuts;
+	}
+
+	vector< Subgraph* > SubgraphSet::getExactlyOnePositiveCCSubgraphs()
+	{
+		return this->exactlyOnePositiveCCSubgraphs;
 	}
 }
