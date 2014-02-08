@@ -919,6 +919,38 @@ namespace HCSearch
 	{
 	}
 	
+	vector< ImgLabeling > CutScheduleNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		double threshold = 0.025;
+
+		// perform cut
+		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+
+		LOG() << "generating successors..." << endl;
+
+		// generate candidates
+		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+		}
+
+		LOG() << "num successors=" << successors.size() << endl;
+		delete subgraphs;
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
 	MyGraphAlgorithms::SubgraphSet* CutScheduleNeighborSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
 	{
 		MyGraphAlgorithms::SubgraphSet* subgraphs = NULL;
