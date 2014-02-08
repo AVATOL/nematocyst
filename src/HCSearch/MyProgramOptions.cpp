@@ -35,7 +35,7 @@ namespace MyProgramOptions
 		beamSize = 1;
 		cutParam = 1.0;
 
-		saveAnytimePredictions = false;
+		saveAnytimePredictions = true;
 		rankLearnerType = HCSearch::SVM_RANK;
 		saveFeaturesFiles = false;
 		numTrainIterations = 1;
