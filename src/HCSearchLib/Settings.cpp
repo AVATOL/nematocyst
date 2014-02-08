@@ -295,6 +295,8 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
+		PRUNE_SVM_RANK_EXAMPLES = false;
+		PRUNE_SVM_RANK_THRESHOLD = 0.75;
 
 		/**************** Experiment Settings ****************/
 
