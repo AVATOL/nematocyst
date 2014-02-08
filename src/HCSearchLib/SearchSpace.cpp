@@ -1009,7 +1009,7 @@ namespace HCSearch
 				if (!cutEdgesIndependently)
 				{
 					// uniform state
-					decideToCut = edgeWeights[i] <= threshold;
+					decideToCut = edgeWeights[i] <= thresholdAttempt;
 				}
 				else
 				{
