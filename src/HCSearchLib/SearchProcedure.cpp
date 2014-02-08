@@ -181,20 +181,10 @@ namespace HCSearch
 		}
 	}
 
-	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< ISearchNode* > successorSet)
+	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< RankFeatures > bestFeatures, vector< double > bestLosses)
 	{
-		vector< RankFeatures > bestFeatures;
 		vector< RankFeatures > worstFeatures;
-		vector< double > bestLosses;
 		vector< double > worstLosses;
-
-		// best states
-		for (vector< ISearchNode* >::iterator it = successorSet.begin(); it != successorSet.end(); ++it)
-		{
-			ISearchNode* state = *it;
-			bestFeatures.push_back(state->getHeuristicFeatures());
-			bestLosses.push_back(state->getHeuristic());
-		}
 
 		// worst states
 		SearchNodeHeuristicPQ tempSet;
@@ -408,7 +398,9 @@ namespace HCSearch
 			/***** choose successors and put them into the open set *****/
 			/***** put these expanded elements into the cost set *****/
 
-			vector< ISearchNode* > successorSet = chooseSuccessors(candidateSet, openSet, costSet);
+			vector< RankFeatures > successorSet;
+			vector< double > successorLosses;
+			chooseSuccessors(candidateSet, openSet, costSet, successorSet, successorLosses);
 
 			// NOW: successorSet = best nodes
 			// NOW: candidateSet = worst nodes
@@ -416,7 +408,7 @@ namespace HCSearch
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 
 			if (searchType == LEARN_H)
-				trainHeuristicRanker(heuristicModel, candidateSet, successorSet);
+				trainHeuristicRanker(heuristicModel, candidateSet, successorSet, successorLosses);
 
 			/***** add remaining "worst states" to cost set *****/
 
@@ -551,10 +543,9 @@ namespace HCSearch
 		return candidateSet;
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
+	void BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+			vector< RankFeatures >& successorSet, vector< double >& successorLosses)
 	{
-		vector< ISearchNode* > bestSet;
-
 		// pick the top B best states
 		for (int i = 0; i < this->beamSize; i++)
 		{
@@ -563,14 +554,14 @@ namespace HCSearch
 
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			bestSet.push_back(state);
+			successorSet.push_back(state->getHeuristicFeatures());
+			successorLosses.push_back(state->getHeuristic());
 			openSet.push(state);
 			costSet.push(state);
 		}
 
 		// side effect: candidateSet will only have the worst states now
-
-		return bestSet;
+		// side effect: openSet has the best states now
 	}
 
 	/**************** Best-First Beam Search Procedure ****************/
