@@ -31,7 +31,7 @@ namespace MyProgramOptions
 		successorsMode = STOCHASTIC_NEIGHBORS;
 		lossMode = HAMMING;
 
-		stochasticCutMode = STATE;
+		stochasticCutMode = EDGES;
 		beamSize = 1;
 		cutParam = 1.0;
 
@@ -264,6 +264,16 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			else if (strcmp(argv[i], "--cut-mode") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "state") == 0)
+						po.stochasticCutMode = STATE;
+					else if (strcmp(argv[i+1], "edges") == 0)
+						po.stochasticCutMode = EDGES;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -303,6 +313,7 @@ namespace MyProgramOptions
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
+		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;

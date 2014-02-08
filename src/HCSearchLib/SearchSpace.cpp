@@ -588,11 +588,11 @@ namespace HCSearch
 		this->cutEdgesIndependently = true;
 	}
 
-	StochasticSuccessor::StochasticSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
 	{
 		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 		this->cutParam = cutParam;
-		this->cutEdgesIndependently = true;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()
@@ -820,11 +820,11 @@ namespace HCSearch
 		this->cutEdgesIndependently = true;
 	}
 
-	StochasticNeighborSuccessor::StochasticNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
 	{
 		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 		this->cutParam = cutParam;
-		this->cutEdgesIndependently = true;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticNeighborSuccessor::~StochasticNeighborSuccessor()
