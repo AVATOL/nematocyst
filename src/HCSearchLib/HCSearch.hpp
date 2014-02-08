@@ -321,7 +321,7 @@ using namespace std;
  * 			- Version 1.94 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/liblinear`
  * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
- * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
+ * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in %HCSearch)
  * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
  * 			- Version 3.17 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/libsvm`
@@ -390,7 +390,7 @@ using namespace std;
  * 		2. Unpack to `$ROOT$/external/liblinear`
  * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
  * 		3. Compile by running `make` in `$ROOT$/external/liblinear`
- * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
+ * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in %HCSearch)
  * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
  * 			- Version 3.17 officially supported. Later versions should also work.
  * 		2. Unpack to `$ROOT$/external/libsvm`
