@@ -139,6 +139,12 @@ namespace HCSearch
 
 	void SVMRankModel::load(string fileName)
 	{
+		if (!MyFileSystem::FileSystem::checkFileExists(fileName))
+		{
+			LOG(WARNING) << "SVM model file does not exist for loading! Ignoring load function...";
+			return;
+		}
+
 		this->weights = parseModelFile(fileName);
 		this->initialized = true;
 	}
@@ -299,7 +305,10 @@ namespace HCSearch
 		}
 
 		// load weights into model and initialize
-		load(modelFileName);
+		if (Global::settings->RANK == 0)
+		{
+			load(modelFileName);
+		}
 
 		LOG() << endl;
 	}

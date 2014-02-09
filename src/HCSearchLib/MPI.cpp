@@ -90,7 +90,7 @@ namespace MPI
 		}
 		else
 		{
-			LOG() << "Slave process [" << rank << "] is sending arrival message to master..." << endl;
+			LOG() << "Slave process [" << rank << "] is sending arrival message " << SLAVEBROADCASTMSG << " to master..." << endl;
 
 			// send finish heuristic learning message to master
 			int ierr = MPI_Send(const_cast<char*>(SLAVEBROADCASTMSG), SLAVEBROADCASTMSG_SIZE, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
@@ -118,6 +118,7 @@ namespace MPI
 			// tell each slave to continue
 			for (int j = 1; j < numProcesses; j++)
 			{
+				LOG() << "Master is sending slave process [" << j << "] the " << MASTERBROADCASTMSG << " message to continue..." << endl;
 				int ierr = MPI_Send(const_cast<char*>(MASTERBROADCASTMSG), MASTERBROADCASTMSG_SIZE, MPI_CHAR, j, 0, MPI_COMM_WORLD);
 			}
 
