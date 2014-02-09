@@ -30,6 +30,9 @@ namespace MyFileSystem
 
 		// Remove file
 		static int deleteFile(string path);
+
+		// Check if file exists
+		static bool checkFileExists(string path);
 	};
 
 	/**************** Executable ****************/

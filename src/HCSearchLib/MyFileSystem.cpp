@@ -52,6 +52,16 @@ namespace MyFileSystem
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_RM_CMD + " " + path);
 	}
 
+	bool FileSystem::checkFileExists(string path)
+	{
+		if (FILE *file = fopen(path.c_str(), "r")) {
+			fclose(file);
+			return true;
+		} else {
+			return false;
+		}
+	}
+
 	/**************** Executable ****************/
 
 	const int Executable::DEFAULT_NUM_RETRIES = 3;
