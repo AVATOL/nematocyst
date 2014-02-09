@@ -234,12 +234,6 @@ namespace HCSearch
 			abort();
 		}
 
-		if (qid <= 1)
-		{
-			LOG(ERROR) << "no training data available for learning!";
-			return;
-		}
-
 		// close ranking file
 		this->rankingFile->close();
 		delete this->rankingFile;
@@ -276,8 +270,11 @@ namespace HCSearch
 		}
 #endif
 
-		// training step
-		if (Global::settings->RANK == 0)
+		if (this->qid <= 1)
+		{
+			LOG(ERROR) << "no training data available for learning!";
+		}
+		else if (Global::settings->RANK == 0)
 		{
 			// compute C
 			double C = 1.0 * (this->qid-1);
@@ -295,6 +292,11 @@ namespace HCSearch
 
 		// no longer learning
 		this->learningMode = false;
+
+		if (this->qid <= 1)
+		{
+			return;
+		}
 
 		// load weights into model and initialize
 		load(modelFileName);
@@ -452,6 +454,11 @@ namespace HCSearch
 			{
 				// open file from process i
 				FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, i);
+
+				if (!MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE))
+				{
+					continue;
+				}
 
 				ifstream fh;
 				fh.open(FEATURES_FILE.c_str());
