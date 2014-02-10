@@ -267,6 +267,7 @@ Advanced options:
 	--search arg			: greedy|breadthbeam|bestbeam
 	--splits-path arg		: specify alternate path to splits folder
 	--successor arg			: flipbit|stochastic
+	--unique-iter			: unique iteration ID (num-test-iters needs to be 1)
 	--verbose arg			: turn on verbose output if true
 
 Notes:

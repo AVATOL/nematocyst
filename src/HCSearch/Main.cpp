@@ -271,6 +271,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					if (po.numTestIterations == 1)
+						iter = po.uniqueIterId;
+
 					LOG() << endl << "LL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
@@ -303,6 +306,9 @@ void run(MyProgramOptions::ProgramOptions po)
 					//		<< "_fold" << meta.iter 
 					//		<< "_" << meta.exampleName << ".txt";
 					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+
+					if (po.numTestIterations == 1)
+						break;
 				}
 			}
 
@@ -327,6 +333,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					if (po.numTestIterations == 1)
+						iter = po.uniqueIterId;
+
 					LOG() << endl << "HL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
@@ -359,6 +368,9 @@ void run(MyProgramOptions::ProgramOptions po)
 					//		<< "_fold" << meta.iter 
 					//		<< "_" << meta.exampleName << ".txt";
 					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+
+					if (po.numTestIterations == 1)
+						break;
 				}
 			}
 
@@ -385,6 +397,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					if (po.numTestIterations == 1)
+						iter = po.uniqueIterId;
+
 					LOG() << endl << "LC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
@@ -417,6 +432,9 @@ void run(MyProgramOptions::ProgramOptions po)
 					//		<< "_fold" << meta.iter 
 					//		<< "_" << meta.exampleName << ".txt";
 					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+
+					if (po.numTestIterations == 1)
+						break;
 				}
 			}
 
@@ -444,6 +462,9 @@ void run(MyProgramOptions::ProgramOptions po)
 			{
 				for (int iter = 0; iter < po.numTestIterations; iter++)
 				{
+					if (po.numTestIterations == 1)
+						iter = po.uniqueIterId;
+
 					LOG() << endl << "HC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
 
 					// setup meta
@@ -476,6 +497,9 @@ void run(MyProgramOptions::ProgramOptions po)
 					//		<< "_fold" << meta.iter 
 					//		<< "_" << meta.exampleName << ".txt";
 					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+
+					if (po.numTestIterations == 1)
+						break;
 				}
 			}
 

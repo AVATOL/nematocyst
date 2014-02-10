@@ -42,6 +42,7 @@ namespace MyProgramOptions
 		numTestIterations = 1;
 		verboseMode = false;
 		boundSuccessorCandidates = 1000;
+		uniqueIterId = 0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -274,6 +275,18 @@ namespace MyProgramOptions
 						po.stochasticCutMode = EDGES;
 				}
 			}
+			else if (strcmp(argv[i], "--unique-iter") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.uniqueIterId = atoi(argv[i+1]);
+					if (po.uniqueIterId < 0)
+					{
+						LOG(ERROR) << "Unique iteration ID needs to be >= 0";
+						HCSearch::abort();
+					}
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -322,6 +335,7 @@ namespace MyProgramOptions
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
 		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic|flipbit-neighbors|stochastic-neighbors" << endl;
+		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
