@@ -388,7 +388,7 @@ namespace HCSearch
 			vector< RankFeatures > worstFeatures;
 			vector< double > bestLosses; // heuristic values technically, but definitely losses for learning H
 			vector< double > worstLosses;
-			chooseSuccessors(candidateSet, openSet, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			chooseSuccessors(searchType, candidateSet, openSet, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
 
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 
@@ -520,7 +520,7 @@ namespace HCSearch
 		return candidateSet;
 	}
 
-	void BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+	void BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchType searchType, SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)
 	{
 		// pick the top B best states - "good" training examples
@@ -531,8 +531,11 @@ namespace HCSearch
 
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			bestSet.push_back(state->getHeuristicFeatures());
-			bestLosses.push_back(state->getHeuristic());
+			if (searchType != LL && searchType != LC)
+			{
+				bestSet.push_back(state->getHeuristicFeatures());
+				bestLosses.push_back(state->getHeuristic());
+			}
 			openSet.push(state);
 			costSet.push(state);
 		}
@@ -542,8 +545,11 @@ namespace HCSearch
 		{
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			worstSet.push_back(state->getHeuristicFeatures());
-			worstLosses.push_back(state->getHeuristic());
+			if (searchType != LL && searchType != LC)
+			{
+				worstSet.push_back(state->getHeuristicFeatures());
+				worstLosses.push_back(state->getHeuristic());
+			}
 			costSet.push(state);
 		}
 
