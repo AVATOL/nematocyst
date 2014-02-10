@@ -60,6 +60,26 @@ namespace HCSearch
 		void setBackgroundLabel(int classLabel);
 	};
 
+	/**************** Run-time Statistics ****************/
+
+	/*!
+	 * @brief Store run time statistics.
+	 */
+	class RunTimeStats
+	{
+	private:
+		int cumSumSuccessors;
+		int numSumSuccessors;
+
+	public:
+		RunTimeStats();
+		~RunTimeStats();
+
+		void addSuccessorCount(int count);
+		double getSuccessorAverage();
+		void resetSuccessorCount();
+	};
+
 	/**************** Directory/File Paths Class ****************/
 
 	/*!
@@ -253,6 +273,11 @@ namespace HCSearch
 		 * Commands
 		 */
 		Commands* cmds;
+
+		/*!
+		 * Run-time statistics.
+		 */
+		RunTimeStats* stats;
 
 	public:
 		/*!

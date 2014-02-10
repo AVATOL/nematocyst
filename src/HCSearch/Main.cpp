@@ -96,6 +96,12 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE:
+		LOG() << "cut schedule" << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
+		successor = new HCSearch::CutScheduleSuccessor(po.cutParam, po.boundSuccessorCandidates);
+		break;
+	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE_NEIGHBORS:
 		LOG() << "cut schedule neighbors" << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
@@ -182,6 +188,8 @@ void run(MyProgramOptions::ProgramOptions po)
 	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
+		HCSearch::Global::settings->stats->resetSuccessorCount();
+
 		HCSearch::SearchType mode = *it;
 		switch (mode)
 		{
@@ -522,6 +530,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		default:
 			LOG(ERROR) << "invalid mode!";
 		}
+
+		LOG() << "Average number of successor candidates=" << HCSearch::Global::settings->stats->getSuccessorAverage() << endl;
 	}
 
 	// clean up
