@@ -49,7 +49,7 @@ namespace MyLogger
 		Logger::numProcesses = numProcesses;
 		Logger::minLogLevel = INFO;
 		Logger::logstream = new ofstream(logPath.c_str(), std::ios_base::app);
-		(*Logger::logstream) << endl << "========== " << getDateTime() << " ==========" << endl << endl;
+		(*Logger::logstream) << endl << "========== START: " << getDateTime() << " ==========" << endl << endl;
 		Logger::initialized = true;
 	}
 
@@ -63,6 +63,7 @@ namespace MyLogger
 		Logger::initialized = false;
 		if (Logger::logstream != NULL)
 		{
+			(*Logger::logstream) << endl << "========== END: " << getDateTime() << " ==========" << endl << endl;
 			Logger::logstream->close();
 			delete Logger::logstream;
 		}
