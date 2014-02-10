@@ -473,6 +473,8 @@ namespace HCSearch
 			}
 		}
 
+		LOG() << "num successors=" << successors.size() << endl;
+
 		// prune to the bound
 		const int originalSize = successors.size();
 		if (originalSize > maxNumSuccessorCandidates)
@@ -480,9 +482,9 @@ namespace HCSearch
 			random_shuffle(successors.begin(), successors.end());
 			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
 				successors.pop_back();
-		}
 
-		LOG() << "num successors=" << successors.size() << endl;
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
 
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
@@ -560,6 +562,8 @@ namespace HCSearch
 			}
 		}
 
+		LOG() << "num successors=" << successors.size() << endl;
+
 		// prune to the bound
 		const int originalSize = successors.size();
 		if (originalSize > maxNumSuccessorCandidates)
@@ -567,9 +571,9 @@ namespace HCSearch
 			random_shuffle(successors.begin(), successors.end());
 			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
 				successors.pop_back();
-		}
 
-		LOG() << "num successors=" << successors.size() << endl;
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
 
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
@@ -615,6 +619,8 @@ namespace HCSearch
 		// generate candidates
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
+		LOG() << "num successors=" << successors.size() << endl;
+
 		// prune to the bound
 		const int originalSize = successors.size();
 		if (originalSize > maxNumSuccessorCandidates)
@@ -622,9 +628,10 @@ namespace HCSearch
 			random_shuffle(successors.begin(), successors.end());
 			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
 				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
 		}
 
-		LOG() << "num successors=" << successors.size() << endl;
 		delete subgraphs;
 
 		clock_t toc = clock();
@@ -933,6 +940,8 @@ namespace HCSearch
 		// generate candidates
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
+		LOG() << "num successors=" << successors.size() << endl;
+
 		// prune to the bound
 		const int originalSize = successors.size();
 		if (originalSize > maxNumSuccessorCandidates)
@@ -940,9 +949,10 @@ namespace HCSearch
 			random_shuffle(successors.begin(), successors.end());
 			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
 				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
 		}
 
-		LOG() << "num successors=" << successors.size() << endl;
 		delete subgraphs;
 
 		clock_t toc = clock();
