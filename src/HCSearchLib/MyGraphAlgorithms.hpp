@@ -103,6 +103,10 @@ namespace MyGraphAlgorithms
 		vector< ConnectedComponent* > connectedComponents;
 		HCSearch::ImgLabeling original;
 
+		// true if there is only one foreground connected component
+		bool exactlyOnePositiveCC;
+		ConnectedComponent* foreground;
+
 	public:
 		ConnectedComponentSet();
 
@@ -132,6 +136,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get connected components.
 		 */
 		vector< ConnectedComponent* > getConnectedComponents();
+
+		/*!
+		 * @brief Returns true if there is exactly one foreground connected component
+		 */
+		bool hasExactlyOnePositiveCC();
 	};
 
 	/**************** Subgraphs ****************/
@@ -182,6 +191,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get the connected components.
 		 */
 		vector< ConnectedComponent* > getConnectedComponents();
+
+		/*!
+		 * @brief Returns true if there is exactly one foreground connected component
+		 */
+		bool hasExactlyOnePositiveCC();
 	};
 
 	/**************** Subgraph Set ****************/
@@ -195,6 +209,8 @@ namespace MyGraphAlgorithms
 		vector< Subgraph* > subgraphs;
 		map< int, set<int> > cuts;
 		HCSearch::ImgLabeling original;
+
+		vector< Subgraph* > exactlyOnePositiveCCSubgraphs;
 
 	public:
 		SubgraphSet();
@@ -220,6 +236,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get the stochastic cuts.
 		 */
 		map< int, set<int> > getCuts();
+
+		/*!
+		 * @brief Get the set of subgraphs such that there is exactly one connected component.
+		 */
+		vector< Subgraph* > getExactlyOnePositiveCCSubgraphs();
 	};
 }
 
