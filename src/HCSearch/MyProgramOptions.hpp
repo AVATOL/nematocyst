@@ -18,7 +18,7 @@ namespace MyProgramOptions
 		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
 		enum FeaturesMode { STANDARD };
 		enum InitialFunctionMode { LOG_REG };
-		enum SuccessorsMode { FLIPBIT, STOCHASTIC, FLIPBIT_NEIGHBORS, STOCHASTIC_NEIGHBORS, CUT_SCHEDULE };
+		enum SuccessorsMode { FLIPBIT, STOCHASTIC, FLIPBIT_NEIGHBORS, STOCHASTIC_NEIGHBORS, CUT_SCHEDULE, CUT_SCHEDULE_NEIGHBORS };
 		enum LossMode { HAMMING };
 
 		enum StochasticCutMode { STATE, EDGES };

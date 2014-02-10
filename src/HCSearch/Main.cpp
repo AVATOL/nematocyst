@@ -96,6 +96,12 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE:
+		LOG() << "cut schedule" << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
+		successor = new HCSearch::CutScheduleSuccessor(po.cutParam, po.boundSuccessorCandidates);
+		break;
+	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE_NEIGHBORS:
 		LOG() << "cut schedule neighbors" << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;

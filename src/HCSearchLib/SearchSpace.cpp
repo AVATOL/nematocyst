@@ -908,31 +908,31 @@ namespace HCSearch
 		return successors;
 	}
 
-	/**************** Cut Schedule Neighbor Successor Function ****************/
+	/**************** Cut Schedule Successor Function ****************/
 
-	const int CutScheduleNeighborSuccessor::NUM_GOOD_SUBGRAPHS_THRESHOLD = 8;
-	const double CutScheduleNeighborSuccessor::FINAL_THRESHOLD = 0.975;
-	const double CutScheduleNeighborSuccessor::THRESHOLD_INCREMENT = 0.025;
+	const int CutScheduleSuccessor::NUM_GOOD_SUBGRAPHS_THRESHOLD = 8;
+	const double CutScheduleSuccessor::FINAL_THRESHOLD = 0.975;
+	const double CutScheduleSuccessor::THRESHOLD_INCREMENT = 0.025;
 
-	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
+	CutScheduleSuccessor::CutScheduleSuccessor()
 	{
 		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = false;
 	}
 
-	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	CutScheduleSuccessor::CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates)
 	{
 		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 
-	CutScheduleNeighborSuccessor::~CutScheduleNeighborSuccessor()
+	CutScheduleSuccessor::~CutScheduleSuccessor()
 	{
 	}
 	
-	vector< ImgLabeling > CutScheduleNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgLabeling > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		clock_t tic = clock();
 
@@ -969,7 +969,7 @@ namespace HCSearch
 		return successors;
 	}
 
-	MyGraphAlgorithms::SubgraphSet* CutScheduleNeighborSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	MyGraphAlgorithms::SubgraphSet* CutScheduleSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
 	{
 		MyGraphAlgorithms::SubgraphSet* subgraphs = NULL;
 
@@ -1080,6 +1080,84 @@ namespace HCSearch
 		return subgraphs;
 	}
 
+	vector< ImgLabeling > CutScheduleSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	{
+		using namespace MyGraphAlgorithms;
+
+		vector< Subgraph* > subgraphset = subgraphs->getExactlyOnePositiveCCSubgraphs();
+
+		// successors set
+		vector< ImgLabeling > successors;
+
+		// loop over each sub graph
+		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// loop over each connected component
+			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			{
+				ConnectedComponent* cc = *it2;
+
+				set<int> candidateLabelsSet;
+				int nodeLabel = cc->getLabel();
+				candidateLabelsSet.insert(nodeLabel);
+
+				// flip to any possible class
+				candidateLabelsSet = Global::settings->CLASSES.getLabels();
+
+				candidateLabelsSet.erase(nodeLabel);
+
+				// loop over each candidate label
+				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
+				{
+					int label = *it3;
+
+					// form successor object
+					ImgLabeling YNew;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = YPred.confidencesAvailable;
+					YNew.stochasticCuts = subgraphs->getCuts();
+					YNew.stochasticCutsAvailable = true;
+					YNew.graph = YPred.graph;
+
+					// make changes
+					set<int> component = cc->getNodes();
+					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+					{
+						int node = *it4;
+						YNew.graph.nodesData(node) = label;
+					}
+
+					successors.push_back(YNew);
+				}
+			}
+		}
+
+		return successors;
+	}
+
+	/**************** Cut Schedule Neighbor Successor Function ****************/
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::~CutScheduleNeighborSuccessor()
+	{
+	}
+	
 	vector< ImgLabeling > CutScheduleNeighborSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
 	{
 		using namespace MyGraphAlgorithms;
