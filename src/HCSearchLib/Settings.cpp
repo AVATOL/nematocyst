@@ -298,6 +298,7 @@ namespace HCSearch
 		PRUNE_SVM_RANK_EXAMPLES = false;
 		PRUNE_SVM_RANK_RATIO = 0.25;
 		PRUNE_SVM_RANK_MIN_EXAMPLES = 10;
+		PRUNE_SVM_RANK_MAX_EXAMPLES = 100;
 
 		/**************** Experiment Settings ****************/
 

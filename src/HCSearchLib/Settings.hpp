@@ -209,6 +209,11 @@ namespace HCSearch
 		 */
 		int PRUNE_SVM_RANK_MIN_EXAMPLES;
 
+		/*!
+		 * @brief Maximum number of examples before using pruning ratio.
+		 */
+		int PRUNE_SVM_RANK_MAX_EXAMPLES;
+
 		/**************** Experiment Settings ****************/
 
 		/*!

@@ -189,6 +189,8 @@ namespace HCSearch
 				int newBetterSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * betterSetSize);
 				if (newBetterSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
 					newBetterSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
+				if (newBetterSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
+					newBetterSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
 
 				random_shuffle(betterSet.begin(), betterSet.end());
 				for (int i = 0; i < betterSetSize - newBetterSize; i++)
@@ -203,6 +205,8 @@ namespace HCSearch
 				int newWorseSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * worseSetSize);
 				if (newWorseSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
 					newWorseSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
+				if (newWorseSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
+					newWorseSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
 
 				random_shuffle(worseSet.begin(), worseSet.end());
 				for (int i = 0; i < worseSetSize - newWorseSize; i++)
