@@ -59,6 +59,7 @@ namespace MyProgramOptions
 		int numTestIterations;
 		bool verboseMode;
 		int boundSuccessorCandidates;
+		int uniqueIterId;
 
 	public:
 		ProgramOptions();

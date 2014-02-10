@@ -42,6 +42,7 @@ namespace MyProgramOptions
 		numTestIterations = 1;
 		verboseMode = true;
 		boundSuccessorCandidates = 100;
+		uniqueIterId = 0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -276,6 +277,18 @@ namespace MyProgramOptions
 						po.stochasticCutMode = EDGES;
 				}
 			}
+			else if (strcmp(argv[i], "--unique-iter") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.uniqueIterId = atoi(argv[i+1]);
+					if (po.uniqueIterId < 0)
+					{
+						LOG(ERROR) << "Unique iteration ID needs to be >= 0";
+						HCSearch::abort();
+					}
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -323,7 +336,12 @@ namespace MyProgramOptions
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
+<<<<<<< HEAD
 		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic|flipbit-neighbors|stochastic-neighbors|cut-schedule" << endl;
+=======
+		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic|flipbit-neighbors|stochastic-neighbors" << endl;
+		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
+>>>>>>> origin/develop
 		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
