@@ -486,6 +486,8 @@ namespace HCSearch
 			LOG() << "\tpruned to num successors=" << successors.size() << endl;
 		}
 
+		Global::settings->stats->addSuccessorCount(successors.size());
+
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
@@ -575,6 +577,8 @@ namespace HCSearch
 			LOG() << "\tpruned to num successors=" << successors.size() << endl;
 		}
 
+		Global::settings->stats->addSuccessorCount(successors.size());
+
 		clock_t toc = clock();
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
@@ -631,6 +635,8 @@ namespace HCSearch
 
 			LOG() << "\tpruned to num successors=" << successors.size() << endl;
 		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
 
 		delete subgraphs;
 
@@ -952,6 +958,8 @@ namespace HCSearch
 
 			LOG() << "\tpruned to num successors=" << successors.size() << endl;
 		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
 
 		delete subgraphs;
 

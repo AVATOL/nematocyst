@@ -182,6 +182,8 @@ void run(MyProgramOptions::ProgramOptions po)
 	for (vector< HCSearch::SearchType >::iterator it = po.schedule.begin();
 		it != po.schedule.end(); ++it)
 	{
+		HCSearch::Global::settings->stats->resetSuccessorCount();
+
 		HCSearch::SearchType mode = *it;
 		switch (mode)
 		{
@@ -522,6 +524,8 @@ void run(MyProgramOptions::ProgramOptions po)
 		default:
 			LOG(ERROR) << "invalid mode!";
 		}
+
+		LOG() << "Average number of successor candidates=" << HCSearch::Global::settings->stats->getSuccessorAverage() << endl;
 	}
 
 	// clean up

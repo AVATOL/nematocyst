@@ -138,6 +138,40 @@ namespace HCSearch
 		this->backgroundExists = true;
 	}
 
+	/**************** Run-time Statistics ****************/
+
+	RunTimeStats::RunTimeStats()
+	{
+		resetSuccessorCount();
+	}
+
+	RunTimeStats::~RunTimeStats()
+	{
+	}
+
+	void RunTimeStats::addSuccessorCount(int count)
+	{
+		this->cumSumSuccessors += count;
+		this->numSumSuccessors++;
+	}
+
+	double RunTimeStats::getSuccessorAverage()
+	{
+		if (numSumSuccessors == 0)
+		{
+			return -1;
+		}
+
+		return 1.0*cumSumSuccessors/numSumSuccessors;
+	}
+
+	void RunTimeStats::resetSuccessorCount()
+	{
+		this->cumSumSuccessors = 0;
+		this->numSumSuccessors = 0;
+	}
+
+
 	/**************** Directory/File Paths Class ****************/
 
 	Paths::Paths()
@@ -316,15 +350,14 @@ namespace HCSearch
 
 		paths = new Paths();
 		cmds = new Commands(paths);
+		stats = new RunTimeStats();
 	}
 
 	Settings::~Settings()
 	{
 		delete cmds;
-		cmds = NULL;
-
 		delete paths;
-		paths = NULL;
+		delete stats;
 	}
 
 	void Settings::refresh(string dataDir, string experimentDir)
