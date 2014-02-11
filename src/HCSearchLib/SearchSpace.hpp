@@ -323,7 +323,7 @@ namespace HCSearch
 	 * Schedule to find the best cut for forming subgraphs. 
 	 * For each subgraph, flip its label to all possible classes.
 	 */
-	class CutScheduleSuccessor : public StochasticNeighborSuccessor
+	class CutScheduleSuccessor : public StochasticSuccessor
 	{
 	protected:
 
