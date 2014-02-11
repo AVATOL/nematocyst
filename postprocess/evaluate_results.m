@@ -36,7 +36,8 @@ testFiles = list{1,1};
 
 %% get all classes
 classes = get_classes(testFiles, preprocessedDir);
-BINARY_FOREGROUND_CLASS_INDEX = 2; % [-1, 1] means index 2 is foreground
+BINARY_FOREGROUND_CLASS_INDEX = 8;  % [-1, 1] means index 2 is foreground
+                                    % 8 means foreground class in Stanford
 
 %% prepare output data structure
 evaluate = containers.Map;
