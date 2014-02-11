@@ -77,8 +77,17 @@ namespace Testing
 		
 		TEST_METHOD_INITIALIZE(SubgraphSetInit)
 		{
+			Settings* settings = new Settings();
+			settings->refresh("input", "output");
+			Global::settings = settings;
+
 			this->Y = setupImgLabelingHelper();	
 			this->cuts = setupCutsHelper();
+		}
+
+		TEST_METHOD_CLEANUP(SubgraphSetTeardown)
+		{
+			delete Global::settings;
 		}
 
 		TEST_METHOD(SubgraphSetConstructionTest)
