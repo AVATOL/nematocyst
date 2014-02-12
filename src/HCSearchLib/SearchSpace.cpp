@@ -748,6 +748,8 @@ namespace HCSearch
 		vector< ImgLabeling > successors;
 
 		// loop over each sub graph
+		int cumSumLabels = 0;
+		int numSumLabels = 0;
 		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
 		{
 			Subgraph* sub = *it;
@@ -767,7 +769,8 @@ namespace HCSearch
 				
 				candidateLabelsSet.erase(nodeLabel);
 
-				LOG() << "num labels=" << candidateLabelsSet.size() << endl;
+				cumSumLabels += candidateLabelsSet.size();
+				numSumLabels++;
 
 				// loop over each candidate label
 				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
@@ -794,6 +797,9 @@ namespace HCSearch
 				}
 			}
 		}
+
+		if (numSumLabels > 0)
+			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
 
 		return successors;
 	}
