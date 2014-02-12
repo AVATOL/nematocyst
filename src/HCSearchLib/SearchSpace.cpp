@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <ctime>
+#include <cmath>
 #include "MyFileSystem.hpp"
 #include "SearchSpace.hpp"
 #include "Settings.hpp"
@@ -587,7 +588,7 @@ namespace HCSearch
 
 	/**************** Stochastic Successor Function ****************/
 
-	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.25;
+	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
 	StochasticSuccessor::StochasticSuccessor()
@@ -766,6 +767,8 @@ namespace HCSearch
 				
 				candidateLabelsSet.erase(nodeLabel);
 
+				LOG() << "num labels=" << candidateLabelsSet.size() << endl;
+
 				// loop over each candidate label
 				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
 				{
@@ -823,7 +826,7 @@ namespace HCSearch
 
 	void StochasticSuccessor::getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
-		int topKConfidences = static_cast<int>(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses());
+		int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
 		candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
 		if (cc->hasNeighbors())
 		{
