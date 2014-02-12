@@ -687,6 +687,12 @@ namespace HCSearch
 					successors.push_back(successor);
 				}
 				break;
+			case RL:
+				{
+					RLSearchNode* successor = new RLSearchNode(this, YPred);
+					successors.push_back(successor);
+				}
+				break;
 			case LEARN_H:
 				{
 					LearnHSearchNode* successor = new LearnHSearchNode(this, YPred);
