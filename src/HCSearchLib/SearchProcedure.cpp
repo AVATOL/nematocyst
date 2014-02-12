@@ -541,7 +541,7 @@ namespace HCSearch
 
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			if (searchType != LL && searchType != LC)
+			if (searchType != LL && searchType != LC && searchType != RL)
 			{
 				bestSet.push_back(state->getHeuristicFeatures());
 				bestLosses.push_back(state->getHeuristic());
@@ -555,7 +555,7 @@ namespace HCSearch
 		{
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			if (searchType != LL && searchType != LC)
+			if (searchType != LL && searchType != LC && searchType != RL)
 			{
 				worstSet.push_back(state->getHeuristicFeatures());
 				worstLosses.push_back(state->getHeuristic());
