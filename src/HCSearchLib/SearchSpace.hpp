@@ -346,7 +346,6 @@ namespace HCSearch
 	class CutScheduleSuccessor : public StochasticSuccessor
 	{
 	protected:
-
 		static const int NUM_GOOD_SUBGRAPHS_THRESHOLD;
 		static const double FINAL_THRESHOLD;
 		static const double THRESHOLD_INCREMENT;
