@@ -587,6 +587,7 @@ namespace HCSearch
 
 	/**************** Stochastic Successor Function ****************/
 
+	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.25;
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
 	StochasticSuccessor::StochasticSuccessor()
@@ -759,10 +760,10 @@ namespace HCSearch
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
 				candidateLabelsSet.insert(nodeLabel);
-
-				// flip to any possible class
-				candidateLabelsSet = Global::settings->CLASSES.getLabels();
-
+				
+				// get labels
+				getLabels(candidateLabelsSet, cc);
+				
 				candidateLabelsSet.erase(nodeLabel);
 
 				// loop over each candidate label
@@ -792,6 +793,44 @@ namespace HCSearch
 		}
 
 		return successors;
+	}
+
+	void StochasticSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getAllLabels(candidateLabelsSet, cc);	
+	}
+
+	void StochasticSuccessor::getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		// flip to any possible class
+		candidateLabelsSet = Global::settings->CLASSES.getLabels();
+	}
+
+	void StochasticSuccessor::getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		if (cc->hasNeighbors())
+		{
+			// add only neighboring labels to candidate label set
+			set<int> neighborSet = cc->getNeighborLabels();
+			candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
+		}
+		else
+		{
+			// if connected component is isolated without neighboring connected components, then flip to any possible class
+			candidateLabelsSet = Global::settings->CLASSES.getLabels();
+		}
+	}
+
+	void StochasticSuccessor::getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		int topKConfidences = static_cast<int>(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses());
+		candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
+		if (cc->hasNeighbors())
+		{
+			// add only neighboring labels to candidate label set
+			set<int> neighborSet = cc->getNeighborLabels();
+			candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
+		}
 	}
 
 	double StochasticSuccessor::computeKL(const VectorXd& p, const VectorXd& q)
@@ -844,68 +883,34 @@ namespace HCSearch
 	{
 	}
 
-	vector< ImgLabeling > StochasticNeighborSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	void StochasticNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
-		using namespace MyGraphAlgorithms;
+		getNeighborLabels(candidateLabelsSet, cc);	
+	}
 
-		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
+	/**************** Stochastic Confidences Neighbor Successor Function ****************/
 
-		// successors set
-		vector< ImgLabeling > successors;
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+	}
 
-		// loop over each sub graph
-		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
-		{
-			Subgraph* sub = *it;
-			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+	}
 
-			// loop over each connected component
-			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
-			{
-				ConnectedComponent* cc = *it2;
+	StochasticConfidencesNeighborSuccessor::~StochasticConfidencesNeighborSuccessor()
+	{
+	}
 
-				set<int> candidateLabelsSet;
-				int nodeLabel = cc->getLabel();
-				candidateLabelsSet.insert(nodeLabel);
-				if (cc->hasNeighbors())
-				{
-					// add only neighboring labels to candidate label set
-					candidateLabelsSet = cc->getNeighborLabels();
-				}
-				else
-				{
-					// if connected component is isolated without neighboring connected components, then flip to any possible class
-					candidateLabelsSet = Global::settings->CLASSES.getLabels();
-				}
-				candidateLabelsSet.erase(nodeLabel);
-
-				// loop over each candidate label
-				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
-				{
-					int label = *it3;
-
-					// form successor object
-					ImgLabeling YNew;
-					YNew.confidences = YPred.confidences;
-					YNew.confidencesAvailable = YPred.confidencesAvailable;
-					YNew.stochasticCuts = subgraphs->getCuts();
-					YNew.stochasticCutsAvailable = true;
-					YNew.graph = YPred.graph;
-
-					// make changes
-					set<int> component = cc->getNodes();
-					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
-					{
-						int node = *it4;
-						YNew.graph.nodesData(node) = label;
-					}
-
-					successors.push_back(YNew);
-				}
-			}
-		}
-
-		return successors;
+	void StochasticConfidencesNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
 	/**************** Cut Schedule Successor Function ****************/
@@ -1080,62 +1085,9 @@ namespace HCSearch
 		return subgraphs;
 	}
 
-	vector< ImgLabeling > CutScheduleSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	void CutScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
-		using namespace MyGraphAlgorithms;
-
-		vector< Subgraph* > subgraphset = subgraphs->getExactlyOnePositiveCCSubgraphs();
-
-		// successors set
-		vector< ImgLabeling > successors;
-
-		// loop over each sub graph
-		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
-		{
-			Subgraph* sub = *it;
-			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
-
-			// loop over each connected component
-			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
-			{
-				ConnectedComponent* cc = *it2;
-
-				set<int> candidateLabelsSet;
-				int nodeLabel = cc->getLabel();
-				candidateLabelsSet.insert(nodeLabel);
-
-				// flip to any possible class
-				candidateLabelsSet = Global::settings->CLASSES.getLabels();
-
-				candidateLabelsSet.erase(nodeLabel);
-
-				// loop over each candidate label
-				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
-				{
-					int label = *it3;
-
-					// form successor object
-					ImgLabeling YNew;
-					YNew.confidences = YPred.confidences;
-					YNew.confidencesAvailable = YPred.confidencesAvailable;
-					YNew.stochasticCuts = subgraphs->getCuts();
-					YNew.stochasticCutsAvailable = true;
-					YNew.graph = YPred.graph;
-
-					// make changes
-					set<int> component = cc->getNodes();
-					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
-					{
-						int node = *it4;
-						YNew.graph.nodesData(node) = label;
-					}
-
-					successors.push_back(YNew);
-				}
-			}
-		}
-
-		return successors;
+		getAllLabels(candidateLabelsSet, cc);	
 	}
 
 	/**************** Cut Schedule Neighbor Successor Function ****************/
@@ -1158,68 +1110,34 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgLabeling > CutScheduleNeighborSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	void CutScheduleNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
-		using namespace MyGraphAlgorithms;
+		getNeighborLabels(candidateLabelsSet, cc);	
+	}
 
-		vector< Subgraph* > subgraphset = subgraphs->getExactlyOnePositiveCCSubgraphs();
+	/**************** Cut Schedule Confidences Neighbor Successor Function ****************/
 
-		// successors set
-		vector< ImgLabeling > successors;
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
 
-		// loop over each sub graph
-		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
-		{
-			Subgraph* sub = *it;
-			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
 
-			// loop over each connected component
-			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
-			{
-				ConnectedComponent* cc = *it2;
-
-				set<int> candidateLabelsSet;
-				int nodeLabel = cc->getLabel();
-				candidateLabelsSet.insert(nodeLabel);
-				if (cc->hasNeighbors())
-				{
-					// add only neighboring labels to candidate label set
-					candidateLabelsSet = cc->getNeighborLabels();
-				}
-				else
-				{
-					// if connected component is isolated without neighboring connected components, then flip to any possible class
-					candidateLabelsSet = Global::settings->CLASSES.getLabels();
-				}
-				candidateLabelsSet.erase(nodeLabel);
-
-				// loop over each candidate label
-				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
-				{
-					int label = *it3;
-
-					// form successor object
-					ImgLabeling YNew;
-					YNew.confidences = YPred.confidences;
-					YNew.confidencesAvailable = YPred.confidencesAvailable;
-					YNew.stochasticCuts = subgraphs->getCuts();
-					YNew.stochasticCutsAvailable = true;
-					YNew.graph = YPred.graph;
-
-					// make changes
-					set<int> component = cc->getNodes();
-					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
-					{
-						int node = *it4;
-						YNew.graph.nodesData(node) = label;
-					}
-
-					successors.push_back(YNew);
-				}
-			}
-		}
-
-		return successors;
+	CutScheduleConfidencesNeighborSuccessor::~CutScheduleConfidencesNeighborSuccessor()
+	{
+	}
+	
+	void CutScheduleConfidencesNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
 	/**************** Loss Functions ****************/

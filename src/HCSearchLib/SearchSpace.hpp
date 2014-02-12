@@ -283,6 +283,7 @@ namespace HCSearch
 	class StochasticSuccessor : public ISuccessorFunction
 	{
 	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
 		static const double DEFAULT_T_PARM;
 		double cutParam; //!< temperature parameter
 		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
@@ -297,6 +298,12 @@ namespace HCSearch
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
 		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
+		void getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+		void getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+		void getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
 		static double computeKL(const VectorXd& p, const VectorXd& q);
 	};
 
@@ -314,7 +321,24 @@ namespace HCSearch
 		~StochasticNeighborSuccessor();
 
 	protected:
-		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+	};
+
+	/*!
+	 * @brief Stochastic successor function using confident labels and neighbor labels.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to a label of a confident or neighboring node.
+	 */
+	class StochasticConfidencesNeighborSuccessor : public StochasticSuccessor
+	{
+	public:
+		StochasticConfidencesNeighborSuccessor();
+		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
+		~StochasticConfidencesNeighborSuccessor();
+
+	protected:
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 	};
 
 	/*!
@@ -340,7 +364,7 @@ namespace HCSearch
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
-		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 	};
 
 	/*!
@@ -357,7 +381,24 @@ namespace HCSearch
 		~CutScheduleNeighborSuccessor();
 
 	protected:
-		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+	};
+
+	/*!
+	 * @brief Cut schedule successor function using confident labels and neighbor labels.
+	 * 
+	 * Schedule to find the best cut for forming subgraphs. 
+	 * For each subgraph, flip its label to a label of a confident or neighboring node.
+	 */
+	class CutScheduleConfidencesNeighborSuccessor : public CutScheduleSuccessor
+	{
+	public:
+		CutScheduleConfidencesNeighborSuccessor();
+		CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
+		~CutScheduleConfidencesNeighborSuccessor();
+
+	protected:
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 	};
 
 	/**************** Loss Functions ****************/

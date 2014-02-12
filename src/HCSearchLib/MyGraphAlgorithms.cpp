@@ -123,6 +123,60 @@ namespace MyGraphAlgorithms
 		return labels;
 	}
 
+	set<int> ConnectedComponent::getTopConfidentLabels(int K)
+	{
+		// check if confidences are available
+		HCSearch::ImgLabeling original = this->ccSet->getOriginalLabeling();
+		const int numLabels = original.confidences.cols();
+		if (!original.confidencesAvailable)
+		{
+			LOG(WARNING) << "confidences not available to get top K confident labels.";
+			return set<int>();
+		}
+
+		// bad cases
+		if (K > numLabels)
+		{
+			return HCSearch::Global::settings->CLASSES.getLabels();
+		}
+		else if (K == 0)
+		{
+			return set<int>();
+		}
+		else if (K < 0)
+		{
+			LOG(ERROR) << "K cannot be negative!";
+			HCSearch::abort();
+		}
+
+		set<int> labels;
+		labels.insert(this->label);
+
+		// get nodes in connected component
+		for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			int node1 = *it;
+
+			// get top K confident labels
+			LabelConfidencePQ sortedByConfidence;
+			for (int i = 0; i < numLabels; i++)
+			{
+				int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+				double confidence = original.confidences(node1, i);
+				sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+			}
+			for (int i = 0; i < K; i++)
+			{
+				MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+				sortedByConfidence.pop();
+				labels.insert(p.first);
+			}
+		}
+
+		labels.erase(this->label);
+		return labels;
+	}
+
 	bool ConnectedComponent::hasNeighbors()
 	{
 		bool hasNeighbors = false;
@@ -151,6 +205,11 @@ namespace MyGraphAlgorithms
 		}
 
 		return hasNeighbors;
+	}
+
+	bool ConnectedComponent::CompareByConfidence::operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const
+	{
+		return lhs.second < rhs.second;
 	}
 
 	/**************** Connected Component Set ****************/
