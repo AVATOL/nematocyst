@@ -76,6 +76,11 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
 		successor = new HCSearch::FlipbitSuccessor(po.boundSuccessorCandidates);
 		break;
+	case MyProgramOptions::ProgramOptions::FLIPBIT_NEIGHBORS:
+		LOG() << "flipbit neighbors" << endl;
+		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
+		successor = new HCSearch::FlipbitNeighborSuccessor(po.boundSuccessorCandidates);
+		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
 		LOG() << "stochastic" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
@@ -83,17 +88,19 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
 		successor = new HCSearch::StochasticSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
 		break;
-	case MyProgramOptions::ProgramOptions::FLIPBIT_NEIGHBORS:
-		LOG() << "flipbit neighbors" << endl;
-		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		successor = new HCSearch::FlipbitNeighborSuccessor(po.boundSuccessorCandidates);
-		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_NEIGHBORS:
 		LOG() << "stochastic neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
 		successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_CONFIDENCES_NEIGHBORS:
+		LOG() << "stochastic confidences neighbors" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
+		successor = new HCSearch::StochasticConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE:
 		LOG() << "cut schedule" << endl;
@@ -106,6 +113,12 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
 		successor = new HCSearch::CutScheduleNeighborSuccessor(po.cutParam, po.boundSuccessorCandidates);
+		break;
+	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE_CONFIDENCES_NEIGHBORS:
+		LOG() << "cut schedule confidences neighbors" << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
+		successor = new HCSearch::CutScheduleConfidencesNeighborSuccessor(po.cutParam, po.boundSuccessorCandidates);
 		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";

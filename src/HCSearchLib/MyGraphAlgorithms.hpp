@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <queue>
 #include "../../external/Eigen/Eigen/Dense"
 #include "DataStructures.hpp"
 
@@ -54,6 +55,9 @@ namespace MyGraphAlgorithms
 		int label;
 		ConnectedComponentSet* ccSet;
 
+		class CompareByConfidence;
+		typedef priority_queue<MyPrimitives::Pair<int, double>, vector< MyPrimitives::Pair<int, double> >, CompareByConfidence> LabelConfidencePQ;
+
 	public:
 		ConnectedComponent();
 		ConnectedComponent(ConnectedComponentSet* ccSet);
@@ -85,9 +89,20 @@ namespace MyGraphAlgorithms
 		set<int> getNeighborLabels();
 
 		/*!
+		 * @brief Get the labels of the top K confident labels.
+		 */
+		set<int> getTopConfidentLabels(int K);
+
+		/*!
 		 * @brief Returns if this connected component has neighboring connected components.
 		 */
 		bool hasNeighbors();
+	};
+
+	class ConnectedComponent::CompareByConfidence
+	{
+	public:
+		bool operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const;
 	};
 
 	/**************** Connected Component Set ****************/

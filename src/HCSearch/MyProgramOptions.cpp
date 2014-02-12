@@ -187,16 +187,20 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "flipbit") == 0)
 						po.successorsMode = FLIPBIT;
-					else if (strcmp(argv[i+1], "stochastic") == 0)
-						po.successorsMode = STOCHASTIC;
 					else if (strcmp(argv[i+1], "flipbit-neighbors") == 0)
 						po.successorsMode = FLIPBIT_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic") == 0)
+						po.successorsMode = STOCHASTIC;
 					else if (strcmp(argv[i+1], "stochastic-neighbors") == 0)
 						po.successorsMode = STOCHASTIC_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-confidences-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
 					else if (strcmp(argv[i+1], "cut-schedule") == 0)
 						po.successorsMode = CUT_SCHEDULE;
 					else if (strcmp(argv[i+1], "cut-schedule-neighbors") == 0)
 						po.successorsMode = CUT_SCHEDULE_NEIGHBORS;
+					else if (strcmp(argv[i+1], "cut-schedule-confidences-neighbors") == 0)
+						po.successorsMode = CUT_SCHEDULE_CONFIDENCES_NEIGHBORS;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
@@ -338,7 +342,9 @@ namespace MyProgramOptions
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
-		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic|flipbit-neighbors|stochastic-neighbors|cut-schedule|cut-schedule-neighbors" << endl;
+		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|"
+			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
+			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
 		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;

@@ -587,6 +587,7 @@ namespace HCSearch
 
 	/**************** Stochastic Successor Function ****************/
 
+	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.25;
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
 	StochasticSuccessor::StochasticSuccessor()
@@ -759,10 +760,10 @@ namespace HCSearch
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
 				candidateLabelsSet.insert(nodeLabel);
-
-				// flip to any possible class
-				candidateLabelsSet = Global::settings->CLASSES.getLabels();
-
+				
+				// get labels
+				getLabels(candidateLabelsSet, cc);
+				
 				candidateLabelsSet.erase(nodeLabel);
 
 				// loop over each candidate label
@@ -792,6 +793,44 @@ namespace HCSearch
 		}
 
 		return successors;
+	}
+
+	void StochasticSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getAllLabels(candidateLabelsSet, cc);	
+	}
+
+	void StochasticSuccessor::getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		// flip to any possible class
+		candidateLabelsSet = Global::settings->CLASSES.getLabels();
+	}
+
+	void StochasticSuccessor::getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		if (cc->hasNeighbors())
+		{
+			// add only neighboring labels to candidate label set
+			set<int> neighborSet = cc->getNeighborLabels();
+			candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
+		}
+		else
+		{
+			// if connected component is isolated without neighboring connected components, then flip to any possible class
+			candidateLabelsSet = Global::settings->CLASSES.getLabels();
+		}
+	}
+
+	void StochasticSuccessor::getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		int topKConfidences = static_cast<int>(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses());
+		candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
+		if (cc->hasNeighbors())
+		{
+			// add only neighboring labels to candidate label set
+			set<int> neighborSet = cc->getNeighborLabels();
+			candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
+		}
 	}
 
 	double StochasticSuccessor::computeKL(const VectorXd& p, const VectorXd& q)
@@ -844,68 +883,261 @@ namespace HCSearch
 	{
 	}
 
-	vector< ImgLabeling > StochasticNeighborSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	void StochasticNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
 	{
-		using namespace MyGraphAlgorithms;
+		getNeighborLabels(candidateLabelsSet, cc);	
+	}
 
-		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
+	/**************** Stochastic Confidences Neighbor Successor Function ****************/
 
-		// successors set
-		vector< ImgLabeling > successors;
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+	}
 
-		// loop over each sub graph
-		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+	}
+
+	StochasticConfidencesNeighborSuccessor::~StochasticConfidencesNeighborSuccessor()
+	{
+	}
+
+	void StochasticConfidencesNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Cut Schedule Successor Function ****************/
+
+	const int CutScheduleSuccessor::NUM_GOOD_SUBGRAPHS_THRESHOLD = 8;
+	const double CutScheduleSuccessor::FINAL_THRESHOLD = 0.975;
+	const double CutScheduleSuccessor::THRESHOLD_INCREMENT = 0.025;
+
+	CutScheduleSuccessor::CutScheduleSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleSuccessor::CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleSuccessor::~CutScheduleSuccessor()
+	{
+	}
+	
+	vector< ImgLabeling > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		double threshold = 0.025;
+
+		// perform cut
+		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+
+		LOG() << "generating successors..." << endl;
+
+		// generate candidates
+		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+
+		LOG() << "num successors=" << successors.size() << endl;
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
 		{
-			Subgraph* sub = *it;
-			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
 
-			// loop over each connected component
-			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
+
+		delete subgraphs;
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	MyGraphAlgorithms::SubgraphSet* CutScheduleSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	{
+		MyGraphAlgorithms::SubgraphSet* subgraphs = NULL;
+
+		const int numNodes = X.getNumNodes();
+		map< int, set<int> > edges = YPred.graph.adjList;
+
+		// convert to format storing (node1, node2) pairs
+		vector< MyPrimitives::Pair< int, int > > edgeNodes;
+
+		// edge weights using KL divergence measure
+		vector<double> edgeWeights;
+
+		// iterate over all edges to store
+		for (map< int, set<int> >::iterator it = edges.begin();
+			it != edges.end(); ++it)
+		{
+			int node1 = it->first;
+			set<int> neighbors = it->second;
+		
+			// loop over neighbors
+			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
 			{
-				ConnectedComponent* cc = *it2;
+				int node2 = *it2;
 
-				set<int> candidateLabelsSet;
-				int nodeLabel = cc->getLabel();
-				candidateLabelsSet.insert(nodeLabel);
-				if (cc->hasNeighbors())
+				// get features and labels
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+				// compute weights already
+				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				edgeWeights.push_back(weight);
+
+				// add
+				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+				edgeNodes.push_back(nodePair);
+			}
+		}
+		
+		// increase threshold until good cuts; also cut by state
+		for (double thresholdAttempt = threshold; thresholdAttempt <= 1.0; thresholdAttempt += THRESHOLD_INCREMENT)
+		{
+			// store new cut edges
+			map< int, set<int> > cutEdges;
+
+			LOG() << "Attempting threshold=" << thresholdAttempt << endl;
+			// given the edge weights, do the actual cutting!
+			const int numEdges = edgeNodes.size();
+			for (int i = 0; i < numEdges; i++)
+			{
+				MyPrimitives::Pair< int, int > nodePair = edgeNodes[i];
+				int node1 = nodePair.first;
+				int node2 = nodePair.second;
+
+				bool decideToCut;
+				if (!cutEdgesIndependently)
 				{
-					// add only neighboring labels to candidate label set
-					candidateLabelsSet = cc->getNeighborLabels();
+					// uniform state
+					decideToCut = edgeWeights[i] <= thresholdAttempt;
 				}
 				else
 				{
-					// if connected component is isolated without neighboring connected components, then flip to any possible class
-					candidateLabelsSet = Global::settings->CLASSES.getLabels();
+					// bernoulli independent
+					double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
+					decideToCut = biasedCoin <= 1-edgeWeights[i];
 				}
-				candidateLabelsSet.erase(nodeLabel);
 
-				// loop over each candidate label
-				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
+				if (!decideToCut)
 				{
-					int label = *it3;
-
-					// form successor object
-					ImgLabeling YNew;
-					YNew.confidences = YPred.confidences;
-					YNew.confidencesAvailable = YPred.confidencesAvailable;
-					YNew.stochasticCuts = subgraphs->getCuts();
-					YNew.stochasticCutsAvailable = true;
-					YNew.graph = YPred.graph;
-
-					// make changes
-					set<int> component = cc->getNodes();
-					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+					// keep these uncut edges
+					if (cutEdges.count(node1) == 0)
 					{
-						int node = *it4;
-						YNew.graph.nodesData(node) = label;
+						cutEdges[node1] = set<int>();
 					}
-
-					successors.push_back(YNew);
+					if (cutEdges.count(node2) == 0)
+					{
+						cutEdges[node2] = set<int>();
+					}
+					cutEdges[node1].insert(node2);
+					cutEdges[node2].insert(node1);
 				}
 			}
+
+			// create subgraphs
+			ImgLabeling Ycopy;
+			Ycopy.confidences = YPred.confidences;
+			Ycopy.confidencesAvailable = YPred.confidencesAvailable;
+			Ycopy.graph = YPred.graph;
+
+			MyGraphAlgorithms::SubgraphSet* subgraphsTemp = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
+
+			LOG() << "\tnum exactly one positive cc subgraphs=" << subgraphsTemp->getExactlyOnePositiveCCSubgraphs().size() << endl;
+			if (subgraphsTemp->getExactlyOnePositiveCCSubgraphs().size() > NUM_GOOD_SUBGRAPHS_THRESHOLD)
+			{
+				subgraphs = subgraphsTemp;
+				break;
+			}
+
+			if (thresholdAttempt >= FINAL_THRESHOLD)
+			{
+				cout << "reached final threshold" << endl;
+				subgraphs = subgraphsTemp;
+				break;
+			}
+
+			delete subgraphsTemp;
 		}
 
-		return successors;
+		return subgraphs;
+	}
+
+	void CutScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getAllLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Cut Schedule Neighbor Successor Function ****************/
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::~CutScheduleNeighborSuccessor()
+	{
+	}
+	
+	void CutScheduleNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getNeighborLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Cut Schedule Confidences Neighbor Successor Function ****************/
+
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleConfidencesNeighborSuccessor::~CutScheduleConfidencesNeighborSuccessor()
+	{
+	}
+	
+	void CutScheduleConfidencesNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
 	/**************** Cut Schedule Successor Function ****************/
