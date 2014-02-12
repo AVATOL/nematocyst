@@ -817,6 +817,20 @@ namespace HCSearch
 			SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 			IRankModel* heuristicModel, IRankModel* costModel, 
 			ISearchProcedure::SearchMetadata searchMetadata);
+
+		/*!
+		 * Run RL-search (random heuristic, oracle cost).
+		 * @param[in] X Input structured features
+		 * @param[in] YTruth Groundtruth structured labeling
+		 * @param[in] timeBound Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] SearchMetadata Meta information
+		 * @return Inference labeling
+		 */
+		static ImgLabeling runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
+			ISearchProcedure::SearchMetadata searchMetadata);
     };
 
 	/*! @} */

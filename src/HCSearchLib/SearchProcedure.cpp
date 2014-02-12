@@ -130,6 +130,13 @@ namespace HCSearch
 			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
+	ImgLabeling ISearchProcedure::rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
+		SearchSpace* searchSpace, SearchMetadata searchMetadata)
+	{
+		return searchProcedure(RL, X, YTruth, timeBound, 
+			searchSpace, NULL, NULL, searchMetadata);
+	}
+
 	void ISearchProcedure::learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
@@ -937,6 +944,53 @@ namespace HCSearch
 	SearchType ISearchProcedure::HCSearchNode::getType()
 	{
 		return HC;
+	}
+
+	/**************** RL Search Node ****************/
+
+	ISearchProcedure::RLSearchNode::RLSearchNode()
+	{
+	}
+
+	ISearchProcedure::RLSearchNode::RLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
+	{
+		this->parent = NULL;
+		this->X = X;
+		this->YPred = searchSpace->getInitialPrediction(*X);
+		this->searchSpace = searchSpace;
+
+		this->YTruth = YTruth;
+		this->heuristic = Rand::unifDist();
+		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
+	}
+
+	ISearchProcedure::RLSearchNode::RLSearchNode(ISearchNode* parent, ImgLabeling YPred)
+	{
+		RLSearchNode* parentCast = dynamic_cast<RLSearchNode*>(parent);
+
+		this->parent = parentCast;
+		this->X = parentCast->X;
+		this->YPred = YPred;
+		this->searchSpace = parentCast->searchSpace;
+
+		this->YTruth = parentCast->YTruth;
+		this->heuristic = Rand::unifDist();
+		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
+	}
+
+	double ISearchProcedure::RLSearchNode::getHeuristic()
+	{
+		return this->heuristic;
+	}
+
+	double ISearchProcedure::RLSearchNode::getCost()
+	{
+		return this->loss;
+	}
+
+	SearchType ISearchProcedure::RLSearchNode::getType()
+	{
+		return RL;
 	}
 
 	/**************** Learn H Search Node ****************/

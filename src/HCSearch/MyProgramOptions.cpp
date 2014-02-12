@@ -128,6 +128,8 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
+					else if (strcmp(argv[i+1], "RL") == 0 || strcmp(argv[i+1], "rl") == 0)
+						po.schedule.push_back(HCSearch::RL);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::HC);
@@ -326,6 +328,7 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tHL: learned heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
+		cerr << "\t\t\t\tRL: random heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tALL: short-hand for HC, HL, LC, LL" << endl;
 		cerr << "\t\t\t\t(none): short-hand for HC" << endl;
 		cerr << endl;

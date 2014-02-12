@@ -540,6 +540,66 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			break;
 		}
+		case HCSearch::RL:
+		{
+			LOG() << "=== Inference RL ===" << endl;
+
+			// run RL search on test examples
+			int start, end;
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+				HCSearch::Global::settings->NUM_PROCESSES, start, end);
+			for (int i = start; i < end; i++)
+			{
+				for (int iter = 0; iter < po.numTestIterations; iter++)
+				{
+					if (po.numTestIterations == 1)
+						iter = po.uniqueIterId;
+
+					LOG() << endl << "RL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+
+					// setup meta
+					HCSearch::ISearchProcedure::SearchMetadata meta;
+					meta.saveAnytimePredictions = po.saveAnytimePredictions;
+					meta.setType = HCSearch::TEST;
+					meta.exampleName = XTest[i]->getFileName();
+					meta.iter = iter;
+
+					// inference
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runRLSearch(XTest[i], YTest[i], 
+						timeBound, searchSpace, searchProcedure, meta);
+				
+					// save the prediction
+					stringstream ssPredictNodes;
+					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::RL] 
+						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+						<< "_time" << timeBound 
+							<< "_fold" << meta.iter 
+							<< "_" << meta.exampleName << ".txt";
+					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+					//// save the prediction mask
+					//stringstream ssPredictSegments;
+					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::RL] 
+					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					//	<< "_time" << timeBound 
+					//		<< "_fold" << meta.iter 
+					//		<< "_" << meta.exampleName << ".txt";
+					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+
+					if (po.numTestIterations == 1)
+						break;
+				}
+			}
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INFERRLSTART");
+		MPI::Synchronize::slavesWait("INFERRLEND");
+#endif
+
+			break;
+		}
 		default:
 			LOG(ERROR) << "invalid mode!";
 		}

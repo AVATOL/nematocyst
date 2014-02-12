@@ -864,4 +864,11 @@ namespace HCSearch
 	{
 		return searchProcedure->hcSearch(*X, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
 	}
+
+	ImgLabeling Inference::runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
+		ISearchProcedure::SearchMetadata searchMetadata)
+	{
+		return searchProcedure->rlSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
+	}
 }

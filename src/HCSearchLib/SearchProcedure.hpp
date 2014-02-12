@@ -71,6 +71,7 @@ namespace HCSearch
 		class HLSearchNode;
 		class LCSearchNode;
 		class HCSearchNode;
+		class RLSearchNode;
 		class LearnHSearchNode;
 		class LearnCSearchNode;
 		class LearnCOracleHSearchNode;
@@ -114,6 +115,12 @@ namespace HCSearch
 		 */
 		ImgLabeling hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
+
+		/*!
+		 * @brief Convenience function for LL-search.
+		 */
+		ImgLabeling rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
+			SearchSpace* searchSpace, SearchMetadata searchMetadata);
 
 		/*!
 		 * @brief Convenience function for learning H search.
@@ -511,6 +518,46 @@ namespace HCSearch
 
 		virtual RankFeatures getHeuristicFeatures();
 		virtual RankFeatures getCostFeatures();
+		virtual double getHeuristic();
+		virtual double getCost();
+
+	protected:
+		virtual SearchType getType();
+	};
+
+	/**************** RL Search Node ****************/
+
+	class ISearchProcedure::RLSearchNode : public ISearchNode
+	{
+	protected:
+		/*!
+		 * Pointer to groundtruth labeling
+		 */
+		ImgLabeling* YTruth;
+
+		/*!
+		 * Heuristic value
+		 */
+		double heuristic;
+
+		/*!
+		 * Loss value
+		 */
+		double loss;
+
+	public:
+		RLSearchNode();
+
+		/*!
+		 * Constructor for initial state
+		 */
+		RLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace);
+		
+		/*!
+		 * Constructor for non-initial state
+		 */
+		RLSearchNode(ISearchNode* parent, ImgLabeling YPred);
+
 		virtual double getHeuristic();
 		virtual double getCost();
 
