@@ -12,10 +12,6 @@ using namespace std;
 
 namespace HCSearch
 {
-	class CompareConfidences;
-	typedef MyPrimitives::Pair<double, int> ConfidenceIndexPair_t;
-	typedef priority_queue<ConfidenceIndexPair_t, vector< ConfidenceIndexPair_t >, CompareConfidences> mypq_confidences;
-
 	/*!
 	 * @defgroup SearchSpace Search Space
 	 * @brief Provides interfaces for setting up the search space.
@@ -516,18 +512,6 @@ namespace HCSearch
 	};
 
 	/*! @} */
-
-	/*
-	 * @brief Compare class for SearchNode.
-	 */
-	class CompareConfidences
-	{
-	public:
-		bool operator() (ConfidenceIndexPair_t& lhs, ConfidenceIndexPair_t& rhs) const
-		{
-			return lhs.first < rhs.first;
-		}
-	};
 }
 
 #endif
