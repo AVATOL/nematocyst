@@ -455,6 +455,9 @@ namespace HCSearch
 			case HC:
 				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
 				break;
+			case RL:
+				root = new RLSearchNode(&X, YTruth, searchSpace);
+				break;
 			case LEARN_H:
 				root = new LearnHSearchNode(&X, YTruth, searchSpace);
 				break;
