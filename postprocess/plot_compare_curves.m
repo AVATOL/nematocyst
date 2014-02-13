@@ -1,4 +1,4 @@
-function plot_compare_curves( evaluate, labels, searchTypeIndex, plotTitle, MODE )
+function plot_compare_curves( evaluate, labels, searchTypeIndices, plotTitle, MODE )
 %PLOT_COMPARE_CURVES Compare anytime curve plots.
 %   
 %   evaluate:           cells contain a map that contains evaluation structures
@@ -15,18 +15,19 @@ if nargin < 5
 end
 
 %% search types
-searchTypesCollection = cell(1, 4);
+searchTypesCollection = cell(1, 5);
 searchTypesCollection{1} = 'hc';
 searchTypesCollection{2} = 'hl';
 searchTypesCollection{3} = 'lc';
 searchTypesCollection{4} = 'll';
+searchTypesCollection{5} = 'rl';
 
 if nargin < 4
-    plotTitle = upper(searchTypesCollection{searchTypeIndex});
+    plotTitle = 'Untitled';
 end
 
 temp = evaluate{1};
-timeRange = temp(searchTypesCollection{searchTypeIndex}).timeRange;
+timeRange = temp(searchTypesCollection{searchTypeIndices{1}}).timeRange;
 
 avgPrecMat = zeros(length(timeRange), length(evaluate));
 stdPrecMat = zeros(length(timeRange), length(evaluate));
@@ -37,7 +38,7 @@ stdF1Mat = zeros(length(timeRange), length(evaluate));
 
 legendLabels = cell(length(evaluate), 1);
 for i = 1:length(evaluate)
-    searchType = searchTypesCollection{searchTypeIndex};
+    searchType = searchTypesCollection{searchTypeIndices{i}};
     evaluateInstance = evaluate{i};
     evaluateType = evaluateInstance(searchType);
     
