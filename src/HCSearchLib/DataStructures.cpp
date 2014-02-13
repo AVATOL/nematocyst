@@ -145,13 +145,15 @@ namespace HCSearch
 			return;
 		}
 
+		this->modelFileName = fileName;
 		this->weights = parseModelFile(fileName);
 		this->initialized = true;
 	}
 
 	void SVMRankModel::save(string fileName)
 	{
-		writeModelFile(fileName, this->weights);
+		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
+		//writeModelFile(fileName, this->weights);
 	}
 	
 	VectorXd SVMRankModel::getWeights()

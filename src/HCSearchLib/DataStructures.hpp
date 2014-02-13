@@ -327,6 +327,11 @@ namespace HCSearch
 		string rankingFileName;
 
 		/*!
+		 * Model file name
+		 */
+		string modelFileName;
+
+		/*!
 		 * Cumulative QID for learning
 		 */
 		int qid;
