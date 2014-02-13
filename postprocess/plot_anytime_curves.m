@@ -17,7 +17,7 @@ searchTypesCollection{1} = 'hc';
 searchTypesCollection{2} = 'hl';
 searchTypesCollection{3} = 'lc';
 searchTypesCollection{4} = 'll';
-searchTypesCollection{4} = 'rl';
+searchTypesCollection{5} = 'rl';
 
 searchTypesAvailable = [];
 for s = 1:length(searchTypesCollection)
