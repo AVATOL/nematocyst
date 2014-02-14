@@ -43,6 +43,7 @@ namespace MyProgramOptions
 		verboseMode = true;
 		boundSuccessorCandidates = 100;
 		uniqueIterId = 0;
+		saveOutputMask = false;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -301,6 +302,15 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			else if (strcmp(argv[i], "--save-mask") == 0)
+			{
+				po.saveOutputMask = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.saveOutputMask = false;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -349,6 +359,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
 		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|"

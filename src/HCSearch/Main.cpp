@@ -351,15 +351,18 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
-					//// save the prediction mask
-					//stringstream ssPredictSegments;
-					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
-					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-					//	<< "_time" << timeBound 
-					//		<< "_fold" << meta.iter 
-					//		<< "_" << meta.exampleName << ".txt";
-					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					// save the prediction mask
+					if (po.saveOutputMask)
+					{
+						stringstream ssPredictSegments;
+						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+							<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+							<< "_time" << timeBound 
+								<< "_fold" << meta.iter 
+								<< "_" << meta.exampleName << ".txt";
+						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					}
 
 					if (po.numTestIterations == 1)
 						break;
@@ -413,15 +416,18 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
-					//// save the prediction mask
-					//stringstream ssPredictSegments;
-					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
-					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-					//	<< "_time" << timeBound 
-					//		<< "_fold" << meta.iter 
-					//		<< "_" << meta.exampleName << ".txt";
-					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					// save the prediction mask
+					if (po.saveOutputMask)
+					{
+						stringstream ssPredictSegments;
+						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+							<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
+							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+							<< "_time" << timeBound 
+								<< "_fold" << meta.iter 
+								<< "_" << meta.exampleName << ".txt";
+						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					}
 
 					if (po.numTestIterations == 1)
 						break;
@@ -477,15 +483,18 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
-					//// save the prediction mask
-					//stringstream ssPredictSegments;
-					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
-					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-					//	<< "_time" << timeBound 
-					//		<< "_fold" << meta.iter 
-					//		<< "_" << meta.exampleName << ".txt";
-					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					// save the prediction mask
+					if (po.saveOutputMask)
+					{
+						stringstream ssPredictSegments;
+						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+							<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
+							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+							<< "_time" << timeBound 
+								<< "_fold" << meta.iter 
+								<< "_" << meta.exampleName << ".txt";
+						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					}
 
 					if (po.numTestIterations == 1)
 						break;
@@ -542,15 +551,18 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
-					//// save the prediction mask
-					//stringstream ssPredictSegments;
-					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
-					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-					//	<< "_time" << timeBound 
-					//		<< "_fold" << meta.iter 
-					//		<< "_" << meta.exampleName << ".txt";
-					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					// save the prediction mask
+					if (po.saveOutputMask)
+					{
+						stringstream ssPredictSegments;
+						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+							<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
+							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+							<< "_time" << timeBound 
+								<< "_fold" << meta.iter 
+								<< "_" << meta.exampleName << ".txt";
+						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					}
 
 					if (po.numTestIterations == 1)
 						break;
@@ -605,15 +617,18 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
-					//// save the prediction mask
-					//stringstream ssPredictSegments;
-					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::RL] 
-					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-					//	<< "_time" << timeBound 
-					//		<< "_fold" << meta.iter 
-					//		<< "_" << meta.exampleName << ".txt";
-					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					// save the prediction mask
+					if (po.saveOutputMask)
+					{
+						stringstream ssPredictSegments;
+						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+							<< "_" << HCSearch::SearchTypeStrings[HCSearch::RL] 
+							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+							<< "_time" << timeBound 
+								<< "_fold" << meta.iter 
+								<< "_" << meta.exampleName << ".txt";
+						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					}
 
 					if (po.numTestIterations == 1)
 						break;
@@ -667,15 +682,18 @@ void run(MyProgramOptions::ProgramOptions po)
 							<< "_" << meta.exampleName << ".txt";
 					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
 
-					//// save the prediction mask
-					//stringstream ssPredictSegments;
-					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::RC] 
-					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-					//	<< "_time" << timeBound 
-					//		<< "_fold" << meta.iter 
-					//		<< "_" << meta.exampleName << ".txt";
-					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					// save the prediction mask
+					if (po.saveOutputMask)
+					{
+						stringstream ssPredictSegments;
+						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+							<< "_" << HCSearch::SearchTypeStrings[HCSearch::RC] 
+							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+							<< "_time" << timeBound 
+								<< "_fold" << meta.iter 
+								<< "_" << meta.exampleName << ".txt";
+						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+					}
 
 					if (po.numTestIterations == 1)
 						break;
@@ -726,8 +744,13 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 	LOG() << "Rank learner: " << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
 	LOG() << "Num training iterations: " << po.numTrainIterations << endl;
 	LOG() << "Num testing iterations: " << po.numTestIterations << endl;
+	if (po.numTestIterations == 1)
+	{
+		LOG() << "\tUnique iteration ID: " << po.uniqueIterId << endl;
+	}
 	LOG() << "Save anytime predictions: " << po.saveAnytimePredictions << endl;
 	LOG() << "Save features files: " << po.saveFeaturesFiles << endl;
+	LOG() << "Save output label masks: " << po.saveOutputMask << endl;
 	LOG() << endl;
 
 	if (po.verboseMode)
@@ -768,18 +791,22 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 		LOG() << "OUTPUT_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE << endl;
+		LOG() << "OUTPUT_COST_RANDOM_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE << endl;
 
 		LOG() << "OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_ARCHIVED_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE  << endl;
+		LOG() << "OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE  << endl;
 
 		LOG() << "OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE  << endl;
 		LOG() << "OUTPUT_COST_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE  << endl;
 		LOG() << "OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE << endl;
+		LOG() << "OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE << endl;
 
 		LOG() << "OUTPUT_HEURISTIC_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE  << endl;
 		LOG() << "OUTPUT_COST_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE  << endl;
 		LOG() << "OUTPUT_COST_ORACLE_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE  << endl;
+		LOG() << "OUTPUT_COST_RANDOM_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE  << endl;
 
 		LOG() << "OUTPUT_LOG_FILE: " << HCSearch::Global::settings->paths->OUTPUT_LOG_FILE  << endl;
 

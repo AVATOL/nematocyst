@@ -62,6 +62,7 @@ namespace MyProgramOptions
 		bool verboseMode;
 		int boundSuccessorCandidates;
 		int uniqueIterId;
+		bool saveOutputMask;
 
 	public:
 		ProgramOptions();
