@@ -71,9 +71,12 @@ namespace HCSearch
 		class HLSearchNode;
 		class LCSearchNode;
 		class HCSearchNode;
+		class RLSearchNode;
+		class RCSearchNode;
 		class LearnHSearchNode;
 		class LearnCSearchNode;
 		class LearnCOracleHSearchNode;
+		class LearnCRandomHSearchNode;
 		class CompareByHeuristic;
 		class CompareByCost;
 
@@ -116,6 +119,18 @@ namespace HCSearch
 			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
 
 		/*!
+		 * @brief Convenience function for LL-search.
+		 */
+		ImgLabeling rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
+			SearchSpace* searchSpace, SearchMetadata searchMetadata);
+
+		/*!
+		 * @brief Convenience function for RC-search.
+		 */
+		ImgLabeling rcSearch(ImgFeatures& X, int timeBound, 
+			SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata);
+
+		/*!
 		 * @brief Convenience function for learning H search.
 		 */
 		void learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
@@ -131,6 +146,12 @@ namespace HCSearch
 		 * @brief Convenience function for learning C with oracle H search.
 		 */
 		void learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+			IRankModel* learningModel, SearchMetadata searchMetadata);
+
+		/*!
+		 * @brief Convenience function for learning C with random H search.
+		 */
+		void learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* learningModel, SearchMetadata searchMetadata);
 
 	protected:
@@ -518,6 +539,92 @@ namespace HCSearch
 		virtual SearchType getType();
 	};
 
+	/**************** RL Search Node ****************/
+
+	class ISearchProcedure::RLSearchNode : public ISearchNode
+	{
+	protected:
+		/*!
+		 * Pointer to groundtruth labeling
+		 */
+		ImgLabeling* YTruth;
+
+		/*!
+		 * Heuristic value
+		 */
+		double heuristic;
+
+		/*!
+		 * Loss value
+		 */
+		double loss;
+
+	public:
+		RLSearchNode();
+
+		/*!
+		 * Constructor for initial state
+		 */
+		RLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace);
+		
+		/*!
+		 * Constructor for non-initial state
+		 */
+		RLSearchNode(ISearchNode* parent, ImgLabeling YPred);
+
+		virtual double getHeuristic();
+		virtual double getCost();
+
+	protected:
+		virtual SearchType getType();
+	};
+
+	/**************** RC Search Node ****************/
+
+	class ISearchProcedure::RCSearchNode : public ISearchNode
+	{
+	protected:
+		/*!
+		 * Cost features features of node
+		 */
+		RankFeatures costFeatures;
+
+		/*!
+		 * Cost model
+		 */
+		IRankModel* costModel;
+
+		/*!
+		 * Heuristic value
+		 */
+		double heuristic;
+
+		/*!
+		 * Cost value
+		 */
+		double cost;
+
+	public:
+		RCSearchNode();
+
+		/*!
+		 * Constructor for initial state
+		 */
+		RCSearchNode(ImgFeatures* X, SearchSpace* searchSpace, IRankModel* costModel);
+		
+		/*!
+		 * Constructor for non-initial state
+		 */
+		RCSearchNode(ISearchNode* parent, ImgLabeling YPred);
+
+		virtual RankFeatures getCostFeatures();
+		virtual double getHeuristic();
+		virtual double getCost();
+
+	protected:
+		virtual SearchType getType();
+	};
+
 	/**************** Learn H Search Node ****************/
 
 	class ISearchProcedure::LearnHSearchNode : public LLSearchNode
@@ -596,6 +703,34 @@ namespace HCSearch
 		 * Constructor for non-initial state
 		 */
 		LearnCOracleHSearchNode(ISearchNode* parent, ImgLabeling YPred);
+
+	protected:
+		virtual RankFeatures getCostFeatures();
+		virtual SearchType getType();
+	};
+
+	/**************** Learn C Given Random H Search Node ****************/
+
+	class ISearchProcedure::LearnCRandomHSearchNode : public RLSearchNode
+	{
+	protected:
+		/*!
+		 * Cost features features of node
+		 */
+		RankFeatures costFeatures;
+
+	public:
+		LearnCRandomHSearchNode();
+
+		/*!
+		 * Constructor for initial state
+		 */
+		LearnCRandomHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace);
+		
+		/*!
+		 * Constructor for non-initial state
+		 */
+		LearnCRandomHSearchNode(ISearchNode* parent, ImgLabeling YPred);
 
 	protected:
 		virtual RankFeatures getCostFeatures();

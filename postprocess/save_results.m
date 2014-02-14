@@ -20,11 +20,12 @@ if nargin < 5
 end
 
 %% search types
-searchTypesCollection = cell(1, 4);
+searchTypesCollection = cell(1, 5);
 searchTypesCollection{1} = 'hc';
 searchTypesCollection{2} = 'hl';
 searchTypesCollection{3} = 'lc';
 searchTypesCollection{4} = 'll';
+searchTypesCollection{5} = 'rl';
 
 %% test files
 testSplitsFile = [preprocessedDir '/' splitsName '/Test.txt'];

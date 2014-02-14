@@ -11,7 +11,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle"};
+	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom"};
 	const string DatasetTypeStrings[] = {"test", "train", "validation"};
 
 	/**************** Features and Labelings ****************/
@@ -145,13 +145,15 @@ namespace HCSearch
 			return;
 		}
 
+		this->modelFileName = fileName;
 		this->weights = parseModelFile(fileName);
 		this->initialized = true;
 	}
 
 	void SVMRankModel::save(string fileName)
 	{
-		writeModelFile(fileName, this->weights);
+		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
+		//writeModelFile(fileName, this->weights);
 	}
 	
 	VectorXd SVMRankModel::getWeights()
@@ -238,7 +240,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -269,6 +271,12 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_ORACLE_H)
+		{
+			STARTMSG = "MERGECRHSTART";
+			ENDMSG = "MERGECRHEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);

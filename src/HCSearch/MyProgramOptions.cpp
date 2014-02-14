@@ -43,6 +43,7 @@ namespace MyProgramOptions
 		verboseMode = false;
 		boundSuccessorCandidates = 1000;
 		uniqueIterId = 0;
+		saveOutputMask = false;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -98,6 +99,8 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
+					else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "crh") == 0)
+						po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);
@@ -128,6 +131,10 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
+					else if (strcmp(argv[i+1], "RL") == 0 || strcmp(argv[i+1], "rl") == 0)
+						po.schedule.push_back(HCSearch::RL);
+					else if (strcmp(argv[i+1], "RC") == 0 || strcmp(argv[i+1], "rc") == 0)
+						po.schedule.push_back(HCSearch::RC);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::HC);
@@ -295,6 +302,15 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			else if (strcmp(argv[i], "--save-mask") == 0)
+			{
+				po.saveOutputMask = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.saveOutputMask = false;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -319,6 +335,7 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
+		cerr << "\t\t\t\tCRH: learn cost with random H" << endl;
 		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
 		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
 		cerr << "\t--infer arg\t" << ": inference" << endl;
@@ -326,6 +343,8 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tHL: learned heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
+		cerr << "\t\t\t\tRL: random heuristic and oracle cost" << endl;
+		cerr << "\t\t\t\tRC: random heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tALL: short-hand for HC, HL, LC, LL" << endl;
 		cerr << "\t\t\t\t(none): short-hand for HC" << endl;
 		cerr << endl;
@@ -340,6 +359,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
 		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|"

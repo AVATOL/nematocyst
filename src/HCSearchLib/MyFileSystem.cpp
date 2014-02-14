@@ -44,6 +44,12 @@ namespace MyFileSystem
 
 	int FileSystem::copyFile(string src, string dest)
 	{
+		if (src.compare(dest) == 0)
+		{
+			LOG(WARNING) << "copy src and dest the same." << endl;
+			return 0;
+		}
+
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " " + src + " " + dest);
 	}
 
