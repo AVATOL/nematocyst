@@ -125,6 +125,12 @@ namespace HCSearch
 			SearchSpace* searchSpace, SearchMetadata searchMetadata);
 
 		/*!
+		 * @brief Convenience function for RC-search.
+		 */
+		ImgLabeling rcSearch(ImgFeatures& X, int timeBound, 
+			SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata);
+
+		/*!
 		 * @brief Convenience function for learning H search.
 		 */
 		void learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 

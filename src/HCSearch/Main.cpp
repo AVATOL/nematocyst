@@ -416,7 +416,7 @@ void run(MyProgramOptions::ProgramOptions po)
 					//// save the prediction mask
 					//stringstream ssPredictSegments;
 					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::HL] 
 					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					//	<< "_time" << timeBound 
 					//		<< "_fold" << meta.iter 
@@ -480,7 +480,7 @@ void run(MyProgramOptions::ProgramOptions po)
 					//// save the prediction mask
 					//stringstream ssPredictSegments;
 					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::LC] 
 					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					//	<< "_time" << timeBound 
 					//		<< "_fold" << meta.iter 
@@ -545,7 +545,7 @@ void run(MyProgramOptions::ProgramOptions po)
 					//// save the prediction mask
 					//stringstream ssPredictSegments;
 					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::LL] 
+					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::HC] 
 					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
 					//	<< "_time" << timeBound 
 					//		<< "_fold" << meta.iter 
@@ -623,6 +623,70 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("INFERRLSTART");
 		MPI::Synchronize::slavesWait("INFERRLEND");
+#endif
+
+			break;
+		}
+		case HCSearch::RC:
+		{
+			LOG() << "=== Inference RC ===" << endl;
+
+			// load cost random H, run RC search on test examples
+			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costRandomHModelPath, rankerType);
+
+			int start, end;
+			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
+				HCSearch::Global::settings->NUM_PROCESSES, start, end);
+			for (int i = start; i < end; i++)
+			{
+				for (int iter = 0; iter < po.numTestIterations; iter++)
+				{
+					if (po.numTestIterations == 1)
+						iter = po.uniqueIterId;
+
+					LOG() << endl << "RC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
+
+					// setup meta
+					HCSearch::ISearchProcedure::SearchMetadata meta;
+					meta.saveAnytimePredictions = po.saveAnytimePredictions;
+					meta.setType = HCSearch::TEST;
+					meta.exampleName = XTest[i]->getFileName();
+					meta.iter = iter;
+
+					// inference
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runRCSearch(XTest[i], 
+						timeBound, searchSpace, searchProcedure, costModel, meta);
+				
+					// save the prediction
+					stringstream ssPredictNodes;
+					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
+						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::RC] 
+						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+						<< "_time" << timeBound 
+							<< "_fold" << meta.iter 
+							<< "_" << meta.exampleName << ".txt";
+					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
+
+					//// save the prediction mask
+					//stringstream ssPredictSegments;
+					//ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
+					//	<< "_" << HCSearch::SearchTypeStrings[HCSearch::RC] 
+					//	<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
+					//	<< "_time" << timeBound 
+					//		<< "_fold" << meta.iter 
+					//		<< "_" << meta.exampleName << ".txt";
+					//HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
+
+					if (po.numTestIterations == 1)
+						break;
+				}
+			}
+
+			delete costModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INFERRCSTART");
+		MPI::Synchronize::slavesWait("INFERRCEND");
 #endif
 
 			break;

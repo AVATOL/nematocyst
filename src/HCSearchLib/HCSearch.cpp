@@ -926,4 +926,11 @@ namespace HCSearch
 	{
 		return searchProcedure->rlSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
 	}
+
+	ImgLabeling Inference::runRCSearch(ImgFeatures* X, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
+	{
+		return searchProcedure->rcSearch(*X, timeBound, searchSpace, costOracleHModel, searchMetadata);
+	}
 }

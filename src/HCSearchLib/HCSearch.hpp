@@ -850,6 +850,20 @@ namespace HCSearch
 		static ImgLabeling runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
 			ISearchProcedure::SearchMetadata searchMetadata);
+
+		/*!
+		 * Run RC-search (random heuristic, learned cost).
+		 * @param[in] X Input structured features
+		 * @param[in] timeBound Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] costRandomHModel Learned cost (using random H) model
+		 * @param[in] SearchMetadata Meta information
+		 * @return Inference labeling
+		 */
+		static ImgLabeling runRCSearch(ImgFeatures* X, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+			IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata);
     };
 
 	/*! @} */

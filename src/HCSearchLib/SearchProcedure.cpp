@@ -137,6 +137,13 @@ namespace HCSearch
 			searchSpace, NULL, NULL, searchMetadata);
 	}
 
+	ImgLabeling ISearchProcedure::rcSearch(ImgFeatures& X, int timeBound, 
+		SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata)
+	{
+		return searchProcedure(RC, X, NULL, timeBound, 
+			searchSpace, NULL, costModel, searchMetadata);
+	}
+
 	void ISearchProcedure::learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
