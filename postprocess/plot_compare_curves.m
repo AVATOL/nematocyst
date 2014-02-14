@@ -3,7 +3,7 @@ function plot_compare_curves( evaluate, labels, searchTypeIndices, plotTitle, MO
 %   
 %   evaluate:           cells contain a map that contains evaluation structures
 %   labels:             cells containing strings labeling the corresponding experiments
-%   searchTypeIndex:    index for search type
+%   searchTypeIndices:  indices for search type
 %   plotTitle:          title of plot
 %   MODE:               0 = binary evaluation, 1 = macro measures, 2 = micro measures
 
@@ -27,7 +27,7 @@ if nargin < 4
 end
 
 temp = evaluate{1};
-timeRange = temp(searchTypesCollection{searchTypeIndices{1}}).timeRange;
+timeRange = temp(searchTypesCollection{searchTypeIndices(1)}).timeRange;
 
 avgPrecMat = zeros(length(timeRange), length(evaluate));
 stdPrecMat = zeros(length(timeRange), length(evaluate));
@@ -38,7 +38,7 @@ stdF1Mat = zeros(length(timeRange), length(evaluate));
 
 legendLabels = cell(length(evaluate), 1);
 for i = 1:length(evaluate)
-    searchType = searchTypesCollection{searchTypeIndices{i}};
+    searchType = searchTypesCollection{searchTypeIndices(i)};
     evaluateInstance = evaluate{i};
     evaluateType = evaluateInstance(searchType);
     
