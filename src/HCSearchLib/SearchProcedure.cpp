@@ -1204,6 +1204,7 @@ namespace HCSearch
 		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
 		this->YTruth = YTruth;
 		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
+		this->heuristic = Rand::unifDist();
 	}
 
 	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode(ISearchNode* parent, ImgLabeling YPred)
@@ -1218,6 +1219,7 @@ namespace HCSearch
 		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
 		this->YTruth = parentCast->YTruth;
 		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
+		this->heuristic = Rand::unifDist();
 	}
 
 	RankFeatures ISearchProcedure::LearnCRandomHSearchNode::getCostFeatures()
