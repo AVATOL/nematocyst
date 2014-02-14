@@ -158,6 +158,13 @@ namespace HCSearch
 			searchSpace, NULL, learningModel, searchMetadata);
 	}
 
+	void ISearchProcedure::learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+		IRankModel* learningModel, SearchMetadata searchMetadata)
+	{
+		searchProcedure(LEARN_C_RANDOM_H, X, YTruth, timeBound, 
+			searchSpace, NULL, learningModel, searchMetadata);
+	}
+
 	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
 	{
 		if (searchMetadata.saveAnytimePredictions)
@@ -425,7 +432,7 @@ namespace HCSearch
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
-		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H || searchType == LEARN_C_RANDOM_H)
 			trainCostRanker(costModel, costSet);
 
 		// clean up cost set
@@ -458,6 +465,9 @@ namespace HCSearch
 			case RL:
 				root = new RLSearchNode(&X, YTruth, searchSpace);
 				break;
+			case RC:
+				root = new RCSearchNode(&X, searchSpace, costModel);
+				break;
 			case LEARN_H:
 				root = new LearnHSearchNode(&X, YTruth, searchSpace);
 				break;
@@ -466,6 +476,9 @@ namespace HCSearch
 				break;
 			case LEARN_C_ORACLE_H:
 				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
+				break;
+			case LEARN_C_RANDOM_H:
+				root = new LearnCRandomHSearchNode(&X, YTruth, searchSpace);
 				break;
 			default:
 				LOG(ERROR) << "searchType constant is invalid.";
@@ -541,7 +554,7 @@ namespace HCSearch
 
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			if (searchType != LL && searchType != LC && searchType != RL)
+			if (searchType == LEARN_H)
 			{
 				bestSet.push_back(state->getHeuristicFeatures());
 				bestLosses.push_back(state->getHeuristic());
@@ -555,7 +568,7 @@ namespace HCSearch
 		{
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			if (searchType != LL && searchType != LC && searchType != RL)
+			if (searchType == LEARN_H)
 			{
 				worstSet.push_back(state->getHeuristicFeatures());
 				worstLosses.push_back(state->getHeuristic());
@@ -693,6 +706,12 @@ namespace HCSearch
 					successors.push_back(successor);
 				}
 				break;
+			case RC:
+				{
+					RCSearchNode* successor = new RCSearchNode(this, YPred);
+					successors.push_back(successor);
+				}
+				break;
 			case LEARN_H:
 				{
 					LearnHSearchNode* successor = new LearnHSearchNode(this, YPred);
@@ -708,6 +727,12 @@ namespace HCSearch
 			case LEARN_C_ORACLE_H:
 				{
 					LearnCOracleHSearchNode* successor = new LearnCOracleHSearchNode(this, YPred);
+					successors.push_back(successor);
+				}
+				break;
+			case LEARN_C_RANDOM_H:
+				{
+					LearnCRandomHSearchNode* successor = new LearnCRandomHSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;

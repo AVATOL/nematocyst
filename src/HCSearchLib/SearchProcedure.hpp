@@ -142,6 +142,12 @@ namespace HCSearch
 		void learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* learningModel, SearchMetadata searchMetadata);
 
+		/*!
+		 * @brief Convenience function for learning C with random H search.
+		 */
+		void learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+			IRankModel* learningModel, SearchMetadata searchMetadata);
+
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
 		void trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 

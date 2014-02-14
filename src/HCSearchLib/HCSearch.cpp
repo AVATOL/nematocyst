@@ -732,6 +732,51 @@ namespace HCSearch
 		return learningModel;
 	}
 
+	IRankModel* Learning::learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
+	{
+		clock_t tic = clock();
+
+		LOG() << "Learning the cost function with random heuristic..." << endl;
+
+		// Setup model for learning
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_RANDOM_H);
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				LOG() << "Cost with random H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
+
+				// run search
+				searchProcedure->learnCWithRandomH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE);
+			}
+		}
+		
+		// Merge and learn step
+		finishLearning(learningModel, LEARN_C_RANDOM_H);
+
+		clock_t toc = clock();
+		LOG() << "total learnCWithRandomH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return learningModel;
+	}
+
 	IRankModel* Learning::initializeLearning(RankerType rankerType, SearchType searchType)
 	{
 		// Setup model for learning
@@ -747,6 +792,8 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -778,6 +825,8 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_RANDOM_H)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -809,6 +858,12 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_RANDOM_H)
+		{
+			STARTMSG = "MERGECRHSTART";
+			ENDMSG = "MERGECRHEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
 		}
 		else
 		{

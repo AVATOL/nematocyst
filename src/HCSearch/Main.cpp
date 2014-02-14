@@ -176,6 +176,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	string heuristicModelPath = HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE;
 	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
 	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE;
+	string costRandomHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = po.rankLearnerType;
@@ -282,6 +283,32 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNCOHSTART");
 		MPI::Synchronize::slavesWait("LEARNCOHEND");
+#endif
+
+			break;
+		}
+		case HCSearch::LEARN_C_RANDOM_H:
+		{
+			LOG() << "=== Learning C with Random H ===" << endl;
+
+			// learn cost, save cost model
+			HCSearch::IRankModel* costRandomHModel = HCSearch::Learning::learnCWithRandomH(XTrain, YTrain, XValidation, YValidation, 
+				timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
+			
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				HCSearch::Model::saveModel(costRandomHModel, costRandomHModelPath, rankerType);
+				if (po.saveFeaturesFiles && HCSearch::RankerTypeSaveable[po.rankLearnerType])
+					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE, 
+						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE);
+			}
+			
+			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			delete costRandomHModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNCRHSTART");
+		MPI::Synchronize::slavesWait("LEARNCRHEND");
 #endif
 
 			break;

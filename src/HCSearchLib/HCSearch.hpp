@@ -724,6 +724,25 @@ namespace HCSearch
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
+		/*!
+		 * Learn cost function given random heuristic function.
+		 * Given training data, validation data, time bound, search space and procedure, 
+		 * learn a cost model using a random H and return it.
+		 * @param[in] XTrain Vector of structured features for training
+		 * @param[in] YTrain Vector of structured labelings for training
+		 * @param[in] XValidation Vector of structured features for validation
+		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] timeBound  Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
+		 * @return Returns the learned cost (using oracle H) model
+		 */
+		static IRankModel* learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
+
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
