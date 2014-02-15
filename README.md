@@ -237,6 +237,7 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 ### HC-Search Command Line Options
 
 ```
+
 Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND [--learn (H|C|COH)]* [--infer (HC|HL|LC|LL)]* ... [--option=value]
 Main options:
 	--help		: produce help message
@@ -245,6 +246,7 @@ Main options:
 				H: learn heuristic
 				C: learn cost
 				COH: learn cost with oracle H
+				CRH: learn cost with random H
 				ALL: short-hand for H, C, COH
 				(none): short-hand for H, C
 	--infer arg	: inference
@@ -252,23 +254,27 @@ Main options:
 				HL: learned heuristic and oracle cost
 				LC: oracle heuristic and learned cost
 				LL: oracle heuristic and cost
+				RL: random heuristic and oracle cost
+				RC: random heuristic and learned cost
 				ALL: short-hand for HC, HL, LC, LL
 				(none): short-hand for HC
 
 Advanced options:
-	--anytime arg			: turn on  saving anytime predictions if true
-	--beam-size arg			: beam size for beam search
+	--anytime arg		: turn on saving anytime predictions if true
+	--beam-size arg		: beam size for beam search
 	--bound-successor arg	: maximum number of successor candidates (default=1000)
-	--cut-param arg			: temperature parameter for stochastic cuts
+	--cut-mode arg		: edges|state (cut edges by edges independently or by state)
+	--cut-param arg		: temperature parameter for stochastic cuts
 	--num-test-iters arg	: number of test iterations
 	--num-train-iters arg	: number of training iterations
-	--learner arg			: svmrank|online
-	--save-features arg		: save rank features during learning if true
-	--search arg			: greedy|breadthbeam|bestbeam
-	--splits-path arg		: specify alternate path to splits folder
-	--successor arg			: flipbit|stochastic
-	--unique-iter			: unique iteration ID (num-test-iters needs to be 1)
-	--verbose arg			: turn on verbose output if true
+	--learner arg		: svmrank|online
+	--save-features arg	: save rank features during learning if true
+	--save-mask arg		: save final prediction label masks if true
+	--search arg		: greedy|breadthbeam|bestbeam
+	--splits-path arg	: specify alternate path to splits folder
+	--successor arg		: flipbit|flipbit-neighbors|stochastic|stochastic-neighbors|stochastic-confidences-neighbors|cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors
+	--unique-iter arg	: unique iteration ID (num-test-iters needs to be 1)
+	--verbose arg		: turn on verbose output if true
 
 Notes:
 * The first three arguments are required. They are the input directory, output directory and time bound.
@@ -282,6 +288,7 @@ The postprocessing modules are written in MATLAB. Before running them, make sure
 The main visualization postprocessing module is `$ROOT$/postprocess/visualize_results.m`:
 
 ```
+function visualize_results( rawDir, preprocessedDir, resultsDir, outputDir, label2color, timeRange, foldRange, searchTypes, splitsName, allData )
 %VISUALIZE_RESULTS Visualize results folder.
 %
 %	rawDir:             folder path containing original images and annotations
@@ -292,8 +299,10 @@ The main visualization postprocessing module is `$ROOT$/postprocess/visualize_re
 %                           e.g. 'Results/SomeExperiment'
 %	outputDir:          folder path to output visualization
 %                           e.g. 'ResultsPostprocessed/SomeExperiment'
+%   label2color:        mapping from labels to colors (use containers.Map)
 %   timeRange:          range of time bound
 %   foldRange:          range of folds
+%   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
 %   splitsName:         (optional) alternate name to splits folder
 %	allData:            (optional) data structure containing all preprocessed data
 ```
