@@ -20,6 +20,7 @@ namespace HCSearch
 
 	enum RankerType { SVM_RANK, ONLINE_RANK };
 	const extern string RankerTypeStrings[];
+	const extern bool RankerTypeSaveable[];
 
 	/**************** Class Map ****************/
 
@@ -52,10 +53,31 @@ namespace HCSearch
 		set<int> getBackgroundLabels();
 		set<int> getForegroundLabels();
 
+		bool backgroundClassExists();
 		int getBackgroundLabel();
 
 		void addClass(int classIndex, int classLabel, bool isBackground);
 		void setBackgroundLabel(int classLabel);
+	};
+
+	/**************** Run-time Statistics ****************/
+
+	/*!
+	 * @brief Store run time statistics.
+	 */
+	class RunTimeStats
+	{
+	private:
+		int cumSumSuccessors;
+		int numSumSuccessors;
+
+	public:
+		RunTimeStats();
+		~RunTimeStats();
+
+		void addSuccessorCount(int count);
+		double getSuccessorAverage();
+		void resetSuccessorCount();
 	};
 
 	/**************** Directory/File Paths Class ****************/
@@ -110,18 +132,32 @@ namespace HCSearch
 		string OUTPUT_HEURISTIC_FEATURES_FILE;
 		string OUTPUT_COST_H_FEATURES_FILE;
 		string OUTPUT_COST_ORACLE_H_FEATURES_FILE;
+		string OUTPUT_COST_RANDOM_H_FEATURES_FILE;
+
+		string OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
+		string OUTPUT_COST_H_FEATURES_FILE_BASE;
+		string OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+		string OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
 
 		string OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE;
 		string OUTPUT_ARCHIVED_COST_H_FEATURES_FILE;
 		string OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE;
+		string OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE;
 
 		string OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE;
 		string OUTPUT_COST_H_ONLINE_WEIGHTS_FILE;
 		string OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE;
+		string OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE;
+
+		string OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
+		string OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
+		string OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
+		string OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
 
 		string OUTPUT_HEURISTIC_MODEL_FILE;
 		string OUTPUT_COST_H_MODEL_FILE;
 		string OUTPUT_COST_ORACLE_H_MODEL_FILE;
+		string OUTPUT_COST_RANDOM_H_MODEL_FILE;
 
 		string OUTPUT_LOG_FILE;
 
@@ -183,6 +219,27 @@ namespace HCSearch
 		 */
 		bool USE_DAGGER;
 
+		/*!
+		 * @brief Randomly prune SVM Rank examples to keep features file size low.
+		 */
+		bool PRUNE_SVM_RANK_EXAMPLES;
+
+		/*!
+		 * @brief Ratio controlling proportion of examples to keep.
+		 * 100% = keep everything
+		 */
+		double PRUNE_SVM_RANK_RATIO;
+
+		/*!
+		 * @brief Minimum number of examples before using pruning ratio.
+		 */
+		int PRUNE_SVM_RANK_MIN_EXAMPLES;
+
+		/*!
+		 * @brief Maximum number of examples before using pruning ratio.
+		 */
+		int PRUNE_SVM_RANK_MAX_EXAMPLES;
+
 		/**************** Experiment Settings ****************/
 
 		/*!
@@ -223,6 +280,11 @@ namespace HCSearch
 		 */
 		Commands* cmds;
 
+		/*!
+		 * Run-time statistics.
+		 */
+		RunTimeStats* stats;
+
 	public:
 		/*!
 		 * Initialize settings to defaults. 
@@ -240,8 +302,8 @@ namespace HCSearch
 		 */
 		void refresh(string dataDir, string experimentDir);
 
-	private:
 		string updateRankIDHelper(string path, string fileName, int rank);
+	private:
 		void refreshDataDirectories(string dataDir);
 		void refreshExperimentDirectories(string experimentDir);
 		void refreshRankIDFiles(int rankID);

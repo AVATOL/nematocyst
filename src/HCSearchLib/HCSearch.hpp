@@ -48,30 +48,33 @@ using namespace std;
  * 
  * This section shows how to quickly get started if you just want to use the binary executable and not the API. 
  *  This is useful if you only need to use the built-in search spaces and search procedures. 
- * This section will walk through a sample scenario. Let `$ROOT` denote the root directory containing `src`.
+ * This section will walk through a sample scenario. Let `$ROOT$` denote the root directory containing `src`.
  * 
  * @subsection setup_subsec Setup
  *
- * 1. Create a folder `$ROOT/DataRaw/SomeDataset`. Create additional folders in it: `Annotations`, `Images` and `Splits`.
+ * 1. Create a folder `$ROOT$/DataRaw/SomeDataset`. Create additional folders in it: `Annotations`, `Images` and `Splits`.
  * 2. Put the images (.jpg) in the `Images` folder and the groundtruth masks (.jpg) in the `Annotations` folder. Corresponding images and groundtruth files must have the same file name!
  * 3. Create `Train.txt`, `Validation.txt` and `Test.txt` in `Splits`. In each file, list the file name in the Images folder (without .jpg extension) that belong in each split you want.
  *
  * @subsection preprocess_subsec Preprocessing
  * 
- * 1. Create folder `$ROOT/DataPreprocessed`.
- * 2. Open MATLAB, make sure VLFeat is set up properly and run the following command in MATLAB. This should create files and folders in the `$ROOT/DataPreprocessed/SomeDataset` folder.
+ * 1. Create folder `$ROOT$/DataPreprocessed`.
+ * 2. Open MATLAB, make sure VLFeat is set up properly and run the following command in MATLAB. This should create files and folders in the `$ROOT$/DataPreprocessed/SomeDataset` folder.
  *
- *		preprocess('$ROOT/DataRaw/SomeDataset/Images', '$ROOT/DataRaw/SomeDataset/Annotations', '$ROOT/DataRaw/SomeDataset/Splits', '$ROOT/DataPreprocessed/SomeDataset' )
+ *		preprocess('$ROOT$/DataRaw/SomeDataset/Images', '$ROOT$/DataRaw/SomeDataset/Annotations', '$ROOT$/DataRaw/SomeDataset/Splits', '$ROOT$/DataPreprocessed/SomeDataset');
  *
  * @subsection hcsearch_subsec HC-Search
  *
- * Run the following command from the command line: `./HCSearch $ROOT/DataPreprocessed/SomeDataset $ROOT/Results 10 --learn H --learn C --infer HC`
+ * Run the following command from the command line: `./HCSearch $ROOT$/DataPreprocessed/SomeDataset $ROOT$/Results/SomeExperiment 10 --learn --infer`
  *
- * This learns a heuristic and cost function and then runs HC search inference with time bound equal to 10 search steps. This should create files and folders in `$ROOT/Results`.
+ * This learns a heuristic and cost function and then runs HC search inference with time bound equal to 10 search steps. This should create files and folders in `$ROOT$/Results/SomeExperiment`.
  * 
  * @subsection postprocess_subsec Postprocessing
  * 
- * Under development.
+ * 1. Create folder `$ROOT$/ResultsPreprocessed`.
+ * 2. Open in MATLAB, make sure LIBSVM is set up properly, and run the following command in MATLAB. This should create visualization files and folders in the `$ROOT$/ResultsPreprocessed/SomeExperiment` folder.
+ *
+ *		visualize_results('$ROOT$/DataRaw/SomeDataset', '$ROOT$/DataPreprocessed/SomeDataset', '$ROOT$/Results/SomeExperiment', '$ROOT$/ResultsPostprocessed/SomeExperiment', 0:4, 0);
  * 
  * @section quickstart_api_sec Quick Start (API)
  * 
@@ -227,9 +230,9 @@ using namespace std;
  * 
  * Note: Make sure VLFeat is set up properly before using a preprocessing module. Check out the installation pages.
  * 
- * Let `$ROOT` denote the root directory containing `src`.
+ * Let `$ROOT$` denote the root directory containing `src`.
  *
- * The main preprocessing module is `$ROOT/preprocess/preprocess.m`. 
+ * The main preprocessing module is `$ROOT$/preprocess/preprocess.m`. 
  * It accepts three arguments, the path to the images, groundtruth and training/validation/test splits.
  *
  * - Put the images (.jpg) in the images folder and the groundtruth masks (.jpg) in the groundtruth folder. Corresponding images and groundtruth files must have the same file name!
@@ -266,7 +269,30 @@ using namespace std;
  * 
  * The following are instructions to use the postprocessing modules.
  * 
- * Under development.
+ * The purpose of the postprocessing modules is to visualize and evaluate the results from the HC-Search program.
+ * 
+ * Note: Make sure LIBSVM is set up properly before using a preprocessing module. Check out the installation pages.
+ * 
+ * Let `$ROOT$` denote the root directory containing `src`.
+ *
+ * The main visualization postprocessing module is `$ROOT$/postprocess/visualize_results.m`.
+ *
+ * Preprocess function definition reference:
+ * 
+ *		%VISUALIZE_RESULTS Visualize results folder.
+ *		%
+ *		%	rawDir:             folder path containing original images and annotations
+ *		%                           e.g. 'DataRaw/SomeDataset'
+ *		%	preprocessedDir:	folder path containing preprocessed data
+ *		%                           e.g. 'DataPreprocessed/SomeDataset'
+ *		%	resultsDir:         folder path containing HC-Search results
+ *		%                           e.g. 'Results/SomeExperiment'
+ *		%	outputDir:          folder path to output visualization
+ *		%                           e.g. 'ResultsPostprocessed/SomeExperiment'
+ *		%   timeRange:          range of time bound
+ *		%   foldRange:          range of folds
+ *		%   splitsName:         (optional) alternate name to splits folder
+ *		%	allData:            (optional) data structure containing all preprocessed data
  */
 
  /*!
@@ -278,38 +304,50 @@ using namespace std;
  * 
  * @section overview_sec Overview
  *
- * Let `$ROOT` denote the root directory containing `src`.
+ * Let `$ROOT$` denote the root directory containing `src`.
  * 
- * 1. Before compiling the source or running the binary executable, 
- * dependencies must be installed in the `external` directory.
- * 
- *	- Eigen matrix libary
- *		1. Download from http://eigen.tuxfamily.org
- *		2. Unpack to `$ROOT/external/Eigen`
- *	- SVM-Rank
- *		1. http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
- *		2. Unpack to `$ROOT/external/svm_rank`
- *	- LIBLINEAR
- *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
- *		2. Unpack to `$ROOT/external/liblinear`
- *	- LIBSVM (optional - if you use SVM for initial state in HC-Search)
- *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
- *		2. Unpack to `$ROOT/external/libsvm`
- *	- VLFeat (optional - if you use preprocessing modules)
- *		1. Download from http://www.vlfeat.org/
- *		2. Unpack to `$ROOT/external/vlfeat`
- * 
- * 2. The provided binary executable `HCSearch.exe` should now work (make sure it is in the `$ROOT` directory). 
- * If you prefer to compile from source...
- *
- *	1. Open `$ROOT/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
- *	2. Build the solution. Make sure it is on Release.
- *	3. Move `$ROOT/src/Release/HCSearch.exe` to `$ROOT/HCSearch.exe`.
- *
- * 3. To set up VLFeat for the preprocessing modules, follow these instructions:
- *	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
- *		- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
- *	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
+ * 1. Before compiling the source or running the binary executable, dependencies must be installed in the `$ROOT$/external` directory.
+ * 	- Eigen matrix libary
+ * 		1. Download from http://eigen.tuxfamily.org
+ * 			- Version 3.2.0 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/Eigen`
+ * 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
+ * 	- SVM-Rank
+ * 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+ * 		2. Unpack to `$ROOT$/external/svm_rank`
+ * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
+ * 	- LIBLINEAR
+ * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
+ * 			- Version 1.94 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/liblinear`
+ * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
+ * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in %HCSearch)
+ * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+ * 			- Version 3.17 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/libsvm`
+ * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
+ * 		3. Set up in MATLAB (optional - if you use postprocessing modules):
+ * 			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+ * 			2. Run the `make` command in MATLAB.
+ * 			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
+ * 	- VLFeat (Optional - if you use preprocessing modules)
+ * 		1. Download from http://www.vlfeat.org/
+ * 			- Version 0.9.18 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/vlfeat`
+ * 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+ * 		3. Set up in MATLAB:
+ * 			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+ * 			2. Run the `vl_setup` command in MATLAB.
+ * 			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
+ * 2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
+ * 3. If you prefer to compile from source...
+ * 	1. Open `$ROOT$/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
+ * 	2. Build the solution. Make sure it is on Release.
+ * 	3. Move `$ROOT$/src/Release/HCSearch.exe` to `$ROOT$/HCSearch.exe`.
+ * 4. To set up VLFeat for the preprocessing modules, follow these instructions:
+ * 	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT$/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
+ * 		- Alternatively, add the line to your startup.m file to automatically run this everytime MATLAB starts.
+ * 	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
@@ -333,37 +371,49 @@ using namespace std;
  * 
  * @section overview_sec Overview
  *
- * Let `$ROOT` denote the root directory containing `src`.
+ * Let `$ROOT$` denote the root directory containing `src`.
  * 
- * 1. Before compiling the source or running the binary executable, 
- * dependencies must be installed in the `external` directory.
- * 
- *	- Eigen matrix libary
- *		1. Download from http://eigen.tuxfamily.org
- *		2. Unpack to `$ROOT/external/Eigen`
- *	- SVM-Rank
- *		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html.
- *		Make sure to download the source code version.
- *		2. Unpack to `$ROOT/external/svm_rank`
- *		3. Compile by running `make` in `$ROOT/external/svm_rank`
- *	- LIBLINEAR
- *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
- *		2. Unpack to `$ROOT/external/liblinear`
- *		3. Compile by running `make` in `$ROOT/external/liblinear`
- *	- LIBSVM (optional - if you use SVM for initial state in HC-Search)
- *		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
- *		2. Unpack to `$ROOT/external/libsvm`
- *		3. Compile by running `make` in `$ROOT/external/libsvm`
- *	- VLFeat (optional - if you use preprocessing modules)
- *		1. Download from http://www.vlfeat.org/
- *		2. Unpack to `$ROOT/external/vlfeat`
- * 
- * 2. Compile from source by running `make` in `$ROOT.`
- *
+ * 1. Before compiling the source or running the binary executable, dependencies must be installed in the `$ROOT$/external` directory.
+ * 	- Eigen matrix libary
+ * 		1. Download from http://eigen.tuxfamily.org
+ * 			- Version 3.2.0 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/Eigen`
+ * 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
+ * 	- SVM-Rank
+ * 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
+ * 		2. Unpack to `$ROOT$/external/svm_rank`
+ * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
+ * 		3. Compile by running `make` in `$ROOT$/external/svm_rank`
+ * 	- LIBLINEAR
+ * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
+ * 			- Version 1.94 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/liblinear`
+ * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
+ * 		3. Compile by running `make` in `$ROOT$/external/liblinear`
+ * 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in %HCSearch)
+ * 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
+ * 			- Version 3.17 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/libsvm`
+ * 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
+ * 		3. Compile by running `make` in `$ROOT$/external/libsvm`
+ * 		4. Set up in MATLAB (optional - if you use postprocessing modules):
+ * 			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+ * 			2. Run the `make` command in MATLAB.
+ * 			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
+ * 	- VLFeat (Optional - if you use preprocessing modules)
+ * 		1. Download from http://www.vlfeat.org/
+ * 			- Version 0.9.18 officially supported. Later versions should also work.
+ * 		2. Unpack to `$ROOT$/external/vlfeat`
+ * 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+ * 		3. Set up in MATLAB:
+ * 			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+ * 			2. Run the `vl_setup` command in MATLAB.
+ * 			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
+ * 2. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
  * 3. To set up VLFeat for the preprocessing modules, follow these instructions:
- *	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
- *		- Alternatively, add the line to your `startup.m` file to automatically run this everytime MATLAB starts.
- *	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
+ * 	1. Launch MATLAB. Run the following command in MATLAB: run('$ROOT$/external/vlfeat/toolbox/vl_setsup') or wherever it is installed.
+ * 		- Alternatively, add the line to your `startup.m` file to automatically run this everytime MATLAB starts.
+ * 	2. Verify is set up properly by running the following command in MATLAB: `vl_version`
  * 
  * @section mpi_sec Installing with MPI (Optional)
  * 
@@ -448,13 +498,6 @@ namespace HCSearch
 		static void finalizeHelper();
 		static void setClasses();
 		static set<int> parseList(string str);
-
-#ifdef USE_MPI
-		/*!
-		 * Forces all processes to sync up wherever the function is called.
-		 */
-		static void synchronize_MPI();
-#endif
 	};
 
 	/*! @}*/
@@ -517,6 +560,8 @@ namespace HCSearch
 		static void computeTaskRange(int rank, int numTasks, int numProcesses, int& start, int& end);
 
 	private:
+		static void loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet);
+
 		/*!
 		 * Read split file (Train.txt, Validation.txt, Test.txt).
 		 * @param[in] filename Path to split file
@@ -529,8 +574,10 @@ namespace HCSearch
 		 * @param[in] filename Path to meta file
 		 * @param[out] numNodes Number of nodes in the image
 		 * @param[out] numFeatures Number of features for each node in the image
+		 * @param[out] height Original image height
+		 * @param[out] width Original image width
 		 */
-		static void readMetaFile(string filename, int& numNodes, int& numFeatures);
+		static void readMetaFile(string filename, int& numNodes, int& numFeatures, int& height, int& width);
 
 		/*!
 		 * Read a nodes file for a particular image.
@@ -546,6 +593,13 @@ namespace HCSearch
 		 * @param[out] edges Adjacency list for graph edges of the image
 		 */
 		static void readEdgesFile(string filename, AdjList_t& edges);
+
+		/*!
+		 * Read a segments file for a particular image.
+		 * @param[in] filename Path to segments file
+		 * @param[out] edges Integer matrix storing node IDs
+		 */
+		static void readSegmentsFile(string filename, MatrixXi& segments);
 	};
 
 	/*! @} */
@@ -670,6 +724,25 @@ namespace HCSearch
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
+		/*!
+		 * Learn cost function given random heuristic function.
+		 * Given training data, validation data, time bound, search space and procedure, 
+		 * learn a cost model using a random H and return it.
+		 * @param[in] XTrain Vector of structured features for training
+		 * @param[in] YTrain Vector of structured labelings for training
+		 * @param[in] XValidation Vector of structured features for validation
+		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] timeBound  Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
+		 * @return Returns the learned cost (using oracle H) model
+		 */
+		static IRankModel* learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
+
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
@@ -763,6 +836,34 @@ namespace HCSearch
 			SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 			IRankModel* heuristicModel, IRankModel* costModel, 
 			ISearchProcedure::SearchMetadata searchMetadata);
+
+		/*!
+		 * Run RL-search (random heuristic, oracle cost).
+		 * @param[in] X Input structured features
+		 * @param[in] YTruth Groundtruth structured labeling
+		 * @param[in] timeBound Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] SearchMetadata Meta information
+		 * @return Inference labeling
+		 */
+		static ImgLabeling runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
+			ISearchProcedure::SearchMetadata searchMetadata);
+
+		/*!
+		 * Run RC-search (random heuristic, learned cost).
+		 * @param[in] X Input structured features
+		 * @param[in] timeBound Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] costRandomHModel Learned cost (using random H) model
+		 * @param[in] SearchMetadata Meta information
+		 * @return Inference labeling
+		 */
+		static ImgLabeling runRCSearch(ImgFeatures* X, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+			IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata);
     };
 
 	/*! @} */

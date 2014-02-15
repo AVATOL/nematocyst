@@ -48,6 +48,6 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po);
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po);
 
 /*!
- * @brief Convenience function to print schedule.
+ * @brief Convenience function to print useful info.
  */
-void printSchedule(MyProgramOptions::ProgramOptions po);
+void printInfo(MyProgramOptions::ProgramOptions po);

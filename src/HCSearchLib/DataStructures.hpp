@@ -17,8 +17,10 @@ namespace HCSearch
 
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
-		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
+		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
+		RL, RC, LEARN_C_RANDOM_H };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
+	enum StochasticCutMode { STATE, EDGES };
 
 	const extern string SearchTypeStrings[];
 	const extern string DatasetTypeStrings[];
@@ -99,6 +101,15 @@ namespace HCSearch
 		 * File name of this image.
 		 */
 		string filename;
+
+		/*!
+		 * Segments matrix that has node IDs.
+		 * Dimensions: original image height x original image width
+		 * Make sure to check if they are available using ImgLabeling::segmentsAvailable.
+		 */
+		MatrixXi segments;
+
+		bool segmentsAvailable;
 
 	public:
 		ImgFeatures();
@@ -260,6 +271,16 @@ namespace HCSearch
 		 */
 		virtual RankerType rankerType()=0;
 
+		/*!
+		 * Load weights data from file.
+		 */
+		virtual void load(string fileName)=0;
+
+		/*!
+		 * Save weights data to file.
+		 */
+		virtual void save(string fileName)=0;
+
 	protected:
 		/*!
 		 * Manual implementation of the vector dot product. 
@@ -306,6 +327,11 @@ namespace HCSearch
 		string rankingFileName;
 
 		/*!
+		 * Model file name
+		 */
+		string modelFileName;
+
+		/*!
 		 * Cumulative QID for learning
 		 */
 		int qid;
@@ -325,21 +351,13 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
-		
+		virtual void load(string fileName);
+		virtual void save(string fileName);
+
 		/*!
 		 * Get weights.
 		 */
 		VectorXd getWeights();
-
-		/*!
-		 * Load weights from file.
-		 */
-		void load(string fileName);
-
-		/*!
-		 * Save weights data to file.
-		 */
-		void save(string fileName);
 
 		/*!
 		 * Initialize learning.
@@ -356,7 +374,7 @@ namespace HCSearch
 		 *
 		 * Calls SVM Rank program to train on examples and produce model.
 		 */
-		void finishTraining(string modelFileName);
+		void finishTraining(string modelFileName, SearchType searchType);
 
 		/*!
 		 * Cancel learning. Closes training file.
@@ -384,6 +402,11 @@ namespace HCSearch
 		 *	   line 12: 1:val 2:val ...
 		 */
 		static void writeModelFile(string fileName, const VectorXd& weights);
+
+		/*!
+		 * Merge SVM-Rank feature files when using MPI.
+		 */
+		static int mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID);
 	};
 
 	/**************** Online Rank Model ****************/
@@ -422,6 +445,8 @@ namespace HCSearch
 
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual void load(string fileName);
+		virtual void save(string fileName);
 
 		/*!
 		 * Get latest weights.
@@ -439,21 +464,16 @@ namespace HCSearch
 		 * - featureDiff = feature (good) - feature (bad)
 		 */
 		void performOnlineUpdate(double delta, VectorXd featureDiff);
-
-		/*!
-		 * Load weights data from file.
-		 */
-		void load(string fileName);
-
-		/*!
-		 * Save weights data to file.
-		 */
-		void save(string fileName);
 		
 		/*!
 		 * Initialize weights to zero vector with dimension dim.
 		 */
 		void initialize(int dim);
+
+		/*!
+		 * Merge online rank models.
+		 */
+		void performMerge(string modelFileBase, SearchType searchType);
 
 	private:
 		/*!
@@ -475,6 +495,16 @@ namespace HCSearch
 		 *	   line 3 (latestweights): 1:val 2:val ...
 		 */
 		static void writeModelFile(string fileName, const VectorXd& latestWeights, const VectorXd& cumSumWeights, int numSum);
+
+		/*!
+		 * Merge online rank model files when using MPI.
+		 * @param[out] masterLatestWeights
+		 * @param[out] masterCumSumWeights
+		 * @param[out] masterNumSum
+		 * @param[in] fileNameBase
+		 * @param[in] numProcesses
+		 */
+		static void mergeRankingFiles(VectorXd& masterLatestWeights, VectorXd& masterCumSumWeights, int& masterNumSum, string fileNameBase, int numProcesses);
 	};
 }
 

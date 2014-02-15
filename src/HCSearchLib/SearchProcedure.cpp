@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "SearchProcedure.hpp"
 #include "Globals.hpp"
 
@@ -23,7 +24,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to write nodes!" << endl;
+			LOG(ERROR) << "cannot open file to write nodes!";
 		}
 	}
 
@@ -31,7 +32,7 @@ namespace HCSearch
 	{
 		if (!YPred.stochasticCutsAvailable)
 		{
-			cerr << "[Error] no cuts available to write!" << endl;
+			LOG(ERROR) << "no cuts available to write!";
 			return;
 		}
 
@@ -57,7 +58,40 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to write edges!" << endl;
+			LOG(ERROR) << "cannot open file to write edges!";
+		}
+	}
+
+	void SavePrediction::saveLabelMask(ImgFeatures& X, ImgLabeling& YPred, string fileName)
+	{
+		if (!X.segmentsAvailable)
+		{
+			LOG(ERROR) << "no segments data available to write!";
+			return;
+		}
+
+		// write to file
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			const int height = X.segments.rows();
+			const int width = X.segments.cols();
+			for (int row = 0; row < height; row++)
+			{
+				for (int col = 0; col < width; col++)
+				{
+					int segmentID = X.segments(row, col);
+					int label = YPred.getLabel(segmentID);
+					fh << label << " ";
+				}
+				fh << endl;
+			}
+
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to write label mask!";
 		}
 	}
 
@@ -96,6 +130,20 @@ namespace HCSearch
 			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
+	ImgLabeling ISearchProcedure::rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
+		SearchSpace* searchSpace, SearchMetadata searchMetadata)
+	{
+		return searchProcedure(RL, X, YTruth, timeBound, 
+			searchSpace, NULL, NULL, searchMetadata);
+	}
+
+	ImgLabeling ISearchProcedure::rcSearch(ImgFeatures& X, int timeBound, 
+		SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata)
+	{
+		return searchProcedure(RC, X, NULL, timeBound, 
+			searchSpace, NULL, costModel, searchMetadata);
+	}
+
 	void ISearchProcedure::learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
@@ -114,6 +162,13 @@ namespace HCSearch
 		IRankModel* learningModel, SearchMetadata searchMetadata)
 	{
 		searchProcedure(LEARN_C_ORACLE_H, X, YTruth, timeBound, 
+			searchSpace, NULL, learningModel, searchMetadata);
+	}
+
+	void ISearchProcedure::learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+		IRankModel* learningModel, SearchMetadata searchMetadata)
+	{
+		searchProcedure(LEARN_C_RANDOM_H, X, YTruth, timeBound, 
 			searchSpace, NULL, learningModel, searchMetadata);
 	}
 
@@ -147,74 +202,92 @@ namespace HCSearch
 		}
 	}
 
-	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, SearchNodeHeuristicPQ& candidateSet, vector< ISearchNode* > successorSet)
+	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
+			vector< RankFeatures > worstFeatures, vector< double > worstLosses)
 	{
+		// train depending on ranker
 		if (ranker->rankerType() == SVM_RANK)
 		{
-			vector< RankFeatures > bestFeatures;
-			vector< RankFeatures > worstFeatures;
-
-			// best states
-			for (vector< ISearchNode* >::iterator it = successorSet.begin(); it != successorSet.end(); ++it)
-			{
-				ISearchNode* state = *it;
-				bestFeatures.push_back(state->getHeuristicFeatures());
-			}
-
-			// worst states
-			SearchNodeHeuristicPQ tempSet;
-			while (!candidateSet.empty())
-			{
-				ISearchNode* state = candidateSet.top();
-				worstFeatures.push_back(state->getHeuristicFeatures());
-				tempSet.push(state);
-				candidateSet.pop();
-			}
-			candidateSet = tempSet;
-
 			// train
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
 		}
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
+
+			// find the best scoring output in the best set according to the current heuristic model
+			RankFeatures bestHeuristicFeature;
+			double bestScore;
+			double bestLoss;
+
+			const int numBestFeatures = bestFeatures.size();
+			for (int i = 0; i < numBestFeatures; i++)
+			{
+				RankFeatures feature = bestFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (i == 0 || score <= bestScore)
+				{
+					bestHeuristicFeature = feature;
+					bestScore = score;
+					bestLoss = bestLosses[i];
+				}
+			}
+
+			// perform update
+			const int numWorstFeatures = worstFeatures.size();
+			for (int i = 0; i < numWorstFeatures; i++)
+			{
+				RankFeatures worseFeature = worstFeatures[i];
+				double score = onlineRankModel->rank(worseFeature);
+				double bestScore = onlineRankModel->rank(bestHeuristicFeature);
+
+				if (score >= bestScore)
+				{
+					double delta = worstLosses[i] - bestLoss;
+					VectorXd featureDiff = bestHeuristicFeature.data - worseFeature.data;
+					onlineRankModel->performOnlineUpdate(delta, featureDiff);
+				}
+			}
 		}
 		else
 		{
-			cerr << "[Error] unknown ranker type" << endl;
+			LOG(ERROR) << "unknown ranker type";
 			abort();
 		}
 	}
 
 	void ISearchProcedure::trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet)
 	{
+		vector< RankFeatures > bestFeatures;
+		vector< RankFeatures > worstFeatures;
+		vector< double > bestLosses;
+		vector< double > worstLosses;
+
+		// get best states
+		double overallBestLoss = costSet.top()->getCost();
+		while (!costSet.empty() && costSet.top()->getCost() <= overallBestLoss)
+		{
+			ISearchNode* state = costSet.top();
+			bestFeatures.push_back(state->getCostFeatures());
+			bestLosses.push_back(state->getCost());
+			costSet.pop();
+			delete state;
+		}
+
+		// get worst states
+		while (!costSet.empty())
+		{
+			ISearchNode* state = costSet.top();
+			worstFeatures.push_back(state->getCostFeatures());
+			worstLosses.push_back(state->getCost());
+			costSet.pop();
+			delete state;
+		}
+
+		// train depending on ranker
 		if (ranker->rankerType() == SVM_RANK)
 		{
-			vector< RankFeatures > bestFeatures;
-			vector< RankFeatures > worstFeatures;
-
-			// get best states
-			double bestLoss = costSet.top()->getCost();
-			while (!costSet.empty() && costSet.top()->getCost() <= bestLoss)
-			{
-				ISearchNode* state = costSet.top();
-				bestFeatures.push_back(state->getCostFeatures());
-				costSet.pop();
-				delete state;
-			}
-
-			// get worst states
-			while (!costSet.empty())
-			{
-				ISearchNode* state = costSet.top();
-				worstFeatures.push_back(state->getCostFeatures());
-				costSet.pop();
-				delete state;
-			}
-
 			// train
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
@@ -222,13 +295,74 @@ namespace HCSearch
 		}
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
+
+			// find the best scoring output overall according to the current cost model
+			double bestScore;
+			bool fromWorstSet = false;
+
+			const int numBestFeatures = bestFeatures.size();
+			for (int i = 0; i < numBestFeatures; i++)
+			{
+				RankFeatures feature = bestFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (i == 0 || score <= bestScore)
+				{
+					bestScore = score;
+				}
+			}
+			const int numWorstFeatures = worstFeatures.size();
+			for (int i = 0; i < numWorstFeatures; i++)
+			{
+				RankFeatures feature = worstFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (score <= bestScore)
+				{
+					bestScore = score;
+					fromWorstSet = true;
+				}
+			}
+
+			// perform update if necessary
+			if (fromWorstSet)
+			{
+				// find best scoring output in the best set according to current weights
+				RankFeatures bestCostFeature;
+				double bestScore;
+				double bestLoss;
+
+				const int numBestFeatures = bestFeatures.size();
+				for (int i = 0; i < numBestFeatures; i++)
+				{
+					RankFeatures feature = bestFeatures[i];
+					double score = onlineRankModel->rank(feature);
+					if (i == 0 || score < bestScore)
+					{
+						bestCostFeature = feature;
+						bestScore = score;
+						bestLoss = bestLosses[i];
+					}
+				}
+
+				// perform update
+				for (int i = 0; i < numWorstFeatures; i++)
+				{
+					RankFeatures worseFeature = worstFeatures[i];
+					double score = onlineRankModel->rank(worseFeature);
+					double bestScore = onlineRankModel->rank(bestCostFeature);
+
+					if (score >= bestScore)
+					{
+						double delta = worstLosses[i] - bestLoss;
+						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
+						onlineRankModel->performOnlineUpdate(delta, featureDiff);
+					}
+				}
+			}
 		}
 		else
 		{
-			cerr << "[Error] unknown ranker type" << endl;
+			LOG(ERROR) << "unknown ranker type";
 			abort();
 		}
 	}
@@ -236,6 +370,8 @@ namespace HCSearch
 	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
+		clock_t tic = clock();
+
 		// set up priority queues
 		// maintain open set for search
 		// maintain cost set for returning best cost in the end
@@ -243,33 +379,7 @@ namespace HCSearch
 		SearchNodeHeuristicPQ openSet;
 
 		// push initial state into queue
-		ISearchNode* root = NULL;
-		switch (searchType)
-		{
-			case LL:
-				root = new LLSearchNode(&X, YTruth, searchSpace);
-				break;
-			case HL:
-				root = new HLSearchNode(&X, YTruth, searchSpace, heuristicModel);
-				break;
-			case LC:
-				root = new LCSearchNode(&X, YTruth, searchSpace, costModel);
-				break;
-			case HC:
-				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
-				break;
-			case LEARN_H:
-				root = new LearnHSearchNode(&X, YTruth, searchSpace);
-				break;
-			case LEARN_C:
-				root = new LearnCSearchNode(&X, YTruth, searchSpace, heuristicModel);
-				break;
-			case LEARN_C_ORACLE_H:
-				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
-				break;
-			default:
-				cerr << "searchType constant is invalid." << endl;
-		}
+		ISearchNode* root = createRootNode(searchType, X, YTruth, searchSpace, heuristicModel, costModel);
 		openSet.push(root);
 		costSet.push(root);
 
@@ -278,7 +388,8 @@ namespace HCSearch
 		int timeStep = 0;
 		while (!openSet.empty() && timeStep < timeBound)
 		{
-			cout << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
+			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
+			clock_t ticInside = clock();
 
 			// save current best if anytime prediction enabled
 			saveAnyTimePrediction(costSet.top()->getY(), timeStep, searchMetadata, searchType);
@@ -294,25 +405,21 @@ namespace HCSearch
 			/***** choose successors and put them into the open set *****/
 			/***** put these expanded elements into the cost set *****/
 
-			vector< ISearchNode* > successorSet = chooseSuccessors(candidateSet, openSet, costSet);
-
-			// NOW: successorSet = best nodes
-			// NOW: candidateSet = worst nodes
+			vector< RankFeatures > bestFeatures;
+			vector< RankFeatures > worstFeatures;
+			vector< double > bestLosses; // heuristic values technically, but definitely losses for learning H
+			vector< double > worstLosses;
+			chooseSuccessors(searchType, candidateSet, openSet, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
 
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 
 			if (searchType == LEARN_H)
-				trainHeuristicRanker(heuristicModel, candidateSet, successorSet);
+				trainHeuristicRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
 
-			/***** add remaining "worst states" to cost set *****/
+			/***** done with this search step *****/
 
-			while (!candidateSet.empty())
-			{
-				ISearchNode* node = candidateSet.top();
-				candidateSet.pop();
-
-				costSet.push(node);
-			}
+			clock_t tocInside = clock();
+			LOG() << "search step " << timeStep << " total time: " << (double)(tocInside - ticInside)/CLOCKS_PER_SEC << endl;
 
 			/***** increment time step *****/
 			timeStep++;
@@ -322,23 +429,68 @@ namespace HCSearch
 
 		if (costSet.empty())
 		{
-			cerr << "[Error] the cost set is empty, which is not possible!" << endl;
+			LOG(ERROR) << "the cost set is empty, which is not possible!";
 			abort();
 		}
 
 		// Get lowest cost node
 		ISearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
-		cout << endl << "Finished search. Cost=" << lowestCost->getCost() << endl << endl;
+		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
-		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H || searchType == LEARN_C_RANDOM_H)
 			trainCostRanker(costModel, costSet);
 
 		// clean up cost set
 		deleteQueueElements(costSet);
 
+		clock_t toc = clock();
+		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
 		return prediction;
+	}
+
+	ISearchProcedure::ISearchNode* IBasicSearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
+	{
+		ISearchNode* root = NULL;
+		switch (searchType)
+		{
+			case LL:
+				root = new LLSearchNode(&X, YTruth, searchSpace);
+				break;
+			case HL:
+				root = new HLSearchNode(&X, YTruth, searchSpace, heuristicModel);
+				break;
+			case LC:
+				root = new LCSearchNode(&X, YTruth, searchSpace, costModel);
+				break;
+			case HC:
+				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
+				break;
+			case RL:
+				root = new RLSearchNode(&X, YTruth, searchSpace);
+				break;
+			case RC:
+				root = new RCSearchNode(&X, searchSpace, costModel);
+				break;
+			case LEARN_H:
+				root = new LearnHSearchNode(&X, YTruth, searchSpace);
+				break;
+			case LEARN_C:
+				root = new LearnCSearchNode(&X, YTruth, searchSpace, heuristicModel);
+				break;
+			case LEARN_C_ORACLE_H:
+				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
+				break;
+			case LEARN_C_RANDOM_H:
+				root = new LearnCRandomHSearchNode(&X, YTruth, searchSpace);
+				break;
+			default:
+				LOG(ERROR) << "searchType constant is invalid.";
+		}
+		return root;
 	}
 
 	/**************** Breadth-First Beam Search Procedure ****************/
@@ -380,7 +532,7 @@ namespace HCSearch
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
 			ISearchNode* current = *it;
-			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
+			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
 			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
 
@@ -398,11 +550,10 @@ namespace HCSearch
 		return candidateSet;
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
+	void BreadthFirstBeamSearchProcedure::chooseSuccessors(SearchType searchType, SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)
 	{
-		vector< ISearchNode* > bestSet;
-
-		// pick the top B best states
+		// pick the top B best states - "good" training examples
 		for (int i = 0; i < this->beamSize; i++)
 		{
 			if (candidateSet.empty())
@@ -410,14 +561,31 @@ namespace HCSearch
 
 			ISearchNode* state = candidateSet.top();
 			candidateSet.pop();
-			bestSet.push_back(state);
+			if (searchType == LEARN_H)
+			{
+				bestSet.push_back(state->getHeuristicFeatures());
+				bestLosses.push_back(state->getHeuristic());
+			}
 			openSet.push(state);
 			costSet.push(state);
 		}
 
-		// side effect: candidateSet will only have the worst states now
+		// everything else is "bad" for training examples
+		while (!candidateSet.empty())
+		{
+			ISearchNode* state = candidateSet.top();
+			candidateSet.pop();
+			if (searchType == LEARN_H)
+			{
+				worstSet.push_back(state->getHeuristicFeatures());
+				worstLosses.push_back(state->getHeuristic());
+			}
+			costSet.push(state);
+		}
 
-		return bestSet;
+		// side effect: candidateSet is empty now
+		// side effect: openSet has the best states now
+		// side effect: costSet has all the states from the candidate set
 	}
 
 	/**************** Best-First Beam Search Procedure ****************/
@@ -459,7 +627,7 @@ namespace HCSearch
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
 			ISearchNode* current = *it;
-			cout << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
+			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
 			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
 
@@ -539,6 +707,18 @@ namespace HCSearch
 					successors.push_back(successor);
 				}
 				break;
+			case RL:
+				{
+					RLSearchNode* successor = new RLSearchNode(this, YPred);
+					successors.push_back(successor);
+				}
+				break;
+			case RC:
+				{
+					RCSearchNode* successor = new RCSearchNode(this, YPred);
+					successors.push_back(successor);
+				}
+				break;
 			case LEARN_H:
 				{
 					LearnHSearchNode* successor = new LearnHSearchNode(this, YPred);
@@ -557,8 +737,14 @@ namespace HCSearch
 					successors.push_back(successor);
 				}
 				break;
+			case LEARN_C_RANDOM_H:
+				{
+					LearnCRandomHSearchNode* successor = new LearnCRandomHSearchNode(this, YPred);
+					successors.push_back(successor);
+				}
+				break;
 			default:
-				cerr << "[Error] not a valid search type for generating successor" << endl;
+				LOG(ERROR) << "not a valid search type for generating successor";
 			}
 		}
 		return successors;
@@ -566,13 +752,13 @@ namespace HCSearch
 
 	RankFeatures ISearchProcedure::ISearchNode::getHeuristicFeatures()
 	{
-		cerr << "[Error] heuristic features are not defined" << endl;
+		LOG(ERROR) << "heuristic features are not defined";
 		return RankFeatures();
 	}
 
 	RankFeatures ISearchProcedure::ISearchNode::getCostFeatures()
 	{
-		cerr << "[Error] cost features are not defined" << endl;
+		LOG(ERROR) << "cost features are not defined";
 		return RankFeatures();
 	}
 
@@ -801,6 +987,107 @@ namespace HCSearch
 		return HC;
 	}
 
+	/**************** RL Search Node ****************/
+
+	ISearchProcedure::RLSearchNode::RLSearchNode()
+	{
+	}
+
+	ISearchProcedure::RLSearchNode::RLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
+	{
+		this->parent = NULL;
+		this->X = X;
+		this->YPred = searchSpace->getInitialPrediction(*X);
+		this->searchSpace = searchSpace;
+
+		this->YTruth = YTruth;
+		this->heuristic = Rand::unifDist();
+		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
+	}
+
+	ISearchProcedure::RLSearchNode::RLSearchNode(ISearchNode* parent, ImgLabeling YPred)
+	{
+		RLSearchNode* parentCast = dynamic_cast<RLSearchNode*>(parent);
+
+		this->parent = parentCast;
+		this->X = parentCast->X;
+		this->YPred = YPred;
+		this->searchSpace = parentCast->searchSpace;
+
+		this->YTruth = parentCast->YTruth;
+		this->heuristic = Rand::unifDist();
+		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
+	}
+
+	double ISearchProcedure::RLSearchNode::getHeuristic()
+	{
+		return this->heuristic;
+	}
+
+	double ISearchProcedure::RLSearchNode::getCost()
+	{
+		return this->loss;
+	}
+
+	SearchType ISearchProcedure::RLSearchNode::getType()
+	{
+		return RL;
+	}
+
+	/**************** RC Search Node ****************/
+
+	ISearchProcedure::RCSearchNode::RCSearchNode()
+	{
+	}
+
+	ISearchProcedure::RCSearchNode::RCSearchNode(ImgFeatures* X, SearchSpace* searchSpace, IRankModel* costModel)
+	{
+		this->parent = NULL;
+		this->X = X;
+		this->YPred = searchSpace->getInitialPrediction(*X);
+		this->searchSpace = searchSpace;
+
+		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
+		this->costModel = costModel;
+		this->cost = costModel->rank(this->costFeatures);
+		this->heuristic = Rand::unifDist();
+	}
+
+	ISearchProcedure::RCSearchNode::RCSearchNode(ISearchNode* parent, ImgLabeling YPred)
+	{
+		RCSearchNode* parentCast = dynamic_cast<RCSearchNode*>(parent);
+
+		this->parent = parentCast;
+		this->X = parentCast->X;
+		this->YPred = YPred;
+		this->searchSpace = parentCast->searchSpace;
+
+		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+		this->costModel = parentCast->costModel;
+		this->cost = this->costModel->rank(this->costFeatures);
+		this->heuristic = Rand::unifDist();
+	}
+
+	RankFeatures ISearchProcedure::RCSearchNode::getCostFeatures()
+	{
+		return this->costFeatures;
+	}
+
+	double ISearchProcedure::RCSearchNode::getHeuristic()
+	{
+		return this->heuristic;
+	}
+
+	double ISearchProcedure::RCSearchNode::getCost()
+	{
+		return this->cost;
+	}
+
+	SearchType ISearchProcedure::RCSearchNode::getType()
+	{
+		return RC;
+	}
+
 	/**************** Learn H Search Node ****************/
 
 	ISearchProcedure::LearnHSearchNode::LearnHSearchNode()
@@ -931,6 +1218,50 @@ namespace HCSearch
 	SearchType ISearchProcedure::LearnCOracleHSearchNode::getType()
 	{
 		return LEARN_C_ORACLE_H;
+	}
+
+	/**************** Learn C Given Random H Search Node ****************/
+
+	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode()
+	{
+	}
+
+	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
+	{
+		this->parent = NULL;
+		this->X = X;
+		this->YPred = searchSpace->getInitialPrediction(*X);
+		this->searchSpace = searchSpace;
+
+		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
+		this->YTruth = YTruth;
+		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
+		this->heuristic = Rand::unifDist();
+	}
+
+	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode(ISearchNode* parent, ImgLabeling YPred)
+	{
+		LearnCRandomHSearchNode* parentCast = dynamic_cast<LearnCRandomHSearchNode*>(parent);
+
+		this->parent = parentCast;
+		this->X = parentCast->X;
+		this->YPred = YPred;
+		this->searchSpace = parentCast->searchSpace;
+
+		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+		this->YTruth = parentCast->YTruth;
+		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
+		this->heuristic = Rand::unifDist();
+	}
+
+	RankFeatures ISearchProcedure::LearnCRandomHSearchNode::getCostFeatures()
+	{
+		return this->costFeatures;
+	}
+
+	SearchType ISearchProcedure::LearnCRandomHSearchNode::getType()
+	{
+		return LEARN_C_RANDOM_H;
 	}
 
 	/**************** Compare Search Node ****************/

@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <queue>
 #include "../../external/Eigen/Eigen/Dense"
 #include "DataStructures.hpp"
 
@@ -54,6 +55,9 @@ namespace MyGraphAlgorithms
 		int label;
 		ConnectedComponentSet* ccSet;
 
+		class CompareByConfidence;
+		typedef priority_queue<MyPrimitives::Pair<int, double>, vector< MyPrimitives::Pair<int, double> >, CompareByConfidence> LabelConfidencePQ;
+
 	public:
 		ConnectedComponent();
 		ConnectedComponent(ConnectedComponentSet* ccSet);
@@ -83,6 +87,22 @@ namespace MyGraphAlgorithms
 		 * @brief Get the labels of the connected component's neighbors.
 		 */
 		set<int> getNeighborLabels();
+
+		/*!
+		 * @brief Get the labels of the top K confident labels.
+		 */
+		set<int> getTopConfidentLabels(int K);
+
+		/*!
+		 * @brief Returns if this connected component has neighboring connected components.
+		 */
+		bool hasNeighbors();
+	};
+
+	class ConnectedComponent::CompareByConfidence
+	{
+	public:
+		bool operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const;
 	};
 
 	/**************** Connected Component Set ****************/
@@ -97,6 +117,10 @@ namespace MyGraphAlgorithms
 	private:
 		vector< ConnectedComponent* > connectedComponents;
 		HCSearch::ImgLabeling original;
+
+		// true if there is only one foreground connected component
+		bool exactlyOnePositiveCC;
+		ConnectedComponent* foreground;
 
 	public:
 		ConnectedComponentSet();
@@ -127,6 +151,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get connected components.
 		 */
 		vector< ConnectedComponent* > getConnectedComponents();
+
+		/*!
+		 * @brief Returns true if there is exactly one foreground connected component
+		 */
+		bool hasExactlyOnePositiveCC();
 	};
 
 	/**************** Subgraphs ****************/
@@ -177,6 +206,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get the connected components.
 		 */
 		vector< ConnectedComponent* > getConnectedComponents();
+
+		/*!
+		 * @brief Returns true if there is exactly one foreground connected component
+		 */
+		bool hasExactlyOnePositiveCC();
 	};
 
 	/**************** Subgraph Set ****************/
@@ -190,6 +224,8 @@ namespace MyGraphAlgorithms
 		vector< Subgraph* > subgraphs;
 		map< int, set<int> > cuts;
 		HCSearch::ImgLabeling original;
+
+		vector< Subgraph* > exactlyOnePositiveCCSubgraphs;
 
 	public:
 		SubgraphSet();
@@ -215,6 +251,11 @@ namespace MyGraphAlgorithms
 		 * @brief Get the stochastic cuts.
 		 */
 		map< int, set<int> > getCuts();
+
+		/*!
+		 * @brief Get the set of subgraphs such that there is exactly one connected component.
+		 */
+		vector< Subgraph* > getExactlyOnePositiveCCSubgraphs();
 	};
 }
 

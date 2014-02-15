@@ -28,18 +28,22 @@ namespace MyProgramOptions
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
 		initialFunctionMode = LOG_REG;
-		successorsMode = STOCHASTIC;
+		successorsMode = STOCHASTIC_NEIGHBORS;
 		lossMode = HAMMING;
 
-		stochasticCutMode = STATE;
+		stochasticCutMode = EDGES;
 		beamSize = 1;
 		cutParam = 1.0;
 
-		saveAnytimePredictions = false;
+		saveAnytimePredictions = true;
 		rankLearnerType = HCSearch::SVM_RANK;
 		saveFeaturesFiles = false;
 		numTrainIterations = 1;
 		numTestIterations = 1;
+		verboseMode = false;
+		boundSuccessorCandidates = 1000;
+		uniqueIterId = 0;
+		saveOutputMask = false;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -58,7 +62,7 @@ namespace MyProgramOptions
 		{
 			if (HCSearch::Global::settings->RANK == 0)
 			{
-				cerr << "Too few arguments!" << endl;
+				LOG(ERROR) << "Too few arguments!";
 				printUsage();
 			}
 			HCSearch::abort();
@@ -95,18 +99,24 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
-					else
+					else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "crh") == 0)
+						po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
+					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);
 						po.schedule.push_back(HCSearch::LEARN_C);
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
+					}
+					else
+					{
+						po.schedule.push_back(HCSearch::LEARN_H);
+						po.schedule.push_back(HCSearch::LEARN_C);
 					}
 				}
 				else
 				{
 					po.schedule.push_back(HCSearch::LEARN_H);
 					po.schedule.push_back(HCSearch::LEARN_C);
-					po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 				}
 			}
 			else if (strcmp(argv[i], "--infer") == 0)
@@ -121,20 +131,25 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
-					else
+					else if (strcmp(argv[i+1], "RL") == 0 || strcmp(argv[i+1], "rl") == 0)
+						po.schedule.push_back(HCSearch::RL);
+					else if (strcmp(argv[i+1], "RC") == 0 || strcmp(argv[i+1], "rc") == 0)
+						po.schedule.push_back(HCSearch::RC);
+					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::HC);
 						po.schedule.push_back(HCSearch::HL);
 						po.schedule.push_back(HCSearch::LC);
 						po.schedule.push_back(HCSearch::LL);
 					}
+					else
+					{
+						po.schedule.push_back(HCSearch::HC);
+					}
 				}
 				else
 				{
 					po.schedule.push_back(HCSearch::HC);
-					po.schedule.push_back(HCSearch::HL);
-					po.schedule.push_back(HCSearch::LC);
-					po.schedule.push_back(HCSearch::LL);
 				}
 			}
 			else if (strcmp(argv[i], "--learner") == 0)
@@ -168,7 +183,7 @@ namespace MyProgramOptions
 					po.beamSize = atoi(argv[i+1]);
 					if (po.beamSize <= 0)
 					{
-						cerr << "Invalid beam size!" << endl;
+						LOG(ERROR) << "Invalid beam size!";
 						HCSearch::abort();
 					}
 				}
@@ -179,8 +194,20 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "flipbit") == 0)
 						po.successorsMode = FLIPBIT;
+					else if (strcmp(argv[i+1], "flipbit-neighbors") == 0)
+						po.successorsMode = FLIPBIT_NEIGHBORS;
 					else if (strcmp(argv[i+1], "stochastic") == 0)
 						po.successorsMode = STOCHASTIC;
+					else if (strcmp(argv[i+1], "stochastic-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-confidences-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
+					else if (strcmp(argv[i+1], "cut-schedule") == 0)
+						po.successorsMode = CUT_SCHEDULE;
+					else if (strcmp(argv[i+1], "cut-schedule-neighbors") == 0)
+						po.successorsMode = CUT_SCHEDULE_NEIGHBORS;
+					else if (strcmp(argv[i+1], "cut-schedule-confidences-neighbors") == 0)
+						po.successorsMode = CUT_SCHEDULE_CONFIDENCES_NEIGHBORS;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
@@ -215,7 +242,7 @@ namespace MyProgramOptions
 					po.numTrainIterations = atoi(argv[i+1]);
 					if (po.numTrainIterations <= 0)
 					{
-						cerr << "Invalid number of iterations!" << endl;
+						LOG(ERROR) << "Invalid number of iterations!";
 						HCSearch::abort();
 					}
 				}
@@ -227,9 +254,61 @@ namespace MyProgramOptions
 					po.numTestIterations = atoi(argv[i+1]);
 					if (po.numTestIterations <= 0)
 					{
-						cerr << "Invalid number of iterations!" << endl;
+						LOG(ERROR) << "Invalid number of iterations!";
 						HCSearch::abort();
 					}
+				}
+			}
+			else if (strcmp(argv[i], "--verbose") == 0)
+			{
+				po.verboseMode = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.verboseMode = false;
+				}
+			}
+			else if (strcmp(argv[i], "--bound-successor") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.boundSuccessorCandidates = atoi(argv[i+1]);
+					if (po.boundSuccessorCandidates <= 0)
+					{
+						LOG(ERROR) << "Invalid bound!";
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--cut-mode") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "state") == 0)
+						po.stochasticCutMode = STATE;
+					else if (strcmp(argv[i+1], "edges") == 0)
+						po.stochasticCutMode = EDGES;
+				}
+			}
+			else if (strcmp(argv[i], "--unique-iter") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.uniqueIterId = atoi(argv[i+1]);
+					if (po.uniqueIterId < 0)
+					{
+						LOG(ERROR) << "Unique iteration ID needs to be >= 0";
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--save-mask") == 0)
+			{
+				po.saveOutputMask = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.saveOutputMask = false;
 				}
 			}
 		}
@@ -256,26 +335,38 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
-		cerr << "\t\t\t\t(none): short-hand for H, C, COH" << endl;
+		cerr << "\t\t\t\tCRH: learn cost with random H" << endl;
+		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
+		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
 		cerr << "\t--infer arg\t" << ": inference" << endl;
 		cerr << "\t\t\t\tHC: learned heuristic and cost" << endl;
 		cerr << "\t\t\t\tHL: learned heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
-		cerr << "\t\t\t\t(none): short-hand for HC, HL, LC, LL" << endl;
+		cerr << "\t\t\t\tRL: random heuristic and oracle cost" << endl;
+		cerr << "\t\t\t\tRC: random heuristic and learned cost" << endl;
+		cerr << "\t\t\t\tALL: short-hand for HC, HL, LC, LL" << endl;
+		cerr << "\t\t\t\t(none): short-hand for HC" << endl;
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
+		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
+		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
-		cerr << "\t--successor arg\t\t" << ": flipbit|stochastic" << endl;
+		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|"
+			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
+			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
+		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
+		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
 		cerr << "Notes:" << endl;

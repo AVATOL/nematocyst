@@ -1,5 +1,7 @@
 #include <iostream>
 #include <vector>
+#include <ctime>
+#include <cmath>
 #include "MyFileSystem.hpp"
 #include "SearchSpace.hpp"
 #include "Settings.hpp"
@@ -19,6 +21,8 @@ namespace HCSearch
 		// Better to define more efficient functions for extended classes
 		return computeFeatures(X, Y).data.size();
 	}
+
+	const int ISuccessorFunction::MAX_NUM_SUCCESSOR_CANDIDATES = 1000;
 
 	/**************** Feature Functions ****************/
 
@@ -160,8 +164,16 @@ namespace HCSearch
 
 	LogRegInit::LogRegInit()
 	{
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("INITPREDSTART");
+#endif
+
 		if (Global::settings->RANK == 0)
 			trainClassifier();
+
+#ifdef USE_MPI
+		MPI::Synchronize::slavesWait("INITPREDEND");
+#endif
 	}
 
 	LogRegInit::~LogRegInit()
@@ -182,7 +194,7 @@ namespace HCSearch
 		int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
 		if (retcode != 0)
 		{
-			cerr << "[Error] Initial prediction failed!" << endl;
+			LOG(ERROR) << "Initial prediction failed!";
 			abort();
 		}
 
@@ -203,6 +215,9 @@ namespace HCSearch
 
 	void LogRegInit::eliminateIslands(ImgLabeling& Y)
 	{
+		if (!Global::settings->CLASSES.backgroundClassExists())
+			return;
+
 		const int numNodes = Y.getNumNodes();
 		for (int node = 0; node < numNodes; node++)
 		{
@@ -226,7 +241,7 @@ namespace HCSearch
 		ifstream fh(fileName.c_str());
 		if (!fh.is_open())
 		{
-			cout << "Training log reg initial function model..." << endl;
+			LOG() << "Training log reg initial function model..." << endl;
 			stringstream ssTrainInitFuncCmd;
 
 			// LOGISTIC REGRESSION
@@ -238,11 +253,11 @@ namespace HCSearch
 			// run command
 			MyFileSystem::Executable::executeRetries(ssTrainInitFuncCmd.str());
 
-			cout << "...Finished training initial function model." << endl;
+			LOG() << "...Finished training initial function model." << endl;
 		}
 		else
 		{
-			cout << "Initial function model found. Using it..." << endl;
+			LOG() << "Initial function model found. Using it..." << endl;
 			fh.close();
 		}
 	}
@@ -271,7 +286,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file for writing LIBLINEAR/LIBSVM features!" << endl;
+			LOG(ERROR) << "cannot open file for writing LIBLINEAR/LIBSVM features!";
 			abort();
 		}
 	}
@@ -305,7 +320,7 @@ namespace HCSearch
 						{
 							if (token.compare("labels") != 0)
 							{
-								cerr << "[Error] parsing invalid prediction file while trying to get liblinear confidences!" << endl;
+								LOG(ERROR) << "parsing invalid prediction file while trying to get liblinear confidences!";
 								fh.close();
 								abort();
 							}
@@ -326,12 +341,12 @@ namespace HCSearch
 					}
 					else if (numClassesFound != numClasses)
 					{
-						cerr << "[Error] number of classes found in prediction file while trying to get liblinear confidences is not correct!" << endl;
-						cerr << "\texpected: " << numClasses << endl;
-						cerr << "\tfound: " << numClassesFound << endl;
-						cerr << "\tglobal: " << Global::settings->CLASSES.numClasses() << endl;
+						LOG(ERROR) << "number of classes found in prediction file while trying to get liblinear confidences is not correct!" << endl
+							<< "\texpected: " << numClasses << endl
+							<< "\tfound: " << numClassesFound << endl
+							<< "\tglobal: " << Global::settings->CLASSES.numClasses();
 
-						cerr << "[Error] parsing invalid prediction file while trying to get liblinear confidences!" << endl;
+						LOG(ERROR) << "parsing invalid prediction file while trying to get liblinear confidences!";
 						fh.close();
 						abort();
 					}
@@ -370,7 +385,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file for reading LIBLINEAR/LIBSVM confidences!" << endl;
+			LOG(ERROR) << "cannot open file for reading LIBLINEAR/LIBSVM confidences!";
 			abort();
 		}
 	}
@@ -399,11 +414,19 @@ namespace HCSearch
 
 	/**************** Successor Functions ****************/
 
+	/**************** Flipbit Successor Function ****************/
+
 	const int FlipbitSuccessor::NUM_TOP_LABELS_KEEP = 2;
 	const double FlipbitSuccessor::BINARY_CONFIDENCE_THRESHOLD = 0.75;
 
 	FlipbitSuccessor::FlipbitSuccessor()
 	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+	}
+
+	FlipbitSuccessor::FlipbitSuccessor(int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 	}
 
 	FlipbitSuccessor::~FlipbitSuccessor()
@@ -412,6 +435,8 @@ namespace HCSearch
 	
 	vector< ImgLabeling > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
+		clock_t tic = clock();
+
 		vector<ImgLabeling> successors;
 
 		// for all nodes
@@ -420,16 +445,12 @@ namespace HCSearch
 		{
 			// set up candidate label set
 			set<int> candidateLabelsSet;
-
-			// add only neighboring labels to candidate label set
 			int nodeLabel = YPred.getLabel(node);
 			candidateLabelsSet.insert(nodeLabel);
-			set<int> neighborLabels = YPred.getNeighborLabels(node);
-			for (set<int>::iterator it2 = neighborLabels.begin(); 
-				it2 != neighborLabels.end(); ++it2)
-			{
-				candidateLabelsSet.insert(*it2);
-			}
+
+			// flip to any possible class
+			candidateLabelsSet = Global::settings->CLASSES.getLabels();
+
 			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
 
 			// for each candidate label, add to successors list for returning
@@ -453,23 +474,135 @@ namespace HCSearch
 			}
 		}
 
-		cout << "num successors=" << successors.size() << endl;
+		LOG() << "num successors=" << successors.size() << endl;
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
 		return successors;
 	}
 
+	/**************** Flipbit Neighbor Successor Function ****************/
+
+	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+	}
+
+	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor(int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+	}
+
+	FlipbitNeighborSuccessor::~FlipbitNeighborSuccessor()
+	{
+	}
+	
+	vector< ImgLabeling > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		vector<ImgLabeling> successors;
+
+		// for all nodes
+		const int numNodes = YPred.getNumNodes();
+		for (int node = 0; node < numNodes; node++)
+		{
+			// set up candidate label set
+			set<int> candidateLabelsSet;
+			int nodeLabel = YPred.getLabel(node);
+			candidateLabelsSet.insert(nodeLabel);
+
+			if (YPred.hasNeighbors(node))
+			{
+				// add only neighboring labels to candidate label set
+				set<int> neighborLabels = YPred.getNeighborLabels(node);
+				for (set<int>::iterator it2 = neighborLabels.begin(); 
+					it2 != neighborLabels.end(); ++it2)
+				{
+					candidateLabelsSet.insert(*it2);
+				}
+			}
+			else
+			{
+				// if node is isolated without neighbors, then flip to any possible class
+				candidateLabelsSet = Global::settings->CLASSES.getLabels();
+			}
+
+			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
+
+			// for each candidate label, add to successors list for returning
+			for (set<int>::iterator it2 = candidateLabelsSet.begin(); it2 != candidateLabelsSet.end(); ++it2)
+			{
+				int candidateLabel = *it2;
+
+				// form successor object
+				LabelGraph graphNew;
+				graphNew.nodesData = YPred.graph.nodesData;
+				graphNew.nodesData(node) = candidateLabel; // flip bit node
+				graphNew.adjList = YPred.graph.adjList;
+
+				ImgLabeling YNew;
+				YNew.confidences = YPred.confidences;
+				YNew.confidencesAvailable = YPred.confidencesAvailable;
+				YNew.graph = graphNew;
+
+				// add candidate to successors
+				successors.push_back(YNew);
+			}
+		}
+
+		LOG() << "num successors=" << successors.size() << endl;
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	/**************** Stochastic Successor Function ****************/
+
+	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
 	}
 
-	StochasticSuccessor::StochasticSuccessor(double cutParam)
+	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
 	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
 		this->cutParam = cutParam;
-		this->cutEdgesIndependently = true;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()
@@ -478,18 +611,40 @@ namespace HCSearch
 	
 	vector< ImgLabeling > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
-		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
-		cout << "Using threshold=" << threshold << endl;
+		clock_t tic = clock();
 
+		// generate random threshold
+		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
+		LOG() << "Using threshold=" << threshold << endl;
+
+		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
 
-		cout << "generating successors..." << endl;
+		LOG() << "generating successors..." << endl;
 
+		// generate candidates
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
-		cout << "num successors=" << successors.size() << endl;
+		LOG() << "num successors=" << successors.size() << endl;
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
 
 		delete subgraphs;
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
 		return successors;
 	}
 
@@ -576,7 +731,7 @@ namespace HCSearch
 		Ycopy.confidencesAvailable = YPred.confidencesAvailable;
 		Ycopy.graph = YPred.graph;
 
-		cout << "Getting subgraphs..." << endl;
+		LOG() << "Getting subgraphs..." << endl;
 
 		MyGraphAlgorithms::SubgraphSet* subgraphs = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
 
@@ -593,6 +748,8 @@ namespace HCSearch
 		vector< ImgLabeling > successors;
 
 		// loop over each sub graph
+		int cumSumLabels = 0;
+		int numSumLabels = 0;
 		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
 		{
 			Subgraph* sub = *it;
@@ -603,9 +760,20 @@ namespace HCSearch
 			{
 				ConnectedComponent* cc = *it2;
 
-				// loop over each neighbor label
-				set<int> neighborLabels = cc->getNeighborLabels();
-				for (set<int>::iterator it3 = neighborLabels.begin(); it3 != neighborLabels.end(); ++it3)
+				set<int> candidateLabelsSet;
+				int nodeLabel = cc->getLabel();
+				candidateLabelsSet.insert(nodeLabel);
+				
+				// get labels
+				getLabels(candidateLabelsSet, cc);
+				
+				candidateLabelsSet.erase(nodeLabel);
+
+				cumSumLabels += candidateLabelsSet.size();
+				numSumLabels++;
+
+				// loop over each candidate label
+				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
 				{
 					int label = *it3;
 
@@ -630,14 +798,55 @@ namespace HCSearch
 			}
 		}
 
+		if (numSumLabels > 0)
+			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
+
 		return successors;
+	}
+
+	void StochasticSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getAllLabels(candidateLabelsSet, cc);	
+	}
+
+	void StochasticSuccessor::getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		// flip to any possible class
+		candidateLabelsSet = Global::settings->CLASSES.getLabels();
+	}
+
+	void StochasticSuccessor::getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		if (cc->hasNeighbors())
+		{
+			// add only neighboring labels to candidate label set
+			set<int> neighborSet = cc->getNeighborLabels();
+			candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
+		}
+		else
+		{
+			// if connected component is isolated without neighboring connected components, then flip to any possible class
+			candidateLabelsSet = Global::settings->CLASSES.getLabels();
+		}
+	}
+
+	void StochasticSuccessor::getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
+		candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
+		if (cc->hasNeighbors())
+		{
+			// add only neighboring labels to candidate label set
+			set<int> neighborSet = cc->getNeighborLabels();
+			candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
+		}
 	}
 
 	double StochasticSuccessor::computeKL(const VectorXd& p, const VectorXd& q)
 	{
 		if (p.size() != q.size())
 		{
-			cerr << "dimensions of p and q are not the same!" << endl;
+			LOG(WARNING) << "dimensions of p and q are not the same!" << endl;
 		}
 
 		double KL = 0;
@@ -661,6 +870,283 @@ namespace HCSearch
 		}
 
 		return KL;
+	}
+
+	/**************** Stochastic Neighbor Successor Function ****************/
+
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+	}
+
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+	}
+
+	StochasticNeighborSuccessor::~StochasticNeighborSuccessor()
+	{
+	}
+
+	void StochasticNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getNeighborLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Stochastic Confidences Neighbor Successor Function ****************/
+
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = true;
+	}
+
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+	}
+
+	StochasticConfidencesNeighborSuccessor::~StochasticConfidencesNeighborSuccessor()
+	{
+	}
+
+	void StochasticConfidencesNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Cut Schedule Successor Function ****************/
+
+	const int CutScheduleSuccessor::NUM_GOOD_SUBGRAPHS_THRESHOLD = 8;
+	const double CutScheduleSuccessor::FINAL_THRESHOLD = 0.975;
+	const double CutScheduleSuccessor::THRESHOLD_INCREMENT = 0.025;
+
+	CutScheduleSuccessor::CutScheduleSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleSuccessor::CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleSuccessor::~CutScheduleSuccessor()
+	{
+	}
+	
+	vector< ImgLabeling > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		double threshold = 0.025;
+
+		// perform cut
+		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+
+		LOG() << "generating successors..." << endl;
+
+		// generate candidates
+		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+
+		LOG() << "num successors=" << successors.size() << endl;
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
+
+		delete subgraphs;
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	MyGraphAlgorithms::SubgraphSet* CutScheduleSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	{
+		MyGraphAlgorithms::SubgraphSet* subgraphs = NULL;
+
+		const int numNodes = X.getNumNodes();
+		map< int, set<int> > edges = YPred.graph.adjList;
+
+		// convert to format storing (node1, node2) pairs
+		vector< MyPrimitives::Pair< int, int > > edgeNodes;
+
+		// edge weights using KL divergence measure
+		vector<double> edgeWeights;
+
+		// iterate over all edges to store
+		for (map< int, set<int> >::iterator it = edges.begin();
+			it != edges.end(); ++it)
+		{
+			int node1 = it->first;
+			set<int> neighbors = it->second;
+		
+			// loop over neighbors
+			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+			{
+				int node2 = *it2;
+
+				// get features and labels
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+				// compute weights already
+				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				edgeWeights.push_back(weight);
+
+				// add
+				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+				edgeNodes.push_back(nodePair);
+			}
+		}
+		
+		// increase threshold until good cuts; also cut by state
+		for (double thresholdAttempt = threshold; thresholdAttempt <= 1.0; thresholdAttempt += THRESHOLD_INCREMENT)
+		{
+			// store new cut edges
+			map< int, set<int> > cutEdges;
+
+			LOG() << "Attempting threshold=" << thresholdAttempt << endl;
+			// given the edge weights, do the actual cutting!
+			const int numEdges = edgeNodes.size();
+			for (int i = 0; i < numEdges; i++)
+			{
+				MyPrimitives::Pair< int, int > nodePair = edgeNodes[i];
+				int node1 = nodePair.first;
+				int node2 = nodePair.second;
+
+				bool decideToCut;
+				if (!cutEdgesIndependently)
+				{
+					// uniform state
+					decideToCut = edgeWeights[i] <= thresholdAttempt;
+				}
+				else
+				{
+					// bernoulli independent
+					double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
+					decideToCut = biasedCoin <= 1-edgeWeights[i];
+				}
+
+				if (!decideToCut)
+				{
+					// keep these uncut edges
+					if (cutEdges.count(node1) == 0)
+					{
+						cutEdges[node1] = set<int>();
+					}
+					if (cutEdges.count(node2) == 0)
+					{
+						cutEdges[node2] = set<int>();
+					}
+					cutEdges[node1].insert(node2);
+					cutEdges[node2].insert(node1);
+				}
+			}
+
+			// create subgraphs
+			ImgLabeling Ycopy;
+			Ycopy.confidences = YPred.confidences;
+			Ycopy.confidencesAvailable = YPred.confidencesAvailable;
+			Ycopy.graph = YPred.graph;
+
+			MyGraphAlgorithms::SubgraphSet* subgraphsTemp = new MyGraphAlgorithms::SubgraphSet(Ycopy, cutEdges);
+
+			LOG() << "\tnum exactly one positive cc subgraphs=" << subgraphsTemp->getExactlyOnePositiveCCSubgraphs().size() << endl;
+			if (subgraphsTemp->getExactlyOnePositiveCCSubgraphs().size() > NUM_GOOD_SUBGRAPHS_THRESHOLD)
+			{
+				subgraphs = subgraphsTemp;
+				break;
+			}
+
+			if (thresholdAttempt >= FINAL_THRESHOLD)
+			{
+				cout << "reached final threshold" << endl;
+				subgraphs = subgraphsTemp;
+				break;
+			}
+
+			delete subgraphsTemp;
+		}
+
+		return subgraphs;
+	}
+
+	void CutScheduleSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getAllLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Cut Schedule Neighbor Successor Function ****************/
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::~CutScheduleNeighborSuccessor()
+	{
+	}
+	
+	void CutScheduleNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getNeighborLabels(candidateLabelsSet, cc);	
+	}
+
+	/**************** Cut Schedule Confidences Neighbor Successor Function ****************/
+
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleConfidencesNeighborSuccessor::~CutScheduleConfidencesNeighborSuccessor()
+	{
+	}
+	
+	void CutScheduleConfidencesNeighborSuccessor::getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc)
+	{
+		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
 	/**************** Loss Functions ****************/
@@ -720,7 +1206,7 @@ namespace HCSearch
 	{
 		if (this->heuristicFeatureFunction == NULL)
 		{
-			cerr << "[Error] heuristic feature function is null" << endl;
+			LOG(ERROR) << "heuristic feature function is null";
 			abort();
 		}
 
@@ -731,7 +1217,7 @@ namespace HCSearch
 	{
 		if (this->costFeatureFunction == NULL)
 		{
-			cerr << "[Error] cost feature function is null" << endl;
+			LOG(ERROR) << "cost feature function is null";
 			abort();
 		}
 
@@ -742,7 +1228,7 @@ namespace HCSearch
 	{
 		if (this->initialPredictionFunction == NULL)
 		{
-			cerr << "[Error] initial pred feature function is null" << endl;
+			LOG(ERROR) << "initial pred feature function is null";
 			abort();
 		}
 
@@ -753,7 +1239,7 @@ namespace HCSearch
 	{
 		if (this->successorFunction == NULL)
 		{
-			cerr << "[Error] successor function is null" << endl;
+			LOG(ERROR) << "successor function is null";
 			abort();
 		}
 
@@ -764,7 +1250,7 @@ namespace HCSearch
 	{
 		if (this->lossFunction == NULL)
 		{
-			cerr << "[Error] loss function is null" << endl;
+			LOG(ERROR) << "loss function is null";
 			abort();
 		}
 

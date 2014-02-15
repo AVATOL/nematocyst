@@ -10,7 +10,6 @@ namespace HCSearch
 	namespace Global
 	{
 		Settings* settings = NULL;
-		MyLogger::Logger* log = NULL;
 	}
 
 	namespace Rand
@@ -30,10 +29,10 @@ namespace HCSearch
 	void abort(int errcode)
 	{
 #ifdef USE_MPI
-		cerr << "Process [" << Global::settings->RANK << "] is aborting!" << endl;
+		LOG(ERROR) << "Process [" << Global::settings->RANK << "] is aborting!";
 		MPI_Abort(MPI_COMM_WORLD, errcode);
 #else
-		cerr << "Aborting program!" << endl;
+		LOG(ERROR) << "Aborting program!";
 		exit(errcode);
 #endif
 	}

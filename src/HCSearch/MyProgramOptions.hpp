@@ -18,7 +18,9 @@ namespace MyProgramOptions
 		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
 		enum FeaturesMode { STANDARD };
 		enum InitialFunctionMode { LOG_REG };
-		enum SuccessorsMode { FLIPBIT, STOCHASTIC };
+		enum SuccessorsMode { FLIPBIT, FLIPBIT_NEIGHBORS, 
+			STOCHASTIC, STOCHASTIC_NEIGHBORS, STOCHASTIC_CONFIDENCES_NEIGHBORS, 
+			CUT_SCHEDULE, CUT_SCHEDULE_NEIGHBORS, CUT_SCHEDULE_CONFIDENCES_NEIGHBORS };
 		enum LossMode { HAMMING };
 
 		enum StochasticCutMode { STATE, EDGES };
@@ -57,6 +59,10 @@ namespace MyProgramOptions
 		bool saveFeaturesFiles;
 		int numTrainIterations;
 		int numTestIterations;
+		bool verboseMode;
+		int boundSuccessorCandidates;
+		int uniqueIterId;
+		bool saveOutputMask;
 
 	public:
 		ProgramOptions();

@@ -13,8 +13,3 @@
  * - Unloading dataset
  */
 void demo(int timeBound);
-
-/*!
- * Helper to set up the search space.
- */
-HCSearch::SearchSpace* setupSearchSpace();

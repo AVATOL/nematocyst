@@ -50,7 +50,11 @@ This should create some files in `$RESULTS$/results`
 
 Note: MATLAB is required.
 
-In development.
+1. Create a folder to put the postprocessed dataset in; call this folder `$POSTPROCESSED$`.
+2. Open in MATLAB, make sure LIBSVM is set up properly, and run the following command in MATLAB. This should create visualization files and folders in the `$POSTPROCESSED$` folder.
+```
+visualize_results('$ROOT$/DataRaw/SomeDataset', '$ROOT$/DataPreprocessed/SomeDataset', '$ROOT$/Results/SomeExperiment', '$ROOT$/ResultsPostprocessed/SomeExperiment', 0:4, 0);
+```
 
 ## Installation Instructions
 
@@ -73,16 +77,24 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
-	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
+		3. Set up in MATLAB (optional - if you use postprocessing modules):
+			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+			2. Run the `make` command in MATLAB.
+			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/vlfeat`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
+		3. Set up in MATLAB:
+			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+			2. Run the `vl_setup` command in MATLAB.
+			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
 2. Run the provided binary executable `HCSearch.exe` (make sure it is in the top-most directory containing this README).
 3. If you prefer to compile from source...
 	1. Open `$ROOT$/src/HCSearch.sln` in Microsoft Visual Studio 2012 or later.
@@ -108,18 +120,26 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 		2. Unpack to `$ROOT$/external/liblinear`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
 		3. Compile by running `make` in `$ROOT$/external/liblinear`
-	- LIBSVM (Optional - if you use SVM for initial state in HCSearch)
+	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
 		3. Compile by running `make` in `$ROOT$/external/libsvm`
+		4. Set up in MATLAB (optional - if you use postprocessing modules):
+			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
+			2. Run the `make` command in MATLAB.
+			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
 	- VLFeat (Optional - if you use preprocessing modules)
 		1. Download from http://www.vlfeat.org/
 			- Version 0.9.18 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/vlfeat`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
-2. Compile from source by running `make` in the `$ROOT$/src` directory. It should create the binary file `$ROOT$/HCSearch`.
+		3. Set up in MATLAB:
+			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
+			2. Run the `vl_setup` command in MATLAB.
+			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
+2. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
 
 ## Reference
 
@@ -134,25 +154,35 @@ Main options:
 				H: learn heuristic
 				C: learn cost
 				COH: learn cost with oracle H
-				(none): short-hand for H, C, COH
+				CRH: learn cost with random H
+				ALL: short-hand for H, C, COH
+				(none): short-hand for H, C
 	--infer arg	: inference
 				HC: learned heuristic and cost
 				HL: learned heuristic and oracle cost
 				LC: oracle heuristic and learned cost
 				LL: oracle heuristic and cost
-				(none): short-hand for HC, HL, LC, LL
+				RL: random heuristic and oracle cost
+				RC: random heuristic and learned cost
+				ALL: short-hand for HC, HL, LC, LL
+				(none): short-hand for HC
 
 Advanced options:
-	--anytime arg			: turn on  saving anytime predictions if true
-	--beam-size arg			: beam size for beam search
-	--cut-param arg			: temperature parameter for stochastic cuts
+	--anytime arg		: turn on saving anytime predictions if true
+	--beam-size arg		: beam size for beam search
+	--bound-successor arg	: maximum number of successor candidates (default=1000)
+	--cut-mode arg		: edges|state (cut edges by edges independently or by state)
+	--cut-param arg		: temperature parameter for stochastic cuts
 	--num-test-iters arg	: number of test iterations
 	--num-train-iters arg	: number of training iterations
-	--learner arg			: svmrank|online
-	--save-features arg		: save rank features during learning if true
-	--search arg			: greedy|breadthbeam|bestbeam
-	--splits-path arg		: specify alternate path to splits folder
-	--successor arg			: flipbit|stochastic
+	--learner arg		: svmrank|online
+	--save-features arg	: save rank features during learning if true
+	--save-mask arg		: save final prediction label masks if true
+	--search arg		: greedy|breadthbeam|bestbeam
+	--splits-path arg	: specify alternate path to splits folder
+	--successor arg		: flipbit|flipbit-neighbors|stochastic|stochastic-neighbors|stochastic-confidences-neighbors|cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors
+	--unique-iter arg	: unique iteration ID (num-test-iters needs to be 1)
+	--verbose arg		: turn on verbose output if true
 
 Notes:
 * The first three arguments are required. They are the input directory, output directory and time bound.
@@ -176,7 +206,7 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 %	imagesPath:	folder path to images folder of *.jpg images
 %                   e.g. 'DataRaw/SomeDataset/Images'
 %	labelsPath:	folder path to groundtruth folder of *.jpg label masks
-%                   e.g. 'DataRaw/SomeDataset/Groundtruth'
+%                   e.g. 'DataRaw/SomeDataset/Annotations'
 %	splitsPath:	folder path that contains Train.txt,
 %               Validation.txt, Test.txt
 %                   e.g. 'DataRaw/SomeDataset/Splits'
@@ -184,6 +214,30 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 %                   e.g. 'DataPreprocessed/SomeDataset'
 %
 %	allData:	data structure containing all preprocessed data
+```
+
+### Postprocessing Module
+
+The main visualization postprocessing module is `postprocess/visualize_results.m`:
+
+```
+function visualize_results( rawDir, preprocessedDir, resultsDir, outputDir, label2color, timeRange, foldRange, searchTypes, splitsName, allData )
+%VISUALIZE_RESULTS Visualize results folder.
+%
+%	rawDir:             folder path containing original images and annotations
+%                           e.g. 'DataRaw/SomeDataset'
+%	preprocessedDir:	folder path containing preprocessed data
+%                           e.g. 'DataPreprocessed/SomeDataset'
+%	resultsDir:         folder path containing HC-Search results
+%                           e.g. 'Results/SomeExperiment'
+%	outputDir:          folder path to output visualization
+%                           e.g. 'ResultsPostprocessed/SomeExperiment'
+%   label2color:        mapping from labels to colors (use containers.Map)
+%   timeRange:          range of time bound
+%   foldRange:          range of folds
+%   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
+%   splitsName:         (optional) alternate name to splits folder
+%	allData:            (optional) data structure containing all preprocessed data
 ```
 
 ## Technical Documentation

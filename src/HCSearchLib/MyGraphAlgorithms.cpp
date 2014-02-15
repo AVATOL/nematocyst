@@ -1,4 +1,5 @@
 #include "MyGraphAlgorithms.hpp"
+#include "Globals.hpp"
 
 namespace MyGraphAlgorithms
 {
@@ -122,6 +123,95 @@ namespace MyGraphAlgorithms
 		return labels;
 	}
 
+	set<int> ConnectedComponent::getTopConfidentLabels(int K)
+	{
+		// check if confidences are available
+		HCSearch::ImgLabeling original = this->ccSet->getOriginalLabeling();
+		const int numLabels = original.confidences.cols();
+		if (!original.confidencesAvailable)
+		{
+			LOG(WARNING) << "confidences not available to get top K confident labels.";
+			return set<int>();
+		}
+
+		// bad cases
+		if (K > numLabels)
+		{
+			return HCSearch::Global::settings->CLASSES.getLabels();
+		}
+		else if (K == 0)
+		{
+			return set<int>();
+		}
+		else if (K < 0)
+		{
+			LOG(ERROR) << "K cannot be negative!";
+			HCSearch::abort();
+		}
+
+		set<int> labels;
+		labels.insert(this->label);
+
+		// get nodes in connected component
+		for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			int node1 = *it;
+
+			// get top K confident labels
+			LabelConfidencePQ sortedByConfidence;
+			for (int i = 0; i < numLabels; i++)
+			{
+				int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+				double confidence = original.confidences(node1, i);
+				sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+			}
+			for (int i = 0; i < K; i++)
+			{
+				MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+				sortedByConfidence.pop();
+				labels.insert(p.first);
+			}
+		}
+
+		labels.erase(this->label);
+		return labels;
+	}
+
+	bool ConnectedComponent::hasNeighbors()
+	{
+		bool hasNeighbors = false;
+
+		HCSearch::ImgLabeling original = this->ccSet->getOriginalLabeling();
+
+		// get nodes in connected component
+		for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+		{
+			int node1 = *it;
+			
+			// get neighbors
+			set<int> neighbors = original.graph.adjList[node1];
+			set<int> uniqueNeighbors;
+
+			// find left overs to see if "outside" neighbors of connected component exist
+			set_difference(neighbors.begin(), neighbors.end(), 
+				nodes.begin(), nodes.end(), 
+				inserter(uniqueNeighbors, uniqueNeighbors.end()));
+
+			if (!uniqueNeighbors.empty())
+			{
+				hasNeighbors = true;
+				break;
+			}
+		}
+
+		return hasNeighbors;
+	}
+
+	bool ConnectedComponent::CompareByConfidence::operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const
+	{
+		return lhs.second < rhs.second;
+	}
+
 	/**************** Connected Component Set ****************/
 	
 	ConnectedComponentSet::ConnectedComponentSet()
@@ -134,6 +224,9 @@ namespace MyGraphAlgorithms
 		this->original = labeling;
 
 		const int numNodes = this->original.getNumNodes();
+
+		int numForeground = 0;
+		ConnectedComponent* foregroundCC = NULL;
 
 		// first pass: union-find
 		DisjointSet ds = DisjointSet(numNodes);
@@ -171,6 +264,12 @@ namespace MyGraphAlgorithms
 			if (ccs.count(index) == 0)
 			{
 				ccs[index] = new ConnectedComponent(this);
+
+				if (!HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
+				{
+					numForeground++;
+					foregroundCC = ccs[index];
+				}
 			}
 			ccs[index]->addNode(node);
 		}
@@ -182,6 +281,17 @@ namespace MyGraphAlgorithms
 			ConnectedComponent* cc = it->second;
 			this->connectedComponents.push_back(cc);
 		}
+
+		if (numForeground == 1)
+		{
+			this->exactlyOnePositiveCC = true;
+			this->foreground = foregroundCC;
+		}
+		else
+		{
+			this->exactlyOnePositiveCC = false;
+			this->foreground = NULL;
+		}
 	}
 
 	ConnectedComponentSet::ConnectedComponentSet(Subgraph* subgraph)
@@ -190,6 +300,9 @@ namespace MyGraphAlgorithms
 		this->original = subgraph->getOriginalLabeling();
 
 		const int numNodes = this->original.getNumNodes();
+
+		int numForeground = 0;
+		ConnectedComponent* foregroundCC = NULL;
 
 		// first pass: union-find
 		DisjointSet ds = DisjointSet(numNodes);
@@ -236,6 +349,12 @@ namespace MyGraphAlgorithms
 			if (ccs.count(index) == 0)
 			{
 				ccs[index] = new ConnectedComponent(this);
+
+				if (!HCSearch::Global::settings->CLASSES.classLabelIsBackground(this->original.getLabel(node)))
+				{
+					numForeground++;
+					foregroundCC = ccs[index];
+				}
 			}
 			ccs[index]->addNode(node);
 		}
@@ -246,6 +365,17 @@ namespace MyGraphAlgorithms
 		{
 			ConnectedComponent* cc = it->second;
 			this->connectedComponents.push_back(cc);
+		}
+
+		if (numForeground == 1)
+		{
+			this->exactlyOnePositiveCC = true;
+			this->foreground = foregroundCC;
+		}
+		else
+		{
+			this->exactlyOnePositiveCC = false;
+			this->foreground = NULL;
 		}
 	}
 
@@ -271,6 +401,11 @@ namespace MyGraphAlgorithms
 	vector< ConnectedComponent* > ConnectedComponentSet::getConnectedComponents()
 	{
 		return this->connectedComponents;
+	}
+
+	bool ConnectedComponentSet::hasExactlyOnePositiveCC()
+	{
+		return this->exactlyOnePositiveCC;
 	}
 
 	/**************** Subgraphs ****************/
@@ -320,6 +455,11 @@ namespace MyGraphAlgorithms
 		return this->connectedComponents->getConnectedComponents();
 	}
 
+	bool Subgraph::hasExactlyOnePositiveCC()
+	{
+		return this->connectedComponents->hasExactlyOnePositiveCC();
+	}
+
 	/**************** Subgraph Set ****************/
 
 	SubgraphSet::SubgraphSet()
@@ -364,7 +504,6 @@ namespace MyGraphAlgorithms
 			// record subgraphs
 			if (subgraphs.count(index) == 0)
 			{
-				//cout << "new subgraph." << endl;
 				subgraphs[index] = new Subgraph(this);
 			}
 			subgraphs[index]->addNode(node);
@@ -378,6 +517,11 @@ namespace MyGraphAlgorithms
 			Subgraph* sub = it->second;
 			sub->processConnectedComponents();
 			this->subgraphs.push_back(sub);
+
+			if (sub->hasExactlyOnePositiveCC())
+			{
+				this->exactlyOnePositiveCCSubgraphs.push_back(sub);
+			}
 		}
 	}
 
@@ -408,5 +552,10 @@ namespace MyGraphAlgorithms
 	map< int, set<int> > SubgraphSet::getCuts()
 	{
 		return this->cuts;
+	}
+
+	vector< Subgraph* > SubgraphSet::getExactlyOnePositiveCCSubgraphs()
+	{
+		return this->exactlyOnePositiveCCSubgraphs;
 	}
 }

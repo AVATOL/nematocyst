@@ -44,7 +44,28 @@ namespace MyFileSystem
 
 	int FileSystem::copyFile(string src, string dest)
 	{
+		if (src.compare(dest) == 0)
+		{
+			LOG(WARNING) << "copy src and dest the same." << endl;
+			return 0;
+		}
+
 		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " " + src + " " + dest);
+	}
+
+	int FileSystem::deleteFile(string path)
+	{
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_RM_CMD + " " + path);
+	}
+
+	bool FileSystem::checkFileExists(string path)
+	{
+		if (FILE *file = fopen(path.c_str(), "r")) {
+			fclose(file);
+			return true;
+		} else {
+			return false;
+		}
 	}
 
 	/**************** Executable ****************/
@@ -57,7 +78,7 @@ namespace MyFileSystem
 
 		if (retcode != 0)
 		{
-			cerr << "[Warning] executable cmd '" << cmd << "' returned error code " << retcode << "!" << endl;
+			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "!";
 		}
 
 		return retcode;
@@ -69,15 +90,15 @@ namespace MyFileSystem
 		int numRemainingTries = numRetries;
 		while (retcode != 0 && numRemainingTries > 0)
 		{
-			cerr << "[Warning] executable cmd '" << cmd << "' returned error code " << retcode << "!" << endl;
-			cerr << "Retrying " << numRemainingTries << " more times..." << endl;
+			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! " 
+				<< "Retrying " << numRemainingTries << " more times...";
 			retcode = system(cmd.c_str());
 			numRemainingTries--;
 		}
 
 		if (retcode != 0)
 		{
-			cerr << "[Warning] after " << numRetries << " retries, executable cmd '" << cmd << "' still unable to succeed! Returned error code " << retcode << "!" << endl;
+			LOG(WARNING) << "after " << numRetries << " retries, executable cmd '" << cmd << "' still unable to succeed! Returned error code " << retcode << "!";
 		}
 
 		return retcode;

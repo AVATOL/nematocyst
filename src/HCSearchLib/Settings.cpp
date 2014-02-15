@@ -2,17 +2,21 @@
 #include <sstream>
 #include <cstdlib>
 #include "Settings.hpp"
+#include "MyLogger.hpp"
 
 namespace HCSearch
 {
 	/**************** Constants ****************/
 
 	const string RankerTypeStrings[] = {"svm-rank", "online"};
+	const bool RankerTypeSaveable[] = {true, false};
 
 	/**************** Class Map ****************/
 
 	ClassMap::ClassMap()
 	{
+		this->numBackground = 0;
+		this->backgroundExists = false;
 	}
 
 	ClassMap::~ClassMap()
@@ -33,7 +37,7 @@ namespace HCSearch
 	{
 		if (!this->allClasses.iexists(classLabel))
 		{
-			cerr << "[Error] class label does not exist in mapping: " << classLabel << endl;
+			LOG(ERROR) << "class label does not exist in mapping: " << classLabel;
 			exit(1);
 		}
 
@@ -42,9 +46,9 @@ namespace HCSearch
 
 	int ClassMap::getClassLabel(int classIndex)
 	{
-		if (!this->allClasses.iexists(classIndex))
+		if (!this->allClasses.exists(classIndex))
 		{
-			cerr << "[Error] class index does not exist in mapping: " << classIndex << endl;
+			LOG(ERROR) << "class index does not exist in mapping: " << classIndex;
 			exit(1);
 		}
 
@@ -92,15 +96,20 @@ namespace HCSearch
 		return foregrounds;
 	}
 
+	bool ClassMap::backgroundClassExists()
+	{
+		return this->backgroundExists;
+	}
+
 	int ClassMap::getBackgroundLabel()
 	{
-		if (backgroundExists)
+		if (backgroundClassExists())
 		{
 			return this->backgroundLabel;
 		}
 		else
 		{
-			cerr << "[Error] background does not exist in this problem!" << endl;
+			LOG(ERROR) << "background does not exist in this problem!";
 			exit(1);
 			return 0;
 		}
@@ -119,7 +128,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] class already exists!" << endl;
+			LOG(ERROR) << "class already exists!";
 		}
 	}
 
@@ -128,6 +137,40 @@ namespace HCSearch
 		this->backgroundLabel = classLabel;
 		this->backgroundExists = true;
 	}
+
+	/**************** Run-time Statistics ****************/
+
+	RunTimeStats::RunTimeStats()
+	{
+		resetSuccessorCount();
+	}
+
+	RunTimeStats::~RunTimeStats()
+	{
+	}
+
+	void RunTimeStats::addSuccessorCount(int count)
+	{
+		this->cumSumSuccessors += count;
+		this->numSumSuccessors++;
+	}
+
+	double RunTimeStats::getSuccessorAverage()
+	{
+		if (numSumSuccessors == 0)
+		{
+			return -1;
+		}
+
+		return 1.0*cumSumSuccessors/numSumSuccessors;
+	}
+
+	void RunTimeStats::resetSuccessorCount()
+	{
+		this->cumSumSuccessors = 0;
+		this->numSumSuccessors = 0;
+	}
+
 
 	/**************** Directory/File Paths Class ****************/
 
@@ -152,6 +195,18 @@ namespace HCSearch
 		// input directories
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
+
+		// output directories
+
+		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
+		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
+		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
+		OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE = "cost_randomH_features";
+
+		OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE = "heuristic_online_weights";
+		OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE = "cost_H_online_weights";
+		OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE = "cost_oracleH_online_weights";
+		OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE = "cost_randomH_online_weights";
 	}
 
 	Paths::~Paths()
@@ -193,10 +248,12 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
+		this->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_randomH.txt";
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
+		this->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_randomH.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -208,13 +265,15 @@ namespace HCSearch
 		this->paths->OUTPUT_INITFUNC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "init_func_features", rankID);
 		this->paths->OUTPUT_INITFUNC_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "init_func_predict", rankID);
 
-		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristic_features", rankID);
-		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_H_features", rankID);
-		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_oracleH_features", rankID);
+		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE, rankID);
+		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
+		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
+		this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE, rankID);
 
-		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "heuristic_online_weights", rankID);
-		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_H_online_weights", rankID);
-		this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "cost_oracleH_model.txt", rankID);
+		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE, rankID);
+		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
+		this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
+		this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
@@ -276,6 +335,10 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
+		PRUNE_SVM_RANK_EXAMPLES = false;
+		PRUNE_SVM_RANK_RATIO = 0.25;
+		PRUNE_SVM_RANK_MIN_EXAMPLES = 10;
+		PRUNE_SVM_RANK_MAX_EXAMPLES = 100;
 
 		/**************** Experiment Settings ****************/
 
@@ -293,15 +356,14 @@ namespace HCSearch
 
 		paths = new Paths();
 		cmds = new Commands(paths);
+		stats = new RunTimeStats();
 	}
 
 	Settings::~Settings()
 	{
 		delete cmds;
-		cmds = NULL;
-
 		delete paths;
-		paths = NULL;
+		delete stats;
 	}
 
 	void Settings::refresh(string dataDir, string experimentDir)

@@ -1,4 +1,5 @@
 #include <iostream>
+#include <ctime>
 #include "HCSearch.hpp"
 #include "MyFileSystem.hpp"
 
@@ -16,7 +17,7 @@ namespace HCSearch
 		int rc = MPI_Init(&argc, &argv);
 		if (rc != MPI_SUCCESS)
 		{
-			cerr << "error starting MPI program. Terminating." << endl;
+			LOG(ERROR) << "error starting MPI program. Terminating.";
 			exit(1);
 		}
 
@@ -32,7 +33,7 @@ namespace HCSearch
 		Global::settings->NUM_PROCESSES = size;
 		Global::settings->MPI_STATUS = new MPI_Status();
 
-		cout << "Process [" << Global::settings->RANK << "/" 
+		LOG() << "Process [" << Global::settings->RANK << "/" 
 			<< Global::settings->NUM_PROCESSES 
 			<< "]: MPI initialized!" << endl << endl;
 #else
@@ -46,25 +47,29 @@ namespace HCSearch
 		Global::settings->refresh(MyFileSystem::FileSystem::normalizeDirString(datasetPath), 
 			MyFileSystem::FileSystem::normalizeDirString(outputPath));
 
-		// set classes
-		setClasses();
-
 		// create output folders
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_TEMP_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_RESULTS_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_LOGS_DIR);
 		MyFileSystem::FileSystem::createFolder(Global::settings->paths->OUTPUT_MODELS_DIR);
+
+		// set up logging
+		MyLogger::Logger::initialize(Global::settings->RANK, Global::settings->NUM_PROCESSES, Global::settings->paths->OUTPUT_LOG_FILE);
+
+		// set classes
+		setClasses();
 	}
 
 	void Setup::finalize()
 	{
 #ifdef USE_MPI
+		MPI::Synchronize::masterWait("DONESTART");
+		MPI::Synchronize::slavesWait("DONEEND");
+
 		finalizeHelper();
 
-		synchronize_MPI();
-
-		cout << "Process [" << Global::settings->RANK << "/" 
+		LOG() << "Process [" << Global::settings->RANK << "/" 
 			<< Global::settings->NUM_PROCESSES 
 			<< "] is DONE and exiting..." << endl;
 		MPI_Finalize();
@@ -75,27 +80,20 @@ namespace HCSearch
 
 	void Setup::initializeHelper()
 	{
-		cout << "Initializing HCSearch... ";
+		LOG() << "Initializing HCSearch... ";
 
 		// initialize settings
 		Global::settings = new Settings();
 
-		// initialize logger
-		Global::log = new MyLogger::Logger();
-
-		cout << "done!" << endl << endl;
+		LOG() << "done!" << endl << endl;
 	}
 
 	void Setup::finalizeHelper()
 	{
 		if (Global::settings != NULL)
 			delete Global::settings;
-		
-		if (Global::log != NULL)
-			delete Global::log;
 
-		//Global::settings = NULL;
-		//Global::log = NULL;
+		MyLogger::Logger::finalize();
 	}
 
 	void Setup::setClasses()
@@ -137,7 +135,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open meta file for reading!" << endl;
+			LOG(ERROR) << "cannot open meta file for reading!";
 		}
 
 		// process class index and labels
@@ -145,30 +143,30 @@ namespace HCSearch
 			backgroundClassesSet.begin(), backgroundClassesSet.end(), 
 			inserter(foregroundClassesSet, foregroundClassesSet.end()));
 
-		cout << "=== Class Statistics ===" << endl;
-		cout << "Class Labels: ";
+		LOG() << "=== Class Statistics ===" << endl;
+		LOG() << "Class Labels: ";
 		int classIndex = 0;
 		for (set<int>::iterator it = foregroundClassesSet.begin(); it != foregroundClassesSet.end(); ++it)
 		{
 			int label = *it;
 			Global::settings->CLASSES.addClass(classIndex, label, false);
-			cout << label << ", ";
+			LOG() << label << ", ";
 			classIndex++;
 		}
-		cout << endl;
-		cout << "Background Class Labels: ";
+		LOG() << endl;
+		LOG() << "Background Class Labels: ";
 		for (set<int>::iterator it = backgroundClassesSet.begin(); it != backgroundClassesSet.end(); ++it)
 		{
 			int label = *it;
 			Global::settings->CLASSES.addClass(classIndex, label, true);
-			cout << label << ", ";
+			LOG() << label << ", ";
 			classIndex++;
 		}
-		cout << endl;
+		LOG() << endl;
 		if (foundBackgroundLabel)
 		{
 			Global::settings->CLASSES.setBackgroundLabel(backgroundLabel);
-			cout << "Main Background Label: " << backgroundLabel << endl;
+			LOG() << "Main Background Label: " << backgroundLabel << endl;
 		}
 		else if (backgroundClassesSet.size() == 1)
 		{
@@ -176,10 +174,10 @@ namespace HCSearch
 			{
 				int label = *it;
 				Global::settings->CLASSES.setBackgroundLabel(label);
-				cout << "Main Background Class: " << label << endl;
+				LOG() << "Main Background Class: " << label << endl;
 			}
 		}
-		cout << endl;
+		LOG() << endl;
 	}
 
 	set<int> Setup::parseList(string str)
@@ -199,253 +197,33 @@ namespace HCSearch
 		return list;
 	}
 
-#ifdef USE_MPI
-	void Setup::synchronize_MPI()
-	{
-		char recvbuff[256];
-
-		char SLAVE_END_CMD[] = "ENDM";
-		char FINISH_CMD[] = "FINISHM";
-
-		int rank = Global::settings->RANK;
-		int numProcesses = Global::settings->NUM_PROCESSES;
-
-		// wait for everyone to finish before exiting program
-		if (rank == 0)
-		{
-			cout << "Master process [" << rank << "] is done and waiting for slaves to finish..." << endl;
-
-			// wait until all slaves are done
-			bool finish[512];
-			finish[0] = true;
-			for (int i = 1; i < numProcesses; i++)
-			{
-				finish[i] = false;
-			}
-
-			// master process is now waiting for all slave processes to finish
-			while (true)
-			{
-				if (numProcesses <= 1)
-					break;
-
-				int msgFlag = 0;
-				MPI_Iprobe(MPI_ANY_SOURCE, MPI_ANY_TAG, MPI_COMM_WORLD, &msgFlag, Global::settings->MPI_STATUS);
-
-				// if a messsage is available
-				if (msgFlag)
-				{
-					// get the message tag and especially source
-					int messageID = (*Global::settings->MPI_STATUS).MPI_TAG;
-					int messageSource = (*Global::settings->MPI_STATUS).MPI_SOURCE;
-					cout << "A message from process [" << messageSource << "]." << endl;
-
-					// receive the message into the buffer and check if it is the ENDHL command
-					int ierr = MPI_Recv(recvbuff, 4, MPI_CHAR, messageSource, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
-					if (recvbuff[0] == 'E' &&
-						recvbuff[1] == 'N' &&
-						recvbuff[2] == 'D' &&
-						recvbuff[3] == 'M')
-					{
-						cout << "Received ENDM message from process [" << messageSource << "]." << endl;
-						finish[messageSource] = true;
-
-						// test if every process is finished
-						bool allFinish = true;
-						for (int i = 1; i < numProcesses; i++)
-						{
-							if (!finish[i])
-							{
-								cout << "Process [" << i << "] is still finishing up." << endl;
-								allFinish = false;
-							}
-						}
-						if (allFinish)
-						{
-							break;
-						}
-						cout << "Still waiting for all slaves to finish up." << endl;
-					}
-				}
-			}
-
-			// now tell each slave to continue
-			for (int j = 1; j < numProcesses; j++)
-			{
-				int ierr = MPI_Send(FINISH_CMD, 7, MPI_CHAR, j, 0, MPI_COMM_WORLD);
-			}
-		}
-		else
-		{
-			cout << "Slave process [" << rank << "] is done and waiting for master..." << endl;
-
-			// send finish heuristic learning message to master
-			int ierr = MPI_Send(SLAVE_END_CMD, 4, MPI_CHAR, 0, 0, MPI_COMM_WORLD);
-
-			// now wait until master gives the continue signal
-			while (true)
-			{
-				int ierr = MPI_Recv(recvbuff, 7, MPI_CHAR, 0, 0, MPI_COMM_WORLD, Global::settings->MPI_STATUS);
-
-				if (recvbuff[0] == 'F' &&
-					recvbuff[1] == 'I' &&
-					recvbuff[2] == 'N' &&
-					recvbuff[3] == 'I' &&
-					recvbuff[4] == 'S' &&
-					recvbuff[5] == 'H' &&
-					recvbuff[6] == 'M')
-				{
-					cout << "Slave process [" << rank << "] got the FINISHM message." << endl;
-					break;
-				}
-			}
-		}
-	}
-#endif
-
 	/**************** Dataset ****************/
 
 	void Dataset::loadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		vector< ImgFeatures* >& XTest, vector< ImgLabeling* >& YTest)
 	{
-		cout << "=== Loading Dataset ===" << endl;
+		LOG() << "=== Loading Dataset ===" << endl;
 
 		// read in training data
 		string trainSplitFile = Global::settings->paths->INPUT_SPLITS_TRAIN_FILE;
-		cout << endl << "Reading from " << trainSplitFile << "..." << endl;
+		LOG() << endl << "Reading from " << trainSplitFile << "..." << endl;
 		vector<string> trainFiles = readSplitsFile(trainSplitFile);
-		for (vector<string>::iterator it = trainFiles.begin(); it != trainFiles.end(); ++it)
-		{
-			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
-
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures;
-			readMetaFile(metaFile, numNodes, numFeatures);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			
-			// push into list
-			XTrain.push_back(X);
-			YTrain.push_back(Y);
-		}
+		loadDatasetHelper(trainFiles, XTrain, YTrain);
 
 		// read in validation data
 		string validSplitFile = Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE;
-		cout << endl << "Reading from " << validSplitFile << "..." << endl;
+		LOG() << endl << "Reading from " << validSplitFile << "..." << endl;
 		vector<string> validFiles = readSplitsFile(validSplitFile);
-		for (vector<string>::iterator it = validFiles.begin(); it != validFiles.end(); ++it)
-		{
-			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
-
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures;
-			readMetaFile(metaFile, numNodes, numFeatures);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			
-			// push into list
-			XValidation.push_back(X);
-			YValidation.push_back(Y);
-		}
+		loadDatasetHelper(validFiles, XValidation, YValidation);
 
 		// read in test data
 		string testSplitFile = Global::settings->paths->INPUT_SPLITS_TEST_FILE;
-		cout << endl << "Reading from " << testSplitFile << "..." << endl;
+		LOG() << endl << "Reading from " << testSplitFile << "..." << endl;
 		vector<string> testFiles = readSplitsFile(testSplitFile);
-		for (vector<string>::iterator it = testFiles.begin(); it != testFiles.end(); ++it)
-		{
-			string filename = *it;
-			cout << "\tLoading " << filename << "..." << endl;
+		loadDatasetHelper(testFiles, XTest, YTest);
 
-			// read meta file
-			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
-			int numNodes, numFeatures;
-			readMetaFile(metaFile, numNodes, numFeatures);
-
-			// read nodes file
-			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
-			VectorXi labels = VectorXi::Zero(numNodes);
-			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
-			readNodesFile(nodesFile, labels, features);
-
-			// read edges file
-			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
-			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
-
-			// construct ImgFeatures
-			FeatureGraph featureGraph;
-			featureGraph.adjList = edges;
-			featureGraph.nodesData = features;
-			ImgFeatures* X = new ImgFeatures();
-			X->graph = featureGraph;
-			X->filename = filename;
-
-			// construct ImgLabeling
-			LabelGraph labelGraph;
-			labelGraph.adjList = edges;
-			labelGraph.nodesData = labels;
-			ImgLabeling* Y = new ImgLabeling();
-			Y->graph = labelGraph;
-			
-			// push into list
-			XTest.push_back(X);
-			YTest.push_back(Y);
-		}
-		cout << endl;
+		LOG() << endl;
 	}
 
 	void Dataset::unloadDataset(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
@@ -512,6 +290,57 @@ namespace HCSearch
 		}
 	}
 
+	void Dataset::loadDatasetHelper(vector<string>& files, vector< ImgFeatures* >& XSet, vector< ImgLabeling* >& YSet)
+	{
+		for (vector<string>::iterator it = files.begin(); it != files.end(); ++it)
+		{
+			string filename = *it;
+			LOG() << "\tLoading " << filename << "..." << endl;
+
+			// read meta file
+			string metaFile = Global::settings->paths->INPUT_META_DIR + filename + ".txt";
+			int numNodes, numFeatures, height, width;
+			readMetaFile(metaFile, numNodes, numFeatures, height, width);
+
+			// read nodes file
+			string nodesFile = Global::settings->paths->INPUT_NODES_DIR + filename + ".txt";
+			VectorXi labels = VectorXi::Zero(numNodes);
+			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
+			readNodesFile(nodesFile, labels, features);
+
+			// read edges file
+			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
+			AdjList_t edges;
+			readEdgesFile(edgesFile, edges);
+
+			// read segments file
+			string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + filename + ".txt";
+			MatrixXi segments = MatrixXi::Zero(height, width);
+			readSegmentsFile(segmentsFile, segments);
+
+			// construct ImgFeatures
+			FeatureGraph featureGraph;
+			featureGraph.adjList = edges;
+			featureGraph.nodesData = features;
+			ImgFeatures* X = new ImgFeatures();
+			X->graph = featureGraph;
+			X->filename = filename;
+			X->segmentsAvailable = true;
+			X->segments = segments;
+
+			// construct ImgLabeling
+			LabelGraph labelGraph;
+			labelGraph.adjList = edges;
+			labelGraph.nodesData = labels;
+			ImgLabeling* Y = new ImgLabeling();
+			Y->graph = labelGraph;
+			
+			// push into list
+			XSet.push_back(X);
+			YSet.push_back(Y);
+		}
+	}
+
 	vector<string> Dataset::readSplitsFile(string filename)
 	{
 		vector<string> filenames;
@@ -532,14 +361,14 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open splits file!" << endl;
+			LOG(ERROR) << "cannot open splits file!";
 			abort();
 		}
 
 		return filenames;
 	}
 
-	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures)
+	void Dataset::readMetaFile(string filename, int& numNodes, int& numFeatures, int& height, int& width)
 	{
 		string line;
 		ifstream fh(filename.c_str());
@@ -561,12 +390,20 @@ namespace HCSearch
 				{
 					numFeatures = atoi(num.c_str());
 				}
+				else if (tag.compare("height") == 0)
+				{
+					height = atoi(num.c_str());
+				}
+				else if (tag.compare("width") == 0)
+				{
+					width = atoi(num.c_str());
+				}
 			}
 			fh.close();
 		}
 		else
 		{
-			cerr << "[Error] cannot open meta file!" << endl;
+			LOG(ERROR) << "cannot open meta file!";
 			abort();
 		}
 	}
@@ -615,7 +452,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to nodes data!" << endl;
+			LOG(ERROR) << "cannot open file to nodes data!";
 			abort();
 		}
 	}
@@ -666,7 +503,47 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] cannot open file to edges data!" << endl;
+			LOG(ERROR) << "cannot open file to edges data!";
+			abort();
+		}
+	}
+
+	void Dataset::readSegmentsFile(string filename, MatrixXi& segments)
+	{
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			// current line
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+					string token;
+
+					// current column
+					int columnIndex = 0;
+					while (getline(iss, token, ' '))
+					{
+						if (!token.empty())
+						{
+							int value = atoi(token.c_str());
+							segments(lineIndex, columnIndex) = value;
+						}
+						columnIndex++;
+					}
+				}
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to segments data!";
 			abort();
 		}
 	}
@@ -689,7 +566,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] ranker type is invalid for loading model" << endl;
+			LOG(ERROR) << "ranker type is invalid for loading model";
 			return NULL;
 		}
 	}
@@ -698,7 +575,7 @@ namespace HCSearch
 	{
 		if (model == NULL)
 		{
-			cerr << "[Error] rank model is NULL, so cannot save it." << endl;
+			LOG(ERROR) << "rank model is NULL, so cannot save it.";
 			return;
 		}
 
@@ -714,7 +591,7 @@ namespace HCSearch
 		}
 		else
 		{
-			cerr << "[Error] ranker type is invalid for saving model" << endl;
+			LOG(ERROR) << "ranker type is invalid for saving model";
 		}
 	}
 
@@ -724,7 +601,9 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
-		cout << "Learning the heuristic function..." << endl;
+		clock_t tic = clock();
+
+		LOG() << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
 		IRankModel* learningModel = initializeLearning(rankerType, LEARN_H);
@@ -737,7 +616,7 @@ namespace HCSearch
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				cout << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -745,12 +624,20 @@ namespace HCSearch
 				meta.exampleName = XTrain[i]->getFileName();
 				meta.iter = iter;
 
+				// run search
 				searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
 		// Merge and learn step
 		finishLearning(learningModel, LEARN_H);
+
+		clock_t toc = clock();
+		LOG() << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -759,7 +646,9 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		IRankModel* heuristicModel, int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
-		cout << "Learning the cost function with learned heuristic..." << endl;
+		clock_t tic = clock();
+
+		LOG() << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
 		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C);
@@ -772,7 +661,7 @@ namespace HCSearch
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				cout << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -780,12 +669,20 @@ namespace HCSearch
 				meta.exampleName = XTrain[i]->getFileName();
 				meta.iter = iter;
 
+				// run search
 				searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
 		// Merge and learn step
 		finishLearning(learningModel, LEARN_C);
+
+		clock_t toc = clock();
+		LOG() << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -794,7 +691,9 @@ namespace HCSearch
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
-		cout << "Learning the cost function with oracle heuristic..." << endl;
+		clock_t tic = clock();
+
+		LOG() << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
 		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_ORACLE_H);
@@ -807,7 +706,7 @@ namespace HCSearch
 		{
 			for (int iter = 0; iter < numIter; iter++)
 			{
-				cout << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -815,12 +714,65 @@ namespace HCSearch
 				meta.exampleName = XTrain[i]->getFileName();
 				meta.iter = iter;
 
+				// run search
 				searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
 		// Merge and learn step
 		finishLearning(learningModel, LEARN_C_ORACLE_H);
+
+		clock_t toc = clock();
+		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return learningModel;
+	}
+
+	IRankModel* Learning::learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
+	{
+		clock_t tic = clock();
+
+		LOG() << "Learning the cost function with random heuristic..." << endl;
+
+		// Setup model for learning
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_RANDOM_H);
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				LOG() << "Cost with random H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
+
+				// run search
+				searchProcedure->learnCWithRandomH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+
+				// save online weights progress in case
+				if (learningModel->rankerType() == ONLINE_RANK)
+					learningModel->save(Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE);
+			}
+		}
+		
+		// Merge and learn step
+		finishLearning(learningModel, LEARN_C_RANDOM_H);
+
+		clock_t toc = clock();
+		LOG() << "total learnCWithRandomH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -840,21 +792,22 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
 			else
 			{
-				cerr << "[Error] unknown search type!" << endl;
+				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
 		}
 		else if (rankerType == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			learningModel = new OnlineRankModel();
+			// at this point, it is still not initialized!
 		}
 		else
 		{
-			cerr << "[Error] unsupported rank learner." << endl;
+			LOG(ERROR) << "unsupported rank learner.";
 			abort();
 		}
 
@@ -867,26 +820,71 @@ namespace HCSearch
 		{
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
 			if (searchType == LEARN_H)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE);
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE);
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE);
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_RANDOM_H)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
 			else
 			{
-				cerr << "[Error] unknown search type!" << endl;
+				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
 		}
 		else if (learningModel->rankerType() == ONLINE_RANK)
 		{
-			//TODO
-			cerr << "[Error] Online learning unimplemented in this version. Sorry for the inconvenience..." << endl;
-			abort();
+			// do nothing - online weights just stay persistent
+			// ...unless using MPI, then merge...
+#ifdef USE_MPI
+		string STARTMSG;
+		string ENDMSG;
+		string onlineModelFileBase;
+		if (searchType == LEARN_H)
+		{
+			STARTMSG = "MERGEHSTART";
+			ENDMSG = "MERGEHEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else if (searchType == LEARN_C)
+		{
+			STARTMSG = "MERGECSTART";
+			ENDMSG = "MERGECEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_ORACLE_H)
+		{
+			STARTMSG = "MERGECOHSTART";
+			ENDMSG = "MERGECOHEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_RANDOM_H)
+		{
+			STARTMSG = "MERGECRHSTART";
+			ENDMSG = "MERGECRHEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
 		}
 		else
 		{
-			cerr << "[Error] unsupported rank learner." << endl;
+			LOG(ERROR) << "unknown search type!";
+			abort();
+		}
+
+		MPI::Synchronize::masterWait(STARTMSG);
+
+		if (Global::settings->RANK == 0)
+		{
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
+			onlineRankModel->performMerge(onlineModelFileBase, searchType);
+		}
+
+		MPI::Synchronize::slavesWait(ENDMSG);
+#endif
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
 			abort();
 		}
 	}
@@ -920,5 +918,19 @@ namespace HCSearch
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->hcSearch(*X, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
+	}
+
+	ImgLabeling Inference::runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
+		ISearchProcedure::SearchMetadata searchMetadata)
+	{
+		return searchProcedure->rlSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
+	}
+
+	ImgLabeling Inference::runRCSearch(ImgFeatures* X, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
+	{
+		return searchProcedure->rcSearch(*X, timeBound, searchSpace, costOracleHModel, searchMetadata);
 	}
 }
