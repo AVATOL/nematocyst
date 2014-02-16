@@ -41,6 +41,9 @@ end
 if ~exist([outputPath '/segments/'], 'dir')
     mkdir([outputPath '/segments/']);
 end
+if ~exist([outputPath '/groundtruth/'], 'dir')
+    mkdir([outputPath '/groundtruth/']);
+end
 if ~exist([outputPath '/meta/'], 'dir')
     mkdir([outputPath '/meta/']);
 end
@@ -84,6 +87,7 @@ for i = 1:nFiles
     nodesFile = sprintf('%s.txt', filename);
     edgesFile = sprintf('%s.txt', filename);
     segmentsFile = sprintf('%s.txt', filename);
+    groundtruthFile = sprintf('%s.txt', filename);
     metaFile = sprintf('%s.txt', filename);
     
     % write nodes
@@ -96,6 +100,9 @@ for i = 1:nFiles
     
     % write segments
     dlmwrite([outputPath '/segments/' segmentsFile], allData{i}.segs2, ' ');
+    
+    % write ground truth
+    dlmwrite([outputPath '/groundtruth/' groundtruthFile], allData{i}.labels, ' ');
     
     classes = union(classes, allData{i}.segLabels);
     
