@@ -36,7 +36,7 @@ for col = 1:patchSize:width
         % accumulate count of each label in patch
         votes = zeros(length(labelColorSet), 1);
         for i = 1:length(votes)
-            votes(i) = sum(sum(abs(patchTruth - labelColorSet(i)/255.0) < 0.001));
+            votes(i) = sum(sum(abs(patchTruth - labelColorSet(i)/255.0) < 0.01));
         end
         
         % select label with highest count
@@ -64,8 +64,6 @@ end
 
 function [ imageTruth, imageTruthMatrix ] = cleanup(imageTruth, labelMap)
 
-imageTruthMatrix = zeros(size(imageTruth));
-
 labelColorSet = cell2mat(keys(labelMap));
 labelSet = cell2mat(values(labelMap));
 
@@ -75,9 +73,9 @@ nLabels = length(labelColorSet);
 labelColorDists = zeros(height, width, nLabels);
 
 for i = 1:nLabels
-    labelColorDists(:, :, i) = abs(labelColorSet(i) - double(imageTruth));
+    labelColorDists(:, :, i) = double(abs(labelColorSet(i)/255.0 - double(imageTruth)/255.0) < 0.025);
 end
-[~, indexMat] = min(labelColorDists, [], 3);
+[~, indexMat] = max(labelColorDists, [], 3);
 imageTruth = labelColorSet(indexMat);
 imageTruthMatrix = labelSet(indexMat);
 
