@@ -114,14 +114,18 @@ for i= 1:length(fileArray)
     %% extract labels
     [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, labelMap, USE_BINARY);
     
+    %% get segments and locations
+    [segments, segLocations] = getSegments(PATCH_SIZE, height, width);
+    
     %% add to data structure
     allData{cnt}.img = img;
     allData{cnt}.labels = labels;
-    allData{cnt}.segs2 = getSegments(PATCH_SIZE, height, width);
+    allData{cnt}.segs2 = segments;
     allData{cnt}.feat2 = reshape(permute(featureMatrix, [2 1 3]), nodesWidth*nodesHeight, []);
     allData{cnt}.segLabels = reshape(permute(truthMatrix, [2 1]), nodesWidth*nodesHeight, []);
     allData{cnt}.adj = getAdjacencyMatrix(nodesHeight, nodesWidth);
     allData{cnt}.filename = file;
+    allData{cnt}.segLocations = segLocations;
     
     cnt = cnt+1;
 end
@@ -131,9 +135,12 @@ allData = preprocess_alldata(allData, outputPath, trainRange, validRange, testRa
 
 end
 
-function [ segmentsMatrix ] = getSegments(patchSize, height, width)
+function [ segmentsMatrix, segLocations ] = getSegments(patchSize, height, width)
+
+NORMALIZE_LOCATIONS = 1;
 
 segmentsMatrix = zeros(height, width);
+segLocations = zeros(width*height/patchSize^2, 2);
 cnt = 1;
 for row = 1:patchSize:height % important: row-major order
     for col = 1:patchSize:width
@@ -141,6 +148,21 @@ for row = 1:patchSize:height % important: row-major order
         xcomp = col:col+patchSize-1;
         
         segmentsMatrix(ycomp, xcomp) = cnt;
+        
+        x = (col+col+patchSize-1)/2;
+        y = (row+row+patchSize-1)/2;
+        
+        if NORMALIZE_LOCATIONS
+            x = x/width;
+            y = y/height;
+        else
+            x = floor(x);
+            y = floor(y);
+        end
+        
+        segLocations(cnt, 1) = x;
+        segLocations(cnt, 2) = y;
+        
         cnt = cnt + 1;
     end
 end
