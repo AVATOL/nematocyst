@@ -1,4 +1,4 @@
-function preprocess_alldata( allData, outputPath, trainRange, validRange, testRange )
+function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, validRange, testRange )
 %PREPROCESS_ALLDATA Preprocesses allData cell struct variable into a
 %data format for HCSearch to work. Features are already extracted in
 %allData.
@@ -11,6 +11,7 @@ function preprocess_alldata( allData, outputPath, trainRange, validRange, testRa
 %                   allData{i}.segLabels sx1 double
 %                   allData{i}.adj sxs logical
 %                   allData{i}.filename string (optional)
+%                   allData{i}.segLocations sx2 double (optional)
 %   outputPath:	folder path to output preprocessed data
 %                       e.g. 'DataPreprocessed/SomeDataset'
 %   trainRange:	set range of training data
@@ -34,6 +35,9 @@ if ~exist(outputPath, 'dir')
 end
 if ~exist([outputPath '/nodes/'], 'dir')
     mkdir([outputPath '/nodes/']);
+end
+if ~exist([outputPath '/nodelocations/'], 'dir')
+    mkdir([outputPath '/nodelocations/']);
 end
 if ~exist([outputPath '/edges/'], 'dir')
     mkdir([outputPath '/edges/']);
@@ -72,6 +76,8 @@ for i = 1:nFiles
     filename = sprintf('%d', i-1);
     if isfield(allData{i}, 'filename');
         filename = allData{i}.filename;
+    else
+        allData{i}.filename = filename;
     end
     
     if ismember(i, trainRange)
@@ -85,6 +91,7 @@ for i = 1:nFiles
     end
     
     nodesFile = sprintf('%s.txt', filename);
+    nodeLocationsFile = sprintf('%s.txt', filename);
     edgesFile = sprintf('%s.txt', filename);
     segmentsFile = sprintf('%s.txt', filename);
     groundtruthFile = sprintf('%s.txt', filename);
@@ -92,6 +99,15 @@ for i = 1:nFiles
     
     % write nodes
     libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
+    
+    % write node locations
+    if isfield(allData{i}, 'segLocations');
+        dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], allData{i}.segLocations, ' ');
+    else
+        nodeLocations = pre_extract_node_locations(allData{i}.segs2, length(allData{i}.segLabels));
+        dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], nodeLocations, ' ');
+        allData{i}.segLocations = nodeLocations;
+    end
     
     % write edges
     [ai,aj,aval] = find(allData{i}.adj);

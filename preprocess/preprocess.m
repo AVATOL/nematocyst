@@ -127,7 +127,7 @@ for i= 1:length(fileArray)
 end
 
 %% hand over to allData preprocessing
-preprocess_alldata(allData, outputPath, trainRange, validRange, testRange);
+allData = preprocess_alldata(allData, outputPath, trainRange, validRange, testRange);
 
 end
 
