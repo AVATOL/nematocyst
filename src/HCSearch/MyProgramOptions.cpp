@@ -28,7 +28,7 @@ namespace MyProgramOptions
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
 		initialFunctionMode = LOG_REG;
-		successorsMode = STOCHASTIC_NEIGHBORS;
+		successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
 		lossMode = HAMMING;
 
 		stochasticCutMode = EDGES;
