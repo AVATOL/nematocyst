@@ -176,7 +176,7 @@ namespace HCSearch
 		int numClasses = Global::settings->CLASSES.numClasses();
 
 		int unaryFeatDim = 1+featureDim;
-		int pairwiseFeatDim = featureDim;
+		int pairwiseFeatDim = 2;//TODO
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
 		
@@ -184,7 +184,7 @@ namespace HCSearch
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;
+		phi.segment(numClasses*unaryFeatDim, (1)*pairwiseFeatDim) = pairwiseTerm;//TODO
 
 		return RankFeatures(phi);
 	}
