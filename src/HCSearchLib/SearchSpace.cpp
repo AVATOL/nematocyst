@@ -223,7 +223,7 @@ namespace HCSearch
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, (1)*pairwiseFeatDim) = pairwiseTerm;//TODO
+		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;//TODO
 
 		return RankFeatures(phi);
 	}
@@ -236,7 +236,7 @@ namespace HCSearch
 		int pairwiseFeatDim = 2;//TODO
 		int numClasses = Global::settings->CLASSES.numClasses();
 
-		return numClasses*unaryFeatDim + (1)*pairwiseFeatDim;//TODO
+		return numClasses*unaryFeatDim + (numClasses+1)*pairwiseFeatDim;//TODO
 	}
 	
 	VectorXd DenseCRFFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
@@ -272,7 +272,7 @@ namespace HCSearch
 				double nodeLocationY2 = X.getNodeLocationY(node2);
 				int nodeLabel2 = Y.getLabel(node2);
 
-				int classIndex = 0;
+				int classIndex = -1;
 				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, 
 					nodeLocationX1, nodeLocationY1, nodeLocationX2, nodeLocationY2, 
 					nodeLabel1, nodeLabel2, classIndex);
@@ -296,13 +296,7 @@ namespace HCSearch
 		// phi features depend on labels
 		if (nodeLabel1 != nodeLabel2)
 		{
-			//VectorXd diff = nodeFeatures1 - nodeFeatures2;
-			//VectorXd negdiffabs2 = -diff.cwiseAbs2();
-			//VectorXd expnegdiffabs2 = negdiffabs2.array().exp();
-			//classIndex = Global::settings->CLASSES.numClasses(); // numClasses
-
-			//// assignment
-			//return expnegdiffabs2;
+			classIndex = Global::settings->CLASSES.numClasses(); // numClasses
 
 			VectorXd potential = VectorXd::Zero(2);
 
@@ -320,15 +314,21 @@ namespace HCSearch
 		}
 		else
 		{
-			//VectorXd diff = nodeFeatures1 - nodeFeatures2;
-			//VectorXd negdiffabs2 = -diff.cwiseAbs2();
-			//VectorXd expnegdiffabs2 = 1 - negdiffabs2.array().exp();
+			classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
 
-			//// map node label to indexing value in phi vector
-			//classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+			VectorXd potential = VectorXd::Zero(2);
 
-			// assignment
-			return VectorXd::Zero(2);
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationX2, 2);
+			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
+			double featureDistance = featureDiff.squaredNorm();
+
+			double appearanceTerm = 1-exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
+			double smoothnessTerm = 1-exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
+
+			potential(0) = appearanceTerm;
+			potential(1) = smoothnessTerm;
+
+			return potential;
 		}
 	}
 
