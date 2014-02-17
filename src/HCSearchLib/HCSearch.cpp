@@ -482,12 +482,12 @@ namespace HCSearch
 					// get x position
 					string token1;
 					getline(iss, token1, ' ');
-					nodeLocations(lineIndex, 1) = atof(token1.c_str());
+					nodeLocations(lineIndex, 0) = atof(token1.c_str());
 
 					// get y position
 					string token2;
 					getline(iss, token2, ' ');
-					nodeLocations(lineIndex, 2) = atof(token2.c_str());
+					nodeLocations(lineIndex, 1) = atof(token2.c_str());
 				}
 				lineIndex++;
 			}

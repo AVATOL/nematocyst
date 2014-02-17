@@ -55,7 +55,7 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->nodeLocations(node, 1);
+		return this->nodeLocations(node, 0);
 	}
 
 	double ImgFeatures::getNodeLocationY(int node)
@@ -66,7 +66,7 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->nodeLocations(node, 2);
+		return this->nodeLocations(node, 1);
 	}
 
 	ImgLabeling::ImgLabeling()
