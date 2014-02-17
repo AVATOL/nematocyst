@@ -298,7 +298,10 @@ namespace HCSearch
 		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
 		int numClasses = Global::settings->CLASSES.numClasses();
 
-		classIndex = (numClasses*(numClasses+1)-(numClasses-node1ClassIndex)*(numClasses-node1ClassIndex+1))/2+node2ClassIndex;
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
 
 		// phi features depend on labels
 		if (nodeLabel1 != nodeLabel2)
