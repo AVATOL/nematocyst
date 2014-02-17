@@ -64,6 +64,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "standard CRF features" << endl;
 		heuristicFeatFunc = new HCSearch::StandardFeatures();
 		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_DENSE:
+		LOG() << "dense standard features" << endl;
+		heuristicFeatFunc = new HCSearch::DenseStandardFeatures();
+		break;
 	case MyProgramOptions::ProgramOptions::DENSE_CRF:
 		LOG() << "dense CRF features" << endl;
 		heuristicFeatFunc = new HCSearch::DenseCRFFeatures();
@@ -80,6 +84,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
 		costFeatFunc = new HCSearch::StandardFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_DENSE:
+		LOG() << "dense standard features" << endl;
+		costFeatFunc = new HCSearch::DenseStandardFeatures();
 		break;
 	case MyProgramOptions::ProgramOptions::DENSE_CRF:
 		LOG() << "dense CRF features" << endl;

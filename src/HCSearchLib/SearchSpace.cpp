@@ -159,6 +159,37 @@ namespace HCSearch
 		}
 	}
 
+	/**************** Dense Standard Features ****************/
+
+	VectorXd DenseStandardFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = featureDim;
+		
+		VectorXd phi = VectorXd::Zero((numClasses+1)*pairwiseFeatDim);
+
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			for (int node2 = node1+1; node2 < numNodes; node2++)
+			{
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		return 0.5*phi;
+	}
+
 	/**************** Dense CRF Features ****************/
 
 	DenseCRFFeatures::DenseCRFFeatures()

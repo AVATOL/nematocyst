@@ -118,7 +118,20 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Dense version of standard CRF features with unary and pairwise potentials.
+	 */
+	class DenseStandardFeatures : public StandardFeatures
+	{
+	public:
+		DenseStandardFeatures();
+		~DenseStandardFeatures();
+
+	protected:
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+	};
+
+	/*!
+	 * @brief Dense CRF features with unary and pairwise potentials.
 	 */
 	class DenseCRFFeatures : public StandardFeatures
 	{
