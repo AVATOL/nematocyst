@@ -55,15 +55,39 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	LOG() << "Hamming loss" << endl;
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
 
-	// use standard CRF features for heuristic feature function
+	// select heuristic feature function
 	LOG() << "Heuristic feature function: ";
-	LOG() << "standard CRF features" << endl;
-	HCSearch::IFeatureFunction* heuristicFeatFunc = new HCSearch::StandardFeatures();
+	HCSearch::IFeatureFunction* heuristicFeatFunc = NULL;
+	switch (po.heuristicFeaturesMode)
+	{
+	case MyProgramOptions::ProgramOptions::STANDARD:
+		LOG() << "standard CRF features" << endl;
+		heuristicFeatFunc = new HCSearch::StandardFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::DENSE_CRF:
+		LOG() << "dense CRF features" << endl;
+		heuristicFeatFunc = new HCSearch::DenseCRFFeatures();
+		break;
+	default:
+		LOG(ERROR) << "undefined feature mode.";
+	}
 
-	// use standard CRF features for cost feature function
+	// select cost feature function
 	LOG() << "Cost feature function: ";
-	LOG() << "standard CRF features" << endl;
-	HCSearch::IFeatureFunction* costFeatFunc = new HCSearch::StandardFeatures();
+	HCSearch::IFeatureFunction* costFeatFunc = NULL;
+	switch (po.heuristicFeaturesMode)
+	{
+	case MyProgramOptions::ProgramOptions::STANDARD:
+		LOG() << "standard CRF features" << endl;
+		costFeatFunc = new HCSearch::StandardFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::DENSE_CRF:
+		LOG() << "dense CRF features" << endl;
+		costFeatFunc = new HCSearch::DenseCRFFeatures();
+		break;
+	default:
+		LOG(ERROR) << "undefined feature mode.";
+	}
 
 	// use stochastic successor function
 	LOG() << "Successor function: ";

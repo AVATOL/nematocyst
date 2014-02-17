@@ -103,17 +103,36 @@ namespace HCSearch
 		/*!
 		 * @brief Compute unary term.
 		 */
-		static VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
 		
 		/*!
 		 * @brief Compute pairwise term.
 		 */
-		static VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
 
 		/*!
 		 * @brief Compute pairwise features.
 		 */
-		static VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Standard CRF features with unary and pairwise potentials.
+	 */
+	class DenseCRFFeatures : public StandardFeatures
+	{
+	public:
+		DenseCRFFeatures();
+		~DenseCRFFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
 			int nodeLabel1, int nodeLabel2, int& classIndex);
 	};
 

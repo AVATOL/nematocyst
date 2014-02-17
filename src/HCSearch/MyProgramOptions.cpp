@@ -311,6 +311,26 @@ namespace MyProgramOptions
 						po.saveOutputMask = false;
 				}
 			}
+			else if (strcmp(argv[i], "--hfeatures") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "standard") == 0)
+						po.heuristicFeaturesMode = STANDARD;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.heuristicFeaturesMode = DENSE_CRF;
+				}
+			}
+			else if (strcmp(argv[i], "--cfeatures") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "standard") == 0)
+						po.costFeaturesMode = STANDARD;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.costFeaturesMode = DENSE_CRF;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -355,6 +375,8 @@ namespace MyProgramOptions
 		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
 		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--hfeatures arg\t\t" << ": standard|dense-crf" << endl;
+		cerr << "\t--cfeatures arg\t\t" << ": standard|dense-crf" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
