@@ -112,7 +112,7 @@ for i= 1:length(fileArray)
     [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);
     
     %% extract labels
-    [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, labelMap, USE_BINARY);
+    [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, labelMap);
     
     %% get segments and locations
     [segments, segLocations] = getSegments(PATCH_SIZE, height, width);
