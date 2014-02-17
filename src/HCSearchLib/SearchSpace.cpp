@@ -213,6 +213,7 @@ namespace HCSearch
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
 		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
 
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = 2;//TODO
@@ -223,7 +224,7 @@ namespace HCSearch
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;//TODO
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;//TODO
 
 		return RankFeatures(phi);
 	}
@@ -235,8 +236,9 @@ namespace HCSearch
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = 2;//TODO
 		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
 
-		return numClasses*unaryFeatDim + (numClasses+1)*pairwiseFeatDim;//TODO
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;//TODO
 	}
 	
 	VectorXd DenseCRFFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
@@ -245,8 +247,9 @@ namespace HCSearch
 		const int numClasses = Global::settings->CLASSES.numClasses();
 		const int featureDim = X.getFeatureDim();
 		const int pairwiseFeatDim = 2;//TODO
+		const int numPairs = (numClasses*(numClasses+1))/2;
 		
-		VectorXd phi = VectorXd::Zero((numClasses+1)*pairwiseFeatDim);
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
@@ -291,12 +294,16 @@ namespace HCSearch
 		const double THETA_BETA = 1.0;
 		const double THETA_GAMMA = 1.0;
 
-		classIndex = 0;
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-node1ClassIndex)*(numClasses-node1ClassIndex+1))/2+node2ClassIndex;
 
 		// phi features depend on labels
 		if (nodeLabel1 != nodeLabel2)
 		{
-			classIndex = Global::settings->CLASSES.numClasses(); // numClasses
+			//classIndex = Global::settings->CLASSES.numClasses(); // numClasses
 
 			VectorXd potential = VectorXd::Zero(2);
 
@@ -314,7 +321,7 @@ namespace HCSearch
 		}
 		else
 		{
-			classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+			//classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
 
 			VectorXd potential = VectorXd::Zero(2);
 
