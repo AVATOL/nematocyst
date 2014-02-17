@@ -161,6 +161,14 @@ namespace HCSearch
 
 	/**************** Dense Standard Features ****************/
 
+	DenseStandardFeatures::DenseStandardFeatures()
+	{
+	}
+
+	DenseStandardFeatures::~DenseStandardFeatures()
+	{
+	}
+
 	VectorXd DenseStandardFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
