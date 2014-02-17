@@ -20,6 +20,7 @@ namespace HCSearch
 	{
 		this->filename = "";
 		this->segmentsAvailable = false;
+		this->nodeLocationsAvailable = false;
 	}
 
 	ImgFeatures::~ImgFeatures()
@@ -44,6 +45,28 @@ namespace HCSearch
 	string ImgFeatures::getFileName()
 	{
 		return this->filename;
+	}
+
+	double ImgFeatures::getNodeLocationX(int node)
+	{
+		if (!nodeLocationsAvailable)
+		{
+			LOG(ERROR) << "node location not available for getting x.";
+			abort();
+		}
+
+		return this->nodeLocations(node, 1);
+	}
+
+	double ImgFeatures::getNodeLocationY(int node)
+	{
+		if (!nodeLocationsAvailable)
+		{
+			LOG(ERROR) << "node location not available for getting y.";
+			abort();
+		}
+
+		return this->nodeLocations(node, 2);
 	}
 
 	ImgLabeling::ImgLabeling()

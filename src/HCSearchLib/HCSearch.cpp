@@ -308,6 +308,11 @@ namespace HCSearch
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
+			// read node locations
+			string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + filename + ".txt";
+			MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
+			readNodeLocationsFile(nodeLocationsFile, nodeLocations);
+
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			AdjList_t edges;
@@ -327,6 +332,8 @@ namespace HCSearch
 			X->filename = filename;
 			X->segmentsAvailable = true;
 			X->segments = segments;
+			X->nodeLocationsAvailable = true;
+			X->nodeLocations = nodeLocations;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -453,6 +460,42 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "cannot open file to nodes data!";
+			abort();
+		}
+	}
+
+	void Dataset::readNodeLocationsFile(string filename, MatrixXd& nodeLocations)
+	{
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+
+					// get x position
+					string token1;
+					getline(iss, token1, ' ');
+					nodeLocations(lineIndex, 1) = atof(token1.c_str());
+
+					// get y position
+					string token2;
+					getline(iss, token2, ' ');
+					nodeLocations(lineIndex, 2) = atof(token2.c_str());
+				}
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to node locations data!";
 			abort();
 		}
 	}

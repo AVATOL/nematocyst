@@ -108,6 +108,7 @@ namespace HCSearch
 		// input directories
 
 		string INPUT_NODES_DIR;
+		string INPUT_NODE_LOCATIONS_DIR;
 		string INPUT_EDGES_DIR;
 		string INPUT_META_DIR;
 		string INPUT_SEGMENTS_DIR;

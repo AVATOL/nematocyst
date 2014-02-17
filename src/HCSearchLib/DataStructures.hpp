@@ -109,7 +109,15 @@ namespace HCSearch
 		 */
 		MatrixXi segments;
 
+		/*!
+		 * Matrix of node locations.
+		 * Dimensions: number of nodes x 2 (x, y coordinates)
+		 * Make sure to check if they are available using ImgLabeling::nodeLocationsAvailable.
+		 */
+		MatrixXd nodeLocations;
+
 		bool segmentsAvailable;
+		bool nodeLocationsAvailable;
 
 	public:
 		ImgFeatures();
@@ -140,6 +148,20 @@ namespace HCSearch
 		 * @return Returns the file name
 		 */
 		string getFileName();
+
+		/*!
+		 * Get the normalized x-position of the node.
+		 * @param[in] node Node index
+		 * @return Returns the X position of node
+		 */
+		double getNodeLocationX(int node);
+
+		/*!
+		 * Get the normalized y-position of the node.
+		 * @param[in] node Node index
+		 * @return Returns the Y position of node
+		 */
+		double getNodeLocationY(int node);
 	};
 
 	/*!

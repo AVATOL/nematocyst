@@ -588,6 +588,13 @@ namespace HCSearch
 		static void readNodesFile(string filename, VectorXi& labels, MatrixXd& features);
 
 		/*!
+		 * Read a node locations file for a particular image.
+		 * @param[in] filename Path to node locations file
+		 * @param[out] nodeLocations Normalized position per node
+		 */
+		static void readNodeLocationsFile(string filename, MatrixXd& nodeLocations);
+
+		/*!
 		 * Read an edges file for a particular image.
 		 * @param[in] filename Path to edges file
 		 * @param[out] edges Adjacency list for graph edges of the image
