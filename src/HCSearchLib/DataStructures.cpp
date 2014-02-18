@@ -317,6 +317,8 @@ namespace HCSearch
 		}
 		else if (Global::settings->RANK == 0)
 		{
+			clock_t tic = clock();
+
 			// compute C
 			double C = 1.0 * (this->qid-1);
 
@@ -325,6 +327,9 @@ namespace HCSearch
 			ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
 				<< this->rankingFileName << " " << modelFileName;
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
+
+			clock_t toc = clock();
+			LOG() << "total SVM-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 		}
 
 #ifdef USE_MPI
