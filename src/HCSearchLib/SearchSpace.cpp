@@ -215,8 +215,8 @@ namespace HCSearch
 		int numClasses = Global::settings->CLASSES.numClasses();
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		int unaryFeatDim = 1+featureDim;
-		int pairwiseFeatDim = 2;//TODO
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 2;
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
 		
@@ -224,7 +224,7 @@ namespace HCSearch
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;//TODO
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
 
 		return RankFeatures(phi);
 	}
@@ -233,35 +233,58 @@ namespace HCSearch
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
-		int unaryFeatDim = 1+featureDim;
-		int pairwiseFeatDim = 2;//TODO
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 2;
 		int numClasses = Global::settings->CLASSES.numClasses();
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;//TODO
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
 	}
 	
+	VectorXd DenseCRFFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		if (!Y.confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences not available for unary potential.";
+			abort();
+		}
+
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment
+			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
+		}
+
+		return phi;
+	}
+
 	VectorXd DenseCRFFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
 		const int featureDim = X.getFeatureDim();
-		const int pairwiseFeatDim = 2;//TODO
+		const int pairwiseFeatDim = 2;
 		const int numPairs = (numClasses*(numClasses+1))/2;
 		
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
-			//if (X.graph.adjList.count(node1) == 0)
-			//	continue;
-
-			//// get neighbors (ending nodes) of starting node
-			//NeighborSet_t neighbors = X.graph.adjList[node1];
-			//const int numNeighbors = neighbors.size();
-			//for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
-			//{
-			//	int node2 = *it;
 			for (int node2 = node1+1; node2 < numNodes; node2++)
 			{
 				// get node features and label

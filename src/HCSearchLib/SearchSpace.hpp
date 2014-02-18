@@ -133,7 +133,7 @@ namespace HCSearch
 	/*!
 	 * @brief Dense CRF features with unary and pairwise potentials.
 	 */
-	class DenseCRFFeatures : public StandardFeatures
+	class DenseCRFFeatures : public IFeatureFunction
 	{
 	public:
 		DenseCRFFeatures();
@@ -143,6 +143,7 @@ namespace HCSearch
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 
 	protected:
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
 		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
 		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
