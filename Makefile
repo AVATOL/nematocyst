@@ -2,6 +2,11 @@
 .PHONY: all_projects
 all_projects: HCSearchLib HCSearch 
 
+# Builds all the external dependencies...
+.PHONY: external
+external: 
+	make --directory="" --file=External.makefile
+
 # Builds all the projects in the solution with MPI enabled...
 .PHONY: mpi
 mpi: HCSearchLibMPI HCSearchMPI 
