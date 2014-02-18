@@ -70,8 +70,9 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
 		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+			- Make sure to download the Windows binaries version.
 		2. Unpack to `$ROOT$/external/svm_rank`
-			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
+			- Unpack the directory structure such that the binaries are in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 			- Version 1.94 officially supported. Later versions should also work.
@@ -110,23 +111,21 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 		2. Unpack to `$ROOT$/external/Eigen`
 			- Unpack the directory structure such that this file path is valid: `$ROOT$/external/Eigen/Eigen/Dense`
 	- SVM-Rank
-		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html. Make sure to download the source code version.
+		1. Download from http://www.cs.cornell.edu/people/tj/svm_light/svm_rank.html
+			- Make sure to download the source code version.
 		2. Unpack to `$ROOT$/external/svm_rank`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/svm_rank`
-		3. Compile by running `make` in `$ROOT$/external/svm_rank`
 	- LIBLINEAR
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/liblinear/
 			- Version 1.94 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/liblinear`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/liblinear`
-		3. Compile by running `make` in `$ROOT$/external/liblinear`
 	- LIBSVM (Optional - if you use postprocessing modules OR if you use SVM for initial state in HCSearch)
 		1. Download from http://www.csie.ntu.edu.tw/~cjlin/libsvm/
 			- Version 3.17 officially supported. Later versions should also work.
 		2. Unpack to `$ROOT$/external/libsvm`
 			- Unpack the directory structure such that the Makefile is in `$ROOT$/external/libsvm`
-		3. Compile by running `make` in `$ROOT$/external/libsvm`
-		4. Set up in MATLAB (optional - if you use postprocessing modules):
+		3. Set up in MATLAB (optional - if you use postprocessing modules):
 			1. Open MATLAB, navigate in MATLAB to `$ROOT$/external/libsvm/matlab`
 			2. Run the `make` command in MATLAB.
 			3. Add `$ROOT$/external/libsvm/matlab` to your include paths in MATLAB.
@@ -139,7 +138,10 @@ Let `$ROOT$` denote the root directory containing `src` and this README.
 			1. Open MATLAB, add `$ROOT$/external/vlfeat/toolbox` to your include paths in MATLAB.
 			2. Run the `vl_setup` command in MATLAB.
 			3. Verify it is set up properly by running the `vl_version` command in MATLAB.
-2. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
+2. Compile external dependencies by running `make all_externals` in the `$ROOT$` directory.
+	- If you only want to build the required ones (SVM-Rank and LIBLINEAR), run `make externals` instead.
+	- If you prefer to build manually, run `make` independently in each of the external dependency folders.
+3. Compile from source by running `make` in the `$ROOT$` directory. It should create the binary file `$ROOT$/HCSearch`.
 
 ## Reference
 
