@@ -194,8 +194,14 @@ namespace HCSearch
 		 */
 		map< int, set<int> > stochasticCuts;
 
+		/*!
+		 * Node weights.
+		 */
+		VectorXd nodeWeights;
+
 		bool confidencesAvailable;
 		bool stochasticCutsAvailable;
+		bool nodeWeightsAvailable;
 
 	public:
 		ImgLabeling();

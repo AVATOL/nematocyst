@@ -115,7 +115,7 @@ for i= 1:length(fileArray)
     [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, labelMap);
     
     %% get segments and locations
-    [segments, segLocations] = getSegments(PATCH_SIZE, height, width);
+    [segments, segLocations, segSizes] = getSegments(PATCH_SIZE, height, width);
     
     %% add to data structure
     allData{cnt}.img = img;
@@ -126,6 +126,7 @@ for i= 1:length(fileArray)
     allData{cnt}.adj = getAdjacencyMatrix(nodesHeight, nodesWidth);
     allData{cnt}.filename = file;
     allData{cnt}.segLocations = segLocations;
+    allData{cnt}.segSizes = segSizes;
     
     cnt = cnt+1;
 end
@@ -135,12 +136,13 @@ allData = preprocess_alldata(allData, outputPath, trainRange, validRange, testRa
 
 end
 
-function [ segmentsMatrix, segLocations ] = getSegments(patchSize, height, width)
+function [ segmentsMatrix, segLocations, segSizes ] = getSegments(patchSize, height, width)
 
 NORMALIZE_LOCATIONS = 1;
 
 segmentsMatrix = zeros(height, width);
 segLocations = zeros(width*height/patchSize^2, 2);
+segSizes = (patchSize*patchSize)*ones(width*height/patchSize^2, 1);
 cnt = 1;
 for row = 1:patchSize:height % important: row-major order
     for col = 1:patchSize:width

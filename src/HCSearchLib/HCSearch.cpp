@@ -311,7 +311,8 @@ namespace HCSearch
 			// read node locations
 			string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + filename + ".txt";
 			MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
-			readNodeLocationsFile(nodeLocationsFile, nodeLocations);
+			VectorXd nodeWeights = VectorXd::Zero(numNodes);
+			readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
 
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
@@ -341,6 +342,8 @@ namespace HCSearch
 			labelGraph.nodesData = labels;
 			ImgLabeling* Y = new ImgLabeling();
 			Y->graph = labelGraph;
+			Y->nodeWeightsAvailable = true;
+			Y->nodeWeights = nodeWeights;
 			
 			// push into list
 			XSet.push_back(X);
@@ -464,8 +467,9 @@ namespace HCSearch
 		}
 	}
 
-	void Dataset::readNodeLocationsFile(string filename, MatrixXd& nodeLocations)
+	void Dataset::readNodeLocationsFile(string filename, MatrixXd& nodeLocations, VectorXd& nodeWeights)
 	{
+		int totalSize = 0;
 		string line;
 		ifstream fh(filename.c_str());
 		if (fh.is_open())
@@ -488,10 +492,20 @@ namespace HCSearch
 					string token2;
 					getline(iss, token2, ' ');
 					nodeLocations(lineIndex, 1) = atof(token2.c_str());
+
+					// get segment size
+					string token3;
+					getline(iss, token3, ' ');
+					int size = atoi(token3.c_str());
+					nodeWeights(lineIndex) = size;
+					totalSize += size;
 				}
 				lineIndex++;
 			}
 			fh.close();
+
+			// normalize segment sizes
+			nodeWeights /= (1.0*totalSize);
 		}
 		else
 		{

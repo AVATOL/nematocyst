@@ -52,8 +52,20 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 
 	// use Hamming loss function
 	LOG() << "Loss function: ";
-	LOG() << "Hamming loss" << endl;
-	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
+	HCSearch::ILossFunction* lossFunc = NULL;
+	switch (po.lossMode)
+	{
+	case MyProgramOptions::ProgramOptions::HAMMING:
+		LOG() << "Hamming loss" << endl;
+		lossFunc = new HCSearch::HammingLoss();
+		break;
+	case MyProgramOptions::ProgramOptions::PIXEL_HAMMING:
+		LOG() << "Pixel Hamming loss" << endl;
+		lossFunc = new HCSearch::PixelHammingLoss();
+		break;
+	default:
+		LOG(ERROR) << "undefined loss mode.";
+	}
 
 	// select heuristic feature function
 	LOG() << "Heuristic feature function: ";

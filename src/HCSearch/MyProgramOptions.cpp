@@ -335,6 +335,16 @@ namespace MyProgramOptions
 						po.costFeaturesMode = DENSE_CRF;
 				}
 			}
+			else if (strcmp(argv[i], "--loss") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "hamming") == 0)
+						po.lossMode = HAMMING;
+					else if (strcmp(argv[i+1], "pixel-hamming") == 0)
+						po.lossMode = PIXEL_HAMMING;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -384,6 +394,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
+		cerr << "\t--loss arg\t\t" << ": hamming|pixel-hamming" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;

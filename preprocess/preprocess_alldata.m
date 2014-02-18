@@ -100,14 +100,17 @@ for i = 1:nFiles
     % write nodes
     libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
     
-    % write node locations
-    if isfield(allData{i}, 'segLocations');
-        dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], allData{i}.segLocations, ' ');
+    % write node locations and sizes
+    if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
+        nodeLocations = allData{i}.segLocations;
+        nodeSizes = allData{i}.segSizes;
     else
-        nodeLocations = pre_extract_node_locations(allData{i}.segs2, length(allData{i}.segLabels));
-        dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], nodeLocations, ' ');
+        [nodeLocations, nodeSizes] = pre_extract_node_locations(allData{i}.segs2, length(allData{i}.segLabels));
         allData{i}.segLocations = nodeLocations;
+        allData{i}.segSizes = nodeSizes;
     end
+    
+    dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], [nodeLocations nodeSizes], ' ');
     
     % write edges
     [ai,aj,aval] = find(allData{i}.adj);

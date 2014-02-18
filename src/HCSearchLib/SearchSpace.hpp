@@ -443,6 +443,18 @@ namespace HCSearch
 		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
 	};
 
+	/*!
+	 * @brief Pixel Hamming loss function.
+	 */
+	class PixelHammingLoss : public ILossFunction
+	{
+	public:
+		PixelHammingLoss();
+		~PixelHammingLoss();
+
+		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
+	};
+
 	/**************** Search Space ****************/
 
 	/*!

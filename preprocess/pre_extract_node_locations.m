@@ -1,4 +1,4 @@
-function [ nodeLocations ] = pre_extract_node_locations( segments, nSegments, NORMALIZE_LOCATIONS )
+function [ nodeLocations, nodeSizes ] = pre_extract_node_locations( segments, nSegments, NORMALIZE_LOCATIONS )
 %PRE_EXTRACT_NODE_LOCATIONS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -13,6 +13,7 @@ end
 
 %% setup
 nodeLocations = zeros(nSegments, 2);
+nodeSizes = zeros(nSegments, 1);
 
 %% find centroid for each segment
 for i = 1:nSegments
@@ -43,6 +44,8 @@ for i = 1:nSegments
     
     nodeLocations(i, 1) = x;
     nodeLocations(i, 2) = y;
+    
+    nodeSizes(i) = nPixels;
 end
 
 end

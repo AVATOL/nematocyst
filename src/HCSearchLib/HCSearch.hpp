@@ -591,8 +591,9 @@ namespace HCSearch
 		 * Read a node locations file for a particular image.
 		 * @param[in] filename Path to node locations file
 		 * @param[out] nodeLocations Normalized position per node
+		 * @param[out] nodeWeights Normalized size of node (segment size)
 		 */
-		static void readNodeLocationsFile(string filename, MatrixXd& nodeLocations);
+		static void readNodeLocationsFile(string filename, MatrixXd& nodeLocations, VectorXd& nodeWeights);
 
 		/*!
 		 * Read an edges file for a particular image.
