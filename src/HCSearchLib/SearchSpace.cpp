@@ -313,9 +313,9 @@ namespace HCSearch
 		double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
-		const double THETA_ALPHA = 0.1;
-		const double THETA_BETA = 0.1;
-		const double THETA_GAMMA = 0.1;
+		const double THETA_ALPHA = 0.025;
+		const double THETA_BETA = 0.025;
+		const double THETA_GAMMA = 0.025;
 
 		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
 		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
