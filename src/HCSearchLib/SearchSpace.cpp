@@ -365,6 +365,72 @@ namespace HCSearch
 		}
 	}
 
+	/**************** Unary Confidences Features ****************/
+
+	UnaryConfidencesFeatures::UnaryConfidencesFeatures()
+	{
+	}
+
+	UnaryConfidencesFeatures::~UnaryConfidencesFeatures()
+	{
+	}
+
+	RankFeatures UnaryConfidencesFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int UnaryConfidencesFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int unaryFeatDim = 1;
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		return numClasses*unaryFeatDim;
+	}
+	
+	VectorXd UnaryConfidencesFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		if (!Y.confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences not available for unary potential.";
+			abort();
+		}
+
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int unaryFeatDim = 1;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment
+			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
+		}
+
+		return phi;
+	}
+
 	/**************** Initial Prediction Functions ****************/
 
 	const double LogRegInit::DEFAULT_C = 10;

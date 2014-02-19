@@ -84,6 +84,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "dense CRF features" << endl;
 		heuristicFeatFunc = new HCSearch::DenseCRFFeatures();
 		break;
+	case MyProgramOptions::ProgramOptions::UNARY_ONLY:
+		LOG() << "unary features" << endl;
+		heuristicFeatFunc = new HCSearch::UnaryConfidencesFeatures();
+		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";
 	}
@@ -104,6 +108,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	case MyProgramOptions::ProgramOptions::DENSE_CRF:
 		LOG() << "dense CRF features" << endl;
 		costFeatFunc = new HCSearch::DenseCRFFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::UNARY_ONLY:
+		LOG() << "unary features" << endl;
+		costFeatFunc = new HCSearch::UnaryConfidencesFeatures();
 		break;
 	default:
 		LOG(ERROR) << "undefined feature mode.";

@@ -151,6 +151,22 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Unary confidences only features.
+	 */
+	class UnaryConfidencesFeatures : public IFeatureFunction
+	{
+	public:
+		UnaryConfidencesFeatures();
+		~UnaryConfidencesFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+	};
+
+	/*!
 	 * @brief Interface for standard CRF features plus a global potential.
 	 */
 	class IGlobalFeatures : public StandardFeatures
