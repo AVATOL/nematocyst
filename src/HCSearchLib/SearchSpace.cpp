@@ -333,7 +333,7 @@ namespace HCSearch
 
 			VectorXd potential = VectorXd::Zero(2);
 
-			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationX2, 2);
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
 			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
 			double featureDistance = featureDiff.squaredNorm();
 
@@ -351,7 +351,7 @@ namespace HCSearch
 
 			VectorXd potential = VectorXd::Zero(2);
 
-			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationX2, 2);
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
 			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
 			double featureDistance = featureDiff.squaredNorm();
 
