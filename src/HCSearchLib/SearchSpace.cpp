@@ -314,7 +314,7 @@ namespace HCSearch
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
 		const double THETA_ALPHA = 1.0;
-		const double THETA_BETA = 1.0;
+		const double THETA_BETA = 0.5;
 		const double THETA_GAMMA = 1.0;
 
 		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
@@ -351,15 +351,15 @@ namespace HCSearch
 
 			VectorXd potential = VectorXd::Zero(2);
 
-			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
-			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
-			double featureDistance = featureDiff.squaredNorm();
+			//double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
+			//VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
+			//double featureDistance = featureDiff.squaredNorm();
 
-			double appearanceTerm = 1-exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
-			double smoothnessTerm = 1-exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
+			//double appearanceTerm = 1-exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
+			//double smoothnessTerm = 1-exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
 
-			potential(0) = appearanceTerm;
-			potential(1) = smoothnessTerm;
+			//potential(0) = appearanceTerm;
+			//potential(1) = smoothnessTerm;
 
 			return potential;
 		}
