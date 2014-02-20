@@ -118,16 +118,33 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Dense version of standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with unary and pairwise potentials.
 	 */
-	class DenseStandardFeatures : public StandardFeatures
+	class StandardFeatures2 : public IFeatureFunction
 	{
 	public:
-		DenseStandardFeatures();
-		~DenseStandardFeatures();
+		StandardFeatures2();
+		~StandardFeatures2();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 
 	protected:
+		/*!
+		 * @brief Compute unary term.
+		 */
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		
+		/*!
+		 * @brief Compute pairwise term.
+		 */
 		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute pairwise features.
+		 */
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
 	};
 
 	/*!
@@ -148,22 +165,6 @@ namespace HCSearch
 		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
 			int nodeLabel1, int nodeLabel2, int& classIndex);
-	};
-
-	/*!
-	 * @brief Unary confidences only features.
-	 */
-	class UnaryConfidencesFeatures : public IFeatureFunction
-	{
-	public:
-		UnaryConfidencesFeatures();
-		~UnaryConfidencesFeatures();
-
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
-
-	protected:
-		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
 	};
 
 	/*!
