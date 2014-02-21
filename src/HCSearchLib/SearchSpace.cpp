@@ -722,6 +722,7 @@ namespace HCSearch
 
 	/**************** Flipbit Successor Function ****************/
 
+	const double FlipbitSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const int FlipbitSuccessor::NUM_TOP_LABELS_KEEP = 2;
 	const double FlipbitSuccessor::BINARY_CONFIDENCE_THRESHOLD = 0.75;
 
@@ -841,6 +842,101 @@ namespace HCSearch
 				{
 					candidateLabelsSet.insert(*it2);
 				}
+			}
+			else
+			{
+				// if node is isolated without neighbors, then flip to any possible class
+				candidateLabelsSet = Global::settings->CLASSES.getLabels();
+			}
+
+			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
+
+			// for each candidate label, add to successors list for returning
+			for (set<int>::iterator it2 = candidateLabelsSet.begin(); it2 != candidateLabelsSet.end(); ++it2)
+			{
+				int candidateLabel = *it2;
+
+				// form successor object
+				LabelGraph graphNew;
+				graphNew.nodesData = YPred.graph.nodesData;
+				graphNew.nodesData(node) = candidateLabel; // flip bit node
+				graphNew.adjList = YPred.graph.adjList;
+
+				ImgLabeling YNew;
+				YNew.confidences = YPred.confidences;
+				YNew.confidencesAvailable = YPred.confidencesAvailable;
+				YNew.graph = graphNew;
+
+				// add candidate to successors
+				successors.push_back(YNew);
+			}
+		}
+
+		LOG() << "num successors=" << successors.size() << endl;
+
+		// prune to the bound
+		const int originalSize = successors.size();
+		if (originalSize > maxNumSuccessorCandidates)
+		{
+			random_shuffle(successors.begin(), successors.end());
+			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+				successors.pop_back();
+
+			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	/**************** Flipbit Confidences Neighbor Successor Function ****************/
+
+	FlipbitConfidencesNeighborSuccessor::FlipbitConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+	}
+
+	FlipbitConfidencesNeighborSuccessor::FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+	}
+
+	FlipbitConfidencesNeighborSuccessor::~FlipbitConfidencesNeighborSuccessor()
+	{
+	}
+	
+	vector< ImgLabeling > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		vector<ImgLabeling> successors;
+
+		// for all nodes
+		const int numNodes = YPred.getNumNodes();
+		for (int node = 0; node < numNodes; node++)
+		{
+			// set up candidate label set
+			set<int> candidateLabelsSet;
+			int nodeLabel = YPred.getLabel(node);
+			candidateLabelsSet.insert(nodeLabel);
+
+			if (YPred.hasNeighbors(node))
+			{
+				// add only neighboring labels to candidate label set
+				set<int> neighborLabels = YPred.getNeighborLabels(node);
+				for (set<int>::iterator it2 = neighborLabels.begin(); 
+					it2 != neighborLabels.end(); ++it2)
+				{
+					candidateLabelsSet.insert(*it2);
+				}
+
+				int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
+				set<int> confidentSet = YPred.getTopConfidentLabels(node, topKConfidences);
+				candidateLabelsSet.insert(confidentSet.begin(), confidentSet.end());
 			}
 			else
 			{

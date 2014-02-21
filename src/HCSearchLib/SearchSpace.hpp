@@ -294,6 +294,7 @@ namespace HCSearch
 	class FlipbitSuccessor : public ISuccessorFunction
 	{
 	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
 		static const int NUM_TOP_LABELS_KEEP;
 		static const double BINARY_CONFIDENCE_THRESHOLD;
 
@@ -316,6 +317,21 @@ namespace HCSearch
 		FlipbitNeighborSuccessor();
 		FlipbitNeighborSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitNeighborSuccessor();
+		
+		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+	};
+
+	/*!
+	 * @brief Deterministic flipbit successor function using top K confidences and neighbor labels.
+	 *
+	 * For each node, flip its label to a label of a confident or neighboring node.
+	 */
+	class FlipbitConfidencesNeighborSuccessor : public FlipbitSuccessor
+	{
+	public:
+		FlipbitConfidencesNeighborSuccessor();
+		FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates);
+		~FlipbitConfidencesNeighborSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 	};

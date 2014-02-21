@@ -3,6 +3,7 @@
 
 #include <map>
 #include <set>
+#include <queue>
 #include <fstream>
 #include "../../external/Eigen/Eigen/Dense"
 #include "MyPrimitives.hpp"
@@ -24,6 +25,16 @@ namespace HCSearch
 
 	const extern string SearchTypeStrings[];
 	const extern string DatasetTypeStrings[];
+
+	/**************** Priority Queues ****************/
+
+	class CompareByConfidence
+	{
+	public:
+		bool operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const;
+	};
+
+	typedef priority_queue<MyPrimitives::Pair<int, double>, vector< MyPrimitives::Pair<int, double> >, CompareByConfidence> LabelConfidencePQ;
 
 	/**************** Graph ****************/
 
@@ -240,6 +251,14 @@ namespace HCSearch
 		 * @return Returns true if there are neighbors
 		 */
 		bool hasNeighbors(int node);
+
+		/*!
+		 * @brief Get the labels of the top K confident labels.
+		 * @param[in] node Node index
+		 * @param[in] K top K confident labels to return
+		 * @return Returns the set of top K confident labels for the node
+		 */
+		set<int> getTopConfidentLabels(int node, int K);
 	};
 
 	/**************** Rank Features ****************/
