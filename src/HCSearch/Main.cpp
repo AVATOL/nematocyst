@@ -89,8 +89,16 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		heuristicFeatFunc = new HCSearch::UnaryFeatures();
 		break;
 	case MyProgramOptions::ProgramOptions::UNARY2:
-		LOG() << "unary 2 CRF features" << endl;
+		LOG() << "unary confidences CRF features" << endl;
 		heuristicFeatFunc = new HCSearch::UnaryFeatures2();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_BIGRAM:
+		LOG() << "pairwise bigram CRF features" << endl;
+		heuristicFeatFunc = new HCSearch::StandardBigramFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD3_BIGRAM:
+		LOG() << "pairwise bigram confidences CRF features" << endl;
+		heuristicFeatFunc = new HCSearch::StandardBigramFeatures3();
 		break;
 	case MyProgramOptions::ProgramOptions::DENSE_CRF:
 		LOG() << "dense CRF features" << endl;
@@ -122,8 +130,16 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		costFeatFunc = new HCSearch::UnaryFeatures();
 		break;
 	case MyProgramOptions::ProgramOptions::UNARY2:
-		LOG() << "unary 2 CRF features" << endl;
+		LOG() << "unary confidences CRF features" << endl;
 		costFeatFunc = new HCSearch::UnaryFeatures2();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_BIGRAM:
+		LOG() << "pairwise bigram CRF features" << endl;
+		costFeatFunc = new HCSearch::StandardBigramFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD3_BIGRAM:
+		LOG() << "pairwise bigram confidences CRF features" << endl;
+		costFeatFunc = new HCSearch::StandardBigramFeatures3();
 		break;
 	case MyProgramOptions::ProgramOptions::DENSE_CRF:
 		LOG() << "dense CRF features" << endl;

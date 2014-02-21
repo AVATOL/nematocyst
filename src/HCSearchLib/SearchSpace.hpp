@@ -204,6 +204,42 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Standard CRF features with unary and pairwise potentials.
+	 */
+	class StandardBigramFeatures : public StandardFeatures2
+	{
+	public:
+		StandardBigramFeatures();
+		~StandardBigramFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Standard CRF features with unary and pairwise potentials.
+	 */
+	class StandardBigramFeatures3 : public StandardFeatures3
+	{
+	public:
+		StandardBigramFeatures3();
+		~StandardBigramFeatures3();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
 	 * @brief Dense CRF features with unary and pairwise potentials.
 	 */
 	class DenseCRFFeatures : public IFeatureFunction

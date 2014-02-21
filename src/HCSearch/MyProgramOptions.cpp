@@ -329,6 +329,10 @@ namespace MyProgramOptions
 						po.heuristicFeaturesMode = UNARY;
 					else if (strcmp(argv[i+1], "unary2") == 0)
 						po.heuristicFeaturesMode = UNARY2;
+					else if (strcmp(argv[i+1], "standard-bigram") == 0)
+						po.heuristicFeaturesMode = STANDARD_BIGRAM;
+					else if (strcmp(argv[i+1], "standard3-bigram") == 0)
+						po.heuristicFeaturesMode = STANDARD3_BIGRAM;
 				}
 			}
 			else if (strcmp(argv[i], "--cfeatures") == 0)
@@ -347,6 +351,10 @@ namespace MyProgramOptions
 						po.costFeaturesMode = UNARY;
 					else if (strcmp(argv[i+1], "unary2") == 0)
 						po.costFeaturesMode = UNARY2;
+					else if (strcmp(argv[i+1], "standard-bigram") == 0)
+						po.costFeaturesMode = STANDARD_BIGRAM;
+					else if (strcmp(argv[i+1], "standard3-bigram") == 0)
+						po.costFeaturesMode = STANDARD3_BIGRAM;
 				}
 			}
 			else if (strcmp(argv[i], "--loss") == 0)
@@ -403,8 +411,8 @@ namespace MyProgramOptions
 		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
 		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
-		cerr << "\t--hfeatures arg\t\t" << ": standard|standard2|standard3|dense-crf|unary|unary2" << endl;
-		cerr << "\t--cfeatures arg\t\t" << ": standard|standard2|standard3|dense-crf|unary|unary2" << endl;
+		cerr << "\t--hfeatures arg\t\t" << ": standard|standard2|standard3|dense-crf|unary|unary2|standard-bigram|standard3-bigram" << endl;
+		cerr << "\t--cfeatures arg\t\t" << ": standard|standard2|standard3|dense-crf|unary|unary2|standard-bigram|standard3-bigram" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
