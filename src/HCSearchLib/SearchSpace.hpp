@@ -178,6 +178,32 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Unary only.
+	 */
+	class UnaryFeatures : public StandardFeatures
+	{
+	public:
+		UnaryFeatures();
+		~UnaryFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+	};
+
+	/*!
+	 * @brief Unary only with confidences.
+	 */
+	class UnaryFeatures2 : public StandardFeatures3
+	{
+	public:
+		UnaryFeatures2();
+		~UnaryFeatures2();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+	};
+
+	/*!
 	 * @brief Dense CRF features with unary and pairwise potentials.
 	 */
 	class DenseCRFFeatures : public IFeatureFunction

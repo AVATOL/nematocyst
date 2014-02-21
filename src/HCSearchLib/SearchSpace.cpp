@@ -446,6 +446,86 @@ namespace HCSearch
 		}
 	}
 
+	/**************** Unary Only Features ****************/
+
+	UnaryFeatures::UnaryFeatures()
+	{
+	}
+
+	UnaryFeatures::~UnaryFeatures()
+	{
+	}
+
+	RankFeatures UnaryFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int UnaryFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		return numClasses*unaryFeatDim;
+	}
+
+	/**************** Unary Only Confidences Features ****************/
+
+	UnaryFeatures2::UnaryFeatures2()
+	{
+	}
+
+	UnaryFeatures2::~UnaryFeatures2()
+	{
+	}
+
+	RankFeatures UnaryFeatures2::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int UnaryFeatures2::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim;
+	}
+
 	/**************** Dense CRF Features ****************/
 
 	DenseCRFFeatures::DenseCRFFeatures()
