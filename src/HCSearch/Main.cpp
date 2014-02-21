@@ -125,6 +125,11 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
 		successor = new HCSearch::FlipbitNeighborSuccessor(po.boundSuccessorCandidates);
 		break;
+	case MyProgramOptions::ProgramOptions::FLIPBIT_CONFIDENCES_NEIGHBORS:
+		LOG() << "flipbit confidences neighbors" << endl;
+		LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
+		successor = new HCSearch::FlipbitConfidencesNeighborSuccessor(po.boundSuccessorCandidates);
+		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
 		LOG() << "stochastic" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;

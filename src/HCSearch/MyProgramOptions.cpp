@@ -196,6 +196,8 @@ namespace MyProgramOptions
 						po.successorsMode = FLIPBIT;
 					else if (strcmp(argv[i+1], "flipbit-neighbors") == 0)
 						po.successorsMode = FLIPBIT_NEIGHBORS;
+					else if (strcmp(argv[i+1], "flipbit-confidences-neighbors") == 0)
+						po.successorsMode = FLIPBIT_CONFIDENCES_NEIGHBORS;
 					else if (strcmp(argv[i+1], "stochastic") == 0)
 						po.successorsMode = STOCHASTIC;
 					else if (strcmp(argv[i+1], "stochastic-neighbors") == 0)
@@ -399,7 +401,7 @@ namespace MyProgramOptions
 		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
-		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|"
+		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
 		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
