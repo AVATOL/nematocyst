@@ -16,7 +16,7 @@ namespace MyProgramOptions
 		// constants
 
 		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
-		enum FeaturesMode { STANDARD, STANDARD2, DENSE_CRF };
+		enum FeaturesMode { STANDARD, STANDARD2, STANDARD3, DENSE_CRF };
 		enum InitialFunctionMode { LOG_REG };
 		enum SuccessorsMode { FLIPBIT, FLIPBIT_NEIGHBORS, FLIPBIT_CONFIDENCES_NEIGHBORS, 
 			STOCHASTIC, STOCHASTIC_NEIGHBORS, STOCHASTIC_CONFIDENCES_NEIGHBORS, 
