@@ -337,9 +337,9 @@ namespace HCSearch
 
 		USE_DAGGER = false;
 		PRUNE_SVM_RANK_EXAMPLES = true;
-		PRUNE_SVM_RANK_RATIO = 0.75;
+		PRUNE_SVM_RANK_RATIO = 0.25;
 		PRUNE_SVM_RANK_MIN_EXAMPLES = 5;
-		PRUNE_SVM_RANK_MAX_EXAMPLES = 100;
+		PRUNE_SVM_RANK_MAX_EXAMPLES = 75;
 
 		/**************** Experiment Settings ****************/
 
