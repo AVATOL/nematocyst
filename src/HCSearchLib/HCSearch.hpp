@@ -752,10 +752,29 @@ namespace HCSearch
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
+		/*!
+		 * Learn heuristic or cost function via decomposed learning. 
+		 * @param[in] XTrain Vector of structured features for training
+		 * @param[in] YTrain Vector of structured labelings for training
+		 * @param[in] XValidation Vector of structured features for validation
+		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] numHops Number of hops from ground truth
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] rankerType Rank learner type
+		 * @return Returns the learned model
+		 */
+		static IRankModel* learnDecomposed(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, int numHops, SearchSpace* searchSpace, RankerType rankerType);
+
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
 		static void finishLearning(IRankModel* learningModel, SearchType searchType);
+
+		static void learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel);
+
+		static void learnDecomposedProcedureHelper(ImgFeatures& X, ImgLabeling* YTruth, set<int> nodeSet, int numHops, SearchSpace* searchSpace, IRankModel* learningModel);
     };
 
 	/*! @} */
