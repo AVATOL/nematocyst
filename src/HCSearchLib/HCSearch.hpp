@@ -760,7 +760,6 @@ namespace HCSearch
 		 * @param[in] YValidation Vector of structured labelings for validation
 		 * @param[in] numHops Number of hops from ground truth
 		 * @param[in] searchSpace Search space definition
-		 * @param[in] searchProcedure Search procedure
 		 * @param[in] rankerType Rank learner type
 		 * @return Returns the learned model
 		 */

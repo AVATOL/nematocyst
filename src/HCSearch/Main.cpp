@@ -266,6 +266,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
 	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE;
 	string costRandomHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE;
+	string decomposedModelPath = HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = po.rankLearnerType;
@@ -398,6 +399,34 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNCRHSTART");
 		MPI::Synchronize::slavesWait("LEARNCRHEND");
+#endif
+
+			break;
+		}
+		case HCSearch::LEARN_DECOMPOSED:
+		{
+			LOG() << "=== Decomposed Learning ===" << endl;
+
+			// decomposed learning model
+			HCSearch::IRankModel* decomposedModel = HCSearch::Learning::learnDecomposed(XTrain, YTrain, XValidation, YValidation, 
+				timeBound, searchSpace, po.rankLearnerType);
+			
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				// save as heuristic and cost models
+				HCSearch::Model::saveModel(decomposedModel, heuristicModelPath, rankerType);
+				HCSearch::Model::saveModel(decomposedModel, costModelPath, rankerType);
+				if (po.saveFeaturesFiles && HCSearch::RankerTypeSaveable[po.rankLearnerType])
+					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE, 
+						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_DECOMPOSED_LEARNING_FEATURES_FILE);
+			}
+			
+			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			delete decomposedModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNDSTART");
+		MPI::Synchronize::slavesWait("LEARNDEND");
 #endif
 
 			break;
