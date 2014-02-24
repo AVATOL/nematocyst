@@ -993,10 +993,100 @@ namespace HCSearch
 
 	void Learning::learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel)
 	{
-		learnDecomposedProcedureHelper(X, YTruth, set<int>(), numHops, searchSpace, learningModel);
+		vector< RankFeatures > bestFeatures;
+		vector< double > bestLosses;
+		bestFeatures.push_back(searchSpace->computeHeuristicFeatures(X, *YTruth));
+		bestLosses.push_back(0);
+
+		vector< RankFeatures > worstFeatures;
+		vector< double > worstLosses;
+
+		learnDecomposedProcedureHelper(X, YTruth, set<int>(), numHops, searchSpace, learningModel, worstFeatures, worstLosses);
+
+		// train depending on ranker
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			// train
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
+
+		}
+		else if (learningModel->rankerType() == ONLINE_RANK)
+		{
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
+
+			// find the best scoring output overall according to the current cost model
+			double bestScore;
+			bool fromWorstSet = false;
+
+			const int numBestFeatures = bestFeatures.size();
+			for (int i = 0; i < numBestFeatures; i++)
+			{
+				RankFeatures feature = bestFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (i == 0 || score <= bestScore)
+				{
+					bestScore = score;
+				}
+			}
+			const int numWorstFeatures = worstFeatures.size();
+			for (int i = 0; i < numWorstFeatures; i++)
+			{
+				RankFeatures feature = worstFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (score <= bestScore)
+				{
+					bestScore = score;
+					fromWorstSet = true;
+				}
+			}
+
+			// perform update if necessary
+			if (fromWorstSet)
+			{
+				// find best scoring output in the best set according to current weights
+				RankFeatures bestCostFeature;
+				double bestScore;
+				double bestLoss;
+
+				const int numBestFeatures = bestFeatures.size();
+				for (int i = 0; i < numBestFeatures; i++)
+				{
+					RankFeatures feature = bestFeatures[i];
+					double score = onlineRankModel->rank(feature);
+					if (i == 0 || score < bestScore)
+					{
+						bestCostFeature = feature;
+						bestScore = score;
+						bestLoss = bestLosses[i];
+					}
+				}
+
+				// perform update
+				for (int i = 0; i < numWorstFeatures; i++)
+				{
+					RankFeatures worseFeature = worstFeatures[i];
+					double score = onlineRankModel->rank(worseFeature);
+					double bestScore = onlineRankModel->rank(bestCostFeature);
+
+					if (score >= bestScore)
+					{
+						double delta = worstLosses[i] - bestLoss;
+						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
+						onlineRankModel->performOnlineUpdate(delta, featureDiff);
+					}
+				}
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unknown ranker type";
+			abort();
+		}
 	}
 
-	void Learning::learnDecomposedProcedureHelper(ImgFeatures& X, ImgLabeling* YTruth, set<int> nodeSet, int numHops, SearchSpace* searchSpace, IRankModel* learningModel)
+	void Learning::learnDecomposedProcedureHelper(ImgFeatures& X, ImgLabeling* YTruth, set<int> nodeSet, int numHops, SearchSpace* searchSpace, IRankModel* learningModel, 
+		vector< RankFeatures >& worstFeatures, vector< double >& worstLosses)
 	{
 		const int numNodes = YTruth->getNumNodes();
 		if (numHops < 0)
@@ -1007,7 +1097,7 @@ namespace HCSearch
 		else if (numHops > 0 && nodeSet.size() == numNodes)
 		{
 			// in case number of hops is larger than number of nodes
-			learnDecomposedProcedureHelper(X, YTruth, nodeSet, 0, searchSpace, learningModel);
+			learnDecomposedProcedureHelper(X, YTruth, nodeSet, 0, searchSpace, learningModel, worstFeatures, worstLosses);
 		}
 		else if (numHops == 0)
 		{
@@ -1016,9 +1106,6 @@ namespace HCSearch
 			vector< double > bestLosses;
 			bestFeatures.push_back(searchSpace->computeHeuristicFeatures(X, *YTruth));
 			bestLosses.push_back(0);
-
-			vector< RankFeatures > worstFeatures;
-			vector< double > worstLosses;
 
 			// generate bad example for each node and label combination
 			for (set<int>::iterator it = nodeSet.begin(); it != nodeSet.end(); ++it)
@@ -1041,87 +1128,6 @@ namespace HCSearch
 					worstLosses.push_back(searchSpace->computeLoss(YNew, *YTruth));
 				}
 			}
-
-			// train depending on ranker
-			if (learningModel->rankerType() == SVM_RANK)
-			{
-				// train
-				SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-				svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
-
-			}
-			else if (learningModel->rankerType() == ONLINE_RANK)
-			{
-				OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
-
-				// find the best scoring output overall according to the current cost model
-				double bestScore;
-				bool fromWorstSet = false;
-
-				const int numBestFeatures = bestFeatures.size();
-				for (int i = 0; i < numBestFeatures; i++)
-				{
-					RankFeatures feature = bestFeatures[i];
-					double score = onlineRankModel->rank(feature);
-					if (i == 0 || score <= bestScore)
-					{
-						bestScore = score;
-					}
-				}
-				const int numWorstFeatures = worstFeatures.size();
-				for (int i = 0; i < numWorstFeatures; i++)
-				{
-					RankFeatures feature = worstFeatures[i];
-					double score = onlineRankModel->rank(feature);
-					if (score <= bestScore)
-					{
-						bestScore = score;
-						fromWorstSet = true;
-					}
-				}
-
-				// perform update if necessary
-				if (fromWorstSet)
-				{
-					// find best scoring output in the best set according to current weights
-					RankFeatures bestCostFeature;
-					double bestScore;
-					double bestLoss;
-
-					const int numBestFeatures = bestFeatures.size();
-					for (int i = 0; i < numBestFeatures; i++)
-					{
-						RankFeatures feature = bestFeatures[i];
-						double score = onlineRankModel->rank(feature);
-						if (i == 0 || score < bestScore)
-						{
-							bestCostFeature = feature;
-							bestScore = score;
-							bestLoss = bestLosses[i];
-						}
-					}
-
-					// perform update
-					for (int i = 0; i < numWorstFeatures; i++)
-					{
-						RankFeatures worseFeature = worstFeatures[i];
-						double score = onlineRankModel->rank(worseFeature);
-						double bestScore = onlineRankModel->rank(bestCostFeature);
-
-						if (score >= bestScore)
-						{
-							double delta = worstLosses[i] - bestLoss;
-							VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
-							onlineRankModel->performOnlineUpdate(delta, featureDiff);
-						}
-					}
-				}
-			}
-			else
-			{
-				LOG(ERROR) << "unknown ranker type";
-				abort();
-			}
 		}
 		else
 		{
@@ -1133,7 +1139,7 @@ namespace HCSearch
 
 				set<int> newNodes = nodeSet;
 				newNodes.insert(node);
-				learnDecomposedProcedureHelper(X, YTruth, newNodes, numHops-1, searchSpace, learningModel);
+				learnDecomposedProcedureHelper(X, YTruth, newNodes, numHops-1, searchSpace, learningModel, worstFeatures, worstLosses);
 			}
 		}
 	}
