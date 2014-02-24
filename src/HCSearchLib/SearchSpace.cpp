@@ -226,6 +226,8 @@ namespace HCSearch
 			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
 		}
 
+		phi = 1.0/X.getNumNodes() * phi;
+
 		return phi;
 	}
 	
@@ -239,6 +241,7 @@ namespace HCSearch
 		
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
+		int numEdges = 0;
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
 			if (X.graph.adjList.count(node1) == 0)
@@ -250,6 +253,7 @@ namespace HCSearch
 			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
 			{
 				int node2 = *it;
+				numEdges++;
 
 				// get node features and label
 				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
@@ -264,7 +268,9 @@ namespace HCSearch
 			}
 		}
 
-		return 0.5*phi;
+		phi = 1.0/numEdges * phi;
+
+		return phi;
 	}
 
 	VectorXd StandardFeatures2::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
@@ -372,6 +378,8 @@ namespace HCSearch
 			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
 		}
 
+		phi = 1.0/X.getNumNodes() * phi;
+
 		return phi;
 	}
 	
@@ -385,6 +393,7 @@ namespace HCSearch
 		
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
+		int numEdges = 0;
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
 			if (X.graph.adjList.count(node1) == 0)
@@ -396,6 +405,7 @@ namespace HCSearch
 			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
 			{
 				int node2 = *it;
+				numEdges++;
 
 				// get node features and label
 				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
@@ -410,7 +420,9 @@ namespace HCSearch
 			}
 		}
 
-		return 0.5*phi;
+		phi = 1.0/numEdges * phi;
+
+		return phi;
 	}
 
 	VectorXd StandardFeatures3::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
@@ -579,6 +591,7 @@ namespace HCSearch
 		
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
+		int numEdges = 0;
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
 			if (X.graph.adjList.count(node1) == 0)
@@ -590,6 +603,7 @@ namespace HCSearch
 			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
 			{
 				int node2 = *it;
+				numEdges++;
 
 				// get node features and label
 				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
@@ -604,7 +618,9 @@ namespace HCSearch
 			}
 		}
 
-		return 0.5*phi;
+		phi = 1.0/numEdges * phi;
+
+		return phi;
 	}
 
 	VectorXd StandardBigramFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
@@ -676,6 +692,7 @@ namespace HCSearch
 		
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
+		int numEdges = 0;
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
 			if (X.graph.adjList.count(node1) == 0)
@@ -687,6 +704,7 @@ namespace HCSearch
 			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
 			{
 				int node2 = *it;
+				numEdges++;
 
 				// get node features and label
 				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
@@ -701,7 +719,9 @@ namespace HCSearch
 			}
 		}
 
-		return 0.5*phi;
+		phi = 1.0/numEdges * phi;
+
+		return phi;
 	}
 
 	VectorXd StandardBigramFeatures3::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
@@ -792,6 +812,8 @@ namespace HCSearch
 			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
 		}
 
+		phi = 1.0/X.getNumNodes() * phi;
+
 		return phi;
 	}
 
@@ -805,10 +827,13 @@ namespace HCSearch
 		
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
+		int numEdges = 0;
 		for (int node1 = 0; node1 < numNodes; node1++)
 		{
 			for (int node2 = node1+1; node2 < numNodes; node2++)
 			{
+				numEdges++;
+
 				// get node features and label
 				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
 				double nodeLocationX1 = X.getNodeLocationX(node1);
@@ -827,6 +852,8 @@ namespace HCSearch
 				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
 			}
 		}
+
+		phi = 1.0/numEdges * phi;
 
 		return phi;
 	}
