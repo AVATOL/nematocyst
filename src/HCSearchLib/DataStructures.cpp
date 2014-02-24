@@ -316,7 +316,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -348,11 +348,17 @@ namespace HCSearch
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
-		else if (searchType == LEARN_C_ORACLE_H)
+		else if (searchType == LEARN_C_RANDOM_H)
 		{
 			STARTMSG = "MERGECRHSTART";
 			ENDMSG = "MERGECRHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_DECOMPOSED)
+		{
+			STARTMSG = "MERGEDSTART";
+			ENDMSG = "MERGEDEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
