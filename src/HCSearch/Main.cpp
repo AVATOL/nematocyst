@@ -409,7 +409,7 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			// decomposed learning model
 			HCSearch::IRankModel* decomposedModel = HCSearch::Learning::learnDecomposed(XTrain, YTrain, XValidation, YValidation, 
-				timeBound, searchSpace, po.rankLearnerType);
+				1, searchSpace, po.rankLearnerType);
 			
 			if (HCSearch::Global::settings->RANK == 0)
 			{
