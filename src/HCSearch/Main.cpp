@@ -416,6 +416,7 @@ void run(MyProgramOptions::ProgramOptions po)
 				// save as heuristic and cost models
 				HCSearch::Model::saveModel(decomposedModel, heuristicModelPath, rankerType);
 				HCSearch::Model::saveModel(decomposedModel, costModelPath, rankerType);
+				HCSearch::Model::saveModel(decomposedModel, costOracleHModelPath, rankerType);
 				if (po.saveFeaturesFiles && HCSearch::RankerTypeSaveable[po.rankLearnerType])
 					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE, 
 						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_DECOMPOSED_LEARNING_FEATURES_FILE);
