@@ -120,6 +120,9 @@ namespace HCSearch
 		ImgLabeling hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
 
+		ImgLabeling hcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
+
 		/*!
 		 * @brief Convenience function for LL-search.
 		 */

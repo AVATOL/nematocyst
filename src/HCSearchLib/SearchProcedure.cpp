@@ -150,6 +150,13 @@ namespace HCSearch
 			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
+	ImgLabeling ISearchProcedure::hcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
+	{
+		return searchProcedure(HC, X, YTruth, timeBound, 
+			searchSpace, heuristicModel, costModel, searchMetadata);
+	}
+
 	ImgLabeling ISearchProcedure::rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
 		SearchSpace* searchSpace, SearchMetadata searchMetadata)
 	{

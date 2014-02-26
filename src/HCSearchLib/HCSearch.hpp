@@ -865,6 +865,11 @@ namespace HCSearch
 			IRankModel* heuristicModel, IRankModel* costModel, 
 			ISearchProcedure::SearchMetadata searchMetadata);
 
+		static ImgLabeling runHCSearch(ImgFeatures* X, ImgLabeling* YTruth, int timeBound, 
+			SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+			IRankModel* heuristicModel, IRankModel* costModel, 
+			ISearchProcedure::SearchMetadata searchMetadata);
+
 		/*!
 		 * Run RL-search (random heuristic, oracle cost).
 		 * @param[in] X Input structured features

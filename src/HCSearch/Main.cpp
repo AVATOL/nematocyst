@@ -657,7 +657,7 @@ void run(MyProgramOptions::ProgramOptions po)
 					meta.iter = iter;
 
 					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTest[i], 
+					HCSearch::ImgLabeling YPred = HCSearch::Inference::runHCSearch(XTest[i], YTest[i], 
 						timeBound, searchSpace, searchProcedure, heuristicModel, costModel, meta);
 
 					// save the prediction
