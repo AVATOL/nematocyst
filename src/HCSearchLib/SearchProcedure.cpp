@@ -95,6 +95,26 @@ namespace HCSearch
 		}
 	}
 
+	void SavePrediction::saveCandidateLosses(vector<double>& losses, string fileName)
+	{
+		// write to file
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			for (vector<double>::iterator it = losses.begin(); it != losses.end(); ++it)
+			{
+				double loss = *it;
+				fh << loss << endl;
+			}
+
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to write candidate losses!";
+		}
+	}
+
 	/**************** Search Procedure ****************/
 
 	ISearchProcedure::SearchMetadata::SearchMetadata()
@@ -443,7 +463,27 @@ namespace HCSearch
 			trainCostRanker(costModel, costSet);
 
 		// clean up cost set
-		deleteQueueElements(costSet);
+		//deleteQueueElements(costSet);
+		vector<double> candidateLosses;
+		while (!costSet.empty())
+		{
+			ISearchNode* state = costSet.top();
+			costSet.pop();
+			if (YTruth != NULL)
+				candidateLosses.push_back(searchSpace->computeLoss(*YTruth, state->getY()));
+			delete state;
+		}
+		if (YTruth != NULL)
+		{
+			stringstream ssLosses;
+			ssLosses << Global::settings->paths->OUTPUT_RESULTS_DIR << "candidatelosses" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+			SavePrediction::saveCandidateLosses(candidateLosses, ssLosses.str());
+		}
 
 		clock_t toc = clock();
 		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;

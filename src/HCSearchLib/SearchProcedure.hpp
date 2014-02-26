@@ -29,6 +29,8 @@ namespace HCSearch
 		 * Save the labeling as a label mask using the segments data.
 		 */
 		static void saveLabelMask(ImgFeatures& X, ImgLabeling& YPred, string fileName);
+
+		static void saveCandidateLosses(vector<double>& losses, string fileName);
 	};
 
 	/*!
