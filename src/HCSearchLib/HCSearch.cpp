@@ -1105,11 +1105,7 @@ namespace HCSearch
 		}
 		else if (numHops == 0)
 		{
-			// main base case
-			vector< RankFeatures > bestFeatures;
-			vector< double > bestLosses;
-			bestFeatures.push_back(searchSpace->computeHeuristicFeatures(X, *YTruth));
-			bestLosses.push_back(0);
+			ImgLabeling YPred = searchSpace->getInitialPrediction(X);
 
 			// generate bad example for each node and label combination
 			for (set<int>::iterator it = nodeSet.begin(); it != nodeSet.end(); ++it)
@@ -1126,6 +1122,8 @@ namespace HCSearch
 					ImgLabeling YNew;
 					YNew.graph = YTruth->graph;
 					YNew.graph.nodesData(node) = label;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = true;
 
 					// generate ranking example
 					worstFeatures.push_back(searchSpace->computeHeuristicFeatures(X, YNew));
