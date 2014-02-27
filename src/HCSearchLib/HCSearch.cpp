@@ -995,7 +995,11 @@ namespace HCSearch
 	{
 		vector< RankFeatures > bestFeatures;
 		vector< double > bestLosses;
+		ImgLabeling YPred = searchSpace->getInitialPrediction(X);
+		YTruth->confidences = YPred.confidences;
+		YTruth->confidencesAvailable = true;
 		bestFeatures.push_back(searchSpace->computeHeuristicFeatures(X, *YTruth));
+		YTruth->confidencesAvailable = false;
 		bestLosses.push_back(0);
 
 		vector< RankFeatures > worstFeatures;
