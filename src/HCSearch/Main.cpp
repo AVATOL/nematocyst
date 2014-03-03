@@ -28,9 +28,9 @@ int main(int argc, char* argv[])
 
 	// configure settings
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
-	HCSearch::Global::settings->paths->INPUT_SPLITS_TRAIN_FILE = po.splitsTrainName;
-	HCSearch::Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE = po.splitsValidName;
-	HCSearch::Global::settings->paths->INPUT_SPLITS_TEST_FILE = po.splitsTestName;
+	HCSearch::Global::settings->paths->INPUT_SPLITS_TRAIN_FILE_BASE = po.splitsTrainName;
+	HCSearch::Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE_BASE = po.splitsValidName;
+	HCSearch::Global::settings->paths->INPUT_SPLITS_TEST_FILE_BASE = po.splitsTestName;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);
