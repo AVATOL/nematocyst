@@ -196,6 +196,10 @@ namespace HCSearch
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
 
+		INPUT_SPLITS_TRAIN_FILE_BASE = "Train.txt";
+		INPUT_SPLITS_VALIDATION_FILE_BASE = "Validation.txt";
+		INPUT_SPLITS_TEST_FILE_BASE = "Test.txt";
+
 		// output directories
 
 		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
@@ -227,9 +231,9 @@ namespace HCSearch
 		this->paths->INPUT_SEGMENTS_DIR = this->paths->INPUT_DIR + "segments" + this->paths->DIR_SEP;
 		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + this->paths->INPUT_SPLITS_FOLDER_NAME + this->paths->DIR_SEP;
 
-		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + "Train.txt";
-		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + "Validation.txt";
-		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + "Test.txt";
+		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TRAIN_FILE_BASE;
+		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_VALIDATION_FILE_BASE;
+		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TEST_FILE_BASE;
 
 		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";
 		this->paths->INPUT_CODEBOOK_FILE = this->paths->INPUT_DIR + "codebook.txt";

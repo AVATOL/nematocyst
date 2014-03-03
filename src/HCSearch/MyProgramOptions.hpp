@@ -30,6 +30,9 @@ namespace MyProgramOptions
 		string inputDir;
 		string outputDir;
 		string splitsFolderName;
+		string splitsTrainName;
+		string splitsValidName;
+		string splitsTestName;
 
 		// time bound
 

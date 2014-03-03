@@ -11,6 +11,9 @@ namespace MyProgramOptions
 		inputDir = "";
 		outputDir = "";
 		splitsFolderName = "splits";
+		splitsTrainName = "Train.txt";
+		splitsValidName = "Validation.txt";
+		splitsTestName = "Test.txt";
 
 		// time bound
 
@@ -87,6 +90,27 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					po.splitsFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--splits-train-file") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsTrainName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--splits-valid-file") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsValidName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--splits-test-file") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsTestName = argv[i+1];
 				}
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
@@ -423,6 +447,9 @@ namespace MyProgramOptions
 		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
 		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
+		cerr << "\t--splits-train-file arg\t" << ": specify alternate file name to train file" << endl;
+		cerr << "\t--splits-valid-file arg\t" << ": specify alternate file name to validation file" << endl;
+		cerr << "\t--splits-test-file arg\t" << ": specify alternate file name to test file" << endl;
 		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
