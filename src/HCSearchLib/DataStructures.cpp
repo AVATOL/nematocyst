@@ -366,7 +366,7 @@ namespace HCSearch
 		// merge step
 		if (Global::settings->RANK == 0)
 		{
-			this->qid = mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES, this->qid-1);
+			this->qid = mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES, this->qid);
 		}
 #endif
 
@@ -547,10 +547,13 @@ namespace HCSearch
 
 	int SVMRankModel::mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID)
 	{
-		int currentQID = totalMasterQID;
-
 		string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, 0);
 		LOG() << "Merging to main feature file: " << FEATURES_FILE << endl;
+
+		if (numProcesses == 1)
+			return totalMasterQID;
+
+		int currentQID = totalMasterQID-1;
 
 		ofstream ofh;
 		ofh.open(FEATURES_FILE.c_str(), std::ios_base::app);
