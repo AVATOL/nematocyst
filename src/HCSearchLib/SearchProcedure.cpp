@@ -477,7 +477,10 @@ namespace HCSearch
 			ISearchNode* state = costSet.top();
 			costSet.pop();
 			if (YTruth != NULL)
-				candidateLosses.push_back(searchSpace->computeLoss(state->getY(), *YTruth));
+			{
+				ImgLabeling YPred = state->getY();
+				candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
+			}
 			delete state;
 		}
 		if (YTruth != NULL)
