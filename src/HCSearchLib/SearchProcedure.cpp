@@ -477,7 +477,7 @@ namespace HCSearch
 			ISearchNode* state = costSet.top();
 			costSet.pop();
 			if (YTruth != NULL)
-				candidateLosses.push_back(searchSpace->computeLoss(*YTruth, state->getY()));
+				candidateLosses.push_back(searchSpace->computeLoss(state->getY(), *YTruth));
 			delete state;
 		}
 		if (YTruth != NULL)
