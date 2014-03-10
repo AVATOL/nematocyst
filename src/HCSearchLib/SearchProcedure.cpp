@@ -595,7 +595,7 @@ namespace HCSearch
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
 				ISearchNode* state = *it;
-				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
+				if (!isDuplicate(state, candidateSetTemp) && !isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
 					candidateSetTemp.push(state);
 				}
@@ -713,7 +713,7 @@ namespace HCSearch
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
 				ISearchNode* state = *it;
-				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
+				if (!isDuplicate(state, candidateSetTemp) && !isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
 					candidateSetTemp.push(state);
 				}
