@@ -85,6 +85,8 @@ namespace HCSearch
 		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
 		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByCost> SearchNodeCostPQ;
 
+		static const int PRUNE_MAX_NUM_CANDIDATES;
+
 	public:
 		virtual ~ISearchProcedure() {}
 

@@ -117,6 +117,9 @@ namespace HCSearch
 
 	/**************** Search Procedure ****************/
 
+	//TODO: get this value from command line
+	const int ISearchProcedure::PRUNE_MAX_NUM_CANDIDATES = 100;
+
 	ISearchProcedure::SearchMetadata::SearchMetadata()
 	{
 		this->saveAnytimePredictions = false;
@@ -581,6 +584,8 @@ namespace HCSearch
 		// expand each element
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
+			SearchNodeHeuristicPQ candidateSetTemp;
+
 			ISearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
@@ -592,8 +597,19 @@ namespace HCSearch
 				ISearchNode* state = *it;
 				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
-					candidateSet.push(state);
+					candidateSetTemp.push(state);
 				}
+			}
+
+			// prune
+			for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
+			{
+				if (candidateSetTemp.empty())
+					break;
+
+				ISearchNode* state = candidateSetTemp.top();
+				candidateSet.push(state);
+				candidateSetTemp.pop();
 			}
 		}
 
@@ -676,6 +692,8 @@ namespace HCSearch
 		// expand each element
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
+			SearchNodeHeuristicPQ candidateSetTemp;
+
 			ISearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
@@ -687,8 +705,19 @@ namespace HCSearch
 				ISearchNode* state = *it;
 				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
-					candidateSet.push(state);
+					candidateSetTemp.push(state);
 				}
+			}
+
+			// prune
+			for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
+			{
+				if (candidateSetTemp.empty())
+					break;
+
+				ISearchNode* state = candidateSetTemp.top();
+				candidateSet.push(state);
+				candidateSetTemp.pop();
 			}
 		}
 

@@ -1231,15 +1231,15 @@ namespace HCSearch
 		LOG() << "num successors=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
-		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+		//const int originalSize = successors.size();
+		//if (originalSize > maxNumSuccessorCandidates)
+		//{
+		//	random_shuffle(successors.begin(), successors.end());
+		//	for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+		//		successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
-		}
+		//	LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		//}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
@@ -1322,15 +1322,15 @@ namespace HCSearch
 		LOG() << "num successors=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
-		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+		//const int originalSize = successors.size();
+		//if (originalSize > maxNumSuccessorCandidates)
+		//{
+		//	random_shuffle(successors.begin(), successors.end());
+		//	for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+		//		successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
-		}
+		//	LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		//}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
@@ -1417,15 +1417,15 @@ namespace HCSearch
 		LOG() << "num successors=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
-		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+		//const int originalSize = successors.size();
+		//if (originalSize > maxNumSuccessorCandidates)
+		//{
+		//	random_shuffle(successors.begin(), successors.end());
+		//	for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+		//		successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
-		}
+		//	LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		//}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
@@ -1477,15 +1477,15 @@ namespace HCSearch
 		LOG() << "num successors=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
-		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+		//const int originalSize = successors.size();
+		//if (originalSize > maxNumSuccessorCandidates)
+		//{
+		//	random_shuffle(successors.begin(), successors.end());
+		//	for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+		//		successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
-		}
+		//	LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		//}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
@@ -1812,15 +1812,15 @@ namespace HCSearch
 		LOG() << "num successors=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
-		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+		//const int originalSize = successors.size();
+		//if (originalSize > maxNumSuccessorCandidates)
+		//{
+		//	random_shuffle(successors.begin(), successors.end());
+		//	for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+		//		successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
-		}
+		//	LOG() << "\tpruned to num successors=" << successors.size() << endl;
+		//}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
