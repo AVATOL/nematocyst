@@ -616,7 +616,7 @@ namespace HCSearch
 			while (!candidateSetTemp.empty())
 			{
 				ISearchNode* state = candidateSetTemp.top();
-				costSet.pop();
+				candidateSetTemp.pop();
 				delete state;
 			}
 			LOG() << "num candidates=" << numCandidates << endl;
@@ -734,7 +734,7 @@ namespace HCSearch
 			while (!candidateSetTemp.empty())
 			{
 				ISearchNode* state = candidateSetTemp.top();
-				costSet.pop();
+				candidateSetTemp.pop();
 				delete state;
 			}
 			LOG() << "num candidates=" << numCandidates << endl;
