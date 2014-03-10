@@ -602,6 +602,7 @@ namespace HCSearch
 			}
 
 			// prune
+			int numCandidates = candidateSetTemp.size();
 			for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
 			{
 				if (candidateSetTemp.empty())
@@ -611,6 +612,15 @@ namespace HCSearch
 				candidateSet.push(state);
 				candidateSetTemp.pop();
 			}
+			int numPrunedCandidates = candidateSetTemp.size();
+			while (!candidateSetTemp.empty())
+			{
+				ISearchNode* state = candidateSetTemp.top();
+				costSet.pop();
+				delete state;
+			}
+			LOG() << "num candidates=" << numCandidates << endl;
+			LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
 		}
 
 		return candidateSet;
@@ -710,6 +720,7 @@ namespace HCSearch
 			}
 
 			// prune
+			int numCandidates = candidateSetTemp.size();
 			for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
 			{
 				if (candidateSetTemp.empty())
@@ -719,6 +730,15 @@ namespace HCSearch
 				candidateSet.push(state);
 				candidateSetTemp.pop();
 			}
+			int numPrunedCandidates = candidateSetTemp.size();
+			while (!candidateSetTemp.empty())
+			{
+				ISearchNode* state = candidateSetTemp.top();
+				costSet.pop();
+				delete state;
+			}
+			LOG() << "num candidates=" << numCandidates << endl;
+			LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
 		}
 
 		// add remaining openSet to candidate set
