@@ -29,6 +29,8 @@ namespace HCSearch
 		 * Save the labeling as a label mask using the segments data.
 		 */
 		static void saveLabelMask(ImgFeatures& X, ImgLabeling& YPred, string fileName);
+
+		static void saveCandidateLosses(vector<double>& losses, string fileName);
 	};
 
 	/*!
@@ -83,6 +85,8 @@ namespace HCSearch
 		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
 		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByCost> SearchNodeCostPQ;
 
+		static const int PRUNE_MAX_NUM_CANDIDATES;
+
 	public:
 		virtual ~ISearchProcedure() {}
 
@@ -116,6 +120,9 @@ namespace HCSearch
 		 * @brief Convenience function for HC-search.
 		 */
 		ImgLabeling hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
+			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
+
+		ImgLabeling hcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
 
 		/*!

@@ -16,12 +16,12 @@ namespace MyProgramOptions
 		// constants
 
 		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
-		enum FeaturesMode { STANDARD };
+		enum FeaturesMode { STANDARD, STANDARD_ALT, STANDARD_CONF, DENSE_CRF, UNARY, UNARY_CONF, STANDARD_PAIR_COUNTS, STANDARD_CONF_PAIR_COUNTS };
 		enum InitialFunctionMode { LOG_REG };
-		enum SuccessorsMode { FLIPBIT, FLIPBIT_NEIGHBORS, 
+		enum SuccessorsMode { FLIPBIT, FLIPBIT_NEIGHBORS, FLIPBIT_CONFIDENCES_NEIGHBORS, 
 			STOCHASTIC, STOCHASTIC_NEIGHBORS, STOCHASTIC_CONFIDENCES_NEIGHBORS, 
 			CUT_SCHEDULE, CUT_SCHEDULE_NEIGHBORS, CUT_SCHEDULE_CONFIDENCES_NEIGHBORS };
-		enum LossMode { HAMMING };
+		enum LossMode { HAMMING, PIXEL_HAMMING };
 
 		enum StochasticCutMode { STATE, EDGES };
 
@@ -30,6 +30,9 @@ namespace MyProgramOptions
 		string inputDir;
 		string outputDir;
 		string splitsFolderName;
+		string splitsTrainName;
+		string splitsValidName;
+		string splitsTestName;
 
 		// time bound
 

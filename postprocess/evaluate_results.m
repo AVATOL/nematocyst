@@ -73,6 +73,10 @@ for s = searchTypes
     stat.binary_rec = zeros(length(foldRange), length(timeRange));
     stat.binary_f1 = zeros(length(foldRange), length(timeRange));
     
+    stat.numcorrect = zeros(length(foldRange), length(timeRange));
+    stat.totals = zeros(length(foldRange), length(timeRange));
+    stat.hamming = zeros(length(foldRange), length(timeRange));
+    
     stat.avgmacroprec = zeros(1, length(timeRange));
     stat.avgmacrorec = zeros(1, length(timeRange));
     stat.avgmacrof1 = zeros(1, length(timeRange));
@@ -94,6 +98,9 @@ for s = searchTypes
     stat.binary_stdrec = zeros(1, length(timeRange));
     stat.binary_stdf1 = zeros(1, length(timeRange));
     
+    stat.avghamming = zeros(1, length(timeRange));
+    stat.stdhamming = zeros(1, length(timeRange));
+    
     %% for each fold
     for fd = 1:length(foldRange)
         fold = foldRange(fd);
@@ -107,6 +114,14 @@ for s = searchTypes
             %% read truth nodes
             truthNodesPath = [preprocessedDir '/nodes/' fileName '.txt'];
             [truthLabels, ~] = libsvmread(truthNodesPath);
+            
+            %% read segments
+            segmentsPath = [preprocessedDir '/segments/' fileName '.txt'];
+            segments = dlmread(segmentsPath);
+            
+            %% read truth labeling
+            fullTruthPath = [preprocessedDir '/groundtruth/' fileName '.txt'];
+            fullTruth = dlmread(fullTruthPath);
             
             %% for each time step
             prev = '';
@@ -124,6 +139,9 @@ for s = searchTypes
                 %% read nodes
                 [inferLabels, ~] = libsvmread(nodesPath);
                 
+                %% read inference on pixel level
+                inferPixels = infer_pixels(inferLabels, segments);
+                
                 %% calculations...
                 for c = 1:length(classes)
                     classLabel = classes(c);
@@ -136,11 +154,17 @@ for s = searchTypes
                     stat.fn(fd, t, c) = stat.fn(fd, t, c) + fn;
                 end % classes
                 
+                stat.numcorrect(fd, t) = stat.numcorrect(fd, t) + sum(sum(double(inferPixels == fullTruth)));
+                stat.totals(fd, t) = stat.totals(fd, t) + numel(fullTruth);
+                
                 prev = nodesPath;
             end % time range
         end % files
     end % fold
 
+    %% calculate hamming
+    stat.hamming = stat.numcorrect/stat.totals(fd, t);
+    
     %% calculate non-macro/micro measures
     stat.prec = stat.tp ./ (stat.tp + stat.fp);
     stat.rec = stat.tp ./ (stat.tp + stat.fn);
@@ -195,6 +219,9 @@ for s = searchTypes
     stat.binary_stdrec = std(stat.binary_rec, 0, 1);
     stat.binary_stdf1 = std(stat.binary_f1, 0, 1);
     
+    stat.avghamming = mean(stat.hamming, 1);
+    stat.stdhamming = std(stat.hamming, 0, 1);
+    
     %% add
     evaluate(searchType) = stat;
 end % search type
@@ -226,5 +253,20 @@ tp = sum(double((inferLabels == classLabel) & (truthLabels == classLabel)));
 fp = sum(double((inferLabels == classLabel) & (truthLabels ~= classLabel)));
 tn = sum(double((inferLabels ~= classLabel) & (truthLabels ~= classLabel)));
 fn = sum(double((inferLabels ~= classLabel) & (truthLabels == classLabel)));
+
+end
+
+function [inferPixels] = infer_pixels(inferLabels, segments)
+
+inferPixels = zeros(size(segments));
+nNodes = length(inferLabels);
+
+for i = 1:nNodes
+    temp = segments;
+    temp(temp ~= i) = 0;
+    temp(temp == i) = inferLabels(i);
+    
+    inferPixels = inferPixels + temp;
+end
 
 end

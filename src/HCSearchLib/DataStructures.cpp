@@ -11,8 +11,15 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom"};
+	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom", "learndecomposed"};
 	const string DatasetTypeStrings[] = {"test", "train", "validation"};
+
+	/**************** Priority Queues ****************/
+
+	bool CompareByConfidence::operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const
+	{
+		return lhs.second < rhs.second;
+	}
 
 	/**************** Features and Labelings ****************/
 
@@ -20,6 +27,7 @@ namespace HCSearch
 	{
 		this->filename = "";
 		this->segmentsAvailable = false;
+		this->nodeLocationsAvailable = false;
 	}
 
 	ImgFeatures::~ImgFeatures()
@@ -46,10 +54,33 @@ namespace HCSearch
 		return this->filename;
 	}
 
+	double ImgFeatures::getNodeLocationX(int node)
+	{
+		if (!nodeLocationsAvailable)
+		{
+			LOG(ERROR) << "node location not available for getting x.";
+			abort();
+		}
+
+		return this->nodeLocations(node, 0);
+	}
+
+	double ImgFeatures::getNodeLocationY(int node)
+	{
+		if (!nodeLocationsAvailable)
+		{
+			LOG(ERROR) << "node location not available for getting y.";
+			abort();
+		}
+
+		return this->nodeLocations(node, 1);
+	}
+
 	ImgLabeling::ImgLabeling()
 	{
 		this->confidencesAvailable = false;
 		this->stochasticCutsAvailable = false;
+		this->nodeWeightsAvailable = false;
 	}
 
 	ImgLabeling::~ImgLabeling()
@@ -91,6 +122,51 @@ namespace HCSearch
 	bool ImgLabeling::hasNeighbors(int node)
 	{
 		return this->graph.adjList.count(node) != 0;
+	}
+
+	set<int> ImgLabeling::getTopConfidentLabels(int node, int K)
+	{
+		// check if confidences are available
+		if (!this->confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences are not available to get top K confident labels.";
+			abort();
+		}
+
+		// bad cases
+		const int numLabels = this->confidences.cols();
+		if (K > numLabels)
+		{
+			return HCSearch::Global::settings->CLASSES.getLabels();
+		}
+		else if (K == 0)
+		{
+			return set<int>();
+		}
+		else if (K < 0)
+		{
+			LOG(ERROR) << "K cannot be negative!";
+			HCSearch::abort();
+		}
+
+		set<int> labels;
+
+		// get top K confident labels
+		LabelConfidencePQ sortedByConfidence;
+		for (int i = 0; i < numLabels; i++)
+		{
+			int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+			double confidence = this->confidences(node, i);
+			sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+		}
+		for (int i = 0; i < K; i++)
+		{
+			MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+			sortedByConfidence.pop();
+			labels.insert(p.first);
+		}
+
+		return labels;
 	}
 
 	/**************** Rank Features ****************/
@@ -240,7 +316,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -272,11 +348,17 @@ namespace HCSearch
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
-		else if (searchType == LEARN_C_ORACLE_H)
+		else if (searchType == LEARN_C_RANDOM_H)
 		{
 			STARTMSG = "MERGECRHSTART";
 			ENDMSG = "MERGECRHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_DECOMPOSED)
+		{
+			STARTMSG = "MERGEDSTART";
+			ENDMSG = "MERGEDEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
@@ -284,7 +366,7 @@ namespace HCSearch
 		// merge step
 		if (Global::settings->RANK == 0)
 		{
-			this->qid = mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES, this->qid-1);
+			this->qid = mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES, this->qid);
 		}
 #endif
 
@@ -294,6 +376,8 @@ namespace HCSearch
 		}
 		else if (Global::settings->RANK == 0)
 		{
+			clock_t tic = clock();
+
 			// compute C
 			double C = 1.0 * (this->qid-1);
 
@@ -302,6 +386,9 @@ namespace HCSearch
 			ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
 				<< this->rankingFileName << " " << modelFileName;
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
+
+			clock_t toc = clock();
+			LOG() << "total SVM-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 		}
 
 #ifdef USE_MPI
@@ -460,10 +547,13 @@ namespace HCSearch
 
 	int SVMRankModel::mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID)
 	{
-		int currentQID = totalMasterQID;
-
 		string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, 0);
 		LOG() << "Merging to main feature file: " << FEATURES_FILE << endl;
+
+		if (numProcesses == 1)
+			return totalMasterQID;
+
+		int currentQID = totalMasterQID-1;
 
 		ofstream ofh;
 		ofh.open(FEATURES_FILE.c_str(), std::ios_base::app);

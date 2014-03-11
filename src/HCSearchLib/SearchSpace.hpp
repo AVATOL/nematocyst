@@ -59,7 +59,6 @@ namespace HCSearch
 	class ISuccessorFunction
 	{
 	protected:
-		static const int MAX_NUM_SUCCESSOR_CANDIDATES;
 		int maxNumSuccessorCandidates;
 
 	public:
@@ -88,7 +87,7 @@ namespace HCSearch
 	/**************** Feature Functions ****************/
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with raw unary and raw pairwise potentials.
 	 */
 	class StandardFeatures : public IFeatureFunction
 	{
@@ -103,17 +102,160 @@ namespace HCSearch
 		/*!
 		 * @brief Compute unary term.
 		 */
-		static VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
 		
 		/*!
 		 * @brief Compute pairwise term.
 		 */
-		static VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
 
 		/*!
 		 * @brief Compute pairwise features.
 		 */
-		static VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Standard CRF features with raw unary and raw pairwise potentials, 
+	 * but pairwise does not distinguish non-class matches.
+	 */
+	class StandardAltFeatures : public IFeatureFunction
+	{
+	public:
+		StandardAltFeatures();
+		~StandardAltFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		/*!
+		 * @brief Compute unary term.
+		 */
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		
+		/*!
+		 * @brief Compute pairwise term.
+		 */
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute pairwise features.
+		 */
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Standard CRF features with confidence unary and raw pairwise potentials.
+	 */
+	class StandardConfFeatures : public IFeatureFunction
+	{
+	public:
+		StandardConfFeatures();
+		~StandardConfFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		/*!
+		 * @brief Compute unary term.
+		 */
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		
+		/*!
+		 * @brief Compute pairwise term.
+		 */
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute pairwise features.
+		 */
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Unary only raw features.
+	 */
+	class UnaryFeatures : public StandardFeatures
+	{
+	public:
+		UnaryFeatures();
+		~UnaryFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+	};
+
+	/*!
+	 * @brief Unary only confidences features.
+	 */
+	class UnaryConfFeatures : public StandardConfFeatures
+	{
+	public:
+		UnaryConfFeatures();
+		~UnaryConfFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+	};
+
+	/*!
+	 * @brief Standard CRF features with raw unary and co-occurence counts pairwise potentials.
+	 */
+	class StandardPairwiseCountsFeatures : public StandardFeatures
+	{
+	public:
+		StandardPairwiseCountsFeatures();
+		~StandardPairwiseCountsFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Standard CRF features with confidence unary and co-occurence counts pairwise potentials.
+	 */
+	class StandardConfPairwiseCountsFeatures : public StandardConfFeatures
+	{
+	public:
+		StandardConfPairwiseCountsFeatures();
+		~StandardConfPairwiseCountsFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
+	 * @brief Dense CRF features with unary and pairwise potentials.
+	 */
+	class DenseCRFFeatures : public IFeatureFunction
+	{
+	public:
+		DenseCRFFeatures();
+		~DenseCRFFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+
+	protected:
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
 			int nodeLabel1, int nodeLabel2, int& classIndex);
 	};
 
@@ -244,6 +386,7 @@ namespace HCSearch
 	class FlipbitSuccessor : public ISuccessorFunction
 	{
 	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
 		static const int NUM_TOP_LABELS_KEEP;
 		static const double BINARY_CONFIDENCE_THRESHOLD;
 
@@ -271,6 +414,21 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Deterministic flipbit successor function using top K confidences and neighbor labels.
+	 *
+	 * For each node, flip its label to a label of a confident or neighboring node.
+	 */
+	class FlipbitConfidencesNeighborSuccessor : public FlipbitSuccessor
+	{
+	public:
+		FlipbitConfidencesNeighborSuccessor();
+		FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates);
+		~FlipbitConfidencesNeighborSuccessor();
+		
+		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+	};
+
+	/*!
 	 * @brief Stochastic successor function.
 	 * 
 	 * Stochastically cut edges to form subgraphs. 
@@ -286,6 +444,7 @@ namespace HCSearch
 
 	public:
 		StochasticSuccessor();
+		StochasticSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticSuccessor();
 
@@ -313,6 +472,7 @@ namespace HCSearch
 	{
 	public:
 		StochasticNeighborSuccessor();
+		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticNeighborSuccessor();
 
@@ -330,6 +490,7 @@ namespace HCSearch
 	{
 	public:
 		StochasticConfidencesNeighborSuccessor();
+		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticConfidencesNeighborSuccessor();
 
@@ -352,6 +513,7 @@ namespace HCSearch
 
 	public:
 		CutScheduleSuccessor();
+		CutScheduleSuccessor(double cutParam);
 		CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleSuccessor();
 
@@ -372,6 +534,7 @@ namespace HCSearch
 	{
 	public:
 		CutScheduleNeighborSuccessor();
+		CutScheduleNeighborSuccessor(double cutParam);
 		CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleNeighborSuccessor();
 
@@ -389,6 +552,7 @@ namespace HCSearch
 	{
 	public:
 		CutScheduleConfidencesNeighborSuccessor();
+		CutScheduleConfidencesNeighborSuccessor(double cutParam);
 		CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleConfidencesNeighborSuccessor();
 
@@ -406,6 +570,18 @@ namespace HCSearch
 	public:
 		HammingLoss();
 		~HammingLoss();
+
+		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
+	};
+
+	/*!
+	 * @brief Pixel Hamming loss function.
+	 */
+	class PixelHammingLoss : public ILossFunction
+	{
+	public:
+		PixelHammingLoss();
+		~PixelHammingLoss();
 
 		virtual double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
 	};

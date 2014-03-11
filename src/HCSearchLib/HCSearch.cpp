@@ -308,6 +308,12 @@ namespace HCSearch
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
+			// read node locations
+			string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + filename + ".txt";
+			MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
+			VectorXd nodeWeights = VectorXd::Zero(numNodes);
+			readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
+
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			AdjList_t edges;
@@ -327,6 +333,8 @@ namespace HCSearch
 			X->filename = filename;
 			X->segmentsAvailable = true;
 			X->segments = segments;
+			X->nodeLocationsAvailable = true;
+			X->nodeLocations = nodeLocations;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -334,6 +342,8 @@ namespace HCSearch
 			labelGraph.nodesData = labels;
 			ImgLabeling* Y = new ImgLabeling();
 			Y->graph = labelGraph;
+			Y->nodeWeightsAvailable = true;
+			Y->nodeWeights = nodeWeights;
 			
 			// push into list
 			XSet.push_back(X);
@@ -453,6 +463,53 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "cannot open file to nodes data!";
+			abort();
+		}
+	}
+
+	void Dataset::readNodeLocationsFile(string filename, MatrixXd& nodeLocations, VectorXd& nodeWeights)
+	{
+		int totalSize = 0;
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+
+					// get x position
+					string token1;
+					getline(iss, token1, ' ');
+					nodeLocations(lineIndex, 0) = atof(token1.c_str());
+
+					// get y position
+					string token2;
+					getline(iss, token2, ' ');
+					nodeLocations(lineIndex, 1) = atof(token2.c_str());
+
+					// get segment size
+					string token3;
+					getline(iss, token3, ' ');
+					int size = atoi(token3.c_str());
+					nodeWeights(lineIndex) = size;
+					totalSize += size;
+				}
+				lineIndex++;
+			}
+			fh.close();
+
+			// normalize segment sizes
+			nodeWeights /= (1.0*totalSize);
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to node locations data!";
 			abort();
 		}
 	}
@@ -777,6 +834,41 @@ namespace HCSearch
 		return learningModel;
 	}
 
+	IRankModel* Learning::learnDecomposed(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, int numHops, SearchSpace* searchSpace, RankerType rankerType)
+	{
+		clock_t tic = clock();
+
+		LOG() << "Learning a ranking function via decomposed learning..." << endl;
+		
+		// Setup model for learning
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_DECOMPOSED);
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			LOG() << "Decomposed learning on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+			// generate examples for decomposed learning
+			learnDecomposedProcedure(*XTrain[i], YTrain[i], numHops, searchSpace, learningModel);
+
+			// save online weights progress in case
+			if (learningModel->rankerType() == ONLINE_RANK)
+				learningModel->save(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE);
+		}
+		
+		// Merge and learn step
+		finishLearning(learningModel, LEARN_DECOMPOSED);
+
+		clock_t toc = clock();
+		LOG() << "total decomposed learning time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return learningModel;
+	}
+
 	IRankModel* Learning::initializeLearning(RankerType rankerType, SearchType searchType)
 	{
 		// Setup model for learning
@@ -794,6 +886,8 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_RANDOM_H)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			else if (searchType == LEARN_DECOMPOSED)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -827,6 +921,8 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_RANDOM_H)
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_DECOMPOSED)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -865,6 +961,12 @@ namespace HCSearch
 			ENDMSG = "MERGECRHEND";
 			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
 		}
+		else if (searchType == LEARN_DECOMPOSED)
+		{
+			STARTMSG = "MERGEDSTART";
+			ENDMSG = "MERGEDEND";
+			onlineModelFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE;
+		}
 		else
 		{
 			LOG(ERROR) << "unknown search type!";
@@ -886,6 +988,161 @@ namespace HCSearch
 		{
 			LOG(ERROR) << "unsupported rank learner.";
 			abort();
+		}
+	}
+
+	void Learning::learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel)
+	{
+		vector< RankFeatures > bestFeatures;
+		vector< double > bestLosses;
+		ImgLabeling YPred = searchSpace->getInitialPrediction(X);
+		YTruth->confidences = YPred.confidences;
+		YTruth->confidencesAvailable = true;
+		bestFeatures.push_back(searchSpace->computeHeuristicFeatures(X, *YTruth));
+		YTruth->confidencesAvailable = false;
+		bestLosses.push_back(0);
+
+		vector< RankFeatures > worstFeatures;
+		vector< double > worstLosses;
+
+		learnDecomposedProcedureHelper(X, YTruth, set<int>(), numHops, searchSpace, learningModel, worstFeatures, worstLosses);
+
+		// train depending on ranker
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			// train
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
+
+		}
+		else if (learningModel->rankerType() == ONLINE_RANK)
+		{
+			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
+
+			// find the best scoring output overall according to the current cost model
+			double bestScore;
+			bool fromWorstSet = false;
+
+			const int numBestFeatures = bestFeatures.size();
+			for (int i = 0; i < numBestFeatures; i++)
+			{
+				RankFeatures feature = bestFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (i == 0 || score <= bestScore)
+				{
+					bestScore = score;
+				}
+			}
+			const int numWorstFeatures = worstFeatures.size();
+			for (int i = 0; i < numWorstFeatures; i++)
+			{
+				RankFeatures feature = worstFeatures[i];
+				double score = onlineRankModel->rank(feature);
+				if (score <= bestScore)
+				{
+					bestScore = score;
+					fromWorstSet = true;
+				}
+			}
+
+			// perform update if necessary
+			if (fromWorstSet)
+			{
+				// find best scoring output in the best set according to current weights
+				RankFeatures bestCostFeature;
+				double bestScore;
+				double bestLoss;
+
+				const int numBestFeatures = bestFeatures.size();
+				for (int i = 0; i < numBestFeatures; i++)
+				{
+					RankFeatures feature = bestFeatures[i];
+					double score = onlineRankModel->rank(feature);
+					if (i == 0 || score < bestScore)
+					{
+						bestCostFeature = feature;
+						bestScore = score;
+						bestLoss = bestLosses[i];
+					}
+				}
+
+				// perform update
+				for (int i = 0; i < numWorstFeatures; i++)
+				{
+					RankFeatures worseFeature = worstFeatures[i];
+					double score = onlineRankModel->rank(worseFeature);
+					double bestScore = onlineRankModel->rank(bestCostFeature);
+
+					if (score >= bestScore)
+					{
+						double delta = worstLosses[i] - bestLoss;
+						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
+						onlineRankModel->performOnlineUpdate(delta, featureDiff);
+					}
+				}
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unknown ranker type";
+			abort();
+		}
+	}
+
+	void Learning::learnDecomposedProcedureHelper(ImgFeatures& X, ImgLabeling* YTruth, set<int> nodeSet, int numHops, SearchSpace* searchSpace, IRankModel* learningModel, 
+		vector< RankFeatures >& worstFeatures, vector< double >& worstLosses)
+	{
+		const int numNodes = YTruth->getNumNodes();
+		if (numHops < 0)
+		{
+			LOG(ERROR) << "number of hops for decomposed learning cannot be negative!";
+			abort();
+		}
+		else if (numHops > 0 && nodeSet.size() == numNodes)
+		{
+			// in case number of hops is larger than number of nodes
+			learnDecomposedProcedureHelper(X, YTruth, nodeSet, 0, searchSpace, learningModel, worstFeatures, worstLosses);
+		}
+		else if (numHops == 0)
+		{
+			ImgLabeling YPred = searchSpace->getInitialPrediction(X);
+
+			// generate bad example for each node and label combination
+			for (set<int>::iterator it = nodeSet.begin(); it != nodeSet.end(); ++it)
+			{
+				int node = *it;
+
+				set<int> allLabels = Global::settings->CLASSES.getLabels();
+				allLabels.erase(YTruth->getLabel(node));
+				for (set<int>::iterator it2 = allLabels.begin(); it2 != allLabels.end(); ++it2)
+				{
+					int label = *it2;
+
+					// create bad example
+					ImgLabeling YNew;
+					YNew.graph = YTruth->graph;
+					YNew.graph.nodesData(node) = label;
+					YNew.confidences = YPred.confidences;
+					YNew.confidencesAvailable = true;
+
+					// generate ranking example
+					worstFeatures.push_back(searchSpace->computeHeuristicFeatures(X, YNew));
+					worstLosses.push_back(searchSpace->computeLoss(YNew, *YTruth));
+				}
+			}
+		}
+		else
+		{
+			// main recursive case
+			for (int node = 0; node < numNodes; node++)
+			{
+				if (nodeSet.count(node) != 0)
+					continue;
+
+				set<int> newNodes = nodeSet;
+				newNodes.insert(node);
+				learnDecomposedProcedureHelper(X, YTruth, newNodes, numHops-1, searchSpace, learningModel, worstFeatures, worstLosses);
+			}
 		}
 	}
 
@@ -918,6 +1175,14 @@ namespace HCSearch
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->hcSearch(*X, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
+	}
+
+	ImgLabeling Inference::runHCSearch(ImgFeatures* X, ImgLabeling* YTruth, int timeBound, 
+		SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+		IRankModel* heuristicModel, IRankModel* costModel, 
+		ISearchProcedure::SearchMetadata searchMetadata)
+	{
+		return searchProcedure->hcSearch(*X, YTruth, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
 	ImgLabeling Inference::runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 

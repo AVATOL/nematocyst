@@ -22,9 +22,9 @@ namespace HCSearch
 		return computeFeatures(X, Y).data.size();
 	}
 
-	const int ISuccessorFunction::MAX_NUM_SUCCESSOR_CANDIDATES = 1000;
-
 	/**************** Feature Functions ****************/
+
+	/**************** Standard Features ****************/
 
 	StandardFeatures::StandardFeatures()
 	{
@@ -42,6 +42,7 @@ namespace HCSearch
 
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
 		
@@ -49,7 +50,7 @@ namespace HCSearch
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
 
 		return RankFeatures(phi);
 	}
@@ -61,8 +62,9 @@ namespace HCSearch
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = featureDim;
 		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
 
-		return numClasses*unaryFeatDim + (numClasses+1)*pairwiseFeatDim;
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
 	}
 
 	VectorXd StandardFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
@@ -89,10 +91,155 @@ namespace HCSearch
 			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
 		}
 
+		phi = 1.0/X.getNumNodes() * phi;
+
 		return phi;
 	}
 	
 	VectorXd StandardFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (X.graph.adjList.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			NeighborSet_t neighbors = X.graph.adjList[node1];
+			const int numNeighbors = neighbors.size();
+			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		// phi features depend on labels
+		if (nodeLabel1 != nodeLabel2)
+		{
+			VectorXd diff = nodeFeatures1 - nodeFeatures2;
+			VectorXd negdiffabs2 = -diff.cwiseAbs2();
+			VectorXd expnegdiffabs2 = negdiffabs2.array().exp();
+
+			// assignment
+			return expnegdiffabs2;
+		}
+		else
+		{
+			VectorXd diff = nodeFeatures1 - nodeFeatures2;
+			VectorXd negdiffabs2 = -diff.cwiseAbs2();
+			VectorXd expnegdiffabs2 = 1 - negdiffabs2.array().exp();
+
+			// assignment
+			return expnegdiffabs2;
+		}
+	}
+
+	/**************** Standard Features Alternative Formulation ****************/
+
+	StandardAltFeatures::StandardAltFeatures()
+	{
+	}
+
+	StandardAltFeatures::~StandardAltFeatures()
+	{
+	}
+
+	RankFeatures StandardAltFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardAltFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		return numClasses*unaryFeatDim + (numClasses+1)*pairwiseFeatDim;
+	}
+
+	VectorXd StandardAltFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1+featureDim;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment: bias and unary feature
+			phi(classIndex*unaryFeatDim) += 1;
+			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
+		}
+
+		return phi;
+	}
+	
+	VectorXd StandardAltFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
@@ -129,7 +276,7 @@ namespace HCSearch
 		return 0.5*phi;
 	}
 
-	VectorXd StandardFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+	VectorXd StandardAltFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
 		// phi features depend on labels
@@ -154,6 +301,610 @@ namespace HCSearch
 
 			// assignment
 			return expnegdiffabs2;
+		}
+	}
+
+	/**************** Standard Features With Unary Confidences and Raw Pairwise ****************/
+
+	StandardConfFeatures::StandardConfFeatures()
+	{
+	}
+
+	StandardConfFeatures::~StandardConfFeatures()
+	{
+	}
+
+	RankFeatures StandardConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
+	}
+
+	VectorXd StandardConfFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		if (!Y.confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences not available for unary potential.";
+			abort();
+		}
+
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment
+			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
+		}
+
+		phi = 1.0/X.getNumNodes() * phi;
+
+		return phi;
+	}
+	
+	VectorXd StandardConfFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (X.graph.adjList.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			NeighborSet_t neighbors = X.graph.adjList[node1];
+			const int numNeighbors = neighbors.size();
+			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardConfFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		// phi features depend on labels
+		if (nodeLabel1 != nodeLabel2)
+		{
+			VectorXd diff = nodeFeatures1 - nodeFeatures2;
+			VectorXd negdiffabs2 = -diff.cwiseAbs2();
+			VectorXd expnegdiffabs2 = negdiffabs2.array().exp();
+
+			// assignment
+			return expnegdiffabs2;
+		}
+		else
+		{
+			VectorXd diff = nodeFeatures1 - nodeFeatures2;
+			VectorXd negdiffabs2 = -diff.cwiseAbs2();
+			VectorXd expnegdiffabs2 = 1 - negdiffabs2.array().exp();
+
+			// assignment
+			return expnegdiffabs2;
+		}
+	}
+
+	/**************** Unary Only Raw Features ****************/
+
+	UnaryFeatures::UnaryFeatures()
+	{
+	}
+
+	UnaryFeatures::~UnaryFeatures()
+	{
+	}
+
+	RankFeatures UnaryFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int UnaryFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		return numClasses*unaryFeatDim;
+	}
+
+	/**************** Unary Only Confidences Features ****************/
+
+	UnaryConfFeatures::UnaryConfFeatures()
+	{
+	}
+
+	UnaryConfFeatures::~UnaryConfFeatures()
+	{
+	}
+
+	RankFeatures UnaryConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int UnaryConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim;
+	}
+
+	/**************** Standard Raw Unary and Co-occurence Counts Pairwise Features ****************/
+
+	StandardPairwiseCountsFeatures::StandardPairwiseCountsFeatures()
+	{
+	}
+
+	StandardPairwiseCountsFeatures::~StandardPairwiseCountsFeatures()
+	{
+	}
+
+	RankFeatures StandardPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = 1;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = 1;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
+	}
+	
+	VectorXd StandardPairwiseCountsFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = 1;
+		int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (X.graph.adjList.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			NeighborSet_t neighbors = X.graph.adjList[node1];
+			const int numNeighbors = neighbors.size();
+			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardPairwiseCountsFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		VectorXd one = VectorXd::Ones(1);
+		return one;
+	}
+
+	/**************** Standard Confidences Unary and Co-occurence Counts Pairwise Features ****************/
+
+	StandardConfPairwiseCountsFeatures::StandardConfPairwiseCountsFeatures()
+	{
+	}
+
+	StandardConfPairwiseCountsFeatures::~StandardConfPairwiseCountsFeatures()
+	{
+	}
+
+	RankFeatures StandardConfPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 1;
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardConfPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 1;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
+	}
+	
+	VectorXd StandardConfPairwiseCountsFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = 1;
+		int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (X.graph.adjList.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			NeighborSet_t neighbors = X.graph.adjList[node1];
+			const int numNeighbors = neighbors.size();
+			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardConfPairwiseCountsFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		VectorXd one = VectorXd::Ones(1);
+		return one;
+	}
+
+	/**************** Dense CRF Features ****************/
+
+	DenseCRFFeatures::DenseCRFFeatures()
+	{
+	}
+
+	DenseCRFFeatures::~DenseCRFFeatures()
+	{
+	}
+
+	RankFeatures DenseCRFFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int DenseCRFFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 2;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
+	}
+	
+	VectorXd DenseCRFFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		if (!Y.confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences not available for unary potential.";
+			abort();
+		}
+
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment
+			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
+		}
+
+		phi = 1.0/X.getNumNodes() * phi;
+
+		return phi;
+	}
+
+	VectorXd DenseCRFFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = 2;
+		const int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			for (int node2 = node1+1; node2 < numNodes; node2++)
+			{
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				double nodeLocationX1 = X.getNodeLocationX(node1);
+				double nodeLocationY1 = X.getNodeLocationY(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				double nodeLocationX2 = X.getNodeLocationX(node2);
+				double nodeLocationY2 = X.getNodeLocationY(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, 
+					nodeLocationX1, nodeLocationY1, nodeLocationX2, nodeLocationY2, 
+					nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd DenseCRFFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		const double THETA_ALPHA = 0.025;
+		const double THETA_BETA = 0.025;
+		const double THETA_GAMMA = 0.025;
+
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		// phi features depend on labels
+		if (nodeLabel1 != nodeLabel2)
+		{
+			VectorXd potential = VectorXd::Zero(2);
+
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
+			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
+			double featureDistance = featureDiff.squaredNorm();
+
+			double appearanceTerm = exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
+			double smoothnessTerm = exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
+
+			potential(0) = appearanceTerm;
+			potential(1) = smoothnessTerm;
+
+			return potential;
+		}
+		else
+		{
+			VectorXd potential = VectorXd::Zero(2);
+
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
+			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
+			double featureDistance = featureDiff.squaredNorm();
+
+			double appearanceTerm = 1-exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
+			double smoothnessTerm = 1-exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
+
+			potential(0) = appearanceTerm;
+			potential(1) = smoothnessTerm;
+
+			return potential;
 		}
 	}
 
@@ -416,12 +1167,13 @@ namespace HCSearch
 
 	/**************** Flipbit Successor Function ****************/
 
+	const double FlipbitSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const int FlipbitSuccessor::NUM_TOP_LABELS_KEEP = 2;
 	const double FlipbitSuccessor::BINARY_CONFIDENCE_THRESHOLD = 0.75;
 
 	FlipbitSuccessor::FlipbitSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 	}
 
 	FlipbitSuccessor::FlipbitSuccessor(int maxNumSuccessorCandidates)
@@ -474,17 +1226,20 @@ namespace HCSearch
 			}
 		}
 
-		LOG() << "num successors=" << successors.size() << endl;
+		LOG() << "num successors generated=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
 		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
 		}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
@@ -499,7 +1254,7 @@ namespace HCSearch
 
 	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 	}
 
 	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor(int maxNumSuccessorCandidates)
@@ -565,17 +1320,118 @@ namespace HCSearch
 			}
 		}
 
-		LOG() << "num successors=" << successors.size() << endl;
+		LOG() << "num successors generated=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
 		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
+		}
+
+		Global::settings->stats->addSuccessorCount(successors.size());
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
+
+	/**************** Flipbit Confidences Neighbor Successor Function ****************/
+
+	FlipbitConfidencesNeighborSuccessor::FlipbitConfidencesNeighborSuccessor()
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+	}
+
+	FlipbitConfidencesNeighborSuccessor::FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates)
+	{
+		this->maxNumSuccessorCandidates = maxNumSuccessorCandidates;
+	}
+
+	FlipbitConfidencesNeighborSuccessor::~FlipbitConfidencesNeighborSuccessor()
+	{
+	}
+	
+	vector< ImgLabeling > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	{
+		clock_t tic = clock();
+
+		vector<ImgLabeling> successors;
+
+		// for all nodes
+		const int numNodes = YPred.getNumNodes();
+		for (int node = 0; node < numNodes; node++)
+		{
+			// set up candidate label set
+			set<int> candidateLabelsSet;
+			int nodeLabel = YPred.getLabel(node);
+			candidateLabelsSet.insert(nodeLabel);
+
+			if (YPred.hasNeighbors(node))
+			{
+				// add only neighboring labels to candidate label set
+				set<int> neighborLabels = YPred.getNeighborLabels(node);
+				for (set<int>::iterator it2 = neighborLabels.begin(); 
+					it2 != neighborLabels.end(); ++it2)
+				{
+					candidateLabelsSet.insert(*it2);
+				}
+
+				int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
+				set<int> confidentSet = YPred.getTopConfidentLabels(node, topKConfidences);
+				candidateLabelsSet.insert(confidentSet.begin(), confidentSet.end());
+			}
+			else
+			{
+				// if node is isolated without neighbors, then flip to any possible class
+				candidateLabelsSet = Global::settings->CLASSES.getLabels();
+			}
+
+			candidateLabelsSet.erase(nodeLabel); // do not flip to same label
+
+			// for each candidate label, add to successors list for returning
+			for (set<int>::iterator it2 = candidateLabelsSet.begin(); it2 != candidateLabelsSet.end(); ++it2)
+			{
+				int candidateLabel = *it2;
+
+				// form successor object
+				LabelGraph graphNew;
+				graphNew.nodesData = YPred.graph.nodesData;
+				graphNew.nodesData(node) = candidateLabel; // flip bit node
+				graphNew.adjList = YPred.graph.adjList;
+
+				ImgLabeling YNew;
+				YNew.confidences = YPred.confidences;
+				YNew.confidencesAvailable = YPred.confidencesAvailable;
+				YNew.graph = graphNew;
+
+				// add candidate to successors
+				successors.push_back(YNew);
+			}
+		}
+
+		LOG() << "num successors generated=" << successors.size() << endl;
+
+		// prune to the bound
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
+		{
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
+
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
 		}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
@@ -593,9 +1449,16 @@ namespace HCSearch
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+	}
+
+	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
@@ -625,17 +1488,20 @@ namespace HCSearch
 		// generate candidates
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
-		LOG() << "num successors=" << successors.size() << endl;
+		LOG() << "num successors generated=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
 		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
 		}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
@@ -876,9 +1742,16 @@ namespace HCSearch
 
 	StochasticNeighborSuccessor::StochasticNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+	}
+	
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
@@ -901,9 +1774,16 @@ namespace HCSearch
 
 	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+	}
+
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
@@ -930,8 +1810,15 @@ namespace HCSearch
 
 	CutScheduleSuccessor::CutScheduleSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleSuccessor::CutScheduleSuccessor(double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 
@@ -960,17 +1847,20 @@ namespace HCSearch
 		// generate candidates
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
-		LOG() << "num successors=" << successors.size() << endl;
+		LOG() << "num successors generated=" << successors.size() << endl;
 
 		// prune to the bound
-		const int originalSize = successors.size();
-		if (originalSize > maxNumSuccessorCandidates)
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
 		{
-			random_shuffle(successors.begin(), successors.end());
-			for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
-				successors.pop_back();
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
 
-			LOG() << "\tpruned to num successors=" << successors.size() << endl;
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
 		}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
@@ -1103,8 +1993,15 @@ namespace HCSearch
 
 	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 
@@ -1128,8 +2025,15 @@ namespace HCSearch
 
 	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor(double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 
@@ -1169,6 +2073,34 @@ namespace HCSearch
 				loss++;
 		}
 		return loss/diff.size();
+	}
+
+	PixelHammingLoss::PixelHammingLoss()
+	{
+	}
+
+	PixelHammingLoss::~PixelHammingLoss()
+	{
+	}
+
+	double PixelHammingLoss::computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)
+	{
+		if (!YTruth.nodeWeightsAvailable)
+		{
+			LOG(WARNING) << "node weights are not available for computing pixel hamming loss.";
+		}
+
+		Matrix<bool, Dynamic, 1> diff = YPred.graph.nodesData.array() != YTruth.graph.nodesData.array();
+		double loss = 0.0;
+		for (int i = 0; i < diff.size(); i++)
+		{
+			if (diff(i))
+				if (YTruth.nodeWeightsAvailable)
+					loss += YTruth.nodeWeights(i);
+				else
+					loss += 1.0/diff.size();
+		}
+		return loss;
 	}
 
 	/**************** Search Space ****************/

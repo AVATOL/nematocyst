@@ -95,7 +95,30 @@ namespace HCSearch
 		}
 	}
 
+	void SavePrediction::saveCandidateLosses(vector<double>& losses, string fileName)
+	{
+		// write to file
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			for (vector<double>::iterator it = losses.begin(); it != losses.end(); ++it)
+			{
+				double loss = *it;
+				fh << loss << endl;
+			}
+
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to write candidate losses!";
+		}
+	}
+
 	/**************** Search Procedure ****************/
+
+	//TODO: get this value from command line
+	const int ISearchProcedure::PRUNE_MAX_NUM_CANDIDATES = 100;
 
 	ISearchProcedure::SearchMetadata::SearchMetadata()
 	{
@@ -127,6 +150,13 @@ namespace HCSearch
 		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
 		return searchProcedure(HC, X, NULL, timeBound, 
+			searchSpace, heuristicModel, costModel, searchMetadata);
+	}
+
+	ImgLabeling ISearchProcedure::hcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
+	{
+		return searchProcedure(HC, X, YTruth, timeBound, 
 			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
@@ -443,7 +473,30 @@ namespace HCSearch
 			trainCostRanker(costModel, costSet);
 
 		// clean up cost set
-		deleteQueueElements(costSet);
+		//deleteQueueElements(costSet);
+		vector<double> candidateLosses;
+		while (!costSet.empty())
+		{
+			ISearchNode* state = costSet.top();
+			costSet.pop();
+			if (YTruth != NULL)
+			{
+				ImgLabeling YPred = state->getY();
+				candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
+			}
+			delete state;
+		}
+		if (YTruth != NULL)
+		{
+			stringstream ssLosses;
+			ssLosses << Global::settings->paths->OUTPUT_RESULTS_DIR << "candidatelosses" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+			SavePrediction::saveCandidateLosses(candidateLosses, ssLosses.str());
+		}
 
 		clock_t toc = clock();
 		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;

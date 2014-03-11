@@ -1,4 +1,4 @@
-function preprocess_alldata( allData, outputPath, trainRange, validRange, testRange )
+function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, validRange, testRange )
 %PREPROCESS_ALLDATA Preprocesses allData cell struct variable into a
 %data format for HCSearch to work. Features are already extracted in
 %allData.
@@ -11,6 +11,7 @@ function preprocess_alldata( allData, outputPath, trainRange, validRange, testRa
 %                   allData{i}.segLabels sx1 double
 %                   allData{i}.adj sxs logical
 %                   allData{i}.filename string (optional)
+%                   allData{i}.segLocations sx2 double (optional)
 %   outputPath:	folder path to output preprocessed data
 %                       e.g. 'DataPreprocessed/SomeDataset'
 %   trainRange:	set range of training data
@@ -35,11 +36,17 @@ end
 if ~exist([outputPath '/nodes/'], 'dir')
     mkdir([outputPath '/nodes/']);
 end
+if ~exist([outputPath '/nodelocations/'], 'dir')
+    mkdir([outputPath '/nodelocations/']);
+end
 if ~exist([outputPath '/edges/'], 'dir')
     mkdir([outputPath '/edges/']);
 end
 if ~exist([outputPath '/segments/'], 'dir')
     mkdir([outputPath '/segments/']);
+end
+if ~exist([outputPath '/groundtruth/'], 'dir')
+    mkdir([outputPath '/groundtruth/']);
 end
 if ~exist([outputPath '/meta/'], 'dir')
     mkdir([outputPath '/meta/']);
@@ -69,6 +76,8 @@ for i = 1:nFiles
     filename = sprintf('%d', i-1);
     if isfield(allData{i}, 'filename');
         filename = allData{i}.filename;
+    else
+        allData{i}.filename = filename;
     end
     
     if ismember(i, trainRange)
@@ -82,12 +91,26 @@ for i = 1:nFiles
     end
     
     nodesFile = sprintf('%s.txt', filename);
+    nodeLocationsFile = sprintf('%s.txt', filename);
     edgesFile = sprintf('%s.txt', filename);
     segmentsFile = sprintf('%s.txt', filename);
+    groundtruthFile = sprintf('%s.txt', filename);
     metaFile = sprintf('%s.txt', filename);
     
     % write nodes
     libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
+    
+    % write node locations and sizes
+    if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
+        nodeLocations = allData{i}.segLocations;
+        nodeSizes = allData{i}.segSizes;
+    else
+        [nodeLocations, nodeSizes] = pre_extract_node_locations(allData{i}.segs2, length(allData{i}.segLabels));
+        allData{i}.segLocations = nodeLocations;
+        allData{i}.segSizes = nodeSizes;
+    end
+    
+    dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], [nodeLocations nodeSizes], ' ');
     
     % write edges
     [ai,aj,aval] = find(allData{i}.adj);
@@ -96,6 +119,9 @@ for i = 1:nFiles
     
     % write segments
     dlmwrite([outputPath '/segments/' segmentsFile], allData{i}.segs2, ' ');
+    
+    % write ground truth
+    dlmwrite([outputPath '/groundtruth/' groundtruthFile], allData{i}.labels, ' ');
     
     classes = union(classes, allData{i}.segLabels);
     

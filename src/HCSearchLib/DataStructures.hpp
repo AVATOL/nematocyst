@@ -3,6 +3,7 @@
 
 #include <map>
 #include <set>
+#include <queue>
 #include <fstream>
 #include "../../external/Eigen/Eigen/Dense"
 #include "MyPrimitives.hpp"
@@ -18,12 +19,22 @@ namespace HCSearch
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
 		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
-		RL, RC, LEARN_C_RANDOM_H };
+		RL, RC, LEARN_C_RANDOM_H, LEARN_DECOMPOSED };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 
 	const extern string SearchTypeStrings[];
 	const extern string DatasetTypeStrings[];
+
+	/**************** Priority Queues ****************/
+
+	class CompareByConfidence
+	{
+	public:
+		bool operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const;
+	};
+
+	typedef priority_queue<MyPrimitives::Pair<int, double>, vector< MyPrimitives::Pair<int, double> >, CompareByConfidence> LabelConfidencePQ;
 
 	/**************** Graph ****************/
 
@@ -109,7 +120,15 @@ namespace HCSearch
 		 */
 		MatrixXi segments;
 
+		/*!
+		 * Matrix of node locations.
+		 * Dimensions: number of nodes x 2 (x, y coordinates)
+		 * Make sure to check if they are available using ImgLabeling::nodeLocationsAvailable.
+		 */
+		MatrixXd nodeLocations;
+
 		bool segmentsAvailable;
+		bool nodeLocationsAvailable;
 
 	public:
 		ImgFeatures();
@@ -140,6 +159,20 @@ namespace HCSearch
 		 * @return Returns the file name
 		 */
 		string getFileName();
+
+		/*!
+		 * Get the normalized x-position of the node.
+		 * @param[in] node Node index
+		 * @return Returns the X position of node
+		 */
+		double getNodeLocationX(int node);
+
+		/*!
+		 * Get the normalized y-position of the node.
+		 * @param[in] node Node index
+		 * @return Returns the Y position of node
+		 */
+		double getNodeLocationY(int node);
 	};
 
 	/*!
@@ -172,8 +205,14 @@ namespace HCSearch
 		 */
 		map< int, set<int> > stochasticCuts;
 
+		/*!
+		 * Node weights.
+		 */
+		VectorXd nodeWeights;
+
 		bool confidencesAvailable;
 		bool stochasticCutsAvailable;
+		bool nodeWeightsAvailable;
 
 	public:
 		ImgLabeling();
@@ -212,6 +251,14 @@ namespace HCSearch
 		 * @return Returns true if there are neighbors
 		 */
 		bool hasNeighbors(int node);
+
+		/*!
+		 * @brief Get the labels of the top K confident labels.
+		 * @param[in] node Node index
+		 * @param[in] K top K confident labels to return
+		 * @return Returns the set of top K confident labels for the node
+		 */
+		set<int> getTopConfidentLabels(int node, int K);
 	};
 
 	/**************** Rank Features ****************/

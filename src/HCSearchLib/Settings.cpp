@@ -196,17 +196,23 @@ namespace HCSearch
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
 
+		INPUT_SPLITS_TRAIN_FILE_BASE = "Train.txt";
+		INPUT_SPLITS_VALIDATION_FILE_BASE = "Validation.txt";
+		INPUT_SPLITS_TEST_FILE_BASE = "Test.txt";
+
 		// output directories
 
 		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
 		OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE = "cost_randomH_features";
+		OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE = "decomposed_features";
 
 		OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE = "heuristic_online_weights";
 		OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE = "cost_H_online_weights";
 		OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE = "cost_oracleH_online_weights";
 		OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE = "cost_randomH_online_weights";
+		OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE = "decomposed_online_weights";
 	}
 
 	Paths::~Paths()
@@ -219,14 +225,15 @@ namespace HCSearch
 
 		// data directories
 		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + "nodes" + this->paths->DIR_SEP;
+		this->paths->INPUT_NODE_LOCATIONS_DIR = this->paths->INPUT_DIR + "nodelocations" + this->paths->DIR_SEP;
 		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + "edges" + this->paths->DIR_SEP;
 		this->paths->INPUT_META_DIR = this->paths->INPUT_DIR + "meta" + this->paths->DIR_SEP;
 		this->paths->INPUT_SEGMENTS_DIR = this->paths->INPUT_DIR + "segments" + this->paths->DIR_SEP;
 		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + this->paths->INPUT_SPLITS_FOLDER_NAME + this->paths->DIR_SEP;
 
-		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + "Train.txt";
-		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + "Validation.txt";
-		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + "Test.txt";
+		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TRAIN_FILE_BASE;
+		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_VALIDATION_FILE_BASE;
+		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TEST_FILE_BASE;
 
 		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";
 		this->paths->INPUT_CODEBOOK_FILE = this->paths->INPUT_DIR + "codebook.txt";
@@ -249,11 +256,13 @@ namespace HCSearch
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
 		this->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_randomH.txt";
+		this->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_decomposed.txt";
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_randomH.txt";
+		this->paths->OUTPUT_ARCHIVED_DECOMPOSED_LEARNING_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_decomposed.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -269,11 +278,13 @@ namespace HCSearch
 		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE, rankID);
+		this->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE, rankID);
 
 		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
+		this->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
@@ -335,10 +346,12 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
+		RANDOM_SUCCESSOR_PRUNE = false;
+		RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES = 100;
 		PRUNE_SVM_RANK_EXAMPLES = false;
 		PRUNE_SVM_RANK_RATIO = 0.25;
-		PRUNE_SVM_RANK_MIN_EXAMPLES = 10;
-		PRUNE_SVM_RANK_MAX_EXAMPLES = 100;
+		PRUNE_SVM_RANK_MIN_EXAMPLES = 5;
+		PRUNE_SVM_RANK_MAX_EXAMPLES = 75;
 
 		/**************** Experiment Settings ****************/
 

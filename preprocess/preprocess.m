@@ -29,13 +29,11 @@ RGB_2_GRAY = 0; % set to 1 if input images are RGB (need to be grayscale)
 USE_BINARY = 1; % set to 1 if only extracting binary groundtruth
 
 %% define label map - NEED TO EDIT BELOW TO MAP GROUNDTRUTH COLORS TO LABELS
-% (index-1) is the label for the annotation value in the image
-% except in the binary case, the first index is negative class (-1), the second
-% index is positive class (+1)
+% uses map container: index is (grayscale) color and value is label
 if USE_BINARY
-    labelMap = [0 255];
+    labelMap = containers.Map({0, 255}, {-1, 1});
 else
-    labelMap = [32 0 255 128 64];
+    labelMap = containers.Map({32 0 255 128 64}, {-1, 0, 1, 2, 3});
 end
 
 %% constants
@@ -114,28 +112,37 @@ for i= 1:length(fileArray)
     [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);
     
     %% extract labels
-    truthMatrix = pre_ground_truth(labels, PATCH_SIZE, labelMap, USE_BINARY);
+    [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, labelMap);
+    
+    %% get segments and locations
+    [segments, segLocations, segSizes] = getSegments(PATCH_SIZE, height, width);
     
     %% add to data structure
     allData{cnt}.img = img;
     allData{cnt}.labels = labels;
-    allData{cnt}.segs2 = getSegments(PATCH_SIZE, height, width);
+    allData{cnt}.segs2 = segments;
     allData{cnt}.feat2 = reshape(permute(featureMatrix, [2 1 3]), nodesWidth*nodesHeight, []);
     allData{cnt}.segLabels = reshape(permute(truthMatrix, [2 1]), nodesWidth*nodesHeight, []);
     allData{cnt}.adj = getAdjacencyMatrix(nodesHeight, nodesWidth);
     allData{cnt}.filename = file;
+    allData{cnt}.segLocations = segLocations;
+    allData{cnt}.segSizes = segSizes;
     
     cnt = cnt+1;
 end
 
 %% hand over to allData preprocessing
-preprocess_alldata(allData, outputPath, trainRange, validRange, testRange);
+allData = preprocess_alldata(allData, outputPath, trainRange, validRange, testRange);
 
 end
 
-function [ segmentsMatrix ] = getSegments(patchSize, height, width)
+function [ segmentsMatrix, segLocations, segSizes ] = getSegments(patchSize, height, width)
+
+NORMALIZE_LOCATIONS = 1;
 
 segmentsMatrix = zeros(height, width);
+segLocations = zeros(width*height/patchSize^2, 2);
+segSizes = (patchSize*patchSize)*ones(width*height/patchSize^2, 1);
 cnt = 1;
 for row = 1:patchSize:height % important: row-major order
     for col = 1:patchSize:width
@@ -143,6 +150,21 @@ for row = 1:patchSize:height % important: row-major order
         xcomp = col:col+patchSize-1;
         
         segmentsMatrix(ycomp, xcomp) = cnt;
+        
+        x = (col+col+patchSize-1)/2;
+        y = (row+row+patchSize-1)/2;
+        
+        if NORMALIZE_LOCATIONS
+            x = x/width;
+            y = y/height;
+        else
+            x = floor(x);
+            y = floor(y);
+        end
+        
+        segLocations(cnt, 1) = x;
+        segLocations(cnt, 2) = y;
+        
         cnt = cnt + 1;
     end
 end
