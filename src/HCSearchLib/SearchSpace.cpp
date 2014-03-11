@@ -306,7 +306,7 @@ namespace HCSearch
 		}
 	}
 
-	/**************** Standard Features With Unary Confidences and Pairwise All Pairs ****************/
+	/**************** Standard Features With Unary Confidences and Raw Pairwise ****************/
 
 	StandardConfFeatures::StandardConfFeatures()
 	{
@@ -458,7 +458,7 @@ namespace HCSearch
 		}
 	}
 
-	/**************** Unary Only Features ****************/
+	/**************** Unary Only Raw Features ****************/
 
 	UnaryFeatures::UnaryFeatures()
 	{
@@ -538,7 +538,7 @@ namespace HCSearch
 		return numClasses*unaryFeatDim;
 	}
 
-	/**************** Standard Bigram Features ****************/
+	/**************** Standard Raw Unary and Co-occurence Counts Pairwise Features ****************/
 
 	StandardPairwiseCountsFeatures::StandardPairwiseCountsFeatures()
 	{
@@ -639,7 +639,7 @@ namespace HCSearch
 		return one;
 	}
 
-	/**************** Standard Bigram Features with Unary Confidences ****************/
+	/**************** Standard Confidences Unary and Co-occurence Counts Pairwise Features ****************/
 
 	StandardConfPairwiseCountsFeatures::StandardConfPairwiseCountsFeatures()
 	{
