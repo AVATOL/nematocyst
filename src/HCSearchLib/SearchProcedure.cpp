@@ -584,8 +584,6 @@ namespace HCSearch
 		// expand each element
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
-			SearchNodeHeuristicPQ candidateSetTemp;
-
 			ISearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
@@ -595,33 +593,11 @@ namespace HCSearch
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
 				ISearchNode* state = *it;
-				if (!isDuplicate(state, candidateSetTemp) && !isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
+				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
-					//candidateSetTemp.push(state);
 					candidateSet.push(state);
 				}
 			}
-
-			//// prune
-			//int numCandidates = candidateSetTemp.size();
-			//for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
-			//{
-			//	if (candidateSetTemp.empty())
-			//		break;
-
-			//	ISearchNode* state = candidateSetTemp.top();
-			//	candidateSet.push(state);
-			//	candidateSetTemp.pop();
-			//}
-			//int numPrunedCandidates = candidateSetTemp.size();
-			//while (!candidateSetTemp.empty())
-			//{
-			//	ISearchNode* state = candidateSetTemp.top();
-			//	candidateSetTemp.pop();
-			//	delete state;
-			//}
-			//LOG() << "num candidates=" << numCandidates << endl;
-			//LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
 		}
 
 		return candidateSet;
@@ -703,8 +679,6 @@ namespace HCSearch
 		// expand each element
 		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
-			SearchNodeHeuristicPQ candidateSetTemp;
-
 			ISearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
@@ -714,33 +688,11 @@ namespace HCSearch
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
 				ISearchNode* state = *it;
-				if (!isDuplicate(state, candidateSetTemp) && !isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
+				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
-					//candidateSetTemp.push(state);
 					candidateSet.push(state);
 				}
 			}
-
-			// prune
-			//int numCandidates = candidateSetTemp.size();
-			//for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
-			//{
-			//	if (candidateSetTemp.empty())
-			//		break;
-
-			//	ISearchNode* state = candidateSetTemp.top();
-			//	candidateSet.push(state);
-			//	candidateSetTemp.pop();
-			//}
-			//int numPrunedCandidates = candidateSetTemp.size();
-			//while (!candidateSetTemp.empty())
-			//{
-			//	ISearchNode* state = candidateSetTemp.top();
-			//	candidateSetTemp.pop();
-			//	delete state;
-			//}
-			//LOG() << "num candidates=" << numCandidates << endl;
-			//LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
 		}
 
 		// add remaining openSet to candidate set
