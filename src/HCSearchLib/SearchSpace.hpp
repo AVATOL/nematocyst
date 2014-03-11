@@ -59,7 +59,6 @@ namespace HCSearch
 	class ISuccessorFunction
 	{
 	protected:
-		static const int MAX_NUM_SUCCESSOR_CANDIDATES;
 		int maxNumSuccessorCandidates;
 
 	public:
@@ -445,6 +444,7 @@ namespace HCSearch
 
 	public:
 		StochasticSuccessor();
+		StochasticSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticSuccessor();
 
@@ -472,6 +472,7 @@ namespace HCSearch
 	{
 	public:
 		StochasticNeighborSuccessor();
+		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticNeighborSuccessor();
 
@@ -489,6 +490,7 @@ namespace HCSearch
 	{
 	public:
 		StochasticConfidencesNeighborSuccessor();
+		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticConfidencesNeighborSuccessor();
 
@@ -511,6 +513,7 @@ namespace HCSearch
 
 	public:
 		CutScheduleSuccessor();
+		CutScheduleSuccessor(double cutParam);
 		CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleSuccessor();
 
@@ -531,6 +534,7 @@ namespace HCSearch
 	{
 	public:
 		CutScheduleNeighborSuccessor();
+		CutScheduleNeighborSuccessor(double cutParam);
 		CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleNeighborSuccessor();
 
@@ -548,6 +552,7 @@ namespace HCSearch
 	{
 	public:
 		CutScheduleConfidencesNeighborSuccessor();
+		CutScheduleConfidencesNeighborSuccessor(double cutParam);
 		CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleConfidencesNeighborSuccessor();
 

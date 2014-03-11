@@ -22,8 +22,6 @@ namespace HCSearch
 		return computeFeatures(X, Y).data.size();
 	}
 
-	const int ISuccessorFunction::MAX_NUM_SUCCESSOR_CANDIDATES = 1000;
-
 	/**************** Feature Functions ****************/
 
 	/**************** Standard Features ****************/
@@ -1175,7 +1173,7 @@ namespace HCSearch
 
 	FlipbitSuccessor::FlipbitSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 	}
 
 	FlipbitSuccessor::FlipbitSuccessor(int maxNumSuccessorCandidates)
@@ -1230,6 +1228,20 @@ namespace HCSearch
 
 		LOG() << "num successors generated=" << successors.size() << endl;
 
+		// prune to the bound
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
+		{
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
+
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
+		}
+
 		Global::settings->stats->addSuccessorCount(successors.size());
 
 		clock_t toc = clock();
@@ -1242,7 +1254,7 @@ namespace HCSearch
 
 	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 	}
 
 	FlipbitNeighborSuccessor::FlipbitNeighborSuccessor(int maxNumSuccessorCandidates)
@@ -1310,6 +1322,20 @@ namespace HCSearch
 
 		LOG() << "num successors generated=" << successors.size() << endl;
 
+		// prune to the bound
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
+		{
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
+
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
+		}
+
 		Global::settings->stats->addSuccessorCount(successors.size());
 
 		clock_t toc = clock();
@@ -1322,7 +1348,7 @@ namespace HCSearch
 
 	FlipbitConfidencesNeighborSuccessor::FlipbitConfidencesNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 	}
 
 	FlipbitConfidencesNeighborSuccessor::FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates)
@@ -1394,6 +1420,20 @@ namespace HCSearch
 
 		LOG() << "num successors generated=" << successors.size() << endl;
 
+		// prune to the bound
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
+		{
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
+
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
+		}
+
 		Global::settings->stats->addSuccessorCount(successors.size());
 
 		clock_t toc = clock();
@@ -1409,9 +1449,16 @@ namespace HCSearch
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+	}
+
+	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
@@ -1442,6 +1489,20 @@ namespace HCSearch
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
 		LOG() << "num successors generated=" << successors.size() << endl;
+
+		// prune to the bound
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
+		{
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
+
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
+		}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
@@ -1681,9 +1742,16 @@ namespace HCSearch
 
 	StochasticNeighborSuccessor::StochasticNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+	}
+	
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
@@ -1706,9 +1774,16 @@ namespace HCSearch
 
 	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+	}
+
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
 	}
 
 	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates)
@@ -1735,8 +1810,15 @@ namespace HCSearch
 
 	CutScheduleSuccessor::CutScheduleSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleSuccessor::CutScheduleSuccessor(double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 
@@ -1766,6 +1848,20 @@ namespace HCSearch
 		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
 
 		LOG() << "num successors generated=" << successors.size() << endl;
+
+		// prune to the bound
+		if (Global::settings->RANDOM_SUCCESSOR_PRUNE)
+		{
+			const int originalSize = successors.size();
+			if (originalSize > maxNumSuccessorCandidates)
+			{
+				random_shuffle(successors.begin(), successors.end());
+				for (int i = 0; i < originalSize - maxNumSuccessorCandidates; i++)
+					successors.pop_back();
+
+				LOG() << "\tpruned to num successors=" << successors.size() << endl;
+			}
+		}
 
 		Global::settings->stats->addSuccessorCount(successors.size());
 
@@ -1897,8 +1993,15 @@ namespace HCSearch
 
 	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleNeighborSuccessor::CutScheduleNeighborSuccessor(double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 
@@ -1922,8 +2025,15 @@ namespace HCSearch
 
 	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor()
 	{
-		this->maxNumSuccessorCandidates = MAX_NUM_SUCCESSOR_CANDIDATES;
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 		this->cutParam = DEFAULT_T_PARM;
+		this->cutEdgesIndependently = false;
+	}
+
+	CutScheduleConfidencesNeighborSuccessor::CutScheduleConfidencesNeighborSuccessor(double cutParam)
+	{
+		this->maxNumSuccessorCandidates = Global::settings->RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
+		this->cutParam = cutParam;
 		this->cutEdgesIndependently = false;
 	}
 

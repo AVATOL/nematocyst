@@ -227,8 +227,20 @@ namespace HCSearch
 
 		/*!
 		 * @brief Use DAgger to improve heuristic learning.
+		 * NOT IMPLEMENTED
 		 */
 		bool USE_DAGGER;
+
+		/*!
+		 * @brief Dumb random pruning in the successor function. 
+		 * Recomended to turn off.
+		 */
+		bool RANDOM_SUCCESSOR_PRUNE;
+
+		/*!
+		 * @brief Maximum number of candidates to kep for dumb random successor pruning.
+		 */
+		int RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES;
 
 		/*!
 		 * @brief Randomly prune SVM Rank examples to keep features file size low.

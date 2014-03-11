@@ -346,6 +346,8 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
+		RANDOM_SUCCESSOR_PRUNE = false;
+		RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES = 100;
 		PRUNE_SVM_RANK_EXAMPLES = true;
 		PRUNE_SVM_RANK_RATIO = 0.25;
 		PRUNE_SVM_RANK_MIN_EXAMPLES = 5;

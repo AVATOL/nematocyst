@@ -296,18 +296,18 @@ namespace MyProgramOptions
 						po.verboseMode = false;
 				}
 			}
-			else if (strcmp(argv[i], "--bound-successor") == 0)
-			{
-				if (i + 1 != argc)
-				{
-					po.boundSuccessorCandidates = atoi(argv[i+1]);
-					if (po.boundSuccessorCandidates <= 0)
-					{
-						LOG(ERROR) << "Invalid bound!";
-						HCSearch::abort();
-					}
-				}
-			}
+			//else if (strcmp(argv[i], "--bound-successor") == 0)
+			//{
+			//	if (i + 1 != argc)
+			//	{
+			//		po.boundSuccessorCandidates = atoi(argv[i+1]);
+			//		if (po.boundSuccessorCandidates <= 0)
+			//		{
+			//			LOG(ERROR) << "Invalid bound!";
+			//			HCSearch::abort();
+			//		}
+			//	}
+			//}
 			else if (strcmp(argv[i], "--cut-mode") == 0)
 			{
 				if (i + 1 != argc)
@@ -434,7 +434,7 @@ namespace MyProgramOptions
 		cerr << "Advanced options:" << endl;
 		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
 		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
-		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
+		//cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=100)" << endl;
 		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--hfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
