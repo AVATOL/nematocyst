@@ -597,30 +597,31 @@ namespace HCSearch
 				ISearchNode* state = *it;
 				if (!isDuplicate(state, candidateSetTemp) && !isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
-					candidateSetTemp.push(state);
+					//candidateSetTemp.push(state);
+					candidateSet.push(state);
 				}
 			}
 
-			// prune
-			int numCandidates = candidateSetTemp.size();
-			for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
-			{
-				if (candidateSetTemp.empty())
-					break;
+			//// prune
+			//int numCandidates = candidateSetTemp.size();
+			//for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
+			//{
+			//	if (candidateSetTemp.empty())
+			//		break;
 
-				ISearchNode* state = candidateSetTemp.top();
-				candidateSet.push(state);
-				candidateSetTemp.pop();
-			}
-			int numPrunedCandidates = candidateSetTemp.size();
-			while (!candidateSetTemp.empty())
-			{
-				ISearchNode* state = candidateSetTemp.top();
-				candidateSetTemp.pop();
-				delete state;
-			}
-			LOG() << "num candidates=" << numCandidates << endl;
-			LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
+			//	ISearchNode* state = candidateSetTemp.top();
+			//	candidateSet.push(state);
+			//	candidateSetTemp.pop();
+			//}
+			//int numPrunedCandidates = candidateSetTemp.size();
+			//while (!candidateSetTemp.empty())
+			//{
+			//	ISearchNode* state = candidateSetTemp.top();
+			//	candidateSetTemp.pop();
+			//	delete state;
+			//}
+			//LOG() << "num candidates=" << numCandidates << endl;
+			//LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
 		}
 
 		return candidateSet;
@@ -715,30 +716,31 @@ namespace HCSearch
 				ISearchNode* state = *it;
 				if (!isDuplicate(state, candidateSetTemp) && !isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
-					candidateSetTemp.push(state);
+					//candidateSetTemp.push(state);
+					candidateSet.push(state);
 				}
 			}
 
 			// prune
-			int numCandidates = candidateSetTemp.size();
-			for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
-			{
-				if (candidateSetTemp.empty())
-					break;
+			//int numCandidates = candidateSetTemp.size();
+			//for (int i = 0; i < PRUNE_MAX_NUM_CANDIDATES; i++)
+			//{
+			//	if (candidateSetTemp.empty())
+			//		break;
 
-				ISearchNode* state = candidateSetTemp.top();
-				candidateSet.push(state);
-				candidateSetTemp.pop();
-			}
-			int numPrunedCandidates = candidateSetTemp.size();
-			while (!candidateSetTemp.empty())
-			{
-				ISearchNode* state = candidateSetTemp.top();
-				candidateSetTemp.pop();
-				delete state;
-			}
-			LOG() << "num candidates=" << numCandidates << endl;
-			LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
+			//	ISearchNode* state = candidateSetTemp.top();
+			//	candidateSet.push(state);
+			//	candidateSetTemp.pop();
+			//}
+			//int numPrunedCandidates = candidateSetTemp.size();
+			//while (!candidateSetTemp.empty())
+			//{
+			//	ISearchNode* state = candidateSetTemp.top();
+			//	candidateSetTemp.pop();
+			//	delete state;
+			//}
+			//LOG() << "num candidates=" << numCandidates << endl;
+			//LOG() << "\tnum pruned candidates=" << numPrunedCandidates << endl;
 		}
 
 		// add remaining openSet to candidate set
