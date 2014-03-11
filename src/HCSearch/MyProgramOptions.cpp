@@ -123,8 +123,8 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
-					else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "crh") == 0)
-						po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
+					//else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "crh") == 0)
+					//	po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
 					else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "decomposed") == 0)
 						po.schedule.push_back(HCSearch::LEARN_DECOMPOSED);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
@@ -157,10 +157,10 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
-					else if (strcmp(argv[i+1], "RL") == 0 || strcmp(argv[i+1], "rl") == 0)
-						po.schedule.push_back(HCSearch::RL);
-					else if (strcmp(argv[i+1], "RC") == 0 || strcmp(argv[i+1], "rc") == 0)
-						po.schedule.push_back(HCSearch::RC);
+					//else if (strcmp(argv[i+1], "RL") == 0 || strcmp(argv[i+1], "rl") == 0)
+					//	po.schedule.push_back(HCSearch::RL);
+					//else if (strcmp(argv[i+1], "RC") == 0 || strcmp(argv[i+1], "rc") == 0)
+					//	po.schedule.push_back(HCSearch::RC);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::HC);
@@ -417,7 +417,7 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
-		cerr << "\t\t\t\tCRH: learn cost with random H" << endl;
+		//cerr << "\t\t\t\tCRH: learn cost with random H" << endl;
 		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
 		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
 		cerr << "\t--infer arg\t" << ": inference" << endl;
@@ -425,8 +425,8 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tHL: learned heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
-		cerr << "\t\t\t\tRL: random heuristic and oracle cost" << endl;
-		cerr << "\t\t\t\tRC: random heuristic and learned cost" << endl;
+		//cerr << "\t\t\t\tRL: random heuristic and oracle cost" << endl;
+		//cerr << "\t\t\t\tRC: random heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tALL: short-hand for HC, HL, LC, LL" << endl;
 		cerr << "\t\t\t\t(none): short-hand for HC" << endl;
 		cerr << endl;
