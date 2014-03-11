@@ -44,6 +44,7 @@ namespace HCSearch
 
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
 		
@@ -51,7 +52,7 @@ namespace HCSearch
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
 
 		return RankFeatures(phi);
 	}
@@ -63,8 +64,9 @@ namespace HCSearch
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = featureDim;
 		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
 
-		return numClasses*unaryFeatDim + (numClasses+1)*pairwiseFeatDim;
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
 	}
 
 	VectorXd StandardFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
@@ -91,10 +93,155 @@ namespace HCSearch
 			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
 		}
 
+		phi = 1.0/X.getNumNodes() * phi;
+
 		return phi;
 	}
 	
 	VectorXd StandardFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = featureDim;
+		int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			if (X.graph.adjList.count(node1) == 0)
+				continue;
+
+			// get neighbors (ending nodes) of starting node
+			NeighborSet_t neighbors = X.graph.adjList[node1];
+			const int numNeighbors = neighbors.size();
+			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
+			{
+				int node2 = *it;
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		// phi features depend on labels
+		if (nodeLabel1 != nodeLabel2)
+		{
+			VectorXd diff = nodeFeatures1 - nodeFeatures2;
+			VectorXd negdiffabs2 = -diff.cwiseAbs2();
+			VectorXd expnegdiffabs2 = negdiffabs2.array().exp();
+
+			// assignment
+			return expnegdiffabs2;
+		}
+		else
+		{
+			VectorXd diff = nodeFeatures1 - nodeFeatures2;
+			VectorXd negdiffabs2 = -diff.cwiseAbs2();
+			VectorXd expnegdiffabs2 = 1 - negdiffabs2.array().exp();
+
+			// assignment
+			return expnegdiffabs2;
+		}
+	}
+
+	/**************** Standard Features Alternative Formulation ****************/
+
+	StandardAltFeatures::StandardAltFeatures()
+	{
+	}
+
+	StandardAltFeatures::~StandardAltFeatures()
+	{
+	}
+
+	RankFeatures StandardAltFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, (numClasses+1)*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardAltFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1+featureDim;
+		int pairwiseFeatDim = featureDim;
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		return numClasses*unaryFeatDim + (numClasses+1)*pairwiseFeatDim;
+	}
+
+	VectorXd StandardAltFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1+featureDim;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment: bias and unary feature
+			phi(classIndex*unaryFeatDim) += 1;
+			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
+		}
+
+		return phi;
+	}
+	
+	VectorXd StandardAltFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
@@ -131,7 +278,7 @@ namespace HCSearch
 		return 0.5*phi;
 	}
 
-	VectorXd StandardFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+	VectorXd StandardAltFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
 		// phi features depend on labels
@@ -159,164 +306,17 @@ namespace HCSearch
 		}
 	}
 
-	/**************** Standard Features With All Pairs ****************/
-
-	StandardFeatures2::StandardFeatures2()
-	{
-	}
-
-	StandardFeatures2::~StandardFeatures2()
-	{
-	}
-
-	RankFeatures StandardFeatures2::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
-	{
-		int numNodes = X.getNumNodes();
-		int featureDim = X.getFeatureDim();
-		int numClasses = Global::settings->CLASSES.numClasses();
-
-		int unaryFeatDim = 1+featureDim;
-		int pairwiseFeatDim = featureDim;
-		int numPairs = (numClasses*(numClasses+1))/2;
-
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
-		
-		VectorXd unaryTerm = computeUnaryTerm(X, Y);
-		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
-
-		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
-		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
-
-		return RankFeatures(phi);
-	}
-
-	int StandardFeatures2::featureSize(ImgFeatures& X, ImgLabeling& Y)
-	{
-		int numNodes = X.getNumNodes();
-		int featureDim = X.getFeatureDim();
-		int unaryFeatDim = 1+featureDim;
-		int pairwiseFeatDim = featureDim;
-		int numClasses = Global::settings->CLASSES.numClasses();
-		int numPairs = (numClasses*(numClasses+1))/2;
-
-		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
-	}
-
-	VectorXd StandardFeatures2::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
-	{
-		const int numNodes = X.getNumNodes();
-		const int numClasses = Global::settings->CLASSES.numClasses();
-		const int featureDim = X.getFeatureDim();
-		const int unaryFeatDim = 1+featureDim;
-		
-		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
-
-		// unary potential
-		for (int node = 0; node < numNodes; node++)
-		{
-			// get node features and label
-			VectorXd nodeFeatures = X.graph.nodesData.row(node);
-			int nodeLabel = Y.getLabel(node);
-
-			// map node label to indexing value in phi vector
-			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
-
-			// assignment: bias and unary feature
-			phi(classIndex*unaryFeatDim) += 1;
-			phi.segment(classIndex*unaryFeatDim+1, featureDim) += nodeFeatures;
-		}
-
-		phi = 1.0/X.getNumNodes() * phi;
-
-		return phi;
-	}
-	
-	VectorXd StandardFeatures2::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
-	{
-		const int numNodes = X.getNumNodes();
-		const int numClasses = Global::settings->CLASSES.numClasses();
-		const int featureDim = X.getFeatureDim();
-		const int pairwiseFeatDim = featureDim;
-		int numPairs = (numClasses*(numClasses+1))/2;
-		
-		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
-
-		int numEdges = 0;
-		for (int node1 = 0; node1 < numNodes; node1++)
-		{
-			if (X.graph.adjList.count(node1) == 0)
-				continue;
-
-			// get neighbors (ending nodes) of starting node
-			NeighborSet_t neighbors = X.graph.adjList[node1];
-			const int numNeighbors = neighbors.size();
-			for (NeighborSet_t::iterator it = neighbors.begin(); it != neighbors.end(); ++it)
-			{
-				int node2 = *it;
-				numEdges++;
-
-				// get node features and label
-				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
-				int nodeLabel1 = Y.getLabel(node1);
-
-				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
-				int nodeLabel2 = Y.getLabel(node2);
-
-				int classIndex = -1;
-				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, nodeLabel1, nodeLabel2, classIndex);
-				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
-			}
-		}
-
-		phi = 1.0/numEdges * phi;
-
-		return phi;
-	}
-
-	VectorXd StandardFeatures2::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
-		int nodeLabel1, int nodeLabel2, int& classIndex)
-	{
-		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
-		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
-		int numClasses = Global::settings->CLASSES.numClasses();
-
-		int i = min(node1ClassIndex, node2ClassIndex);
-		int j = max(node1ClassIndex, node2ClassIndex);
-
-		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
-
-		// phi features depend on labels
-		if (nodeLabel1 != nodeLabel2)
-		{
-			VectorXd diff = nodeFeatures1 - nodeFeatures2;
-			VectorXd negdiffabs2 = -diff.cwiseAbs2();
-			VectorXd expnegdiffabs2 = negdiffabs2.array().exp();
-
-			// assignment
-			return expnegdiffabs2;
-		}
-		else
-		{
-			VectorXd diff = nodeFeatures1 - nodeFeatures2;
-			VectorXd negdiffabs2 = -diff.cwiseAbs2();
-			VectorXd expnegdiffabs2 = 1 - negdiffabs2.array().exp();
-
-			// assignment
-			return expnegdiffabs2;
-		}
-	}
-
 	/**************** Standard Features With Unary Confidences and Pairwise All Pairs ****************/
 
-	StandardFeatures3::StandardFeatures3()
+	StandardConfFeatures::StandardConfFeatures()
 	{
 	}
 
-	StandardFeatures3::~StandardFeatures3()
+	StandardConfFeatures::~StandardConfFeatures()
 	{
 	}
 
-	RankFeatures StandardFeatures3::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -337,7 +337,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardFeatures3::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -349,7 +349,7 @@ namespace HCSearch
 		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
 	}
 
-	VectorXd StandardFeatures3::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	VectorXd StandardConfFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		if (!Y.confidencesAvailable)
 		{
@@ -383,7 +383,7 @@ namespace HCSearch
 		return phi;
 	}
 	
-	VectorXd StandardFeatures3::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	VectorXd StandardConfFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
@@ -425,7 +425,7 @@ namespace HCSearch
 		return phi;
 	}
 
-	VectorXd StandardFeatures3::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+	VectorXd StandardConfFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
 		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
@@ -499,15 +499,15 @@ namespace HCSearch
 
 	/**************** Unary Only Confidences Features ****************/
 
-	UnaryFeatures2::UnaryFeatures2()
+	UnaryConfFeatures::UnaryConfFeatures()
 	{
 	}
 
-	UnaryFeatures2::~UnaryFeatures2()
+	UnaryConfFeatures::~UnaryConfFeatures()
 	{
 	}
 
-	RankFeatures UnaryFeatures2::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures UnaryConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -526,7 +526,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int UnaryFeatures2::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int UnaryConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -540,15 +540,15 @@ namespace HCSearch
 
 	/**************** Standard Bigram Features ****************/
 
-	StandardBigramFeatures::StandardBigramFeatures()
+	StandardPairwiseCountsFeatures::StandardPairwiseCountsFeatures()
 	{
 	}
 
-	StandardBigramFeatures::~StandardBigramFeatures()
+	StandardPairwiseCountsFeatures::~StandardPairwiseCountsFeatures()
 	{
 	}
 
-	RankFeatures StandardBigramFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -569,7 +569,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardBigramFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -581,7 +581,7 @@ namespace HCSearch
 		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
 	}
 	
-	VectorXd StandardBigramFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	VectorXd StandardPairwiseCountsFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
@@ -623,7 +623,7 @@ namespace HCSearch
 		return phi;
 	}
 
-	VectorXd StandardBigramFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+	VectorXd StandardPairwiseCountsFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
 		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
@@ -641,15 +641,15 @@ namespace HCSearch
 
 	/**************** Standard Bigram Features with Unary Confidences ****************/
 
-	StandardBigramFeatures3::StandardBigramFeatures3()
+	StandardConfPairwiseCountsFeatures::StandardConfPairwiseCountsFeatures()
 	{
 	}
 
-	StandardBigramFeatures3::~StandardBigramFeatures3()
+	StandardConfPairwiseCountsFeatures::~StandardConfPairwiseCountsFeatures()
 	{
 	}
 
-	RankFeatures StandardBigramFeatures3::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardConfPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -670,7 +670,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardBigramFeatures3::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardConfPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -682,7 +682,7 @@ namespace HCSearch
 		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
 	}
 	
-	VectorXd StandardBigramFeatures3::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	VectorXd StandardConfPairwiseCountsFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
@@ -724,7 +724,7 @@ namespace HCSearch
 		return phi;
 	}
 
-	VectorXd StandardBigramFeatures3::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+	VectorXd StandardConfPairwiseCountsFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 		int nodeLabel1, int nodeLabel2, int& classIndex)
 	{
 		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);

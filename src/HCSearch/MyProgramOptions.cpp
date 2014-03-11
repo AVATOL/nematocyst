@@ -345,20 +345,20 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "standard") == 0)
 						po.heuristicFeaturesMode = STANDARD;
-					else if (strcmp(argv[i+1], "standard2") == 0)
-						po.heuristicFeaturesMode = STANDARD2;
-					else if (strcmp(argv[i+1], "standard3") == 0)
-						po.heuristicFeaturesMode = STANDARD3;
-					else if (strcmp(argv[i+1], "dense-crf") == 0)
-						po.heuristicFeaturesMode = DENSE_CRF;
+					//else if (strcmp(argv[i+1], "standard-alt") == 0)
+					//	po.heuristicFeaturesMode = STANDARD_ALT;
+					else if (strcmp(argv[i+1], "standard-conf") == 0)
+						po.heuristicFeaturesMode = STANDARD_CONF;
+					//else if (strcmp(argv[i+1], "dense-crf") == 0)
+					//	po.heuristicFeaturesMode = DENSE_CRF;
 					else if (strcmp(argv[i+1], "unary") == 0)
 						po.heuristicFeaturesMode = UNARY;
-					else if (strcmp(argv[i+1], "unary2") == 0)
-						po.heuristicFeaturesMode = UNARY2;
-					else if (strcmp(argv[i+1], "standard-bigram") == 0)
-						po.heuristicFeaturesMode = STANDARD_BIGRAM;
-					else if (strcmp(argv[i+1], "standard3-bigram") == 0)
-						po.heuristicFeaturesMode = STANDARD3_BIGRAM;
+					else if (strcmp(argv[i+1], "unary-conf") == 0)
+						po.heuristicFeaturesMode = UNARY_CONF;
+					else if (strcmp(argv[i+1], "standard-pair-counts") == 0)
+						po.heuristicFeaturesMode = STANDARD_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
+						po.heuristicFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
 				}
 			}
 			else if (strcmp(argv[i], "--cfeatures") == 0)
@@ -367,20 +367,20 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "standard") == 0)
 						po.costFeaturesMode = STANDARD;
-					else if (strcmp(argv[i+1], "standard2") == 0)
-						po.costFeaturesMode = STANDARD2;
-					else if (strcmp(argv[i+1], "standard3") == 0)
-						po.costFeaturesMode = STANDARD3;
-					else if (strcmp(argv[i+1], "dense-crf") == 0)
-						po.costFeaturesMode = DENSE_CRF;
+					//else if (strcmp(argv[i+1], "standard-alt") == 0)
+					//	po.costFeaturesMode = STANDARD_ALT;
+					else if (strcmp(argv[i+1], "standard-conf") == 0)
+						po.costFeaturesMode = STANDARD_CONF;
+					//else if (strcmp(argv[i+1], "dense-crf") == 0)
+					//	po.costFeaturesMode = DENSE_CRF;
 					else if (strcmp(argv[i+1], "unary") == 0)
 						po.costFeaturesMode = UNARY;
-					else if (strcmp(argv[i+1], "unary2") == 0)
-						po.costFeaturesMode = UNARY2;
-					else if (strcmp(argv[i+1], "standard-bigram") == 0)
-						po.costFeaturesMode = STANDARD_BIGRAM;
-					else if (strcmp(argv[i+1], "standard3-bigram") == 0)
-						po.costFeaturesMode = STANDARD3_BIGRAM;
+					else if (strcmp(argv[i+1], "unary-conf") == 0)
+						po.costFeaturesMode = UNARY_CONF;
+					else if (strcmp(argv[i+1], "standard-pair-counts") == 0)
+						po.costFeaturesMode = STANDARD_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
+						po.costFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
 				}
 			}
 			else if (strcmp(argv[i], "--loss") == 0)
@@ -437,8 +437,10 @@ namespace MyProgramOptions
 		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
 		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
-		cerr << "\t--hfeatures arg\t\t" << ": standard|standard2|standard3|dense-crf|unary|unary2|standard-bigram|standard3-bigram" << endl;
-		cerr << "\t--cfeatures arg\t\t" << ": standard|standard2|standard3|dense-crf|unary|unary2|standard-bigram|standard3-bigram" << endl;
+		cerr << "\t--hfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+			"standard-pair-counts|standard-conf-pair-counts" << endl;
+		cerr << "\t--cfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+			"standard-pair-counts|standard-conf-pair-counts" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;

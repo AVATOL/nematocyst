@@ -88,7 +88,7 @@ namespace HCSearch
 	/**************** Feature Functions ****************/
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with raw unary and raw pairwise potentials.
 	 */
 	class StandardFeatures : public IFeatureFunction
 	{
@@ -118,13 +118,14 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with raw unary and raw pairwise potentials, 
+	 * but pairwise does not distinguish non-class matches.
 	 */
-	class StandardFeatures2 : public IFeatureFunction
+	class StandardAltFeatures : public IFeatureFunction
 	{
 	public:
-		StandardFeatures2();
-		~StandardFeatures2();
+		StandardAltFeatures();
+		~StandardAltFeatures();
 
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
@@ -148,13 +149,13 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with confidence unary and raw pairwise potentials.
 	 */
-	class StandardFeatures3 : public IFeatureFunction
+	class StandardConfFeatures : public IFeatureFunction
 	{
 	public:
-		StandardFeatures3();
-		~StandardFeatures3();
+		StandardConfFeatures();
+		~StandardConfFeatures();
 
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
@@ -178,7 +179,7 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Unary only.
+	 * @brief Unary only raw features.
 	 */
 	class UnaryFeatures : public StandardFeatures
 	{
@@ -191,26 +192,26 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Unary only with confidences.
+	 * @brief Unary only confidences features.
 	 */
-	class UnaryFeatures2 : public StandardFeatures3
+	class UnaryConfFeatures : public StandardConfFeatures
 	{
 	public:
-		UnaryFeatures2();
-		~UnaryFeatures2();
+		UnaryConfFeatures();
+		~UnaryConfFeatures();
 
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
 	};
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with raw unary and co-occurence counts pairwise potentials.
 	 */
-	class StandardBigramFeatures : public StandardFeatures2
+	class StandardPairwiseCountsFeatures : public StandardFeatures
 	{
 	public:
-		StandardBigramFeatures();
-		~StandardBigramFeatures();
+		StandardPairwiseCountsFeatures();
+		~StandardPairwiseCountsFeatures();
 
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
@@ -222,13 +223,13 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Standard CRF features with unary and pairwise potentials.
+	 * @brief Standard CRF features with confidence unary and co-occurence counts pairwise potentials.
 	 */
-	class StandardBigramFeatures3 : public StandardFeatures3
+	class StandardConfPairwiseCountsFeatures : public StandardConfFeatures
 	{
 	public:
-		StandardBigramFeatures3();
-		~StandardBigramFeatures3();
+		StandardConfPairwiseCountsFeatures();
+		~StandardConfPairwiseCountsFeatures();
 
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
