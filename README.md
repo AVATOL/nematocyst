@@ -248,7 +248,6 @@ Main options:
 				H: learn heuristic
 				C: learn cost
 				COH: learn cost with oracle H
-				CRH: learn cost with random H
 				ALL: short-hand for H, C, COH
 				(none): short-hand for H, C
 	--infer arg	: inference
@@ -256,25 +255,28 @@ Main options:
 				HL: learned heuristic and oracle cost
 				LC: oracle heuristic and learned cost
 				LL: oracle heuristic and cost
-				RL: random heuristic and oracle cost
-				RC: random heuristic and learned cost
 				ALL: short-hand for HC, HL, LC, LL
 				(none): short-hand for HC
 
 Advanced options:
 	--anytime arg		: turn on saving anytime predictions if true
 	--beam-size arg		: beam size for beam search
-	--bound-successor arg	: maximum number of successor candidates (default=1000)
 	--cut-mode arg		: edges|state (cut edges by edges independently or by state)
 	--cut-param arg		: temperature parameter for stochastic cuts
+	--hfeatures arg		: standard|standard-conf|unary|unary-conf|standard-pair-counts|standard-conf-pair-counts
+	--cfeatures arg		: standard|standard-conf|unary|unary-conf|standard-pair-counts|standard-conf-pair-counts
 	--num-test-iters arg	: number of test iterations
 	--num-train-iters arg	: number of training iterations
 	--learner arg		: svmrank|online
+	--loss arg		: hamming|pixel-hamming
 	--save-features arg	: save rank features during learning if true
 	--save-mask arg		: save final prediction label masks if true
 	--search arg		: greedy|breadthbeam|bestbeam
 	--splits-path arg	: specify alternate path to splits folder
-	--successor arg		: flipbit|flipbit-neighbors|stochastic|stochastic-neighbors|stochastic-confidences-neighbors|cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors
+	--splits-train-file arg	: specify alternate file name to train file
+	--splits-valid-file arg	: specify alternate file name to validation file
+	--splits-test-file arg	: specify alternate file name to test file
+	--successor arg		: flipbit|flipbit-neighbors|flipbit-confidences-neighbors|stochastic|stochastic-neighbors|stochastic-confidences-neighbors|cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors
 	--unique-iter arg	: unique iteration ID (num-test-iters needs to be 1)
 	--verbose arg		: turn on verbose output if true
 
