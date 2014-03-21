@@ -25,9 +25,19 @@ namespace HCSearch
 	/**************** Prune Functions ****************/
 
 	/*!
+	 * @brief No pruning.
+	 */
+	class NoPrune : public IPruneFunction
+	{
+	public:
+		NoPrune();
+		~NoPrune();
+		
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
+	};
+
+	/*!
 	 * @brief Domain knowledge pruning function.
-	 *
-	 * For each node, flip its label to all possible classes.
 	 */
 	class DomainKnowledgePrune : public IPruneFunction
 	{
