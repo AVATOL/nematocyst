@@ -6,6 +6,7 @@
 #include "FeatureFunction.hpp"
 #include "InitialStateFunction.hpp"
 #include "SuccessorFunction.hpp"
+#include "PruneFunction.hpp"
 #include "LossFunction.hpp"
 
 using namespace Eigen;
@@ -52,6 +53,11 @@ namespace HCSearch
 		ISuccessorFunction* successorFunction;
 
 		/*!
+		 * Prune function.
+		 */
+		IPruneFunction* pruneFunction;
+
+		/*!
 		 * Loss function.
 		 */
 		ILossFunction* lossFunction;
@@ -72,7 +78,7 @@ namespace HCSearch
 		 */
 		SearchSpace(IFeatureFunction* heuristicFeatureFunction, IFeatureFunction* costFeatureFunction,
 			IInitialPredictionFunction* initialPredictionFunction, ISuccessorFunction* successorFunction,
-			ILossFunction* lossFunction);
+			IPruneFunction* pruneFunction, ILossFunction* lossFunction);
 
 		/*!
 		 * Note that the destructor will destroy the objects passed into the constructor!
@@ -109,6 +115,14 @@ namespace HCSearch
 		 * @return List of successors, which are structured output labelings
 		 */
 		vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+
+		/*!
+		 * @brief Generate a list of successors from a current labeling.
+		 * @param[in] X Structured image features
+		 * @param[in] YPred Current structured output labeling
+		 * @return List of successors, which are structured output labelings
+		 */
+		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
 
 		/*!
 		 * @brief Compute the loss between a predicted labeling and its groundtruth labeling.

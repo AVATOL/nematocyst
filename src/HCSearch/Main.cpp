@@ -233,7 +233,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	LOG() << endl;
 
 	// construct search space from these functions that we specified
-	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, lossFunc);
+	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, NULL, lossFunc);
 }
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
