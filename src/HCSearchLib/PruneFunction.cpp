@@ -1,4 +1,5 @@
 #include "PruneFunction.hpp"
+#include "MyLogger.hpp"
 
 namespace HCSearch
 {
@@ -51,7 +52,7 @@ namespace HCSearch
 		// run classifier
 		vector<int> classes = classifier->classify(featuresList);
 		
-		// remove bad candidates
+		// remove bad candidates (keep good candidates)
 		const int numOriginalCandidates = YCandidates.size();
 		for (int i = 0; i < numOriginalCandidates; i++)
 		{
@@ -60,6 +61,9 @@ namespace HCSearch
 				YPrunedCandidates.push_back(YCandidates[i]);
 			}
 		}
+
+		LOG() << "num of successors before pruning=" << numOriginalCandidates << endl;
+		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
 
 		return YPrunedCandidates;
 	}
