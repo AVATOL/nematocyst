@@ -169,7 +169,7 @@ namespace HCSearch
 		return labels;
 	}
 
-	/**************** Generic Features ****************/
+	/**************** Classify/Rank Features ****************/
 
 	GenericFeatures::GenericFeatures()
 	{
@@ -181,21 +181,6 @@ namespace HCSearch
 	}
 
 	GenericFeatures::~GenericFeatures()
-	{
-	}
-
-	/**************** Rank Features ****************/
-
-	RankFeatures::RankFeatures()
-	{
-	}
-
-	RankFeatures::RankFeatures(VectorXd features)
-	{
-		this->data = features;
-	}
-
-	RankFeatures::~RankFeatures()
 	{
 	}
 

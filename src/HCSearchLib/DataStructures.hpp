@@ -280,7 +280,7 @@ namespace HCSearch
 		set<int> action;
 	};
 
-	/**************** Generic Features ****************/
+	/**************** Classify/Rank Features ****************/
 
 	/*!
 	 * @brief Stores features for ranking or classification.
@@ -308,18 +308,8 @@ namespace HCSearch
 		~GenericFeatures();
 	};
 
-	/**************** Rank Features ****************/
-
-	/*!
-	 * @brief Just another name for GenericFeatures.
-	 */
-	class RankFeatures : public GenericFeatures
-	{
-	public:
-		RankFeatures();
-		RankFeatures(VectorXd features);
-		~RankFeatures();
-	};
+	typedef GenericFeatures ClassifyFeatures;
+	typedef GenericFeatures RankFeatures;
 
 	/**************** Rank Model ****************/
 
