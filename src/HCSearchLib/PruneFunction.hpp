@@ -1,6 +1,7 @@
 #ifndef PRUNEFUNCTION_HPP
 #define PRUNEFUNCTION_HPP
 
+#include "FeatureFunction.hpp"
 #include "DataStructures.hpp"
 #include "MyGraphAlgorithms.hpp"
 
@@ -13,6 +14,9 @@ namespace HCSearch
 	 */
 	class IPruneFunction
 	{
+	protected:
+		IFeatureFunction* featureFunction; //!< Pruning feature function
+
 	public:
 		virtual ~IPruneFunction() {}
 		
@@ -37,13 +41,14 @@ namespace HCSearch
 	};
 
 	/*!
-	 * @brief Domain knowledge pruning function.
+	 * @brief Pruning function using classifer for good/bad actions.
 	 */
-	class DomainKnowledgePrune : public IPruneFunction
+	class ClassifierPrune : public IPruneFunction
 	{
 	public:
-		DomainKnowledgePrune();
-		~DomainKnowledgePrune();
+		ClassifierPrune();
+		ClassifierPrune(IFeatureFunction* featureFunction);
+		~ClassifierPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
 	};

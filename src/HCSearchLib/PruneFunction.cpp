@@ -19,17 +19,37 @@ namespace HCSearch
 
 	/**************** Domain Knowledge ****************/
 
-	DomainKnowledgePrune::DomainKnowledgePrune()
+	ClassifierPrune::ClassifierPrune()
 	{
+		this->featureFunction = NULL;
 	}
 
-	DomainKnowledgePrune::~DomainKnowledgePrune()
+	ClassifierPrune::ClassifierPrune(IFeatureFunction* featureFunction)
+	{
+		this->featureFunction = featureFunction;
+	}
+
+	ClassifierPrune::~ClassifierPrune()
 	{
 	}
-		
-	vector< ImgCandidate > DomainKnowledgePrune::pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates)
+	
+	vector< ImgCandidate > ClassifierPrune::pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates)
 	{
 		//TODO
-		return YCandidates;
+
+		vector< ImgCandidate > YPrunedCandidates = YCandidates;
+
+		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
+		{
+			ImgCandidate YCand = *it;
+			RankFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling);
+			// TODO: write features to file
+		}
+
+		//TODO: run SVM classifier
+		
+		// TODO: read SVM results and remove bad from the set
+
+		return YPrunedCandidates;
 	}
 }
