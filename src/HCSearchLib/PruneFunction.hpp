@@ -45,9 +45,12 @@ namespace HCSearch
 	 */
 	class ClassifierPrune : public IPruneFunction
 	{
+	protected:
+		IClassifierModel* classifier;
+
 	public:
 		ClassifierPrune();
-		ClassifierPrune(IFeatureFunction* featureFunction);
+		ClassifierPrune(IFeatureFunction* featureFunction, IClassifierModel* classifier);
 		~ClassifierPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);

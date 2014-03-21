@@ -17,16 +17,18 @@ namespace HCSearch
 		return YCandidates;
 	}
 
-	/**************** Domain Knowledge ****************/
+	/**************** Classifier Prune ****************/
 
 	ClassifierPrune::ClassifierPrune()
 	{
 		this->featureFunction = NULL;
+		this->classifier = NULL;
 	}
 
-	ClassifierPrune::ClassifierPrune(IFeatureFunction* featureFunction)
+	ClassifierPrune::ClassifierPrune(IFeatureFunction* featureFunction, IClassifierModel* classifier)
 	{
 		this->featureFunction = featureFunction;
+		this->classifier = classifier;
 	}
 
 	ClassifierPrune::~ClassifierPrune()
@@ -35,20 +37,29 @@ namespace HCSearch
 	
 	vector< ImgCandidate > ClassifierPrune::pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates)
 	{
-		//TODO
+		vector< ImgCandidate > YPrunedCandidates;
 
-		vector< ImgCandidate > YPrunedCandidates = YCandidates;
-
+		// get pruning features of candidates
+		vector<ClassifierFeatures> featuresList;
 		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
 		{
 			ImgCandidate YCand = *it;
-			RankFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling);
-			// TODO: write features to file
+			ClassifierFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling);
+			featuresList.push_back(features);
 		}
 
-		//TODO: run SVM classifier
+		// run classifier
+		vector<int> classes = classifier->classify(featuresList);
 		
-		// TODO: read SVM results and remove bad from the set
+		// remove bad candidates
+		const int numOriginalCandidates = YCandidates.size();
+		for (int i = 0; i < numOriginalCandidates; i++)
+		{
+			if (classes[i] > 0) // positive class is assumed positive
+			{
+				YPrunedCandidates.push_back(YCandidates[i]);
+			}
+		}
 
 		return YPrunedCandidates;
 	}
