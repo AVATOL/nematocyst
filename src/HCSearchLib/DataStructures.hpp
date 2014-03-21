@@ -287,7 +287,7 @@ namespace HCSearch
 	 * 
 	 * This is nothing more than a wrapper around a VectorXd object.
 	 */
-	class IFeatures
+	class GenericFeatures
 	{
 	public:
 		/*!
@@ -298,19 +298,22 @@ namespace HCSearch
 		/*!
 		 * Default constructor does nothing.
 		 */
-		IFeatures();
+		GenericFeatures();
 
 		/*!
 		 * Constructor to initialize features data.
 		 */
-		IFeatures(VectorXd features);
+		GenericFeatures(VectorXd features);
 		
-		~IFeatures();
+		~GenericFeatures();
 	};
 
 	/**************** Rank Features ****************/
 
-	class RankFeatures : public IFeatures
+	/*!
+	 * @brief Just another name for GenericFeatures.
+	 */
+	class RankFeatures : public GenericFeatures
 	{
 	public:
 		RankFeatures();

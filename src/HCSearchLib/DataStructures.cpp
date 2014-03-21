@@ -171,16 +171,16 @@ namespace HCSearch
 
 	/**************** Generic Features ****************/
 
-	IFeatures::IFeatures()
+	GenericFeatures::GenericFeatures()
 	{
 	}
 
-	IFeatures::IFeatures(VectorXd features)
+	GenericFeatures::GenericFeatures(VectorXd features)
 	{
 		this->data = features;
 	}
 
-	IFeatures::~IFeatures()
+	GenericFeatures::~GenericFeatures()
 	{
 	}
 
