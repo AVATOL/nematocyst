@@ -108,7 +108,7 @@ namespace HCSearch
 		 * @param[in] YPred Current structured output labeling
 		 * @return List of successors, which are structured output labelings
 		 */
-		vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 
 		/*!
 		 * @brief Compute the loss between a predicted labeling and its groundtruth labeling.

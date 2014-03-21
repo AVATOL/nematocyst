@@ -69,7 +69,7 @@ namespace HCSearch
 		return this->initialPredictionFunction->getInitialPrediction(X);
 	}
 
-	vector< ImgLabeling > SearchSpace::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > SearchSpace::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		if (this->successorFunction == NULL)
 		{

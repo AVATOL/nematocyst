@@ -22,7 +22,7 @@ namespace HCSearch
 		/*!
 		 * @brief Generate successors.
 		 */
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)=0;
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)=0;
 	};
 
 	/**************** Successor Functions ****************/
@@ -44,7 +44,7 @@ namespace HCSearch
 		FlipbitSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitSuccessor();
 		
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 	};
 
 	/*!
@@ -59,7 +59,7 @@ namespace HCSearch
 		FlipbitNeighborSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitNeighborSuccessor();
 		
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 	};
 
 	/*!
@@ -74,7 +74,7 @@ namespace HCSearch
 		FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitConfidencesNeighborSuccessor();
 		
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 	};
 
 	/*!
@@ -97,11 +97,11 @@ namespace HCSearch
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticSuccessor();
 
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
-		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
 		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 
 		void getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
@@ -166,7 +166,7 @@ namespace HCSearch
 		CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleSuccessor();
 
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);

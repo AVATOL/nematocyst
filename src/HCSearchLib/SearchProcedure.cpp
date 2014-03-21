@@ -730,10 +730,11 @@ namespace HCSearch
 	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodes()
 	{
 		vector< ISearchNode* > successors;
-		vector< ImgLabeling > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
-		for (vector< ImgLabeling >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
+		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
 		{
-			ImgLabeling YPred = *it;
+			ImgCandidate YCandidate = *it;
+			ImgLabeling YPred = YCandidate.labeling;
 			switch (getType())
 			{
 			case LL:

@@ -25,11 +25,11 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgLabeling > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		clock_t tic = clock();
 
-		vector<ImgLabeling> successors;
+		vector<ImgCandidate> successors;
 
 		// for all nodes
 		const int numNodes = YPred.getNumNodes();
@@ -61,8 +61,13 @@ namespace HCSearch
 				YNew.confidencesAvailable = YPred.confidencesAvailable;
 				YNew.graph = graphNew;
 
+				ImgCandidate YCandidate;
+				YCandidate.labeling = YNew;
+				YCandidate.action = set<int>();
+				YCandidate.action.insert(node);
+
 				// add candidate to successors
-				successors.push_back(YNew);
+				successors.push_back(YCandidate);
 			}
 		}
 
@@ -106,11 +111,11 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgLabeling > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		clock_t tic = clock();
 
-		vector<ImgLabeling> successors;
+		vector<ImgCandidate> successors;
 
 		// for all nodes
 		const int numNodes = YPred.getNumNodes();
@@ -155,8 +160,13 @@ namespace HCSearch
 				YNew.confidencesAvailable = YPred.confidencesAvailable;
 				YNew.graph = graphNew;
 
+				ImgCandidate YCandidate;
+				YCandidate.labeling = YNew;
+				YCandidate.action = set<int>();
+				YCandidate.action.insert(node);
+
 				// add candidate to successors
-				successors.push_back(YNew);
+				successors.push_back(YCandidate);
 			}
 		}
 
@@ -200,11 +210,11 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgLabeling > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		clock_t tic = clock();
 
-		vector<ImgLabeling> successors;
+		vector<ImgCandidate> successors;
 
 		// for all nodes
 		const int numNodes = YPred.getNumNodes();
@@ -253,8 +263,13 @@ namespace HCSearch
 				YNew.confidencesAvailable = YPred.confidencesAvailable;
 				YNew.graph = graphNew;
 
+				ImgCandidate YCandidate;
+				YCandidate.labeling = YNew;
+				YCandidate.action = set<int>();
+				YCandidate.action.insert(node);
+
 				// add candidate to successors
-				successors.push_back(YNew);
+				successors.push_back(YCandidate);
 			}
 		}
 
@@ -312,7 +327,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgLabeling > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		clock_t tic = clock();
 
@@ -326,7 +341,7 @@ namespace HCSearch
 		LOG() << "generating successors..." << endl;
 
 		// generate candidates
-		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+		vector< ImgCandidate > successors = createCandidates(YPred, subgraphs);
 
 		LOG() << "num successors generated=" << successors.size() << endl;
 
@@ -444,14 +459,14 @@ namespace HCSearch
 		return subgraphs;
 	}
 
-	vector< ImgLabeling > StochasticSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
+	vector< ImgCandidate > StochasticSuccessor::createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs)
 	{
 		using namespace MyGraphAlgorithms;
 
 		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
 
 		// successors set
-		vector< ImgLabeling > successors;
+		vector< ImgCandidate > successors;
 
 		// loop over each sub graph
 		int cumSumLabels = 0;
@@ -493,13 +508,19 @@ namespace HCSearch
 
 					// make changes
 					set<int> component = cc->getNodes();
+					set<int> action;
 					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
 					{
 						int node = *it4;
 						YNew.graph.nodesData(node) = label;
+						action.insert(node);
 					}
 
-					successors.push_back(YNew);
+					ImgCandidate YCandidate;
+					YCandidate.labeling = YNew;
+					YCandidate.action = action;
+
+					successors.push_back(YCandidate);
 				}
 			}
 		}
@@ -673,7 +694,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgLabeling > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
 	{
 		clock_t tic = clock();
 
@@ -685,7 +706,7 @@ namespace HCSearch
 		LOG() << "generating successors..." << endl;
 
 		// generate candidates
-		vector< ImgLabeling > successors = createCandidates(YPred, subgraphs);
+		vector< ImgCandidate > successors = createCandidates(YPred, subgraphs);
 
 		LOG() << "num successors generated=" << successors.size() << endl;
 

@@ -261,6 +261,25 @@ namespace HCSearch
 		set<int> getTopConfidentLabels(int node, int K);
 	};
 
+	/*!
+	 * @brief Structured output labeling candidate: labeling and action.
+	 * 
+	 * This stores an ImgLabeling with a corresponding action, i.e. the set of nodes that changed.
+	 */
+	class ImgCandidate
+	{
+	public:
+		/*!
+		 * New labeling.
+		 */
+		ImgLabeling labeling;
+
+		/*!
+		 * Set of nodes that changed.
+		 */
+		set<int> action;
+	};
+
 	/**************** Rank Features ****************/
 
 	/*!
