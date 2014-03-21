@@ -333,14 +333,14 @@ namespace HCSearch
 		 * @param[in] features Features for classification
 		 * @return Returns the class of the feature
 		 */
-		virtual int classify(RankFeatures features)=0;
+		virtual int classify(ClassifierFeatures features)=0;
 
 		/*!
 		 * Use the model to classify a list of features.
 		 * @param[in] features List of features for classification
 		 * @return Returns the class of each of feature in the list
 		 */
-		virtual vector<int> classify(vector<RankFeatures> features)=0;
+		virtual vector<int> classify(vector<ClassifierFeatures> features)=0;
 
 		/*!
 		 * Get the ranker type.
@@ -356,6 +356,99 @@ namespace HCSearch
 		 * Save model data to file.
 		 */
 		virtual void save(string fileName)=0;
+	};
+
+	/**************** SVM Classifier Model ****************/
+
+	/*!
+	 * @brief Classifier model for SVM.
+	 * 
+	 * Has methods to learn from training examples and classification.
+	 */
+	class SVMClassifierModel : public IClassifierModel
+	{
+	private:
+		/*!
+		 * Output stream to training file for learning
+		 */
+		ofstream* trainingFileStream;
+
+		/*!
+		 * Training file name
+		 */
+		string trainingFileName;
+
+		/*!
+		 * Model file name
+		 */
+		string modelFileName;
+
+		/*!
+		 * True if currently used for learning
+		 */
+		bool isTraining;
+
+		/*!
+		 * True if ready to classify
+		 */
+		bool isClassifyReady;
+
+	public:
+		SVMClassifierModel();
+
+		/*!
+		 * Construct ready to classify from model file.
+		 */
+		SVMClassifierModel(string fileName);
+		
+		virtual int classify(ClassifierFeatures features);
+		virtual vector<int> classify(vector<ClassifierFeatures> features);
+		virtual ClassifierType classifierType();
+		virtual void load(string fileName);
+		virtual void save(string fileName);
+
+		/*!
+		 * Initialize learning.
+		 */
+		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training examples.
+		 */
+		void addTrainingExamples(vector<ClassifierFeatures>& features, vector<int>& labels);
+
+		/*!
+		 * End learning.
+		 *
+		 * Calls SVM program to train on examples and produce model.
+		 */
+		void finishTraining(string modelFileName);
+
+		/*!
+		 * Cancel learning. Closes training file.
+		 */
+		void cancelTraining();
+
+	private:
+		/*!
+		 * Write SVM features to file.
+		 */
+		static void writeFeaturesToFile(vector<ClassifierFeatures> features, string fileName);
+
+		/*!
+		 * Read labels from file.
+		 */
+		static void readLabelsFromFile(vector<int>& labels, MatrixXd& confidences, int numLabels, string fileName);
+
+		/*!
+		 * Convert vector into SVM line format.
+		 */
+		static string vector2svm(ClassifierFeatures features, int label);
+
+		/*!
+		 * Merge SVM feature files when using MPI.
+		 */
+		static void mergeFeatureFiles(string fileNameBase, int numProcesses);
 	};
 
 	/**************** Rank Model ****************/

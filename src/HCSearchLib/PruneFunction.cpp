@@ -50,7 +50,7 @@ namespace HCSearch
 		}
 
 		// run classifier
-		vector<int> classes = classifier->classify(featuresList);
+		vector<int> classes = this->classifier->classify(featuresList);
 		
 		// remove bad candidates (keep good candidates)
 		const int numOriginalCandidates = YCandidates.size();
@@ -66,5 +66,10 @@ namespace HCSearch
 		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
 
 		return YPrunedCandidates;
+	}
+
+	IClassifierModel* ClassifierPrune::getClassifier()
+	{
+		return this->classifier;
 	}
 }

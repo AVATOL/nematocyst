@@ -184,6 +184,230 @@ namespace HCSearch
 	{
 	}
 
+	/**************** SVM Classifier Model ****************/
+
+	SVMClassifierModel::SVMClassifierModel()
+	{
+		this->isClassifyReady = false;
+		this->isTraining = false;
+	}
+
+	SVMClassifierModel::SVMClassifierModel(string fileName)
+	{
+		load(fileName);
+	}
+
+	int SVMClassifierModel::classify(ClassifierFeatures features)
+	{
+		vector<ClassifierFeatures> featureWrapper;
+		featureWrapper.push_back(features);
+		vector<int> results = classify(featureWrapper);
+		return results[0];
+	}
+
+	vector<int> SVMClassifierModel::classify(vector<ClassifierFeatures> features)
+	{
+		if (!this->isClassifyReady)
+		{
+			LOG(ERROR) << "cannot classify from uninitialized svm model object";
+			abort();
+		}
+
+		// write to file
+		writeFeaturesToFile(features, Global::settings->paths->OUTPUT_CLASSIFIER_FEATURES_FILE);
+
+		// run SVM program
+		stringstream ssPredictCmd;
+		ssPredictCmd << Global::settings->cmds->LIBLINEAR_PREDICT_CMD << " " 
+			<< Global::settings->paths->OUTPUT_CLASSIFIER_FEATURES_FILE << " " + this->modelFileName 
+			<< " " << Global::settings->paths->OUTPUT_CLASSIFIER_PREDICT_FILE;
+
+		int retcode = MyFileSystem::Executable::executeRetries(ssPredictCmd.str());
+		if (retcode != 0)
+		{
+			LOG(ERROR) << "Classifier failed!";
+			abort();
+		}
+
+		// read back in results
+		vector<int> labels;
+		MatrixXd confidences;
+		readLabelsFromFile(labels, confidences, features.size(), Global::settings->paths->OUTPUT_CLASSIFIER_PREDICT_FILE);
+
+		return labels;
+	}
+
+	ClassifierType SVMClassifierModel::classifierType()
+	{
+		return SVM_CLASSIFIER;
+	}
+
+	void SVMClassifierModel::load(string fileName)
+	{
+		this->modelFileName = fileName;
+		this->isClassifyReady = true;
+	}
+
+	void SVMClassifierModel::save(string fileName)
+	{
+		if (!this->isClassifyReady)
+		{
+			LOG(WARNING) << "cannot save svm model from uninitialized object";
+			return;
+		}
+
+		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
+	}
+
+	void startTraining(string featuresFileName)
+	{
+		//TODO
+	}
+
+	void SVMClassifierModel::addTrainingExamples(vector<ClassifierFeatures>& features, vector<int>& labels)
+	{
+		//TODO
+	}
+
+	void SVMClassifierModel::finishTraining(string modelFileName)
+	{
+		//TODO
+	}
+
+	void SVMClassifierModel::cancelTraining()
+	{
+		//TODO
+	}
+
+	void SVMClassifierModel::writeFeaturesToFile(vector<ClassifierFeatures> features, string fileName)
+	{
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			for (vector<ClassifierFeatures>::iterator it = features.begin(); it != features.end(); ++it)
+			{
+				ClassifierFeatures featureVector = *it;
+				const int dummyLabel = 1; // dummy for prediction
+				fh << vector2svm(featureVector, dummyLabel) << endl;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file for writing LIBSVM classifier features!";
+			abort();
+		}
+	}
+
+	void SVMClassifierModel::readLabelsFromFile(vector<int>& labels, MatrixXd& confidences, int numLabels, string fileName)
+	{
+		vector<int> labelOrderFound;
+		bool confidencesAvailable = false;
+
+		int lineIndex = 0;
+		string line;
+		ifstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			int numClassesFound = 0;
+			while (fh.good() && lineIndex < numLabels+1)
+			{
+				getline(fh, line);
+				if (lineIndex == 0)
+				{
+					// parse first line to get label order
+					stringstream ss(line);
+					string token;
+					int columnIndex = 0;
+					while (getline(ss, token, ' '))
+					{
+						// first token on first line should be "labels"
+						if (columnIndex == 0)
+						{
+							if (token.compare("labels") != 0)
+							{
+								LOG(ERROR) << "parsing invalid prediction file while trying to get libsvm confidences!";
+								fh.close();
+								abort();
+							}
+							columnIndex++;
+							continue;
+						}
+
+						int label = atoi(token.c_str());
+						labelOrderFound.push_back(label);
+
+						columnIndex++;
+					}
+
+					numClassesFound = labelOrderFound.size();
+					if (numClassesFound == 0)
+					{
+						confidencesAvailable = false;
+					}
+					//else if (numClassesFound != 2)
+					//{
+					//	LOG(ERROR) << "number of classes found in prediction file while trying to get svm confidences is not correct!" << endl;
+					//}
+					else
+					{
+						confidencesAvailable = true;
+					}
+				}
+				else if (!line.empty())
+				{
+					// parse line to get label and confidences
+					stringstream ss(line);
+					string token;
+					int columnIndex = 0;
+					while (getline(ss, token, ' '))
+					{
+						if (columnIndex == 0)
+						{
+							int label = atoi(token.c_str());
+							labels.push_back(label);
+						}
+						else if (confidencesAvailable)
+						{
+							int labelIndex = lineIndex-1;
+							double confidence = atof(token.c_str());
+							confidences(labelIndex, columnIndex-1) = confidence;
+						}
+						columnIndex++;
+					}
+				}
+
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file for reading LIBSVM labels/confidences!";
+			abort();
+		}
+	}
+
+	string SVMClassifierModel::vector2svm(ClassifierFeatures features, int label)
+	{
+		stringstream ss;
+		ss << label;
+		const int numFeatures = features.data.size();
+		for (int i = 0; i < numFeatures; i++)
+		{
+			double feat = features.data[i];
+			if (feat != 0)
+				ss << " " << i << ":" << feat;
+		}
+
+		return ss.str();
+	}
+	
+	void SVMClassifierModel::mergeFeatureFiles(string fileNameBase, int numProcesses)
+	{
+		//TODO
+	}
+
 	/**************** SVM-Rank Model ****************/
 
 	SVMRankModel::SVMRankModel()

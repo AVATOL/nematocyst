@@ -274,6 +274,9 @@ namespace HCSearch
 		this->paths->OUTPUT_INITFUNC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "init_func_features", rankID);
 		this->paths->OUTPUT_INITFUNC_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "init_func_predict", rankID);
 
+		this->paths->OUTPUT_CLASSIFIER_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "classifier_features", rankID);
+		this->paths->OUTPUT_CLASSIFIER_PREDICT_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, "classifier_predict", rankID);
+
 		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);

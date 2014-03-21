@@ -587,7 +587,7 @@ namespace HCSearch
 			ISearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
-			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
+			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes(true);
 
 			// only accept expanded element if not a duplicate state
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
@@ -682,7 +682,7 @@ namespace HCSearch
 			ISearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
-			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
+			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes(true);
 
 			// only accept expanded element if not a duplicate state
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
@@ -727,10 +727,17 @@ namespace HCSearch
 
 	/**************** Search Node ****************/
 
-	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodes()
+	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodes(bool prune)
 	{
 		vector< ISearchNode* > successors;
+
+		// generate successors
 		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
+		
+		// prune successors
+		if (prune)
+			YPredSet = this->searchSpace->pruneSuccessors(*this->X, YPredSet);
+
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
 		{
 			ImgCandidate YCandidate = *it;

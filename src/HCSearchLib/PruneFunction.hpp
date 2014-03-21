@@ -54,6 +54,8 @@ namespace HCSearch
 		~ClassifierPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
+
+		IClassifierModel* getClassifier();
 	};
 }
 

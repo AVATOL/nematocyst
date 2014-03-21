@@ -314,7 +314,7 @@ namespace HCSearch
 		/*!
 		 * Generate successor nodes.
 		 */
-		vector< ISearchNode* > generateSuccessorNodes();
+		vector< ISearchNode* > generateSuccessorNodes(bool prune);
 
 		/*!
 		 * Get the heuristic features of the node. 
