@@ -22,6 +22,8 @@ namespace HCSearch
 	const extern string RankerTypeStrings[];
 	const extern bool RankerTypeSaveable[];
 
+	enum ClassifierType { SVM_CLASSIFIER };
+
 	/**************** Class Map ****************/
 
 	// Stores class labels

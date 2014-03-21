@@ -308,8 +308,55 @@ namespace HCSearch
 		~GenericFeatures();
 	};
 
-	typedef GenericFeatures ClassifyFeatures;
+	typedef GenericFeatures ClassifierFeatures;
 	typedef GenericFeatures RankFeatures;
+
+	/**************** Classifier Model ****************/
+
+	/*!
+	 * @brief Abstract class for model/weights for classification.
+	 * 
+	 * The main purpose is to classify features using a classification model. 
+	 * Abstract class is useful for extending different kinds of 
+	 * classifiers.
+	 */
+	class IClassifierModel
+	{
+	protected:
+		bool initialized;
+
+	public:
+		virtual ~IClassifierModel() {}
+
+		/*!
+		 * Use the model to classify the feature.
+		 * @param[in] features Features for classification
+		 * @return Returns the class of the feature
+		 */
+		virtual int classify(RankFeatures features)=0;
+
+		/*!
+		 * Use the model to classify a list of features.
+		 * @param[in] features List of features for classification
+		 * @return Returns the class of each of feature in the list
+		 */
+		virtual vector<int> classify(vector<RankFeatures> features)=0;
+
+		/*!
+		 * Get the ranker type.
+		 */
+		virtual ClassifierType classifierType()=0;
+
+		/*!
+		 * Load model data from file.
+		 */
+		virtual void load(string fileName)=0;
+
+		/*!
+		 * Save model data to file.
+		 */
+		virtual void save(string fileName)=0;
+	};
 
 	/**************** Rank Model ****************/
 
