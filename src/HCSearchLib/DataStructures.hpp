@@ -280,14 +280,14 @@ namespace HCSearch
 		set<int> action;
 	};
 
-	/**************** Rank Features ****************/
+	/**************** Generic Features ****************/
 
 	/*!
-	 * @brief Stores features for ranking.
+	 * @brief Stores features for ranking or classification.
 	 * 
 	 * This is nothing more than a wrapper around a VectorXd object.
 	 */
-	class RankFeatures
+	class IFeatures
 	{
 	public:
 		/*!
@@ -298,13 +298,23 @@ namespace HCSearch
 		/*!
 		 * Default constructor does nothing.
 		 */
-		RankFeatures();
+		IFeatures();
 
 		/*!
 		 * Constructor to initialize features data.
 		 */
-		RankFeatures(VectorXd features);
+		IFeatures(VectorXd features);
 		
+		~IFeatures();
+	};
+
+	/**************** Rank Features ****************/
+
+	class RankFeatures : public IFeatures
+	{
+	public:
+		RankFeatures();
+		RankFeatures(VectorXd features);
 		~RankFeatures();
 	};
 

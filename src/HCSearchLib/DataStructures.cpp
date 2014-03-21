@@ -169,6 +169,21 @@ namespace HCSearch
 		return labels;
 	}
 
+	/**************** Generic Features ****************/
+
+	IFeatures::IFeatures()
+	{
+	}
+
+	IFeatures::IFeatures(VectorXd features)
+	{
+		this->data = features;
+	}
+
+	IFeatures::~IFeatures()
+	{
+	}
+
 	/**************** Rank Features ****************/
 
 	RankFeatures::RankFeatures()
