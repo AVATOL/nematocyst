@@ -218,14 +218,14 @@ namespace HCSearch
 
 		// run SVM program
 		stringstream ssPredictCmd;
-		ssPredictCmd << Global::settings->cmds->LIBLINEAR_PREDICT_CMD << " " 
+		ssPredictCmd << Global::settings->cmds->LIBSVM_PREDICT_CMD << " " 
 			<< Global::settings->paths->OUTPUT_CLASSIFIER_FEATURES_FILE << " " + this->modelFileName 
 			<< " " << Global::settings->paths->OUTPUT_CLASSIFIER_PREDICT_FILE;
 
 		int retcode = MyFileSystem::Executable::executeRetries(ssPredictCmd.str());
 		if (retcode != 0)
 		{
-			LOG(ERROR) << "Classifier failed!";
+			LOG(ERROR) << "SVM classifier failed!";
 			abort();
 		}
 
