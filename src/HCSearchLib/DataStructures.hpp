@@ -19,7 +19,8 @@ namespace HCSearch
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
 		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
-		RL, RC, LEARN_C_RANDOM_H, LEARN_DECOMPOSED };
+		RL, RC, LEARN_C_RANDOM_H, LEARN_DECOMPOSED, 
+		LEARN_PRUNE };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 
@@ -311,6 +312,10 @@ namespace HCSearch
 	typedef GenericFeatures ClassifierFeatures;
 	typedef GenericFeatures RankFeatures;
 
+	class IModel
+	{
+	};
+
 	/**************** Classifier Model ****************/
 
 	/*!
@@ -320,7 +325,7 @@ namespace HCSearch
 	 * Abstract class is useful for extending different kinds of 
 	 * classifiers.
 	 */
-	class IClassifierModel
+	class IClassifierModel : public IModel
 	{
 	protected:
 		bool initialized;
@@ -415,7 +420,7 @@ namespace HCSearch
 		/*!
 		 * Add training examples.
 		 */
-		void addTrainingExamples(vector<ClassifierFeatures>& features, vector<int>& labels);
+		void addTrainingExample(ClassifierFeatures& features, int label);
 
 		/*!
 		 * End learning.
@@ -460,7 +465,7 @@ namespace HCSearch
 	 * Abstract class is useful for extending different kinds of 
 	 * rankers, like offline vs. online and linear vs. nonlinear.
 	 */
-	class IRankModel
+	class IRankModel : public IModel
 	{
 	protected:
 		bool initialized;

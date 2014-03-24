@@ -127,6 +127,8 @@ namespace MyProgramOptions
 					//	po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
 					//else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "decomposed") == 0)
 					//	po.schedule.push_back(HCSearch::LEARN_DECOMPOSED);
+					else if (strcmp(argv[i+1], "P") == 0 || strcmp(argv[i+1], "p") == 0)
+						po.schedule.push_back(HCSearch::LEARN_PRUNE);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);
@@ -393,6 +395,18 @@ namespace MyProgramOptions
 						po.lossMode = PIXEL_HAMMING;
 				}
 			}
+			else if (strcmp(argv[i], "--prune") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "none") == 0)
+						po.pruneMode = NO_PRUNE;
+					else if (strcmp(argv[i+1], "learned") == 0)
+						po.pruneMode = LEARNED_PRUNE;
+					else if (strcmp(argv[i+1], "oracle") == 0)
+						po.pruneMode = ORACLE_PRUNE;
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -417,6 +431,7 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
+		cerr << "\t\t\t\tP: learn prune function" << endl;
 		//cerr << "\t\t\t\tCRH: learn cost with random H" << endl;
 		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
 		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
@@ -445,6 +460,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
 		cerr << "\t--loss arg\t\t" << ": hamming|pixel-hamming" << endl;
+		cerr << "\t--prune arg\t\t" << ": none|learned|oracle" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;

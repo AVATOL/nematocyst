@@ -4,6 +4,7 @@
 #include "FeatureFunction.hpp"
 #include "DataStructures.hpp"
 #include "MyGraphAlgorithms.hpp"
+#include "LossFunction.hpp"
 
 namespace HCSearch
 {
@@ -23,7 +24,9 @@ namespace HCSearch
 		/*!
 		 * @brief Prune successors.
 		 */
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates)=0;
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates)=0;
+
+		IFeatureFunction* getFeatureFunction();
 	};
 
 	/**************** Prune Functions ****************/
@@ -37,7 +40,7 @@ namespace HCSearch
 		NoPrune();
 		~NoPrune();
 		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
 	};
 
 	/*!
@@ -45,17 +48,38 @@ namespace HCSearch
 	 */
 	class ClassifierPrune : public IPruneFunction
 	{
-	protected:
 		IClassifierModel* classifier;
 
 	public:
 		ClassifierPrune();
-		ClassifierPrune(IFeatureFunction* featureFunction, IClassifierModel* classifier);
+		ClassifierPrune(IFeatureFunction* featureFunction);
 		~ClassifierPrune();
 		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
-
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
+		
 		IClassifierModel* getClassifier();
+		void setClassifier(IClassifierModel* classifier);
+	};
+
+	/*!
+	 * @brief Oracle pruning function.
+	 */
+	class OraclePrune : public IPruneFunction
+	{
+	protected:
+		ILossFunction* lossFunction;
+		ImgLabeling* YTruth;
+
+	public:
+		OraclePrune();
+		OraclePrune(ILossFunction* lossFunction);
+		~OraclePrune();
+		
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
+
+		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth);
+
+		ILossFunction* getLossFunction();
 	};
 }
 

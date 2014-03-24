@@ -628,6 +628,13 @@ namespace HCSearch
 		}
 	}
 
+	IClassifierModel* Model::loadModel(string fileName)
+	{
+		SVMClassifierModel* model = new SVMClassifierModel();
+		model->load(fileName);
+		return model;
+	}
+
 	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
 	{
 		if (model == NULL)
@@ -650,6 +657,12 @@ namespace HCSearch
 		{
 			LOG(ERROR) << "ranker type is invalid for saving model";
 		}
+	}
+
+	void Model::saveModel(IClassifierModel* model, string fileName)
+	{
+		SVMClassifierModel* modelCast = dynamic_cast<SVMClassifierModel*>(model);
+		modelCast->save(fileName);
 	}
 
 	/**************** Learning ****************/
@@ -869,6 +882,47 @@ namespace HCSearch
 		return learningModel;
 	}
 
+	IClassifierModel* Learning::learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, ClassifierType classifierType, int numIter)
+	{
+		clock_t tic = clock();
+
+		LOG() << "Learning the prune function..." << endl;
+
+		// Setup model for learning
+		IClassifierModel* learningModel = initializeLearning(classifierType, LEARN_PRUNE);
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
+
+				// run search
+				searchProcedure->learnP(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+			}
+		}
+		
+		// Merge and learn step
+		finishLearning(learningModel, LEARN_PRUNE);
+
+		clock_t toc = clock();
+		LOG() << "total learnP time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return learningModel;
+	}
+
 	IRankModel* Learning::initializeLearning(RankerType rankerType, SearchType searchType)
 	{
 		// Setup model for learning
@@ -902,6 +956,32 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
+
+		return learningModel;
+	}
+
+	IClassifierModel* Learning::initializeLearning(ClassifierType classifierType, SearchType searchType)
+	{
+		// Setup model for learning
+		IClassifierModel* learningModel = NULL;
+		
+		if (classifierType == SVM_CLASSIFIER)
+		{
+			learningModel = new SVMClassifierModel();
+			SVMClassifierModel* svmModel = dynamic_cast<SVMClassifierModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type for initializing classifier learning!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported classifier learner.";
 			abort();
 		}
 
@@ -987,6 +1067,26 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
+	}
+
+	void Learning::finishLearning(IClassifierModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->classifierType() == SVM_CLASSIFIER)
+		{
+			SVMClassifierModel* svmModel = dynamic_cast<SVMClassifierModel*>(learningModel);
+			if (searchType == LEARN_PRUNE)
+				svmModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE);
+			else
+			{
+				LOG(ERROR) << "invalid search type for finish learning classifier!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported classifier learner.";
 			abort();
 		}
 	}

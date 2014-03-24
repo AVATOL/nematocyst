@@ -96,7 +96,8 @@ namespace HCSearch
 		 * Accepts features X and a model (and groudtruth Y if applicable) and performs search.
 		 */
 		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)=0;
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+			IClassifierModel* pruneModel, SearchMetadata searchMetadata)=0;
 
 		/*!
 		 * @brief Convenience function for LL-search.
@@ -161,6 +162,12 @@ namespace HCSearch
 		void learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
 			IRankModel* learningModel, SearchMetadata searchMetadata);
 
+		/*!
+		 * @brief Convenience function for learning P search.
+		 */
+		void learnP(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
+			IClassifierModel* learningModel, SearchMetadata searchMetadata);
+
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
 		void trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
@@ -176,7 +183,8 @@ namespace HCSearch
 	{
 	public:
 		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+			IClassifierModel* pruneModel, SearchMetadata searchMetadata);
 
 	protected:
 		/*!
@@ -195,7 +203,8 @@ namespace HCSearch
 		 * 
 		 * openSet may be modified. costSet is used for duplicate checking.
 		 */
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)=0;
+		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
+			IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)=0;
 
 		/*!
 		 * @brief Stub for choosing successors among the expanded.
@@ -246,7 +255,8 @@ namespace HCSearch
 		~BreadthFirstBeamSearchProcedure();
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
+			IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
 		virtual void chooseSuccessors(SearchType searchType, SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
 	};
@@ -264,7 +274,8 @@ namespace HCSearch
 		~BestFirstBeamSearchProcedure();
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+			IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
 	};
 
 	/**************** Greedy Procedure ****************/
@@ -315,6 +326,8 @@ namespace HCSearch
 		 * Generate successor nodes.
 		 */
 		vector< ISearchNode* > generateSuccessorNodes(bool prune);
+		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
+			ImgLabeling* YTruth);
 
 		/*!
 		 * Get the heuristic features of the node. 

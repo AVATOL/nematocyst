@@ -102,6 +102,14 @@ namespace HCSearch
 		RankFeatures computeCostFeatures(ImgFeatures& X, ImgLabeling& Y);
 
 		/*!
+		 * @brief Compute prune features from image features and current labeling.
+		 * @param[in] X Structured image features
+		 * @param[in] Y Structured output labeling
+		 * @return Prune features for classification
+		 */
+		ClassifierFeatures computePruneFeatures(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
 		 * @brief Get the initial labeling from image features.
 		 * @param[in] X Structured image features
 		 * @return Predicted structured output labeling
@@ -122,7 +130,7 @@ namespace HCSearch
 		 * @param[in] YPred Current structured output labeling
 		 * @return List of successors, which are structured output labelings
 		 */
-		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, vector< ImgCandidate >& YCandidates);
+		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates);
 
 		/*!
 		 * @brief Compute the loss between a predicted labeling and its groundtruth labeling.
@@ -131,6 +139,8 @@ namespace HCSearch
 		 * @return Loss value
 		 */
 		double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
+
+		IPruneFunction* getPruneFunction();
 	};
 
 	/*! @} */

@@ -259,24 +259,82 @@ namespace HCSearch
 		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
 	}
 
-	void startTraining(string featuresFileName)
+	void SVMClassifierModel::startTraining(string featuresFileName)
 	{
-		//TODO
+		this->isTraining = true;
+		this->trainingFileStream = new ofstream(featuresFileName.c_str());
+		this->trainingFileName = featuresFileName;
 	}
 
-	void SVMClassifierModel::addTrainingExamples(vector<ClassifierFeatures>& features, vector<int>& labels)
+	void SVMClassifierModel::addTrainingExample(ClassifierFeatures& features, int label)
 	{
-		//TODO
+		(*this->trainingFileStream) << vector2svm(features, label) << endl;
 	}
 
 	void SVMClassifierModel::finishTraining(string modelFileName)
 	{
-		//TODO
+		// close ranking file
+		this->trainingFileStream->close();
+		delete this->trainingFileStream;
+
+#ifdef USE_MPI
+		string STARTMSG;
+		string ENDMSG;
+		string featuresFileBase;
+		STARTMSG = "MERGEPSTART";
+		ENDMSG = "MERGEPEND";
+		featuresFileBase = Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE;
+
+		MPI::Synchronize::masterWait(STARTMSG);
+
+		// merge step
+		if (Global::settings->RANK == 0)
+		{
+			mergeFeatureFiles(featuresFileBase, Global::settings->NUM_PROCESSES);
+		}
+#endif
+
+		if (Global::settings->RANK == 0)
+		{
+			clock_t tic = clock();
+
+			// compute C
+			double C = 1.0;
+
+			// call SVM-Rank
+			stringstream ssLearn;
+			ssLearn << Global::settings->cmds->LIBSVM_TRAIN_CMD << " -c " << C << " " 
+				<< this->trainingFileName << " " << modelFileName;
+			MyFileSystem::Executable::executeRetries(ssLearn.str());
+
+			clock_t toc = clock();
+			LOG() << "total SVM classifier training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		}
+
+#ifdef USE_MPI
+		MPI::Synchronize::slavesWait(ENDMSG);
+#endif
+
+		// no longer learning
+		this->isTraining = false;
+
+		// load weights into model and initialize
+		if (Global::settings->RANK == 0)
+		{
+			load(modelFileName);
+		}
+
+		LOG() << endl;
 	}
 
 	void SVMClassifierModel::cancelTraining()
 	{
-		//TODO
+		// close training file
+		this->trainingFileStream->close();
+		delete this->trainingFileStream;
+
+		// no longer learning
+		this->isTraining = false;
 	}
 
 	void SVMClassifierModel::writeFeaturesToFile(vector<ClassifierFeatures> features, string fileName)
@@ -405,7 +463,64 @@ namespace HCSearch
 	
 	void SVMClassifierModel::mergeFeatureFiles(string fileNameBase, int numProcesses)
 	{
-		//TODO
+		string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, 0);
+		LOG() << "Merging to main feature file: " << FEATURES_FILE << endl;
+
+		ofstream ofh;
+		ofh.open(FEATURES_FILE.c_str(), std::ios_base::app);
+
+		if (ofh.is_open())
+		{
+			//ofh << endl; // add extra line
+			for (int i = 1; i < numProcesses; i++)
+			{
+				// open file from process i
+				FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, i);
+
+				if (!MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE))
+				{
+					continue;
+				}
+
+				ifstream fh;
+				fh.open(FEATURES_FILE.c_str());
+
+				string line;
+				if (fh.is_open())
+				{
+					// loop over lines in file from process i
+					// and append to the master file
+					while (fh.good())
+					{
+						// get line
+						getline(fh, line);
+						if (line.empty())
+							continue;
+
+						// append to master file
+						ofh << line << endl;
+					}
+
+					fh.close();
+
+					// delete the slave feature file
+					ostringstream ossRemoveRankingFeatureCmd;
+					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
+						<< " " << FEATURES_FILE;
+					MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
+				}
+				else
+				{
+					LOG(ERROR) << "master process could not open training file from a process: " << i;
+				}
+			}
+
+			ofh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "master process could not open training file!";
+		}
 	}
 
 	/**************** SVM-Rank Model ****************/

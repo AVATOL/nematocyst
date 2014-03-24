@@ -53,7 +53,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
 	LOG() << "=== Search Space ===" << endl;
 
-	// use Hamming loss function
+	// select some loss function
 	LOG() << "Loss function: ";
 	HCSearch::ILossFunction* lossFunc = NULL;
 	switch (po.lossMode)
@@ -152,7 +152,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG(ERROR) << "undefined feature mode.";
 	}
 
-	// use stochastic successor function
+	// select some successor function
 	LOG() << "Successor function: ";
 	HCSearch::ISuccessorFunction* successor = NULL;
 	bool cutEdgesIndependently = po.stochasticCutMode == MyProgramOptions::ProgramOptions::EDGES;
@@ -232,8 +232,29 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 
 	LOG() << endl;
 
+	// select some pruning function
+	LOG() << "Pruning function: ";
+	HCSearch::IPruneFunction* pruneFunc = NULL;
+	switch (po.pruneMode)
+	{
+	case MyProgramOptions::ProgramOptions::NO_PRUNE:
+		LOG() << "no prune" << endl;
+		pruneFunc = new HCSearch::NoPrune();
+		break;
+	case MyProgramOptions::ProgramOptions::LEARNED_PRUNE:
+		LOG() << "flipbit neighbors" << endl;
+		pruneFunc = new HCSearch::ClassifierPrune(heuristicFeatFunc); //TODO: replace with dedicated function
+		break;
+	case MyProgramOptions::ProgramOptions::ORACLE_PRUNE:
+		LOG() << "flipbit confidences neighbors" << endl;
+		pruneFunc = new HCSearch::OraclePrune(lossFunc); //TODO: possibly replace with alternative
+		break;
+	default:
+		LOG(ERROR) << "undefined prune mode.";
+	}
+
 	// construct search space from these functions that we specified
-	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, NULL, lossFunc);
+	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, pruneFunc, lossFunc);
 }
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
@@ -279,6 +300,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE;
 	string costRandomHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE;
 	string decomposedModelPath = HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE;
+	string pruneModelPath = HCSearch::Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = po.rankLearnerType;
@@ -307,6 +329,18 @@ void run(MyProgramOptions::ProgramOptions po)
 		HCSearch::Global::settings->stats->resetSuccessorCount();
 
 		HCSearch::SearchType mode = *it;
+
+		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::LEARNED_PRUNE)
+		{
+			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			HCSearch::ClassifierPrune* pruneCast = dynamic_cast<HCSearch::ClassifierPrune*>(pruneFunc);
+			if (pruneCast->getClassifier() == NULL)
+			{
+				HCSearch::IClassifierModel* pruneModel = HCSearch::Model::loadModel(pruneModelPath);
+				pruneCast->setClassifier(pruneModel);
+			}
+		}
+
 		switch (mode)
 		{
 		case HCSearch::LEARN_H:
@@ -440,6 +474,32 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNDSTART");
 		MPI::Synchronize::slavesWait("LEARNDEND");
+#endif
+
+			break;
+		}
+		case HCSearch::LEARN_PRUNE:
+		{
+			LOG() << "=== Learning P ===" << endl;
+
+			// learn cost, save cost model
+			HCSearch::IClassifierModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
+				timeBound, searchSpace, searchProcedure, HCSearch::SVM_CLASSIFIER, po.numTrainIterations);
+			
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				pruneModel->save(pruneModelPath);
+				if (po.saveFeaturesFiles)
+					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE, 
+						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_PRUNE_FEATURES_FILE);
+			}
+			
+			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
+			delete pruneModel;
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNPSTART");
+		MPI::Synchronize::slavesWait("LEARNPEND");
 #endif
 
 			break;

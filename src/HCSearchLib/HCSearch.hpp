@@ -641,6 +641,8 @@ namespace HCSearch
 		 */
 		static IRankModel* loadModel(string fileName, RankerType rankerType);
 
+		static IClassifierModel* loadModel(string fileName);
+
 		/*!
 		 * Save model to file.
 		 * @param[in] model Rank model to save
@@ -648,6 +650,8 @@ namespace HCSearch
 		 * @param[in] rankerType Type of ranking model
 		 */
 		static void saveModel(IRankModel* model, string fileName, RankerType rankerType);
+
+		static void saveModel(IClassifierModel* model, string fileName);
 	};
 
 	/*! @} */
@@ -766,10 +770,33 @@ namespace HCSearch
 		static IRankModel* learnDecomposed(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, int numHops, SearchSpace* searchSpace, RankerType rankerType);
 
+		/*!
+		 * Learn prune function.
+		 * Given training data, validation data, time bound, search space and procedure, 
+		 * learn a prune model and return it.
+		 * @param[in] XTrain Vector of structured features for training
+		 * @param[in] YTrain Vector of structured labelings for training
+		 * @param[in] XValidation Vector of structured features for validation
+		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] timeBound  Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
+		 * @return Returns the learned prune model
+		 */
+		static IClassifierModel* learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, ClassifierType classifierType, int numIter);
+
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
+		static IClassifierModel* initializeLearning(ClassifierType classifierType, SearchType searchType);
+
 		static void finishLearning(IRankModel* learningModel, SearchType searchType);
+
+		static void finishLearning(IClassifierModel* learningModel, SearchType searchType);
 
 		static void learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel);
 
