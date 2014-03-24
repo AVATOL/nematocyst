@@ -303,7 +303,7 @@ namespace HCSearch
 
 			// call SVM-Rank
 			stringstream ssLearn;
-			ssLearn << Global::settings->cmds->LIBSVM_TRAIN_CMD << " -c " << C << " " 
+			ssLearn << Global::settings->cmds->LIBSVM_TRAIN_CMD << " -t 0 -c " << C << " " 
 				<< this->trainingFileName << " " << modelFileName;
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
 
