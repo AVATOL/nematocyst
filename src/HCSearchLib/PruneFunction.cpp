@@ -30,11 +30,13 @@ namespace HCSearch
 	ClassifierPrune::ClassifierPrune()
 	{
 		this->featureFunction = NULL;
+		this->classifier = NULL;
 	}
 
 	ClassifierPrune::ClassifierPrune(IFeatureFunction* featureFunction)
 	{
 		this->featureFunction = featureFunction;
+		this->classifier = NULL;
 	}
 
 	ClassifierPrune::~ClassifierPrune()

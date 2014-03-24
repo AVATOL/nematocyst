@@ -360,6 +360,7 @@ namespace HCSearch
 	void SVMClassifierModel::readLabelsFromFile(vector<int>& labels, MatrixXd& confidences, int numLabels, string fileName)
 	{
 		vector<int> labelOrderFound;
+		//TODO: handle confidences if available
 		bool confidencesAvailable = false;
 
 		int lineIndex = 0;
@@ -371,48 +372,7 @@ namespace HCSearch
 			while (fh.good() && lineIndex < numLabels+1)
 			{
 				getline(fh, line);
-				if (lineIndex == 0)
-				{
-					// parse first line to get label order
-					stringstream ss(line);
-					string token;
-					int columnIndex = 0;
-					while (getline(ss, token, ' '))
-					{
-						// first token on first line should be "labels"
-						if (columnIndex == 0)
-						{
-							if (token.compare("labels") != 0)
-							{
-								LOG(ERROR) << "parsing invalid prediction file while trying to get libsvm confidences!";
-								fh.close();
-								abort();
-							}
-							columnIndex++;
-							continue;
-						}
-
-						int label = atoi(token.c_str());
-						labelOrderFound.push_back(label);
-
-						columnIndex++;
-					}
-
-					numClassesFound = labelOrderFound.size();
-					if (numClassesFound == 0)
-					{
-						confidencesAvailable = false;
-					}
-					//else if (numClassesFound != 2)
-					//{
-					//	LOG(ERROR) << "number of classes found in prediction file while trying to get svm confidences is not correct!" << endl;
-					//}
-					else
-					{
-						confidencesAvailable = true;
-					}
-				}
-				else if (!line.empty())
+				if (!line.empty())
 				{
 					// parse line to get label and confidences
 					stringstream ss(line);
@@ -424,12 +384,6 @@ namespace HCSearch
 						{
 							int label = atoi(token.c_str());
 							labels.push_back(label);
-						}
-						else if (confidencesAvailable)
-						{
-							int labelIndex = lineIndex-1;
-							double confidence = atof(token.c_str());
-							confidences(labelIndex, columnIndex-1) = confidence;
 						}
 						columnIndex++;
 					}
