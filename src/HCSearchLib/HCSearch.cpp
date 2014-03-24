@@ -971,7 +971,7 @@ namespace HCSearch
 		{
 			learningModel = new SVMClassifierModel();
 			SVMClassifierModel* svmModel = dynamic_cast<SVMClassifierModel*>(learningModel);
-			if (searchType == LEARN_H)
+			if (searchType == LEARN_PRUNE)
 				svmModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
