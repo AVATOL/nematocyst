@@ -682,7 +682,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->searchProcedure(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -727,7 +727,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+				searchProcedure->searchProcedure(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -772,7 +772,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->searchProcedure(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -817,7 +817,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnCWithRandomH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->searchProcedure(LEARN_C_RANDOM_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -1152,21 +1152,24 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->llSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
+		return searchProcedure->searchProcedure(LL, *X, YTruth, timeBound, 
+			searchSpace, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* heuristicModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->hlSearch(*X, YTruth, timeBound, searchSpace, heuristicModel, searchMetadata);
+		return searchProcedure->searchProcedure(HL, *X, YTruth, timeBound, 
+			searchSpace, heuristicModel, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runLCSearch(ImgFeatures* X, ImgLabeling* YTruth, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->lcSearch(*X, YTruth, timeBound, searchSpace, costOracleHModel, searchMetadata);
+		return searchProcedure->searchProcedure(LC, *X, YTruth, timeBound, 
+			searchSpace, NULL, costOracleHModel, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHCSearch(ImgFeatures* X, int timeBound, 
@@ -1174,7 +1177,8 @@ namespace HCSearch
 		IRankModel* heuristicModel, IRankModel* costModel, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->hcSearch(*X, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
+		return searchProcedure->searchProcedure(HC, *X, NULL, timeBound, 
+			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHCSearch(ImgFeatures* X, ImgLabeling* YTruth, int timeBound, 
@@ -1182,20 +1186,23 @@ namespace HCSearch
 		IRankModel* heuristicModel, IRankModel* costModel, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->hcSearch(*X, YTruth, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
+		return searchProcedure->searchProcedure(HC, *X, YTruth, timeBound, 
+			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
 	ImgLabeling Inference::runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->rlSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
+		return searchProcedure->searchProcedure(RL, *X, YTruth, timeBound, 
+			searchSpace, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runRCSearch(ImgFeatures* X, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->rcSearch(*X, timeBound, searchSpace, costOracleHModel, searchMetadata);
+		return searchProcedure->searchProcedure(RC, *X, NULL, timeBound, 
+			searchSpace, NULL, costOracleHModel, searchMetadata);
 	}
 }
