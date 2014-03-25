@@ -95,7 +95,7 @@ namespace HCSearch
 		 * 
 		 * Accepts features X and a model (and groudtruth Y if applicable) and performs search.
 		 */
-		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)=0;
 
 	protected:
@@ -112,7 +112,7 @@ namespace HCSearch
 	class IBasicSearchProcedure : public ISearchProcedure
 	{
 	public:
-		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
 
 	protected:
