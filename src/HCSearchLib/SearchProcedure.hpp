@@ -95,78 +95,9 @@ namespace HCSearch
 		 * 
 		 * Accepts features X and a model (and groudtruth Y if applicable) and performs search.
 		 */
-		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
 			IClassifierModel* pruneModel, SearchMetadata searchMetadata)=0;
-
-		/*!
-		 * @brief Convenience function for LL-search.
-		 */
-		ImgLabeling llSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-			SearchSpace* searchSpace, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for HL-search.
-		 */
-		ImgLabeling hlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-			SearchSpace* searchSpace, IRankModel* heuristicModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for LC-search.
-		 */
-		ImgLabeling lcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-			SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for HC-search.
-		 */
-		ImgLabeling hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
-			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
-
-		ImgLabeling hcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-			IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for LL-search.
-		 */
-		ImgLabeling rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-			SearchSpace* searchSpace, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for RC-search.
-		 */
-		ImgLabeling rcSearch(ImgFeatures& X, int timeBound, 
-			SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for learning H search.
-		 */
-		void learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-			IRankModel* learningModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for learning C search.
-		 */
-		void learnC(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-			IRankModel* heuristicModel, IRankModel* learningModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for learning C with oracle H search.
-		 */
-		void learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-			IRankModel* learningModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for learning C with random H search.
-		 */
-		void learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-			IRankModel* learningModel, SearchMetadata searchMetadata);
-
-		/*!
-		 * @brief Convenience function for learning P search.
-		 */
-		void learnP(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-			IClassifierModel* learningModel, SearchMetadata searchMetadata);
 
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
@@ -182,7 +113,7 @@ namespace HCSearch
 	class IBasicSearchProcedure : public ISearchProcedure
 	{
 	public:
-		virtual ImgLabeling searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
 			IClassifierModel* pruneModel, SearchMetadata searchMetadata);
 

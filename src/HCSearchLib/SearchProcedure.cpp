@@ -125,90 +125,6 @@ namespace HCSearch
 		this->saveAnytimePredictions = false;
 	}
 
-	ImgLabeling ISearchProcedure::llSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-		SearchSpace* searchSpace, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(LL, X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, NULL, searchMetadata);
-	}
-
-	ImgLabeling ISearchProcedure::hlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-		SearchSpace* searchSpace, IRankModel* heuristicModel, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(HL, X, YTruth, timeBound, 
-			searchSpace, heuristicModel, NULL, NULL, searchMetadata);
-	}
-
-	ImgLabeling ISearchProcedure::lcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-		SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(LC, X, YTruth, timeBound, 
-			searchSpace, NULL, costModel, NULL, searchMetadata);
-	}
-
-	ImgLabeling ISearchProcedure::hcSearch(ImgFeatures& X, int timeBound, SearchSpace* searchSpace, 
-		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(HC, X, NULL, timeBound, 
-			searchSpace, heuristicModel, costModel, NULL, searchMetadata);
-	}
-
-	ImgLabeling ISearchProcedure::hcSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-		IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(HC, X, YTruth, timeBound, 
-			searchSpace, heuristicModel, costModel, NULL, searchMetadata);
-	}
-
-	ImgLabeling ISearchProcedure::rlSearch(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, 
-		SearchSpace* searchSpace, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(RL, X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, NULL, searchMetadata);
-	}
-
-	ImgLabeling ISearchProcedure::rcSearch(ImgFeatures& X, int timeBound, 
-		SearchSpace* searchSpace, IRankModel* costModel, SearchMetadata searchMetadata)
-	{
-		return searchProcedure(RC, X, NULL, timeBound, 
-			searchSpace, NULL, costModel, NULL, searchMetadata);
-	}
-
-	void ISearchProcedure::learnH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-		IRankModel* learningModel, SearchMetadata searchMetadata)
-	{
-		searchProcedure(LEARN_H, X, YTruth, timeBound, 
-			searchSpace, learningModel, NULL, NULL, searchMetadata);
-	}
-
-	void ISearchProcedure::learnC(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-		IRankModel* heuristicModel, IRankModel* learningModel, SearchMetadata searchMetadata)
-	{
-		searchProcedure(LEARN_C, X, YTruth, timeBound, 
-			searchSpace, heuristicModel, learningModel, NULL, searchMetadata);
-	}
-
-	void ISearchProcedure::learnCWithOracleH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-		IRankModel* learningModel, SearchMetadata searchMetadata)
-	{
-		searchProcedure(LEARN_C_ORACLE_H, X, YTruth, timeBound, 
-			searchSpace, NULL, learningModel, NULL, searchMetadata);
-	}
-
-	void ISearchProcedure::learnCWithRandomH(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-		IRankModel* learningModel, SearchMetadata searchMetadata)
-	{
-		searchProcedure(LEARN_C_RANDOM_H, X, YTruth, timeBound, 
-			searchSpace, NULL, learningModel, NULL, searchMetadata);
-	}
-
-	void ISearchProcedure::learnP(ImgFeatures& X, ImgLabeling* YTruth, int timeBound, SearchSpace* searchSpace, 
-		IClassifierModel* learningModel, SearchMetadata searchMetadata)
-	{
-		searchProcedure(LEARN_PRUNE, X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, learningModel, searchMetadata);
-	}
-
 	void ISearchProcedure::saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType)
 	{
 		if (searchMetadata.saveAnytimePredictions)
@@ -404,7 +320,7 @@ namespace HCSearch
 		}
 	}
 
-	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+	ImgLabeling IBasicSearchProcedure::performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
 	IClassifierModel* pruneModel, SearchMetadata searchMetadata)
 	{
