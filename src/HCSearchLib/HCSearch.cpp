@@ -682,7 +682,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->searchProcedure(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, meta);
+				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -727,7 +727,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->searchProcedure(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -772,7 +772,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->searchProcedure(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -817,7 +817,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->searchProcedure(LEARN_C_RANDOM_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C_RANDOM_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
 
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
@@ -1152,7 +1152,7 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(LL, *X, YTruth, timeBound, 
+		return searchProcedure->performSearch(LL, *X, YTruth, timeBound, 
 			searchSpace, NULL, NULL, searchMetadata);
 	}
 
@@ -1160,7 +1160,7 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* heuristicModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(HL, *X, YTruth, timeBound, 
+		return searchProcedure->performSearch(HL, *X, YTruth, timeBound, 
 			searchSpace, heuristicModel, NULL, searchMetadata);
 	}
 
@@ -1168,7 +1168,7 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(LC, *X, YTruth, timeBound, 
+		return searchProcedure->performSearch(LC, *X, YTruth, timeBound, 
 			searchSpace, NULL, costOracleHModel, searchMetadata);
 	}
 
@@ -1177,7 +1177,7 @@ namespace HCSearch
 		IRankModel* heuristicModel, IRankModel* costModel, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(HC, *X, NULL, timeBound, 
+		return searchProcedure->performSearch(HC, *X, NULL, timeBound, 
 			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
@@ -1186,7 +1186,7 @@ namespace HCSearch
 		IRankModel* heuristicModel, IRankModel* costModel, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(HC, *X, YTruth, timeBound, 
+		return searchProcedure->performSearch(HC, *X, YTruth, timeBound, 
 			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
@@ -1194,7 +1194,7 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(RL, *X, YTruth, timeBound, 
+		return searchProcedure->performSearch(RL, *X, YTruth, timeBound, 
 			searchSpace, NULL, NULL, searchMetadata);
 	}
 
@@ -1202,7 +1202,7 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->searchProcedure(RC, *X, NULL, timeBound, 
+		return searchProcedure->performSearch(RC, *X, NULL, timeBound, 
 			searchSpace, NULL, costOracleHModel, searchMetadata);
 	}
 }

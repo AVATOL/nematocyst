@@ -320,7 +320,7 @@ namespace HCSearch
 		}
 	}
 
-	ImgLabeling IBasicSearchProcedure::searchProcedure(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+	ImgLabeling IBasicSearchProcedure::performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
 	{
 		clock_t tic = clock();
