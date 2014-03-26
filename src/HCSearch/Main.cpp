@@ -346,6 +346,7 @@ void run(MyProgramOptions::ProgramOptions po)
 	string costRandomHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE;
 	string decomposedModelPath = HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE;
 	string pruneModelPath = HCSearch::Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE;
+	string mutexPath = HCSearch::Global::settings->paths->OUTPUT_MUTEX_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = po.rankLearnerType;
@@ -545,6 +546,25 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNPSTART");
 		MPI::Synchronize::slavesWait("LEARNPEND");
+#endif
+
+			break;
+		}
+		case HCSearch::DISCOVER_PAIRWISE:
+		{
+			LOG() << "=== Discovering Mutex ===" << endl;
+
+			// discover mutex constraints
+			map<string, int> pairwiseConstraints = HCSearch::Learning::discoverPairwiseClassConstraints(XTrain, YTrain);
+			
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				HCSearch::Model::savePairwiseConstraints(pairwiseConstraints, mutexPath);
+			}
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("DISCOVERMUTEXSTART");
+		MPI::Synchronize::slavesWait("DISCOVERMUTEXEND");
 #endif
 
 			break;

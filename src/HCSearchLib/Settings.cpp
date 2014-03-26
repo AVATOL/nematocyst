@@ -266,6 +266,8 @@ namespace HCSearch
 		this->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_randomH.txt";
 		this->paths->OUTPUT_ARCHIVED_DECOMPOSED_LEARNING_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_decomposed.txt";
 		this->paths->OUTPUT_ARCHIVED_PRUNE_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_prune.txt";
+
+		this->paths->OUTPUT_MUTEX_FILE = this->paths->OUTPUT_MODELS_DIR + "model_mutex.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)

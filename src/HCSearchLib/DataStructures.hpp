@@ -20,7 +20,7 @@ namespace HCSearch
 	enum SearchType { LL=0, HL, LC, HC, 
 		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
 		RL, RC, LEARN_C_RANDOM_H, LEARN_DECOMPOSED, 
-		LEARN_PRUNE };
+		LEARN_PRUNE, DISCOVER_PAIRWISE };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 

@@ -130,6 +130,8 @@ namespace MyProgramOptions
 					//	po.schedule.push_back(HCSearch::LEARN_DECOMPOSED);
 					else if (strcmp(argv[i+1], "P") == 0 || strcmp(argv[i+1], "p") == 0)
 						po.schedule.push_back(HCSearch::LEARN_PRUNE);
+					else if (strcmp(argv[i+1], "MUTEX") == 0 || strcmp(argv[i+1], "mutex") == 0)
+						po.schedule.push_back(HCSearch::DISCOVER_PAIRWISE);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);

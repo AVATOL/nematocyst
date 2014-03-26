@@ -185,6 +185,8 @@ namespace HCSearch
 		string OUTPUT_CLASSIFIER_FEATURES_FILE;
 		string OUTPUT_CLASSIFIER_PREDICT_FILE;
 
+		string OUTPUT_MUTEX_FILE;
+
 	public:
 		Paths();
 		~Paths();
