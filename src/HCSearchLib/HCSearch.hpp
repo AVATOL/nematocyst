@@ -789,6 +789,8 @@ namespace HCSearch
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, ClassifierType classifierType, int numIter);
 
+		static map<string, int> discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain);
+
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 

@@ -923,6 +923,91 @@ namespace HCSearch
 		return learningModel;
 	}
 
+	map<string, int> Learning::discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain)
+	{
+		map<string, int> pairwiseConstraints;
+
+		clock_t tic = clock();
+
+		LOG() << "Discovering pairwise class constraints..." << endl;
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			LOG() << "Pairwise class constraint: processing on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+			// do stuff
+			ImgFeatures* X = XTrain[i];
+			ImgLabeling* Y = YTrain[i];
+			
+			const int numNodes = X->getNumNodes();
+			for (int node1 = 0; node1 < numNodes; node1++)
+			{
+				for (int node2 = node1; node2 < numNodes; node2++)
+				{
+					int node1Class = Y->getLabel(node1);
+					int node2Class = Y->getLabel(node2);
+
+					if (node1 == node2 || node1Class == node2Class)
+						continue;
+
+					double node1XCoord = X->getNodeLocationX(node1);
+					double node1YCoord = X->getNodeLocationY(node1);
+					double node2XCoord = X->getNodeLocationX(node2);
+					double node2YCoord = X->getNodeLocationY(node2);
+
+					// check left/right
+					stringstream configSSLR;
+					configSSLR << node1Class << "," << node2Class << ",";
+					if (node1XCoord < node2XCoord)
+					{
+						// node 1 to the left of node 2
+						configSSLR << "L";
+					}
+					else if (node1XCoord > node2XCoord)
+					{
+						// node 1 to the right of node 2
+						configSSLR << "R";
+					}
+					string configStringLR = configSSLR.str();
+					if (pairwiseConstraints.count(configStringLR) == 0)
+					{
+						pairwiseConstraints[configStringLR] = 0;
+					}
+					pairwiseConstraints[configStringLR]++;
+
+					// check top/bottom
+					stringstream configSSUD;
+					configSSUD << node1Class << "," << node2Class << ",";
+					if (node1YCoord < node2YCoord)
+					{
+						// node 1 above node 2
+						configSSUD << "U";
+					}
+					else if (node1YCoord > node2YCoord)
+					{
+						// node 1 below node 2
+						configSSUD << "D";
+					}
+					string configStringUD = configSSUD.str();
+					if (pairwiseConstraints.count(configStringUD) == 0)
+					{
+						pairwiseConstraints[configStringUD] = 0;
+					}
+					pairwiseConstraints[configStringUD]++;
+				}
+			}
+		}
+		
+		clock_t toc = clock();
+		LOG() << "total discoverPairwiseClassConstraints time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return pairwiseConstraints;
+	}
+
 	IRankModel* Learning::initializeLearning(RankerType rankerType, SearchType searchType)
 	{
 		// Setup model for learning
