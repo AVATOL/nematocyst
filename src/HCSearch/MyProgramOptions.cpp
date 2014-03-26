@@ -30,6 +30,7 @@ namespace MyProgramOptions
 		searchProcedureMode = GREEDY;
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
+		pruneFeaturesMode = STANDARD_PRUNE;
 		initialFunctionMode = LOG_REG;
 		successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
 		lossMode = HAMMING;
@@ -385,6 +386,30 @@ namespace MyProgramOptions
 						po.costFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
 				}
 			}
+			else if (strcmp(argv[i], "--pfeatures") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "standard") == 0)
+						po.pruneFeaturesMode = STANDARD;
+					//else if (strcmp(argv[i+1], "standard-alt") == 0)
+					//	po.pruneFeaturesMode = STANDARD_ALT;
+					else if (strcmp(argv[i+1], "standard-conf") == 0)
+						po.pruneFeaturesMode = STANDARD_CONF;
+					//else if (strcmp(argv[i+1], "dense-crf") == 0)
+					//	po.pruneFeaturesMode = DENSE_CRF;
+					else if (strcmp(argv[i+1], "unary") == 0)
+						po.pruneFeaturesMode = UNARY;
+					else if (strcmp(argv[i+1], "unary-conf") == 0)
+						po.pruneFeaturesMode = UNARY_CONF;
+					else if (strcmp(argv[i+1], "standard-pair-counts") == 0)
+						po.pruneFeaturesMode = STANDARD_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
+						po.pruneFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-prune") == 0)
+						po.pruneFeaturesMode = STANDARD_PRUNE;
+				}
+			}
 			else if (strcmp(argv[i], "--loss") == 0)
 			{
 				if (i + 1 != argc)
@@ -456,6 +481,8 @@ namespace MyProgramOptions
 			"standard-pair-counts|standard-conf-pair-counts" << endl;
 		cerr << "\t--cfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts" << endl;
+		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+			"standard-pair-counts|standard-conf-pair-counts|standard-prune" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;

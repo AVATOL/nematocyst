@@ -286,6 +286,28 @@ namespace HCSearch
 	protected:
 		virtual VectorXd computeGlobalTerm(ImgFeatures& X, ImgLabeling& Y);
 	};
+
+	/**************** Prune Feature Functions ****************/
+
+	/*!
+	 * @brief Standard prune features.
+	 */
+	class StandardPruneFeatures : public IFeatureFunction
+	{
+	public:
+		StandardPruneFeatures();
+		~StandardPruneFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+	protected:
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
 }
 
 #endif

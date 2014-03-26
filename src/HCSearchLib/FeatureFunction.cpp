@@ -897,4 +897,174 @@ namespace HCSearch
 			return potential;
 		}
 	}
+
+	/**************** Standard Prune Features ****************/
+
+	StandardPruneFeatures::StandardPruneFeatures()
+	{
+	}
+
+	StandardPruneFeatures::~StandardPruneFeatures()
+	{
+	}
+
+	RankFeatures StandardPruneFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 2;
+
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
+		
+		VectorXd unaryTerm = computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+
+		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
+		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;
+
+		return RankFeatures(phi);
+	}
+
+	int StandardPruneFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numNodes = X.getNumNodes();
+		int featureDim = X.getFeatureDim();
+		int unaryFeatDim = 1;
+		int pairwiseFeatDim = 2;
+		int numClasses = Global::settings->CLASSES.numClasses();
+		int numPairs = (numClasses*(numClasses+1))/2;
+
+		return numClasses*unaryFeatDim + numPairs*pairwiseFeatDim;
+	}
+	
+	VectorXd StandardPruneFeatures::computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		if (!Y.confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences not available for unary potential.";
+			abort();
+		}
+
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int unaryFeatDim = 1;
+		
+		VectorXd phi = VectorXd::Zero(numClasses*unaryFeatDim);
+
+		// unary potential
+		for (int node = 0; node < numNodes; node++)
+		{
+			// get node features and label
+			VectorXd nodeFeatures = X.graph.nodesData.row(node);
+			int nodeLabel = Y.getLabel(node);
+
+			// map node label to indexing value in phi vector
+			int classIndex = Global::settings->CLASSES.getClassIndex(nodeLabel);
+
+			// assignment
+			phi(classIndex*unaryFeatDim) += 1-Y.confidences(node, classIndex);
+		}
+
+		phi = 1.0/X.getNumNodes() * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardPruneFeatures::computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int featureDim = X.getFeatureDim();
+		const int pairwiseFeatDim = 2;
+		const int numPairs = (numClasses*(numClasses+1))/2;
+		
+		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+
+		int numEdges = 0;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			for (int node2 = node1+1; node2 < numNodes; node2++)
+			{
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				double nodeLocationX1 = X.getNodeLocationX(node1);
+				double nodeLocationY1 = X.getNodeLocationY(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				double nodeLocationX2 = X.getNodeLocationX(node2);
+				double nodeLocationY2 = X.getNodeLocationY(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				int classIndex = -1;
+				VectorXd edgeFeatureVector = computePairwiseFeatures(nodeFeatures1, nodeFeatures2, 
+					nodeLocationX1, nodeLocationY1, nodeLocationX2, nodeLocationY2, 
+					nodeLabel1, nodeLabel2, classIndex);
+				phi.segment(classIndex*pairwiseFeatDim, pairwiseFeatDim) += edgeFeatureVector; // contrast sensitive pairwise potential
+			}
+		}
+
+		phi = 1.0/numEdges * phi;
+
+		return phi;
+	}
+
+	VectorXd StandardPruneFeatures::computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+		int nodeLabel1, int nodeLabel2, int& classIndex)
+	{
+		const double THETA_ALPHA = 0.025;
+		const double THETA_BETA = 0.025;
+		const double THETA_GAMMA = 0.025;
+
+		int node1ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel1);
+		int node2ClassIndex = Global::settings->CLASSES.getClassIndex(nodeLabel2);
+		int numClasses = Global::settings->CLASSES.numClasses();
+
+		int i = min(node1ClassIndex, node2ClassIndex);
+		int j = max(node1ClassIndex, node2ClassIndex);
+
+		classIndex = (numClasses*(numClasses+1)-(numClasses-i)*(numClasses-i+1))/2+(numClasses-1-j);
+
+		// phi features depend on labels
+		if (nodeLabel1 != nodeLabel2)
+		{
+			VectorXd potential = VectorXd::Zero(2);
+
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
+			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
+			double featureDistance = featureDiff.squaredNorm();
+
+			double appearanceTerm = exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
+			double smoothnessTerm = exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
+
+			potential(0) = appearanceTerm;
+			potential(1) = smoothnessTerm;
+
+			return potential;
+		}
+		else
+		{
+			VectorXd potential = VectorXd::Zero(2);
+
+			double locationDistance = pow(nodeLocationX1-nodeLocationX2,2)+pow(nodeLocationY1-nodeLocationY2,2);
+			VectorXd featureDiff = nodeFeatures1 - nodeFeatures2;
+			double featureDistance = featureDiff.squaredNorm();
+
+			double appearanceTerm = 1-exp(-locationDistance/(2*pow(THETA_ALPHA,2)) - featureDistance/(2*pow(THETA_BETA,2)));
+			double smoothnessTerm = 1-exp(-locationDistance/(2*pow(THETA_GAMMA,2)));
+
+			potential(0) = appearanceTerm;
+			potential(1) = smoothnessTerm;
+
+			return potential;
+		}
+	}
 }

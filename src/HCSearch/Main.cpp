@@ -152,6 +152,51 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG(ERROR) << "undefined feature mode.";
 	}
 
+	// select prune feature function
+	LOG() << "Prune feature function: ";
+	HCSearch::IFeatureFunction* pruneFeatFunc = NULL;
+	switch (po.pruneFeaturesMode)
+	{
+	case MyProgramOptions::ProgramOptions::STANDARD:
+		LOG() << "standard CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_ALT:
+		LOG() << "standard 2 CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardAltFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_CONF:
+		LOG() << "standard 3 CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardConfFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::UNARY:
+		LOG() << "unary CRF features" << endl;
+		pruneFeatFunc = new HCSearch::UnaryFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::UNARY_CONF:
+		LOG() << "unary confidences CRF features" << endl;
+		pruneFeatFunc = new HCSearch::UnaryConfFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_PAIR_COUNTS:
+		LOG() << "pairwise bigram CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardPairwiseCountsFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_CONF_PAIR_COUNTS:
+		LOG() << "pairwise bigram confidences CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardConfPairwiseCountsFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::DENSE_CRF:
+		LOG() << "dense CRF features" << endl;
+		pruneFeatFunc = new HCSearch::DenseCRFFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_PRUNE:
+		LOG() << "standard prune features" << endl;
+		pruneFeatFunc = new HCSearch::StandardPruneFeatures();
+		break;
+	default:
+		LOG(ERROR) << "undefined feature mode.";
+	}
+
 	// select some successor function
 	LOG() << "Successor function: ";
 	HCSearch::ISuccessorFunction* successor = NULL;
@@ -243,7 +288,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		break;
 	case MyProgramOptions::ProgramOptions::LEARNED_PRUNE:
 		LOG() << "flipbit neighbors" << endl;
-		pruneFunc = new HCSearch::ClassifierPrune(heuristicFeatFunc); //TODO: replace with dedicated function
+		pruneFunc = new HCSearch::ClassifierPrune(pruneFeatFunc);
 		break;
 	case MyProgramOptions::ProgramOptions::ORACLE_PRUNE:
 		LOG() << "flipbit confidences neighbors" << endl;
