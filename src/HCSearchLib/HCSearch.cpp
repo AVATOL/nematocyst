@@ -635,6 +635,79 @@ namespace HCSearch
 		return model;
 	}
 
+	map<string, int> Model::loadPairwiseConstraints(string fileName)
+	{
+		map<string, int> pairwiseConstraints;
+
+		//TODO
+		int lineIndex = 0;
+		string line;
+		ifstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					stringstream ss(line);
+					string token;
+					int columnIndex = 0;
+					int class1, class2, counts;
+					string configuration;
+					while (getline(ss, token, ' '))
+					{
+						if (columnIndex == 0)
+						{
+							class1 = atoi(token.c_str());
+						}
+						else if (columnIndex == 1)
+						{
+							class2 = atoi(token.c_str());
+						}
+						else if (columnIndex == 2)
+						{
+							configuration = token.c_str();
+						}
+						else if (columnIndex == 3)
+						{
+							counts = atoi(token.c_str());
+						}
+						columnIndex++;
+					}
+					if (columnIndex < 4)
+					{
+						LOG(ERROR) << "parsing illegal format for pairwise discovery";
+						abort();
+					}
+
+					stringstream configSS;
+					configSS << class1 << " " << class2 << " " << configuration;
+					string configString = configSS.str();
+					if (pairwiseConstraints.count(configString) == 0)
+					{
+						pairwiseConstraints[configString] = counts;
+					}
+					else
+					{
+						LOG(WARNING) << "configuration string already in map!";
+					}
+				}
+
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file for reading pairwise constraints!";
+			abort();
+		}
+
+		return pairwiseConstraints;
+	}
+
 	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
 	{
 		if (model == NULL)
@@ -663,6 +736,27 @@ namespace HCSearch
 	{
 		SVMClassifierModel* modelCast = dynamic_cast<SVMClassifierModel*>(model);
 		modelCast->save(fileName);
+	}
+
+	void Model::savePairwiseConstraints(map<string, int>& pairwiseConstraints, string fileName)
+	{
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			for (map<string, int>::iterator it = pairwiseConstraints.begin(); it != pairwiseConstraints.end(); ++it)
+			{
+				string key = it->first;
+				int value = it->second;
+
+				fh << key << " " << value << endl;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file for saving pairwise constraints!";
+			abort();
+		}
 	}
 
 	/**************** Learning ****************/
@@ -961,7 +1055,7 @@ namespace HCSearch
 
 					// check left/right
 					stringstream configSSLR;
-					configSSLR << node1Class << "," << node2Class << ",";
+					configSSLR << node1Class << " " << node2Class << " ";
 					if (node1XCoord < node2XCoord)
 					{
 						// node 1 to the left of node 2

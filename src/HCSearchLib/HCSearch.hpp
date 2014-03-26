@@ -643,6 +643,8 @@ namespace HCSearch
 
 		static IClassifierModel* loadModel(string fileName);
 
+		static map<string, int> loadPairwiseConstraints(string fileName);
+
 		/*!
 		 * Save model to file.
 		 * @param[in] model Rank model to save
@@ -652,6 +654,8 @@ namespace HCSearch
 		static void saveModel(IRankModel* model, string fileName, RankerType rankerType);
 
 		static void saveModel(IClassifierModel* model, string fileName);
+
+		static void savePairwiseConstraints(map<string, int>& pairwiseConstraints, string fileName);
 	};
 
 	/*! @} */
