@@ -5,11 +5,11 @@ namespace HCSearch
 {
 	/**************** Search Space Functions Abstract Definitions ****************/
 
-	int IFeatureFunction::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int IFeatureFunction::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		// This is inefficient but does the job
 		// Better to define more efficient functions for extended classes
-		return computeFeatures(X, Y).data.size();
+		return computeFeatures(X, Y, action).data.size();
 	}
 
 	/**************** Feature Functions ****************/
@@ -24,7 +24,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures StandardFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -34,7 +34,7 @@ namespace HCSearch
 		int pairwiseFeatDim = featureDim;
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
@@ -45,7 +45,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -171,7 +171,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures StandardAltFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardAltFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -180,7 +180,7 @@ namespace HCSearch
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = featureDim;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
@@ -191,7 +191,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardAltFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardAltFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -304,7 +304,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures StandardConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -314,7 +314,7 @@ namespace HCSearch
 		int pairwiseFeatDim = featureDim;
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
@@ -325,7 +325,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -456,7 +456,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures UnaryFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures UnaryFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -465,7 +465,7 @@ namespace HCSearch
 		int unaryFeatDim = 1+featureDim;
 		int pairwiseFeatDim = featureDim;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 
@@ -474,7 +474,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int UnaryFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int UnaryFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -495,7 +495,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures UnaryConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures UnaryConfFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -505,7 +505,7 @@ namespace HCSearch
 		int pairwiseFeatDim = featureDim;
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 
@@ -514,7 +514,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int UnaryConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int UnaryConfFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -536,7 +536,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures StandardPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -546,7 +546,7 @@ namespace HCSearch
 		int pairwiseFeatDim = 1;
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
@@ -557,7 +557,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -637,7 +637,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures StandardConfPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures StandardConfPairwiseCountsFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -647,7 +647,7 @@ namespace HCSearch
 		int pairwiseFeatDim = 1;
 		int numPairs = (numClasses*(numClasses+1))/2;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
@@ -658,7 +658,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int StandardConfPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int StandardConfPairwiseCountsFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -738,7 +738,7 @@ namespace HCSearch
 	{
 	}
 
-	RankFeatures DenseCRFFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y)
+	RankFeatures DenseCRFFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
@@ -748,7 +748,7 @@ namespace HCSearch
 		int unaryFeatDim = 1;
 		int pairwiseFeatDim = 2;
 
-		VectorXd phi = VectorXd::Zero(featureSize(X, Y));
+		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
 		VectorXd unaryTerm = computeUnaryTerm(X, Y);
 		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
@@ -759,7 +759,7 @@ namespace HCSearch
 		return RankFeatures(phi);
 	}
 
-	int DenseCRFFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y)
+	int DenseCRFFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();

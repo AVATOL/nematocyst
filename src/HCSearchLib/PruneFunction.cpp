@@ -52,7 +52,8 @@ namespace HCSearch
 		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
 		{
 			ImgCandidate YCand = *it;
-			ClassifierFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling);
+			set<int> action = YCand.action;
+			ClassifierFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling, action);
 			featuresList.push_back(features);
 		}
 

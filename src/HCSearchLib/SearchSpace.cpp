@@ -47,7 +47,8 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->heuristicFeatureFunction->computeFeatures(X, Y);
+		set<int> action;
+		return this->heuristicFeatureFunction->computeFeatures(X, Y, action);
 	}
 
 	RankFeatures SearchSpace::computeCostFeatures(ImgFeatures& X, ImgLabeling& Y)
@@ -58,10 +59,11 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->costFeatureFunction->computeFeatures(X, Y);
+		set<int> action;
+		return this->costFeatureFunction->computeFeatures(X, Y, action);
 	}
 
-	ClassifierFeatures SearchSpace::computePruneFeatures(ImgFeatures& X, ImgLabeling& Y)
+	ClassifierFeatures SearchSpace::computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		if (this->pruneFunction->getFeatureFunction() == NULL)
 		{
@@ -69,7 +71,7 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->pruneFunction->getFeatureFunction()->computeFeatures(X, Y);
+		return this->pruneFunction->getFeatureFunction()->computeFeatures(X, Y, action);
 	}
 
 	ImgLabeling SearchSpace::getInitialPrediction(ImgFeatures& X)

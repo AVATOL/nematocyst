@@ -19,12 +19,12 @@ namespace HCSearch
 		/*!
 		 * @brief Compute features.
 		 */
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y)=0;
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)=0;
 
 		/*!
 		 * @brief Get dimension of computed feature vector given structured features and labeling.
 		 */
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 	};
 
 	/**************** Feature Functions ****************/
@@ -38,8 +38,8 @@ namespace HCSearch
 		StandardFeatures();
 		~StandardFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		/*!
@@ -69,8 +69,8 @@ namespace HCSearch
 		StandardAltFeatures();
 		~StandardAltFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		/*!
@@ -99,8 +99,8 @@ namespace HCSearch
 		StandardConfFeatures();
 		~StandardConfFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		/*!
@@ -129,8 +129,8 @@ namespace HCSearch
 		UnaryFeatures();
 		~UnaryFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 	};
 
 	/*!
@@ -142,8 +142,8 @@ namespace HCSearch
 		UnaryConfFeatures();
 		~UnaryConfFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 	};
 
 	/*!
@@ -155,8 +155,8 @@ namespace HCSearch
 		StandardPairwiseCountsFeatures();
 		~StandardPairwiseCountsFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
@@ -173,8 +173,8 @@ namespace HCSearch
 		StandardConfPairwiseCountsFeatures();
 		~StandardConfPairwiseCountsFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
@@ -191,8 +191,8 @@ namespace HCSearch
 		DenseCRFFeatures();
 		~DenseCRFFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
@@ -226,7 +226,7 @@ namespace HCSearch
 		CodeBook dictionary;
 
 	public:
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y)=0;
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)=0;
 
 	protected:
 		/*!
@@ -255,8 +255,8 @@ namespace HCSearch
 		
 		~SumGlobalFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		virtual VectorXd computeGlobalTerm(ImgFeatures& X, ImgLabeling& Y);
@@ -280,8 +280,8 @@ namespace HCSearch
 
 		~MaxGlobalFeatures();
 
-		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y);
-		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y);
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
 		virtual VectorXd computeGlobalTerm(ImgFeatures& X, ImgLabeling& Y);

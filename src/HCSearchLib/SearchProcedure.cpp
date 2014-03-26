@@ -766,7 +766,8 @@ namespace HCSearch
 			
 			// collect training examples
 			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
-			ClassifierFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred);
+			set<int> action = YCandidate.action;
+			ClassifierFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
 
 			if (learningModel->classifierType() == SVM_CLASSIFIER)
 			{
