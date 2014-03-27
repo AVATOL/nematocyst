@@ -1040,7 +1040,7 @@ namespace HCSearch
 			const int numNodes = X->getNumNodes();
 			for (int node1 = 0; node1 < numNodes; node1++)
 			{
-				for (int node2 = node1; node2 < numNodes; node2++)
+				for (int node2 = 0; node2 < numNodes; node2++)
 				{
 					int node1Class = Y->getLabel(node1);
 					int node2Class = Y->getLabel(node2);
@@ -1054,44 +1054,50 @@ namespace HCSearch
 					double node2YCoord = X->getNodeLocationY(node2);
 
 					// check left/right
-					stringstream configSSLR;
-					configSSLR << node1Class << " " << node2Class << " ";
-					if (node1XCoord < node2XCoord)
+					if (node1XCoord != node2XCoord)
 					{
-						// node 1 to the left of node 2
-						configSSLR << "L";
+						stringstream configSSLR;
+						configSSLR << node1Class << " " << node2Class << " ";
+						if (node1XCoord < node2XCoord)
+						{
+							// node 1 to the left of node 2
+							configSSLR << "L";
+						}
+						else if (node1XCoord > node2XCoord)
+						{
+							// node 1 to the right of node 2
+							configSSLR << "R";
+						}
+						string configStringLR = configSSLR.str();
+						if (pairwiseConstraints.count(configStringLR) == 0)
+						{
+							pairwiseConstraints[configStringLR] = 0;
+						}
+						pairwiseConstraints[configStringLR]++;
 					}
-					else if (node1XCoord > node2XCoord)
-					{
-						// node 1 to the right of node 2
-						configSSLR << "R";
-					}
-					string configStringLR = configSSLR.str();
-					if (pairwiseConstraints.count(configStringLR) == 0)
-					{
-						pairwiseConstraints[configStringLR] = 0;
-					}
-					pairwiseConstraints[configStringLR]++;
 
 					// check top/bottom
-					stringstream configSSUD;
-					configSSUD << node1Class << "," << node2Class << ",";
-					if (node1YCoord < node2YCoord)
+					if (node1YCoord != node2YCoord)
 					{
-						// node 1 above node 2
-						configSSUD << "U";
+						stringstream configSSUD;
+						configSSUD << node1Class << " " << node2Class << " ";
+						if (node1YCoord < node2YCoord)
+						{
+							// node 1 above node 2
+							configSSUD << "U";
+						}
+						else if (node1YCoord > node2YCoord)
+						{
+							// node 1 below node 2
+							configSSUD << "D";
+						}
+						string configStringUD = configSSUD.str();
+						if (pairwiseConstraints.count(configStringUD) == 0)
+						{
+							pairwiseConstraints[configStringUD] = 0;
+						}
+						pairwiseConstraints[configStringUD]++;
 					}
-					else if (node1YCoord > node2YCoord)
-					{
-						// node 1 below node 2
-						configSSUD << "D";
-					}
-					string configStringUD = configSSUD.str();
-					if (pairwiseConstraints.count(configStringUD) == 0)
-					{
-						pairwiseConstraints[configStringUD] = 0;
-					}
-					pairwiseConstraints[configStringUD]++;
 				}
 			}
 		}
