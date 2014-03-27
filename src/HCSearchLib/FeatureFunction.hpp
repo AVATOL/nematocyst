@@ -294,6 +294,12 @@ namespace HCSearch
 	 */
 	class StandardPruneFeatures : public IFeatureFunction
 	{
+		static const int MUTEX_THRESHOLD;
+
+	protected:
+		map<string, int> mutex;
+		bool initialized;
+
 	public:
 		StandardPruneFeatures();
 		~StandardPruneFeatures();
@@ -302,11 +308,16 @@ namespace HCSearch
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 	protected:
-		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
-		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
-		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+		VectorXd computeMutexTerm(ImgFeatures& X, ImgLabeling& Y);
+		VectorXd computeMutexFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
 			int nodeLabel1, int nodeLabel2, int& classIndex);
+
+		void setMutex(map<string, int>& mutex);
+		map<string, int> getMutex();
+
+	private:
+		string mutexStringHelper(int class1, int class2, string config);
 	};
 }
 
