@@ -376,6 +376,21 @@ void run(MyProgramOptions::ProgramOptions po)
 
 		HCSearch::SearchType mode = *it;
 
+		if (mode != HCSearch::DISCOVER_PAIRWISE && po.pruneFeaturesMode == MyProgramOptions::ProgramOptions::STANDARD_PRUNE
+			&& po.pruneMode == MyProgramOptions::ProgramOptions::LEARNED_PRUNE)
+		{
+			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			HCSearch::ClassifierPrune* pruneCast = dynamic_cast<HCSearch::ClassifierPrune*>(pruneFunc);
+			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
+			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
+
+			if (MyFileSystem::FileSystem::checkFileExists(mutexPath))
+			{
+				map<string, int> mutex = HCSearch::Model::loadPairwiseConstraints(mutexPath);
+				featCast->setMutex(mutex);
+			}
+		}
+
 		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::LEARNED_PRUNE)
 		{
 			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
