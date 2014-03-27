@@ -307,14 +307,14 @@ namespace HCSearch
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
+		void setMutex(map<string, int>& mutex);
+		map<string, int> getMutex();
+
 	protected:
 		VectorXd computeMutexTerm(ImgFeatures& X, ImgLabeling& Y);
 		VectorXd computeMutexFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
 			int nodeLabel1, int nodeLabel2, int& classIndex);
-
-		void setMutex(map<string, int>& mutex);
-		map<string, int> getMutex();
 
 	private:
 		string mutexStringHelper(int class1, int class2, string config);
