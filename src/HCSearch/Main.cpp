@@ -273,7 +273,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	// use IID logistic regression as initial state prediction function
 	LOG() << "Initial state prediction function: ";
 	LOG() << "IID logistic regression" << endl;
-	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
+	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::MutexLogRegInit(); //new HCSearch::LogRegInit();
 
 	LOG() << endl;
 
@@ -383,11 +383,14 @@ void run(MyProgramOptions::ProgramOptions po)
 			HCSearch::ClassifierPrune* pruneCast = dynamic_cast<HCSearch::ClassifierPrune*>(pruneFunc);
 			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
 			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
+			HCSearch::IInitialPredictionFunction* initPredFunc = searchSpace->getInitialPredictionFunction();
+			HCSearch::MutexLogRegInit* initPredFuncCast = dynamic_cast<HCSearch::MutexLogRegInit*>(initPredFunc);
 
 			if (MyFileSystem::FileSystem::checkFileExists(mutexPath))
 			{
 				map<string, int> mutex = HCSearch::Model::loadPairwiseConstraints(mutexPath);
 				featCast->setMutex(mutex);
+				initPredFuncCast->setMutex(mutex);
 			}
 		}
 

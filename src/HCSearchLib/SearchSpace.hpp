@@ -141,6 +141,7 @@ namespace HCSearch
 		double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
 
 		IPruneFunction* getPruneFunction();
+		IInitialPredictionFunction* getInitialPredictionFunction();
 	};
 
 	/*! @} */

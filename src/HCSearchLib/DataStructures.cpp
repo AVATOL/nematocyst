@@ -169,6 +169,36 @@ namespace HCSearch
 		return labels;
 	}
 
+	vector<int> ImgLabeling::getLabelsByConfidence(int node)
+	{
+		// check if confidences are available
+		if (!this->confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences are not available to get sorted confident labels.";
+			abort();
+		}
+
+		const int numLabels = this->confidences.cols();
+		vector<int> labels;
+
+		// get top K confident labels
+		LabelConfidencePQ sortedByConfidence;
+		for (int i = 0; i < numLabels; i++)
+		{
+			int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+			double confidence = this->confidences(node, i);
+			sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+		}
+		for (int i = 0; i < numLabels; i++)
+		{
+			MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+			sortedByConfidence.pop();
+			labels.push_back(p.first);
+		}
+
+		return labels;
+	}
+
 	/**************** Classify/Rank Features ****************/
 
 	GenericFeatures::GenericFeatures()

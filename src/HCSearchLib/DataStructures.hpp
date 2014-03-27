@@ -260,6 +260,8 @@ namespace HCSearch
 		 * @return Returns the set of top K confident labels for the node
 		 */
 		set<int> getTopConfidentLabels(int node, int K);
+
+		vector<int> getLabelsByConfidence(int node);
 	};
 
 	/*!

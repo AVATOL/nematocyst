@@ -913,6 +913,12 @@ namespace HCSearch
 
 	RankFeatures StandardPruneFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "mutex struct not initialized in features";
+			abort();
+		}
+
 		int numNodes = X.getNumNodes();
 		int featureDim = X.getFeatureDim();
 		int numClasses = Global::settings->CLASSES.numClasses();
@@ -922,8 +928,8 @@ namespace HCSearch
 		int pairwiseFeatDim = 4;
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
-		VectorXd mutexTerm = computeMutexTerm(X, Y);
-		phi.segment(0, numClasses*pairwiseFeatDim) = mutexTerm;
+		VectorXd mutexTerm = computeMutexTerm(X, Y, action);
+		phi.segment(0, numPairs*pairwiseFeatDim) = mutexTerm;
 
 		return RankFeatures(phi);
 	}
@@ -937,7 +943,7 @@ namespace HCSearch
 		return numPairs*pairwiseFeatDim;
 	}
 
-	VectorXd StandardPruneFeatures::computeMutexTerm(ImgFeatures& X, ImgLabeling& Y)
+	VectorXd StandardPruneFeatures::computeMutexTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
@@ -947,10 +953,16 @@ namespace HCSearch
 		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
 
 		int numEdges = 0;
-		for (int node1 = 0; node1 < numNodes; node1++)
+		//for (int node1 = 0; node1 < numNodes; node1++)
+		for (set<int>::iterator it = action.begin(); it != action.end(); ++it)
 		{
-			for (int node2 = node1+1; node2 < numNodes; node2++)
+			int node1 = *it;
+
+			for (int node2 = 0; node2 < numNodes; node2++)
 			{
+				if (node1 == node2)
+					continue;
+
 				numEdges++;
 
 				// get node features and label
@@ -1002,42 +1014,42 @@ namespace HCSearch
 			{
 				string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "L");
 				if (this->mutex.count(mutexKey) == 0)
-					potential(0) = -1;
-				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
-					potential(0) = -1;
-				else
 					potential(0) = 1;
+				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+					potential(0) = 1;
+				else
+					potential(0) = 0;
 			}
 			else if (nodeLocationX1 > nodeLocationX2)
 			{
 				string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "R");
 				if (this->mutex.count(mutexKey) == 0)
-					potential(1) = -1;
-				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
-					potential(1) = -1;
-				else
 					potential(1) = 1;
+				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+					potential(1) = 1;
+				else
+					potential(1) = 0;
 			}
 			
 			if (nodeLocationY1 < nodeLocationY2)
 			{
 				string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "U");
 				if (this->mutex.count(mutexKey) == 0)
-					potential(2) = -1;
-				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
-					potential(2) = -1;
-				else
 					potential(2) = 1;
+				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+					potential(2) = 1;
+				else
+					potential(2) = 0;
 			}
 			else if (nodeLocationY1 > nodeLocationY2)
 			{
 				string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "D");
 				if (this->mutex.count(mutexKey) == 0)
-					potential(3) = -1;
-				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
-					potential(3) = -1;
-				else
 					potential(3) = 1;
+				else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+					potential(3) = 1;
+				else
+					potential(3) = 0;
 			}
 
 			return potential;

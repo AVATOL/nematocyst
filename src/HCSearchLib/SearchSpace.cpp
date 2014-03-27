@@ -124,4 +124,9 @@ namespace HCSearch
 	{
 		return this->pruneFunction;
 	}
+
+	IInitialPredictionFunction* SearchSpace::getInitialPredictionFunction()
+	{
+		return this->initialPredictionFunction;
+	}
 }
