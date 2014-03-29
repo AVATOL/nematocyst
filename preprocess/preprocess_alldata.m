@@ -146,6 +146,7 @@ fid = fopen([outputPath '/metadata.txt'], 'w');
 fprintf(fid, 'num=%d\n', nFiles);
 writeRange(fid, 'classes', classes);
 writeRange(fid, 'backgroundclasses', []);
+writeRange(fid, 'ignoreclasses', []);
 fclose(fid);
 
 %% save copy of matlab variables
