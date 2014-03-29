@@ -39,6 +39,8 @@ testFiles = list{1,1};
 classes = get_classes(testFiles, preprocessedDir);
 BINARY_FOREGROUND_CLASS_INDEX = 8;  % [-1, 1] means index 2 is foreground
                                     % 8 means foreground class in Stanford
+IGNORE_CLASSES = 0;     % [] means nothing to ignore
+                        % Stanford uses 0 for ignore
 
 %% prepare output data structure
 evaluate = containers.Map;
@@ -248,6 +250,12 @@ classSet = sort(classSet);
 end
 
 function [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel)
+
+for ignoreClass = IGNORE_CLASSES
+    ignoreIndices = find(truthLabels == ignoreClass);
+    inferLabels(ignoreIndices) = [];
+    truthLabels(ignoreIndices) = [];
+end
 
 tp = sum(double((inferLabels == classLabel) & (truthLabels == classLabel)));
 fp = sum(double((inferLabels == classLabel) & (truthLabels ~= classLabel)));
