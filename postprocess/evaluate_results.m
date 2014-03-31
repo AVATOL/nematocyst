@@ -36,7 +36,7 @@ fclose(fid);
 testFiles = list{1,1};
 
 %% get all classes
-classes = get_classes(testFiles, preprocessedDir);
+classes = get_classes_from_metafile(preprocessedDir);
 BINARY_FOREGROUND_CLASS_INDEX = 8;  % [-1, 1] means index 2 is foreground
                                     % 8 means foreground class in Stanford
 IGNORE_CLASSES = 0;     % [] means nothing to ignore
@@ -246,6 +246,18 @@ for f = 1:length(fileNameSet)
 end
 
 classSet = sort(classSet);
+
+end
+
+function [classSet] = get_classes_from_metafile(preprocessedDir)
+
+fileData = fileread([preprocessedDir '/metadata.txt']);
+% following assumes classes appears before backgroundclasses appears at end
+beginIndex = regexp(fileData, 'classes=')+length('classes=');
+endIndex = regexp(fileData, 'backgroundclasses=')-1;
+stringData = fileData(beginIndex:endIndex);
+stringArray = textscan(stringData, '%s', 'delimiter', ',');
+classSet = transpose(str2num(cell2mat(stringArray{1})));
 
 end
 
