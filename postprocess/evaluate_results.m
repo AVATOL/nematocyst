@@ -148,7 +148,7 @@ for s = searchTypes
                 for c = 1:length(classes)
                     classLabel = classes(c);
                     
-                    [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel);
+                    [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel, IGNORE_CLASSES);
                     
                     stat.tp(fd, t, c) = stat.tp(fd, t, c) + tp;
                     stat.fp(fd, t, c) = stat.fp(fd, t, c) + fp;
@@ -249,7 +249,7 @@ classSet = sort(classSet);
 
 end
 
-function [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel)
+function [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel, IGNORE_CLASSES)
 
 for ignoreClass = IGNORE_CLASSES
     ignoreIndices = find(truthLabels == ignoreClass);
