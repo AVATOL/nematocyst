@@ -34,6 +34,7 @@ namespace MyProgramOptions
 		initialFunctionMode = LOG_REG;
 		successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
 		lossMode = HAMMING;
+		pruneMode = NO_PRUNE;
 
 		stochasticCutMode = EDGES;
 		beamSize = 1;
