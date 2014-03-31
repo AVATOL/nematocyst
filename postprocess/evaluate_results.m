@@ -9,12 +9,12 @@ function [ evaluate ] = evaluate_results( preprocessedDir, resultsDir, timeRange
 %   timeRange:          range of time bound
 %   foldRange:          range of folds
 %   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
-%   splitsName:         (optional) alternate name to splits folder
+%   splitsName:         (optional) alternate name to splits folder and file
 
 narginchk(4, 6);
 
 if nargin < 6
-    splitsName = 'splits';
+    splitsName = 'splits/Test.txt';
 end
 if nargin < 5
     searchTypes = [1 2 3 4];
@@ -29,7 +29,7 @@ searchTypesCollection{4} = 'll';
 searchTypesCollection{5} = 'rl';
 
 %% test files
-testSplitsFile = [preprocessedDir '/' splitsName '/Test.txt'];
+testSplitsFile = [preprocessedDir '/' splitsName];
 fid = fopen(testSplitsFile, 'r');
 list = textscan(fid, '%s');
 fclose(fid);

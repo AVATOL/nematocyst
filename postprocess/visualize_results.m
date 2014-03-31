@@ -13,7 +13,7 @@ function visualize_results( rawDir, preprocessedDir, resultsDir, outputDir, labe
 %   timeRange:          range of time bound
 %   foldRange:          range of folds
 %   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
-%   splitsName:         (optional) alternate name to splits folder
+%   splitsName:         (optional) alternate name to splits folder and file
 %	allData:            (optional) data structure containing all preprocessed data
 
 narginchk(7, 10);
@@ -23,7 +23,7 @@ if nargin > 9
     allDataAvailable = 1;
 end
 if nargin < 9
-    splitsName = 'splits';
+    splitsName = 'splits/Test.txt';
 end
 if nargin < 8
     searchTypes = [1 2 3 4];
@@ -48,7 +48,7 @@ searchTypesCollection{4} = 'll';
 searchTypesCollection{5} = 'rl';
 
 %% test files
-testSplitsFile = [preprocessedDir '/' splitsName '/Test.txt'];
+testSplitsFile = [preprocessedDir '/' splitsName];
 fid = fopen(testSplitsFile, 'r');
 list = textscan(fid, '%s');
 fclose(fid);
