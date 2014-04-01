@@ -311,6 +311,12 @@ namespace HCSearch
 		map<string, int> getMutex();
 
 	protected:
+		VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+		VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+
 		VectorXd computeMutexTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 		VectorXd computeMutexFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
