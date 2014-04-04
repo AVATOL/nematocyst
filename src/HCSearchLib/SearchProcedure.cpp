@@ -543,6 +543,7 @@ namespace HCSearch
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)
 	{
 		// pick the top B best states - "good" training examples
+		double bestLoss;
 		for (int i = 0; i < this->beamSize; i++)
 		{
 			if (candidateSet.empty())
@@ -554,8 +555,22 @@ namespace HCSearch
 			{
 				bestSet.push_back(state->getHeuristicFeatures());
 				bestLosses.push_back(state->getHeuristic());
+				bestLoss = state->getHeuristic();
 			}
 			openSet.push(state);
+			costSet.push(state);
+		}
+
+		// everything else that is still the same as best loss is not considered bad for training
+		while (!candidateSet.empty() && candidateSet.top()->getHeuristic() <= bestLoss)
+		{
+			ISearchNode* state = candidateSet.top();
+			candidateSet.pop();
+			if (searchType == LEARN_H)
+			{
+				bestSet.push_back(state->getHeuristicFeatures());
+				bestLosses.push_back(state->getHeuristic());
+			}
 			costSet.push(state);
 		}
 
