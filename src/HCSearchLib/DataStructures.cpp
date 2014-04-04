@@ -900,8 +900,8 @@ namespace HCSearch
 			// write num to file
 			fh << "VW - generated from HC-Search" << endl;
 
-			// jump to line 12
-			for (int i = 0; i < 10; i++)
+			// jump to line 13
+			for (int i = 0; i < 11; i++)
 				fh << "#" << endl;
 
 			// write weights to file
