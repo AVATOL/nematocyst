@@ -165,6 +165,12 @@ namespace HCSearch
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
 		}
+		if (ranker->rankerType() == VW_RANK)
+		{
+			// train
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(ranker);
+			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
+		}
 		else if (ranker->rankerType() == ONLINE_RANK)
 		{
 			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
@@ -244,6 +250,13 @@ namespace HCSearch
 			// train
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
+
+		}
+		if (ranker->rankerType() == VW_RANK)
+		{
+			// train
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(ranker);
+			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
 
 		}
 		else if (ranker->rankerType() == ONLINE_RANK)

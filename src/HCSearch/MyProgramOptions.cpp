@@ -186,6 +186,8 @@ namespace MyProgramOptions
 						po.rankLearnerType = HCSearch::SVM_RANK;
 					else if (strcmp(argv[i+1], "online") == 0)
 						po.rankLearnerType = HCSearch::ONLINE_RANK;
+					else if (strcmp(argv[i+1], "vw") == 0)
+						po.rankLearnerType = HCSearch::VW_RANK;
 				}
 			}
 			else if (strcmp(argv[i], "--search") == 0)
