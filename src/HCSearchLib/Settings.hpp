@@ -18,7 +18,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	enum RankerType { SVM_RANK, ONLINE_RANK };
+	enum RankerType { SVM_RANK, ONLINE_RANK, VW_RANK };
 	const extern string RankerTypeStrings[];
 	const extern bool RankerTypeSaveable[];
 

@@ -8,8 +8,8 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string RankerTypeStrings[] = {"svm-rank", "online"};
-	const bool RankerTypeSaveable[] = {true, false};
+	const string RankerTypeStrings[] = {"svm-rank", "online", "vw"};
+	const bool RankerTypeSaveable[] = {true, false, true};
 
 	/**************** Class Map ****************/
 
