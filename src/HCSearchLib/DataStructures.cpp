@@ -642,6 +642,281 @@ namespace HCSearch
 		return currentQID;
 	}
 
+	/**************** Vowpal Wabbit Model ****************/
+
+	VWRankModel::VWRankModel()
+	{
+		this->initialized = false;
+		this->learningMode = false;
+	}
+
+	VWRankModel::VWRankModel(string fileName)
+	{
+		load(fileName);
+	}
+	
+	double VWRankModel::rank(RankFeatures features)
+	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "VW ranker not initialized for ranking";
+			abort();
+		}
+
+		return vectorDot(getWeights(), features.data);
+	}
+
+	RankerType VWRankModel::rankerType()
+	{
+		return VW_RANK;
+	}
+
+	void VWRankModel::load(string fileName)
+	{
+		if (!MyFileSystem::FileSystem::checkFileExists(fileName))
+		{
+			LOG(WARNING) << "VW model file does not exist for loading! Ignoring load function...";
+			return;
+		}
+
+		this->modelFileName = fileName;
+		this->weights = parseModelFile(fileName);
+		this->initialized = true;
+	}
+
+	void VWRankModel::save(string fileName)
+	{
+		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
+		//writeModelFile(fileName, this->weights);
+	}
+	
+	VectorXd VWRankModel::getWeights()
+	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "VW ranker not initialized for getting weights";
+			abort();
+		}
+
+		return this->weights;
+	}
+
+	void VWRankModel::startTraining(string featuresFileName)
+	{
+		this->learningMode = true;
+		this->rankingFile = new ofstream(featuresFileName.c_str());
+		this->rankingFileName = featuresFileName;
+	}
+
+	void VWRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses)
+	{
+		int betterSetSize = betterSet.size();
+		int worseSetSize = worseSet.size();
+
+		LOG() << "Training with " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
+
+		//// Prune examples for efficiency vs. accuracy trade-off
+		//if (Global::settings->PRUNE_SVM_RANK_EXAMPLES)
+		//{
+		//	// prune best set
+		//	if (betterSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+		//	{
+		//		int newBetterSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * betterSetSize);
+		//		if (newBetterSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+		//			newBetterSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
+		//		if (newBetterSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
+		//			newBetterSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
+
+		//		random_shuffle(betterSet.begin(), betterSet.end());
+		//		for (int i = 0; i < betterSetSize - newBetterSize; i++)
+		//			betterSet.pop_back();
+
+		//		betterSetSize = betterSet.size();
+		//	}
+
+		//	// prune worst set
+		//	if (worseSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+		//	{
+		//		int newWorseSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * worseSetSize);
+		//		if (newWorseSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
+		//			newWorseSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
+		//		if (newWorseSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
+		//			newWorseSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
+
+		//		random_shuffle(worseSet.begin(), worseSet.end());
+		//		for (int i = 0; i < worseSetSize - newWorseSize; i++)
+		//			worseSet.pop_back();
+
+		//		worseSetSize = worseSet.size();
+		//	}
+
+		//	LOG() << "\tPruned to " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
+		//}
+
+		// good examples
+		for (int i = 0; i < betterSetSize; i++)
+		{
+			RankFeatures better = betterSet[i];
+			double betterLoss = betterLosses[i];
+
+			// bad examples
+			for (int j = 0; j < worseSetSize; j++)
+			{
+				RankFeatures worse = worseSet[j];
+				double worseLoss = worstLosses[j];
+
+				double loss = betterLoss - worseLoss;
+				(*this->rankingFile) << vector2vwformat(better, worse, loss) << endl;
+			}
+		}
+	}
+
+	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
+	{
+		//TODO
+		cancelTraining();
+	}
+
+	void VWRankModel::cancelTraining()
+	{
+		// close ranking file
+		this->rankingFile->close();
+		delete this->rankingFile;
+
+		// no longer learning
+		this->learningMode = false;
+	}
+
+	VectorXd VWRankModel::parseModelFile(string fileName)
+	{
+		VectorXd weights;
+		//TODO
+		return weights;
+	}
+
+	string VWRankModel::vector2vwformat(RankFeatures bestfeature, RankFeatures worstfeature, double loss)
+	{
+		stringstream ss("");
+		stringstream sparse("");
+
+		int label = -1;
+		VectorXd vector = worstfeature.data - bestfeature.data;
+		if (Rand::unifDist() < 0.5)
+		{
+			label = 1;
+			vector = bestfeature.data - worstfeature.data;
+		}
+
+		int nonZeroCounts = 0;
+		for (int i = 0; i < vector.size(); i++)
+		{
+			if (vector(i) != 0)
+			{
+				ss << i+1 << ":" << vector(i) << " ";
+				nonZeroCounts++;
+			}
+		}
+		sparse << label << " " << loss << " | " << ss.str();
+
+		return sparse.str();
+	}
+
+	void VWRankModel::writeModelFile(string fileName, const VectorXd& weights)
+	{
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			// write num to file
+			fh << "VW - generated from HC-Search" << endl;
+
+			// jump to line 12
+			for (int i = 0; i < 10; i++)
+				fh << "#" << endl;
+
+			// write weights to file
+			fh << "1 ";
+			const int weightsLength = weights.size();
+			for (int i = 0; i < weightsLength; i++)
+			{
+				double val = weights(i);
+				if (val != 0)
+				{
+					int ind = i+1;
+					fh << ind << ":" << val << " ";
+				}
+			}
+			fh << endl;
+
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open VW model file for writing weights!!";
+			abort();
+		}
+	}
+
+	void VWRankModel::mergeRankingFiles(string fileNameBase, int numProcesses)
+	{
+		string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, 0);
+		LOG() << "Merging to main feature file: " << FEATURES_FILE << endl;
+
+		ofstream ofh;
+		ofh.open(FEATURES_FILE.c_str(), std::ios_base::app);
+
+		if (ofh.is_open())
+		{
+			//ofh << endl; // add extra line
+			for (int i = 1; i < numProcesses; i++)
+			{
+				// open file from process i
+				FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, i);
+
+				if (!MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE))
+				{
+					continue;
+				}
+
+				ifstream fh;
+				fh.open(FEATURES_FILE.c_str());
+
+				string line;
+				if (fh.is_open())
+				{
+					// loop over lines in file from process i
+					// and append to the master file
+					while (fh.good())
+					{
+						// get line and split into parts
+						getline(fh, line);
+						if (line.empty())
+							continue;
+
+						ofh << line << endl;
+					}
+
+					fh.close();
+
+					// delete the slave feature file
+					ostringstream ossRemoveRankingFeatureCmd;
+					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
+						<< " " << FEATURES_FILE;
+					MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
+				}
+				else
+				{
+					LOG(ERROR) << "master process could not open ranking file from a process: " << i;
+				}
+			}
+
+			ofh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "master process could not open ranking file!";
+		}
+	}
+
 	/**************** Online Rank Model ****************/
 
 	OnlineRankModel::OnlineRankModel()

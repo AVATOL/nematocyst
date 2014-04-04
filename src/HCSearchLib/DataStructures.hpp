@@ -456,6 +456,109 @@ namespace HCSearch
 		static int mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID);
 	};
 
+	/**************** Vowpal Wabbit Model ****************/
+
+	/*!
+	 * @brief Rank model for Vowpal Wabbit.
+	 * 
+	 * Has methods to learn weights from training examples and ranking.
+	 */
+	class VWRankModel : public IRankModel
+	{
+	private:
+		/*!
+		 * Rank weights
+		 */
+		VectorXd weights;
+
+		/*!
+		 * Output stream to training file for learning
+		 */
+		ofstream* rankingFile;
+
+		/*!
+		 * Training file name
+		 */
+		string rankingFileName;
+
+		/*!
+		 * Model file name
+		 */
+		string modelFileName;
+
+		/*!
+		 * True if currently used for learning
+		 */
+		bool learningMode;
+
+	public:
+		VWRankModel();
+
+		/*!
+		 * Construct with weights from model file.
+		 */
+		VWRankModel(string fileName);
+		
+		virtual double rank(RankFeatures features);
+		virtual RankerType rankerType();
+		virtual void load(string fileName);
+		virtual void save(string fileName);
+
+		/*!
+		 * Get weights.
+		 */
+		VectorXd getWeights();
+
+		/*!
+		 * Initialize learning.
+		 */
+		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training examples.
+		 */
+		void addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses);
+
+		/*!
+		 * End learning.
+		 *
+		 * Calls SVM Rank program to train on examples and produce model.
+		 */
+		void finishTraining(string modelFileName, SearchType searchType);
+
+		/*!
+		 * Cancel learning. Closes training file.
+		 */
+		void cancelTraining();
+
+	private:
+		/*!
+		 * Load weights from file. 
+		 * File format is the SVM-Rank model file 
+		 * (weights are on the 12th line).
+		 */
+		static VectorXd parseModelFile(string fileName);
+
+		/*!
+		 * Convert vector difference to VW format line.
+		 */
+		static string vector2vwformat(RankFeatures bestfeature, RankFeatures worstfeature, double loss);
+
+		/*!
+		 * Write weights to file.
+		 * 
+		 * File format:
+		 *     ...
+		 *	   line 12: 1:val 2:val ...
+		 */
+		static void writeModelFile(string fileName, const VectorXd& weights);
+
+		/*!
+		 * Merge feature files when using MPI.
+		 */
+		static void mergeRankingFiles(string fileNameBase, int numProcesses);
+	};
+
 	/**************** Online Rank Model ****************/
 
 	/*!
