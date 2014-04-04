@@ -257,7 +257,10 @@ namespace HCSearch
 		int worseSetSize = worseSet.size();
 
 		if (betterSetSize == 0 || worseSetSize == 0)
+		{
+			LOG() << "Got " << betterSetSize << " best examples and " << worseSetSize << " worst examples for training. Skipping training..." << endl;
 			return;
+		}
 
 		LOG() << "Training with " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
 
