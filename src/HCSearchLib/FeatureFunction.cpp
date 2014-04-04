@@ -919,17 +919,14 @@ namespace HCSearch
 			abort();
 		}
 
-		int numNodes = X.getNumNodes();
-		int featureDim = X.getFeatureDim();
 		int numClasses = Global::settings->CLASSES.numClasses();
-		int numPairs = (numClasses*(numClasses+1))/2;
+		int numMutexPairs = (numClasses*(numClasses+1))/2;
 
-		int unaryFeatDim = 1;
-		int pairwiseFeatDim = 4;
+		int mutexFeatDim = 4;
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		VectorXd mutexTerm = computeMutexTerm(X, Y, action);
-		phi.segment(0, numPairs*pairwiseFeatDim) = mutexTerm;
+		phi.segment(0, numMutexPairs*mutexFeatDim) = mutexTerm;
 
 		return RankFeatures(phi);
 	}
@@ -937,20 +934,20 @@ namespace HCSearch
 	int StandardPruneFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numClasses = Global::settings->CLASSES.numClasses();
-		int numPairs = (numClasses*(numClasses+1))/2;
-		int pairwiseFeatDim = 4;
+		int numMutexPairs = (numClasses*(numClasses+1))/2;
+		int mutexFeatDim = 4;
 
-		return numPairs*pairwiseFeatDim;
+		return numMutexPairs*mutexFeatDim;
 	}
 
 	VectorXd StandardPruneFeatures::computeMutexTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		const int numNodes = X.getNumNodes();
 		const int numClasses = Global::settings->CLASSES.numClasses();
-		const int pairwiseFeatDim = 4;
-		const int numPairs = (numClasses*(numClasses+1))/2;
+		const int mutexFeatDim = 4;
+		const int numMutexPairs = (numClasses*(numClasses+1))/2;
 		
-		VectorXd phi = VectorXd::Zero(numPairs*pairwiseFeatDim);
+		VectorXd phi = VectorXd::Zero(numMutexPairs*mutexFeatDim);
 
 		int numEdges = 0;
 		//for (int node1 = 0; node1 < numNodes; node1++)
@@ -981,10 +978,10 @@ namespace HCSearch
 					nodeLocationX1, nodeLocationY1, nodeLocationX2, nodeLocationY2, 
 					nodeLabel1, nodeLabel2, classIndex);
 
-				for (int i = 0; i < pairwiseFeatDim; i++)
+				for (int i = 0; i < mutexFeatDim; i++)
 				{
 					if (edgeFeatureVector(i) != 0)
-						phi(classIndex*pairwiseFeatDim + i) = edgeFeatureVector(i);
+						phi(classIndex*mutexFeatDim + i) = edgeFeatureVector(i);
 				}
 			}
 		}
