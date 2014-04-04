@@ -785,7 +785,87 @@ namespace HCSearch
 
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		//TODO
+
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
+		{
+			LOG(ERROR) << "invalid search type for training.";
+			abort();
+		}
+
+		//// close ranking file
+		//this->rankingFile->close();
+		//delete this->rankingFile;
+
+#ifdef USE_MPI
+		string STARTMSG;
+		string ENDMSG;
+		string featuresFileBase;
+		if (searchType == LEARN_H)
+		{
+			STARTMSG = "MERGEHSTART";
+			ENDMSG = "MERGEHEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C)
+		{
+			STARTMSG = "MERGECSTART";
+			ENDMSG = "MERGECEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_ORACLE_H)
+		{
+			STARTMSG = "MERGECOHSTART";
+			ENDMSG = "MERGECOHEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_RANDOM_H)
+		{
+			STARTMSG = "MERGECRHSTART";
+			ENDMSG = "MERGECRHEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_DECOMPOSED)
+		{
+			STARTMSG = "MERGEDSTART";
+			ENDMSG = "MERGEDEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
+		}
+
+		MPI::Synchronize::masterWait(STARTMSG);
+
+		// merge step
+		if (Global::settings->RANK == 0)
+		{
+			mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES);
+		}
+#endif
+
+		//if (Global::settings->RANK == 0)
+		//{
+		//	clock_t tic = clock();
+
+		//	// call VW
+		//	//TODO
+
+		//	clock_t toc = clock();
+		//	LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		//}
+
+#ifdef USE_MPI
+		MPI::Synchronize::slavesWait(ENDMSG);
+#endif
+
+		//// no longer learning
+		//this->learningMode = false;
+
+		//// load weights into model and initialize
+		//if (Global::settings->RANK == 0)
+		//{
+		//	load(modelFileName);
+		//}
+
+		//LOG() << endl;
+
 		cancelTraining();
 	}
 
