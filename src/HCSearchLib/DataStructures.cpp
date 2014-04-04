@@ -799,12 +799,17 @@ namespace HCSearch
 		stringstream ss("");
 		stringstream sparse("");
 
-		int label = -1;
-		VectorXd vector = worstfeature.data - bestfeature.data;
+		int label;
+		VectorXd vector;
 		if (Rand::unifDist() < 0.5)
 		{
 			label = 1;
 			vector = bestfeature.data - worstfeature.data;
+		}
+		else
+		{
+			label = -1;
+			vector = worstfeature.data - bestfeature.data;
 		}
 
 		int nonZeroCounts = 0;
