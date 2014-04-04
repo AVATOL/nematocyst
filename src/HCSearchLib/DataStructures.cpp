@@ -777,7 +777,7 @@ namespace HCSearch
 				RankFeatures worse = worseSet[j];
 				double worseLoss = worstLosses[j];
 
-				double loss = betterLoss - worseLoss;
+				double loss = abs(betterLoss - worseLoss);
 				(*this->rankingFile) << vector2vwformat(better, worse, loss) << endl;
 			}
 		}
