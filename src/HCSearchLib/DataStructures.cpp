@@ -801,8 +801,62 @@ namespace HCSearch
 
 	VectorXd VWRankModel::parseModelFile(string fileName)
 	{
+		string line;
 		VectorXd weights;
-		//TODO
+		vector<int> indices;
+		vector<double> values;
+
+		ifstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			int lineNum = 0;
+			while (fh.good())
+			{
+				lineNum++;
+				getline(fh, line);
+				if (lineNum < 13)
+					continue;
+
+				istringstream iss(line);
+				string token;
+				getline(iss, token, ' ');
+				if (token.find(':') == std::string::npos)
+					continue;
+
+				istringstream isstoken(token);
+				string sIndex;
+				string sValue;
+				getline(isstoken, sIndex, ':');
+				getline(isstoken, sValue, ':');
+
+				int index = atoi(sIndex.c_str());
+				double value = atof(sValue.c_str());
+
+				indices.push_back(index);
+				values.push_back(value);
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open model file for reading weights!!";
+			abort();
+		}
+
+		int valuesSize = values.size();
+		if (valuesSize == 0)
+		{
+			LOG(ERROR) << "found empty weights from '" + fileName + "'!";
+			abort();
+		}
+		weights = VectorXd::Zero(indices.back());
+
+		for (int i = 0; i < valuesSize; i++)
+		{
+			int ind = indices[i]-1;
+			weights(ind) = values[i];
+		}
+
 		return weights;
 	}
 
