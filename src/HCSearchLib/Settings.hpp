@@ -104,6 +104,7 @@ namespace HCSearch
 		string LIBLINEAR_DIR;
 		string LIBSVM_DIR;
 		string SVMRANK_DIR;
+		string VOWPALWABBIT_DIR;
 
 		// input directories
 
@@ -201,6 +202,8 @@ namespace HCSearch
 		
 		string LIBSVM_PREDICT_CMD;
 		string LIBSVM_TRAIN_CMD;
+
+		string VOWPALWABBIT_TRAIN_CMD;
 
 		string SVMRANK_LEARN_CMD;
 
