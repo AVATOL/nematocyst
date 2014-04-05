@@ -8,8 +8,8 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string RankerTypeStrings[] = {"svm-rank", "online"};
-	const bool RankerTypeSaveable[] = {true, false};
+	const string RankerTypeStrings[] = {"svm-rank", "online", "vw"};
+	const bool RankerTypeSaveable[] = {true, false, true};
 
 	/**************** Class Map ****************/
 
@@ -191,6 +191,7 @@ namespace HCSearch
 		LIBLINEAR_DIR = EXTERNAL_DIR + "liblinear" + DIR_SEP;
 		LIBSVM_DIR = EXTERNAL_DIR + "libsvm" + DIR_SEP;
 		SVMRANK_DIR = EXTERNAL_DIR + "svm_rank" + DIR_SEP;
+		VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP;
 
 		// input directories
 
@@ -325,6 +326,8 @@ namespace HCSearch
 		LIBSVM_PREDICT_CMD = paths->LIBSVM_DIR + "windows" + paths->DIR_SEP + "svm-predict";
 		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "windows" + paths->DIR_SEP + "svm-train";
 
+		VOWPALWABBIT_TRAIN_CMD = paths->VOWPALWABBIT_DIR + "vw";
+
 		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
 #else
 		SYSTEM_COPY_CMD = "cp";
@@ -336,6 +339,8 @@ namespace HCSearch
 	
 		LIBSVM_PREDICT_CMD = paths->LIBSVM_DIR + "svm-predict";
 		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "svm-train";
+
+		VOWPALWABBIT_TRAIN_CMD = paths->VOWPALWABBIT_DIR + "vw";
 
 		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
 #endif

@@ -621,6 +621,12 @@ namespace HCSearch
 			model->load(fileName);
 			return model;
 		}
+		else if (rankerType == VW_RANK)
+		{
+			VWRankModel* model = new VWRankModel();
+			model->load(fileName);
+			return model;
+		}
 		else
 		{
 			LOG(ERROR) << "ranker type is invalid for loading model";
@@ -719,6 +725,11 @@ namespace HCSearch
 		if (rankerType == SVM_RANK)
 		{
 			SVMRankModel* modelCast = dynamic_cast<SVMRankModel*>(model);
+			modelCast->save(fileName);
+		}
+		else if (rankerType == VW_RANK)
+		{
+			VWRankModel* modelCast = dynamic_cast<VWRankModel*>(model);
 			modelCast->save(fileName);
 		}
 		else if (rankerType == ONLINE_RANK)
@@ -1138,6 +1149,26 @@ namespace HCSearch
 			learningModel = new OnlineRankModel();
 			// at this point, it is still not initialized!
 		}
+		else if (rankerType == VW_RANK)
+		{
+			learningModel = new VWRankModel();
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			else if (searchType == LEARN_DECOMPOSED)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
 		else
 		{
 			LOG(ERROR) << "unsupported rank learner.";
@@ -1249,6 +1280,25 @@ namespace HCSearch
 		MPI::Synchronize::slavesWait(ENDMSG);
 #endif
 		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_RANDOM_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_DECOMPOSED)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE, searchType);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
 		else
 		{
 			LOG(ERROR) << "unsupported rank learner.";
@@ -1298,6 +1348,13 @@ namespace HCSearch
 			// train
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
+
+		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			// train
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
 
 		}
 		else if (learningModel->rankerType() == ONLINE_RANK)
