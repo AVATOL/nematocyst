@@ -754,9 +754,9 @@ namespace HCSearch
 			abort();
 		}
 
-		//// close ranking file
-		//this->rankingFile->close();
-		//delete this->rankingFile;
+		// close ranking file
+		this->rankingFile->close();
+		delete this->rankingFile;
 
 #ifdef USE_MPI
 		string STARTMSG;
@@ -802,33 +802,34 @@ namespace HCSearch
 		}
 #endif
 
-		//if (Global::settings->RANK == 0)
-		//{
-		//	clock_t tic = clock();
+		if (Global::settings->RANK == 0)
+		{
+			clock_t tic = clock();
 
-		//	// call VW
-		//	//TODO
+			// call VW
+			stringstream ssLearn;
+			ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+				<< " --passes 100 -c --noconstant --readable_model " << modelFileName;
+			MyFileSystem::Executable::executeRetries(ssLearn.str());
 
-		//	clock_t toc = clock();
-		//	LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
-		//}
+			clock_t toc = clock();
+			LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		}
 
 #ifdef USE_MPI
 		MPI::Synchronize::slavesWait(ENDMSG);
 #endif
 
-		//// no longer learning
-		//this->learningMode = false;
+		// no longer learning
+		this->learningMode = false;
 
-		//// load weights into model and initialize
-		//if (Global::settings->RANK == 0)
-		//{
-		//	load(modelFileName);
-		//}
+		// load weights into model and initialize
+		if (Global::settings->RANK == 0)
+		{
+			load(modelFileName);
+		}
 
-		//LOG() << endl;
-
-		cancelTraining();
+		LOG() << endl;
 	}
 
 	void VWRankModel::cancelTraining()
