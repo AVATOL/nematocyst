@@ -229,7 +229,6 @@ namespace HCSearch
 	void SVMRankModel::save(string fileName)
 	{
 		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
-		//writeModelFile(fileName, this->weights);
 	}
 	
 	VectorXd SVMRankModel::getWeights()
@@ -693,7 +692,6 @@ namespace HCSearch
 	void VWRankModel::save(string fileName)
 	{
 		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
-		//writeModelFile(fileName, this->weights);
 	}
 	
 	VectorXd VWRankModel::getWeights()
@@ -809,7 +807,7 @@ namespace HCSearch
 			// call VW
 			stringstream ssLearn;
 			ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-				<< " --passes 100 -c --noconstant --readable_model " << modelFileName;
+				<< " --passes 100 -c --noconstant --save_resume --readable_model " << modelFileName;
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
 
 			clock_t toc = clock();
@@ -857,26 +855,29 @@ namespace HCSearch
 			{
 				lineNum++;
 				getline(fh, line);
-				if (lineNum < 13)
+				if (lineNum < 26)
 					continue;
 
 				istringstream iss(line);
+
 				string token;
-				getline(iss, token, ' ');
-				if (token.find(':') == std::string::npos)
-					continue;
+				while (getline(iss, token, ' '))
+				{
+					if (token.find(':') == std::string::npos)
+						continue;
 
-				istringstream isstoken(token);
-				string sIndex;
-				string sValue;
-				getline(isstoken, sIndex, ':');
-				getline(isstoken, sValue, ':');
+					istringstream isstoken(token);
+					string sIndex;
+					string sValue;
+					getline(isstoken, sIndex, ':');
+					getline(isstoken, sValue, ':');
 
-				int index = atoi(sIndex.c_str());
-				double value = atof(sValue.c_str());
+					int index = atoi(sIndex.c_str());
+					double value = atof(sValue.c_str());
 
-				indices.push_back(index);
-				values.push_back(value);
+					indices.push_back(index);
+					values.push_back(value);
+				}
 			}
 			fh.close();
 		}
@@ -943,8 +944,8 @@ namespace HCSearch
 			// write num to file
 			fh << "VW - generated from HC-Search" << endl;
 
-			// jump to line 13
-			for (int i = 0; i < 11; i++)
+			// jump to line 26
+			for (int i = 0; i < 24; i++)
 				fh << "#" << endl;
 
 			// write weights to file
