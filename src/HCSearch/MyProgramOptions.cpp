@@ -351,8 +351,8 @@ namespace MyProgramOptions
 					//	po.heuristicFeaturesMode = STANDARD_ALT;
 					else if (strcmp(argv[i+1], "standard-conf") == 0)
 						po.heuristicFeaturesMode = STANDARD_CONF;
-					//else if (strcmp(argv[i+1], "dense-crf") == 0)
-					//	po.heuristicFeaturesMode = DENSE_CRF;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.heuristicFeaturesMode = DENSE_CRF;
 					else if (strcmp(argv[i+1], "unary") == 0)
 						po.heuristicFeaturesMode = UNARY;
 					else if (strcmp(argv[i+1], "unary-conf") == 0)
@@ -373,8 +373,8 @@ namespace MyProgramOptions
 					//	po.costFeaturesMode = STANDARD_ALT;
 					else if (strcmp(argv[i+1], "standard-conf") == 0)
 						po.costFeaturesMode = STANDARD_CONF;
-					//else if (strcmp(argv[i+1], "dense-crf") == 0)
-					//	po.costFeaturesMode = DENSE_CRF;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.costFeaturesMode = DENSE_CRF;
 					else if (strcmp(argv[i+1], "unary") == 0)
 						po.costFeaturesMode = UNARY;
 					else if (strcmp(argv[i+1], "unary-conf") == 0)
@@ -440,9 +440,9 @@ namespace MyProgramOptions
 		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
 		cerr << "\t--hfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
-			"standard-pair-counts|standard-conf-pair-counts" << endl;
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--cfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
-			"standard-pair-counts|standard-conf-pair-counts" << endl;
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
