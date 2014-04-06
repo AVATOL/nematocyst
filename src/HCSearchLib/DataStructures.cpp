@@ -1130,7 +1130,7 @@ namespace HCSearch
 			// call VW
 			stringstream ssLearn;
 			ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-				<< " --passes 100 -c --noconstant --save_resume --readable_model " << modelFileName;
+				<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
 
 			clock_t toc = clock();
