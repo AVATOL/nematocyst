@@ -769,6 +769,8 @@ namespace HCSearch
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
+		static void restartLearning(IRankModel* learningModel, SearchType searchType);
+
 		static void finishLearning(IRankModel* learningModel, SearchType searchType);
 
 		static void learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel);

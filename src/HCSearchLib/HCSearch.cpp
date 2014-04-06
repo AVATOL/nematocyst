@@ -674,9 +674,7 @@ namespace HCSearch
 		LOG() << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = NULL;
-		if (rankerType != VW_RANK)
-			learningModel = initializeLearning(rankerType, LEARN_H);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_H);
 
 		// Learn on each training example
 		int start, end;
@@ -689,7 +687,7 @@ namespace HCSearch
 				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				if (rankerType == VW_RANK)
-					learningModel = initializeLearning(rankerType, LEARN_H);
+					restartLearning(learningModel, LEARN_H);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -728,9 +726,7 @@ namespace HCSearch
 		LOG() << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = NULL;
-		if (rankerType != VW_RANK)
-			learningModel = initializeLearning(rankerType, LEARN_C);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C);
 
 		// Learn on each training example
 		int start, end;
@@ -743,7 +739,7 @@ namespace HCSearch
 				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				if (rankerType == VW_RANK)
-					learningModel = initializeLearning(rankerType, LEARN_C);
+					restartLearning(learningModel, LEARN_C);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -782,9 +778,7 @@ namespace HCSearch
 		LOG() << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
-		IRankModel* learningModel = NULL;
-		if (rankerType != VW_RANK)
-			initializeLearning(rankerType, LEARN_C_ORACLE_H);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_ORACLE_H);
 
 		// Learn on each training example
 		int start, end;
@@ -797,7 +791,7 @@ namespace HCSearch
 				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
 				if (rankerType == VW_RANK)
-					initializeLearning(rankerType, LEARN_C_ORACLE_H);
+					restartLearning(learningModel, LEARN_C_ORACLE_H);
 
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
@@ -964,6 +958,57 @@ namespace HCSearch
 		}
 
 		return learningModel;
+	}
+
+	void Learning::restartLearning(IRankModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			else if (searchType == LEARN_DECOMPOSED)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else if (learningModel->rankerType() == ONLINE_RANK)
+		{
+			// at this point, it is still not initialized!
+		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			else if (searchType == LEARN_DECOMPOSED)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
 	}
 
 	void Learning::finishLearning(IRankModel* learningModel, SearchType searchType)
