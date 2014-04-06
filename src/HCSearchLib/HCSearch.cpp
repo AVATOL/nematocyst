@@ -674,7 +674,9 @@ namespace HCSearch
 		LOG() << "Learning the heuristic function..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = initializeLearning(rankerType, LEARN_H);
+		IRankModel* learningModel = NULL;
+		if (rankerType != VW_RANK)
+			learningModel = initializeLearning(rankerType, LEARN_H);
 
 		// Learn on each training example
 		int start, end;
@@ -686,6 +688,9 @@ namespace HCSearch
 			{
 				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					learningModel = initializeLearning(rankerType, LEARN_H);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -695,6 +700,9 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, meta);
 
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_H);
+
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
 					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
@@ -702,7 +710,8 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_H);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -719,7 +728,9 @@ namespace HCSearch
 		LOG() << "Learning the cost function with learned heuristic..." << endl;
 		
 		// Setup model for learning
-		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C);
+		IRankModel* learningModel = NULL;
+		if (rankerType != VW_RANK)
+			learningModel = initializeLearning(rankerType, LEARN_C);
 
 		// Learn on each training example
 		int start, end;
@@ -731,6 +742,9 @@ namespace HCSearch
 			{
 				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					learningModel = initializeLearning(rankerType, LEARN_C);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -740,6 +754,9 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
 
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_C);
+
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
 					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
@@ -747,7 +764,8 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_C);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_C);
 
 		clock_t toc = clock();
 		LOG() << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -764,7 +782,9 @@ namespace HCSearch
 		LOG() << "Learning the cost function with oracle heuristic..." << endl;
 
 		// Setup model for learning
-		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_ORACLE_H);
+		IRankModel* learningModel = NULL;
+		if (rankerType != VW_RANK)
+			initializeLearning(rankerType, LEARN_C_ORACLE_H);
 
 		// Learn on each training example
 		int start, end;
@@ -776,6 +796,9 @@ namespace HCSearch
 			{
 				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					initializeLearning(rankerType, LEARN_C_ORACLE_H);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -785,6 +808,9 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
 
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_C_ORACLE_H);
+
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
 					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
@@ -792,7 +818,8 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_C_ORACLE_H);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
