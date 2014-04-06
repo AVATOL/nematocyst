@@ -567,6 +567,9 @@ namespace HCSearch
 
 	void SVMRankModel::startTraining(string featuresFileName)
 	{
+		if (this->learningMode == true)
+			cancelTraining();
+
 		this->learningMode = true;
 		this->qid = 1;
 		this->rankingFile = new ofstream(featuresFileName.c_str());
@@ -1030,6 +1033,9 @@ namespace HCSearch
 
 	void VWRankModel::startTraining(string featuresFileName)
 	{
+		if (this->learningMode == true)
+			cancelTraining();
+
 		this->learningMode = true;
 		this->rankingFile = new ofstream(featuresFileName.c_str());
 		this->rankingFileName = featuresFileName;

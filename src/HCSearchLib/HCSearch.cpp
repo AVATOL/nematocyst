@@ -793,6 +793,9 @@ namespace HCSearch
 			{
 				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_H);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -802,6 +805,9 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, NULL, meta);
 
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_H);
+
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
 					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
@@ -809,7 +815,8 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_H);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -838,6 +845,9 @@ namespace HCSearch
 			{
 				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_C);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -847,6 +857,9 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
 
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_C);
+
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
 					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
@@ -854,7 +867,8 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_C);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_C);
 
 		clock_t toc = clock();
 		LOG() << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -883,6 +897,9 @@ namespace HCSearch
 			{
 				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_C_ORACLE_H);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -892,6 +909,9 @@ namespace HCSearch
 				// run search
 				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, NULL, meta);
 
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_C_ORACLE_H);
+
 				// save online weights progress in case
 				if (learningModel->rankerType() == ONLINE_RANK)
 					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
@@ -899,7 +919,8 @@ namespace HCSearch
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_C_ORACLE_H);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -1202,6 +1223,57 @@ namespace HCSearch
 		}
 
 		return learningModel;
+	}
+
+	void Learning::restartLearning(IRankModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			else if (searchType == LEARN_DECOMPOSED)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else if (learningModel->rankerType() == ONLINE_RANK)
+		{
+			// at this point, it is still not initialized!
+		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_RANDOM_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
+			else if (searchType == LEARN_DECOMPOSED)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
 	}
 
 	void Learning::finishLearning(IRankModel* learningModel, SearchType searchType)

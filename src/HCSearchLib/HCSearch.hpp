@@ -800,6 +800,8 @@ namespace HCSearch
 
 		static IClassifierModel* initializeLearning(ClassifierType classifierType, SearchType searchType);
 
+		static void restartLearning(IRankModel* learningModel, SearchType searchType);
+
 		static void finishLearning(IRankModel* learningModel, SearchType searchType);
 
 		static void finishLearning(IClassifierModel* learningModel, SearchType searchType);
