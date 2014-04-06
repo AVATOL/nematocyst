@@ -1150,6 +1150,9 @@ namespace HCSearch
 			load(modelFileName);
 		}
 
+		// delete cache file
+		MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+
 		LOG() << endl;
 	}
 
