@@ -1127,10 +1127,29 @@ namespace HCSearch
 		{
 			clock_t tic = clock();
 
+			// just in case, delete cache file if present
+			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+			{
+				// delete cache file
+				MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+			}
+
 			// call VW
 			stringstream ssLearn;
-			ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-				<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+
+			// load previous model if exists
+			if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
+			{
+				ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+					<< " -i " << modelFileName << ".model"
+					<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+			}
+			else
+			{
+				ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+					<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+			}
+			
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
 
 			clock_t toc = clock();
@@ -1148,10 +1167,10 @@ namespace HCSearch
 		if (Global::settings->RANK == 0)
 		{
 			load(modelFileName);
-		}
 
-		// delete cache file
-		MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+			// delete cache file
+			MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+		}
 
 		LOG() << endl;
 	}
