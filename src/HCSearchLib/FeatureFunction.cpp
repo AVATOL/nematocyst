@@ -913,20 +913,30 @@ namespace HCSearch
 
 	RankFeatures StandardPruneFeatures::computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
-		if (!this->initialized)
-		{
-			LOG(ERROR) << "mutex struct not initialized in features";
-			abort();
-		}
+		//if (!this->initialized)
+		//{
+		//	LOG(ERROR) << "mutex struct not initialized in features";
+		//	abort();
+		//}
+
+		//int numClasses = Global::settings->CLASSES.numClasses();
+		//int numMutexPairs = (numClasses*(numClasses+1))/2;
+
+		//int mutexFeatDim = 4;
+
+		//VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
+		//VectorXd mutexTerm = computeMutexTerm(X, Y, action);
+		//phi.segment(0, numMutexPairs*mutexFeatDim) = mutexTerm;
 
 		int numClasses = Global::settings->CLASSES.numClasses();
-		int numMutexPairs = (numClasses*(numClasses+1))/2;
-
-		int mutexFeatDim = 4;
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
-		VectorXd mutexTerm = computeMutexTerm(X, Y, action);
-		phi.segment(0, numMutexPairs*mutexFeatDim) = mutexTerm;
+		VectorXd holeTerm = computeHoleTerm(X, Y, action);
+		VectorXd mutexTerm = computeMutexTermManually(X, Y, action);
+		VectorXd spatialEntropyTerm = computeSpatialEntropyTerm(X, Y, action);
+		phi.segment(0, 1) = holeTerm;
+		phi.segment(1, 8) = mutexTerm;
+		phi.segment(9, numClasses*2) = spatialEntropyTerm;
 
 		return RankFeatures(phi);
 	}
@@ -934,10 +944,11 @@ namespace HCSearch
 	int StandardPruneFeatures::featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		int numClasses = Global::settings->CLASSES.numClasses();
-		int numMutexPairs = (numClasses*(numClasses+1))/2;
-		int mutexFeatDim = 4;
+		//int numMutexPairs = (numClasses*(numClasses+1))/2;
+		//int mutexFeatDim = 4;
 
-		return numMutexPairs*mutexFeatDim;
+		//return numMutexPairs*mutexFeatDim;
+		return 1 + 8 + 2*numClasses;
 	}
 
 	VectorXd StandardPruneFeatures::computeHoleTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
