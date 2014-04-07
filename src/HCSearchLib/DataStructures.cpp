@@ -531,6 +531,23 @@ namespace HCSearch
 		return vectorDot(getWeights(), features.data);
 	}
 
+	vector<double> SVMRankModel::rank(vector<RankFeatures> featuresList)
+	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "svm ranker not initialized for ranking";
+			abort();
+		}
+
+		int numExamples = featuresList.size();
+		vector<double> ranks;
+		for (int i = 0; i < numExamples; i++)
+		{
+			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+		}
+		return ranks;
+	}
+
 	RankerType SVMRankModel::rankerType()
 	{
 		return SVM_RANK;
@@ -997,6 +1014,23 @@ namespace HCSearch
 		return vectorDot(getWeights(), features.data);
 	}
 
+	vector<double> VWRankModel::rank(vector<RankFeatures> featuresList)
+	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "VW ranker not initialized for ranking";
+			abort();
+		}
+
+		int numExamples = featuresList.size();
+		vector<double> ranks;
+		for (int i = 0; i < numExamples; i++)
+		{
+			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+		}
+		return ranks;
+	}
+
 	RankerType VWRankModel::rankerType()
 	{
 		return VW_RANK;
@@ -1404,6 +1438,26 @@ namespace HCSearch
 		}
 
 		return vectorDot(getAvgWeights(), features.data);
+	}
+
+	vector<double> OnlineRankModel::rank(vector<RankFeatures> featuresList)
+	{
+		if (!initialized)
+		{
+			LOG() << "Initializing online rank weights..." << endl;
+			if (!featuresList.empty())
+				initialize(featuresList[0].data.size());
+			else
+				abort();
+		}
+
+		int numExamples = featuresList.size();
+		vector<double> ranks;
+		for (int i = 0; i < numExamples; i++)
+		{
+			ranks.push_back(vectorDot(getAvgWeights(), featuresList[i].data));
+		}
+		return ranks;
 	}
 
 	RankerType OnlineRankModel::rankerType()

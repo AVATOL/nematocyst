@@ -483,6 +483,13 @@ namespace HCSearch
 		virtual double rank(RankFeatures features)=0;
 
 		/*!
+		 * Use the model to rank a list of features.
+		 * @param[in] featuresList List of features for ranking
+		 * @return Returns the list of ranking values of the features
+		 */
+		virtual vector<double> rank(vector<RankFeatures> featuresList)=0;
+
+		/*!
 		 * Get the ranker type.
 		 */
 		virtual RankerType rankerType()=0;
@@ -567,6 +574,7 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
@@ -670,6 +678,7 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
@@ -764,6 +773,7 @@ namespace HCSearch
 
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
