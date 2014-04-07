@@ -335,7 +335,7 @@ namespace HCSearch
 
 	ImgLabeling IBasicSearchProcedure::performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
-	IClassifierModel* pruneModel, SearchMetadata searchMetadata)
+	IRankModel* pruneModel, SearchMetadata searchMetadata)
 	{
 		clock_t tic = clock();
 
@@ -516,7 +516,7 @@ namespace HCSearch
 	}
 
 	ISearchProcedure::SearchNodeHeuristicPQ BreadthFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-		IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)
 	{
 		SearchNodeHeuristicPQ candidateSet;
 		
@@ -631,7 +631,7 @@ namespace HCSearch
 	}
 
 	ISearchProcedure::SearchNodeHeuristicPQ BestFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-		IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)
 	{
 		SearchNodeHeuristicPQ candidateSet;
 		
@@ -705,6 +705,124 @@ namespace HCSearch
 		{
 			ImgCandidate YCandidate = *it;
 			ImgLabeling YCandPred = YCandidate.labeling;
+			switch (getType())
+			{
+			case LEARN_PRUNE: // shouldn't reach this case
+				LOG(DEBUG) << "LEARN_PRUNE reached";
+			case LL:
+				{
+					LLSearchNode* successor = new LLSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case HL:
+				{
+					HLSearchNode* successor = new HLSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case LC:
+				{
+					LCSearchNode* successor = new LCSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case HC:
+				{
+					HCSearchNode* successor = new HCSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case RL:
+				{
+					RLSearchNode* successor = new RLSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case RC:
+				{
+					RCSearchNode* successor = new RCSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case LEARN_H:
+				{
+					LearnHSearchNode* successor = new LearnHSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case LEARN_C:
+				{
+					LearnCSearchNode* successor = new LearnCSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case LEARN_C_ORACLE_H:
+				{
+					LearnCOracleHSearchNode* successor = new LearnCOracleHSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			case LEARN_C_RANDOM_H:
+				{
+					LearnCRandomHSearchNode* successor = new LearnCRandomHSearchNode(this, YCandPred);
+					successors.push_back(successor);
+				}
+				break;
+			default:
+				LOG(ERROR) << "not a valid search type for generating successor";
+			}
+		}
+		return successors;
+	}
+
+	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
+		ImgLabeling* YTruth)
+	{
+		vector< ISearchNode* > successors;
+
+		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
+		RankFeatures prevPruneFeatures = this->searchSpace->computePruneFeatures(*this->X, *YTruth, set<int>());
+
+		// generate successors
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
+
+		// collect training examples
+		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+		{
+			ImgCandidate YCandidate = *it;
+			ImgLabeling YCandPred = YCandidate.labeling;
+			
+			// collect training examples
+			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+			set<int> action = YCandidate.action;
+			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+
+			if (learningModel->rankerType() == SVM_RANK)
+			{
+				SVMRankModel* svmModel = dynamic_cast<SVMRankModel*>(learningModel);
+				if (candLoss <= prevLoss)
+					svmModel->addTrainingExample(pruneFeatures, prevPruneFeatures);
+				else
+					svmModel->addTrainingExample(prevPruneFeatures, pruneFeatures);
+
+			}
+			else if (learningModel->rankerType() == VW_RANK)
+			{
+				VWRankModel* vwModel = dynamic_cast<VWRankModel*>(learningModel);
+				if (candLoss <= prevLoss)
+					vwModel->addTrainingExample(pruneFeatures, prevPruneFeatures, candLoss, prevLoss);
+				else
+					vwModel->addTrainingExample(prevPruneFeatures, pruneFeatures, prevLoss, candLoss);
+
+			}
+			else
+			{
+				LOG(ERROR) << "unknown classifier for prune training positive example";
+				abort();
+			}
+
+			// generate examples
 			switch (getType())
 			{
 			case LEARN_PRUNE: // shouldn't reach this case

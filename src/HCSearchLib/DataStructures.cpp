@@ -593,6 +593,16 @@ namespace HCSearch
 		this->rankingFileName = featuresFileName;
 	}
 
+	void SVMRankModel::addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature)
+	{
+		vector<RankFeatures> better;
+		better.push_back(betterFeature);
+		vector<RankFeatures> worse;
+		worse.push_back(worseFeature);
+		
+		addTrainingExamples(better, worse);
+	}
+
 	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
 	{
 		int betterSetSize = betterSet.size();
@@ -1073,6 +1083,20 @@ namespace HCSearch
 		this->learningMode = true;
 		this->rankingFile = new ofstream(featuresFileName.c_str());
 		this->rankingFileName = featuresFileName;
+	}
+
+	void VWRankModel::addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature, double betterLoss, double worstLoss)
+	{
+		vector<RankFeatures> better;
+		better.push_back(betterFeature);
+		vector<RankFeatures> worse;
+		worse.push_back(worseFeature);
+		vector<double> betterLosses;
+		betterLosses.push_back(betterLoss);
+		vector<double> worstLosses;
+		worstLosses.push_back(worstLoss);
+		
+		addTrainingExamples(better, worse, betterLosses, worstLosses);
 	}
 
 	void VWRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses)

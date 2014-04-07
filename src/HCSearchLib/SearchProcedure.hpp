@@ -97,7 +97,7 @@ namespace HCSearch
 		 */
 		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
-			IClassifierModel* pruneModel, SearchMetadata searchMetadata)=0;
+			IRankModel* pruneModel, SearchMetadata searchMetadata)=0;
 
 	protected:
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
@@ -115,7 +115,7 @@ namespace HCSearch
 	public:
 		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
 			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
-			IClassifierModel* pruneModel, SearchMetadata searchMetadata);
+			IRankModel* pruneModel, SearchMetadata searchMetadata);
 
 	protected:
 		/*!
@@ -135,7 +135,7 @@ namespace HCSearch
 		 * openSet may be modified. costSet is used for duplicate checking.
 		 */
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-			IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)=0;
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)=0;
 
 		/*!
 		 * @brief Stub for choosing successors among the expanded.
@@ -187,7 +187,7 @@ namespace HCSearch
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-			IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
 		virtual void chooseSuccessors(SearchType searchType, SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
 	};
@@ -206,7 +206,7 @@ namespace HCSearch
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
-			IClassifierModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
 	};
 
 	/**************** Greedy Procedure ****************/
@@ -258,6 +258,8 @@ namespace HCSearch
 		 */
 		vector< ISearchNode* > generateSuccessorNodes(bool prune);
 		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
+			ImgLabeling* YTruth);
+		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
 			ImgLabeling* YTruth);
 
 		/*!

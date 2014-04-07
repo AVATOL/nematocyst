@@ -578,19 +578,26 @@ void run(MyProgramOptions::ProgramOptions po)
 			LOG() << "=== Learning P ===" << endl;
 
 			// learn cost, save cost model
-			HCSearch::IClassifierModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
-				timeBound, searchSpace, searchProcedure, HCSearch::SVM_CLASSIFIER, po.numTrainIterations);
-			
-			if (HCSearch::Global::settings->RANK == 0)
+			if (po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 			{
-				pruneModel->save(pruneModelPath);
-				if (po.saveFeaturesFiles)
-					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE, 
-						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_PRUNE_FEATURES_FILE);
+				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
+					timeBound, searchSpace, searchProcedure, HCSearch::VW_RANK, po.numTrainIterations);
+				
+				if (HCSearch::Global::settings->RANK == 0)
+				{
+					pruneModel->save(pruneModelPath);
+					if (po.saveFeaturesFiles)
+						MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE, 
+							HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_PRUNE_FEATURES_FILE);
+				}
+				
+				MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
+				delete pruneModel;
 			}
-			
-			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
-			delete pruneModel;
+			else
+			{
+				LOG(ERROR) << "unsupported pruning" << endl;
+			}
 
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNPSTART");

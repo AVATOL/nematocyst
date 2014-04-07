@@ -1008,16 +1008,16 @@ namespace HCSearch
 		return learningModel;
 	}
 
-	IClassifierModel* Learning::learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+	IRankModel* Learning::learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, ClassifierType classifierType, int numIter)
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
 	{
 		clock_t tic = clock();
 
 		LOG() << "Learning the prune function..." << endl;
 
 		// Setup model for learning
-		IClassifierModel* learningModel = initializeLearning(classifierType, LEARN_PRUNE);
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_PRUNE);
 
 		// Learn on each training example
 		int start, end;
@@ -1036,6 +1036,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
+				//TODO: generalize ranker to classifier
 				searchProcedure->performSearch(LEARN_PRUNE, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, NULL, learningModel, meta);
 			}
 		}
@@ -1159,6 +1160,8 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
 			else if (searchType == LEARN_DECOMPOSED)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1184,6 +1187,8 @@ namespace HCSearch
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
 			else if (searchType == LEARN_DECOMPOSED)
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1240,6 +1245,8 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
 			else if (searchType == LEARN_DECOMPOSED)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1263,6 +1270,8 @@ namespace HCSearch
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
 			else if (searchType == LEARN_DECOMPOSED)
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1291,6 +1300,8 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_DECOMPOSED)
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE, searchType);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1365,6 +1376,8 @@ namespace HCSearch
 				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_DECOMPOSED)
 				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE, searchType);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";

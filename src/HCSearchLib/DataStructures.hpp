@@ -589,6 +589,11 @@ namespace HCSearch
 		void startTraining(string featuresFileName);
 
 		/*!
+		 * Add training example.
+		 */
+		void addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature);
+
+		/*!
 		 * Add training examples.
 		 */
 		void addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet);
@@ -691,6 +696,11 @@ namespace HCSearch
 		 * Initialize learning.
 		 */
 		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training example.
+		 */
+		void addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature, double betterLoss, double worstLoss);
 
 		/*!
 		 * Add training examples.

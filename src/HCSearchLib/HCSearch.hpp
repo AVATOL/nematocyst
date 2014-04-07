@@ -789,9 +789,9 @@ namespace HCSearch
 		 * @param[in] numIter Number of iterations for each training image
 		 * @return Returns the learned prune model
 		 */
-		static IClassifierModel* learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+		static IRankModel* learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, ClassifierType classifierType, int numIter);
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		static map<string, int> discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain);
 
