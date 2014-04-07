@@ -1042,6 +1042,61 @@ namespace HCSearch
 		return phi;
 	}
 
+	VectorXd StandardPruneFeatures::computeMutexTermManually(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		const int numNodes = X.getNumNodes();
+		const int numClasses = Global::settings->CLASSES.numClasses();
+		const int numMutexConstraints = 8;
+		
+		VectorXd phi = VectorXd::Zero(numMutexConstraints);
+
+		int numEdges = 0;
+		//for (int node1 = 0; node1 < numNodes; node1++)
+		for (set<int>::iterator it = action.begin(); it != action.end(); ++it)
+		{
+			int node1 = *it;
+
+			for (int node2 = 0; node2 < numNodes; node2++)
+			{
+				if (node1 == node2)
+					continue;
+
+				numEdges++;
+
+				// get node features and label
+				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+				double nodeLocationX1 = X.getNodeLocationX(node1);
+				double nodeLocationY1 = X.getNodeLocationY(node1);
+				int nodeLabel1 = Y.getLabel(node1);
+
+				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+				double nodeLocationX2 = X.getNodeLocationX(node2);
+				double nodeLocationY2 = X.getNodeLocationY(node2);
+				int nodeLabel2 = Y.getLabel(node2);
+
+				// MANUALLY DEFINED FOR STANFORD DATASET
+				if (nodeLabel1 == 1 && nodeLabel2 == 3 && nodeLocationY1 > nodeLocationY2)
+					phi(0) = 1;
+				if (nodeLabel1 == 3 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(1) = 1;
+				if (nodeLabel1 == 1 && nodeLabel2 == 4 && nodeLocationY1 > nodeLocationY2)
+					phi(2) = 1;
+				if (nodeLabel1 == 4 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(3) = 1;
+				if (nodeLabel1 == 1 && nodeLabel2 == 5 && nodeLocationY1 > nodeLocationY2)
+					phi(4) = 1;
+				if (nodeLabel1 == 5 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(5) = 1;
+				if (nodeLabel1 == 1 && nodeLabel2 == 7 && nodeLocationY1 > nodeLocationY2)
+					phi(6) = 1;
+				if (nodeLabel1 == 7 && nodeLabel2 == 1 && nodeLocationY1 < nodeLocationY2)
+					phi(7) = 1;
+			}
+		}
+		
+		return phi;
+	}
+
 	VectorXd StandardPruneFeatures::computeMutexTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		const int numNodes = X.getNumNodes();
