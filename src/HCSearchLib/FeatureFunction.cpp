@@ -940,6 +940,108 @@ namespace HCSearch
 		return numMutexPairs*mutexFeatDim;
 	}
 
+	VectorXd StandardPruneFeatures::computeHoleTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		if (action.empty())
+			return VectorXd::Zero(1);
+
+		set<int> neighborLabels;
+		int actionLabel;
+		for (set<int>::iterator it = action.begin(); it != action.end(); ++it)
+		{
+			int node = *it;
+			set<int> nodeNeighborLabels = Y.getNeighborLabels(node);
+			neighborLabels.insert(nodeNeighborLabels.begin(), nodeNeighborLabels.end());
+			actionLabel = Y.getLabel(node);
+		}
+
+		int holeFound = 0;
+		if (neighborLabels.size() == 1)
+		{
+			for (set<int>::iterator it = neighborLabels.begin(); it != neighborLabels.end(); ++it)
+			{
+				int label = *it;
+				if (label != actionLabel)
+					holeFound = 1;
+			}
+		}
+
+		return holeFound * VectorXd::Ones(1);
+	}
+
+	VectorXd StandardPruneFeatures::computeSpatialEntropyTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		int numClasses = Global::settings->CLASSES.numClasses();
+		
+		// helper to keep track of unusable classes (N <= 1)
+		VectorXi unusable = VectorXi::Zero(numClasses);
+		
+		// first pass: compute mean and totals
+		VectorXd meanX = VectorXd::Zero(numClasses);
+		VectorXd meanY = VectorXd::Zero(numClasses);
+		VectorXd numSum = VectorXd::Zero(numClasses);
+
+		for (int node = 0; node < Y.getNumNodes(); node++)
+		{
+			int classIndex = Global::settings->CLASSES.getClassIndex(Y.getLabel(node));
+			double xPos = X.getNodeLocationX(node);
+			double yPos = X.getNodeLocationY(node);
+
+			meanX(classIndex) += xPos;
+			meanY(classIndex) += yPos;
+			numSum(classIndex) += 1;
+		}
+
+		for (int c = 0; c < numClasses; c++)
+		{
+			if (numSum(c) <= 1)
+				unusable(c) = 1;
+			else
+			{
+				meanX(c) /= numSum(c);
+				meanY(c) /= numSum(c);
+			}
+		}
+
+		// second pass: compute standard deviation
+		VectorXd stdX = VectorXd::Zero(numClasses);
+		VectorXd stdY = VectorXd::Zero(numClasses);
+
+		for (int node = 0; node < Y.getNumNodes(); node++)
+		{
+			int classIndex = Global::settings->CLASSES.getClassIndex(Y.getLabel(node));
+			if (unusable(classIndex) == 1)
+				continue;
+
+			double xPos = X.getNodeLocationX(node);
+			double yPos = X.getNodeLocationY(node);
+
+			stdX(classIndex) += pow((xPos - meanX(classIndex)), 2);
+			stdY(classIndex) += pow((yPos - meanY(classIndex)), 2);
+		}
+
+		for (int c = 0; c < numClasses; c++)
+		{
+			if (unusable(c) == 1)
+			{
+				stdX(c) = 0;
+				stdY(c) = 0;
+			}
+			else
+			{
+				stdX(c) = sqrt(stdX(c)/(numSum(c)-1));
+				stdY(c) = sqrt(stdY(c)/(numSum(c)-1));
+			}
+		}
+
+		// finish up
+		VectorXd phi = VectorXd::Zero(2*numClasses);
+		phi.segment(0, numClasses) = stdX;
+		phi.segment(numClasses, numClasses) = stdY;
+
+		return phi;
+	}
+
 	VectorXd StandardPruneFeatures::computeMutexTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		const int numNodes = X.getNumNodes();

@@ -311,6 +311,12 @@ namespace HCSearch
 		map<string, int> getMutex();
 
 	protected:
+		VectorXd computeHoleTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		
+		VectorXd computeSpatialEntropyTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+		VectorXd computeMutexTermManually(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
 		VectorXd computeMutexTerm(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 		VectorXd computeMutexFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
 			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
