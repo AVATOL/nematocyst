@@ -158,6 +158,7 @@ namespace HCSearch
 				break;
 
 			RankPruneNode rankNode = rankPQ.top();
+			rankPQ.pop();
 			YPrunedCandidates.push_back(rankNode.YCandidate);
 		}
 
