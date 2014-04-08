@@ -609,13 +609,7 @@ namespace HCSearch
 
 	IRankModel* Model::loadModel(string fileName, RankerType rankerType)
 	{
-		if (rankerType == ONLINE_RANK)
-		{
-			OnlineRankModel* model = new OnlineRankModel();
-			model->load(fileName);
-			return model;
-		}
-		else if (rankerType == SVM_RANK)
+		if (rankerType == SVM_RANK)
 		{
 			SVMRankModel* model = new SVMRankModel();
 			model->load(fileName);
@@ -650,11 +644,6 @@ namespace HCSearch
 		else if (rankerType == VW_RANK)
 		{
 			VWRankModel* modelCast = dynamic_cast<VWRankModel*>(model);
-			modelCast->save(fileName);
-		}
-		else if (rankerType == ONLINE_RANK)
-		{
-			OnlineRankModel* modelCast = dynamic_cast<OnlineRankModel*>(model);
 			modelCast->save(fileName);
 		}
 		else
@@ -700,10 +689,6 @@ namespace HCSearch
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_H);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -752,10 +737,6 @@ namespace HCSearch
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_C);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -804,10 +785,6 @@ namespace HCSearch
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_C_ORACLE_H);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -850,10 +827,6 @@ namespace HCSearch
 
 				// run search
 				searchProcedure->performSearch(LEARN_C_RANDOM_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -886,10 +859,6 @@ namespace HCSearch
 
 			// generate examples for decomposed learning
 			learnDecomposedProcedure(*XTrain[i], YTrain[i], numHops, searchSpace, learningModel);
-
-			// save online weights progress in case
-			if (learningModel->rankerType() == ONLINE_RANK)
-				learningModel->save(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE);
 		}
 		
 		// Merge and learn step
@@ -925,11 +894,6 @@ namespace HCSearch
 				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
-		}
-		else if (rankerType == ONLINE_RANK)
-		{
-			learningModel = new OnlineRankModel();
-			// at this point, it is still not initialized!
 		}
 		else if (rankerType == VW_RANK)
 		{
@@ -981,10 +945,6 @@ namespace HCSearch
 				abort();
 			}
 		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
-		{
-			// at this point, it is still not initialized!
-		}
 		else if (learningModel->rankerType() == VW_RANK)
 		{
 			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
@@ -1031,61 +991,6 @@ namespace HCSearch
 				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
-		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
-		{
-			// do nothing - online weights just stay persistent
-			// ...unless using MPI, then merge...
-#ifdef USE_MPI
-		string STARTMSG;
-		string ENDMSG;
-		string onlineModelFileBase;
-		if (searchType == LEARN_H)
-		{
-			STARTMSG = "MERGEHSTART";
-			ENDMSG = "MERGEHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C)
-		{
-			STARTMSG = "MERGECSTART";
-			ENDMSG = "MERGECEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_ORACLE_H)
-		{
-			STARTMSG = "MERGECOHSTART";
-			ENDMSG = "MERGECOHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_DECOMPOSED)
-		{
-			STARTMSG = "MERGEDSTART";
-			ENDMSG = "MERGEDEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else
-		{
-			LOG(ERROR) << "unknown search type!";
-			abort();
-		}
-
-		MPI::Synchronize::masterWait(STARTMSG);
-
-		if (Global::settings->RANK == 0)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
-			onlineRankModel->performMerge(onlineModelFileBase, searchType);
-		}
-
-		MPI::Synchronize::slavesWait(ENDMSG);
-#endif
 		}
 		else if (learningModel->rankerType() == VW_RANK)
 		{
@@ -1143,73 +1048,6 @@ namespace HCSearch
 			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
 			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
 
-		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
-
-			// find the best scoring output overall according to the current cost model
-			double bestScore;
-			bool fromWorstSet = false;
-
-			const int numBestFeatures = bestFeatures.size();
-			for (int i = 0; i < numBestFeatures; i++)
-			{
-				RankFeatures feature = bestFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (i == 0 || score <= bestScore)
-				{
-					bestScore = score;
-				}
-			}
-			const int numWorstFeatures = worstFeatures.size();
-			for (int i = 0; i < numWorstFeatures; i++)
-			{
-				RankFeatures feature = worstFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (score <= bestScore)
-				{
-					bestScore = score;
-					fromWorstSet = true;
-				}
-			}
-
-			// perform update if necessary
-			if (fromWorstSet)
-			{
-				// find best scoring output in the best set according to current weights
-				RankFeatures bestCostFeature;
-				double bestScore;
-				double bestLoss;
-
-				const int numBestFeatures = bestFeatures.size();
-				for (int i = 0; i < numBestFeatures; i++)
-				{
-					RankFeatures feature = bestFeatures[i];
-					double score = onlineRankModel->rank(feature);
-					if (i == 0 || score < bestScore)
-					{
-						bestCostFeature = feature;
-						bestScore = score;
-						bestLoss = bestLosses[i];
-					}
-				}
-
-				// perform update
-				for (int i = 0; i < numWorstFeatures; i++)
-				{
-					RankFeatures worseFeature = worstFeatures[i];
-					double score = onlineRankModel->rank(worseFeature);
-					double bestScore = onlineRankModel->rank(bestCostFeature);
-
-					if (score >= bestScore)
-					{
-						double delta = worstLosses[i] - bestLoss;
-						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
-						onlineRankModel->performOnlineUpdate(delta, featureDiff);
-					}
-				}
-			}
 		}
 		else
 		{

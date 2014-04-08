@@ -184,8 +184,6 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "svmrank") == 0)
 						po.rankLearnerType = HCSearch::SVM_RANK;
-					else if (strcmp(argv[i+1], "online") == 0)
-						po.rankLearnerType = HCSearch::ONLINE_RANK;
 					else if (strcmp(argv[i+1], "vw") == 0)
 						po.rankLearnerType = HCSearch::VW_RANK;
 				}
@@ -445,7 +443,7 @@ namespace MyProgramOptions
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
-		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
+		cerr << "\t--learner arg\t\t" << ": svmrank|vw" << endl;
 		cerr << "\t--loss arg\t\t" << ": hamming|pixel-hamming" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;

@@ -8,8 +8,8 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string RankerTypeStrings[] = {"svm-rank", "online", "vw"};
-	const bool RankerTypeSaveable[] = {true, false, true};
+	const string RankerTypeStrings[] = {"svm-rank", "vw"};
+	const bool RankerTypeSaveable[] = {true, true};
 
 	/**************** Class Map ****************/
 
@@ -208,12 +208,6 @@ namespace HCSearch
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
 		OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE = "cost_randomH_features";
 		OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE = "decomposed_features";
-
-		OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE = "heuristic_online_weights";
-		OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE = "cost_H_online_weights";
-		OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE = "cost_oracleH_online_weights";
-		OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE = "cost_randomH_online_weights";
-		OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE = "decomposed_online_weights";
 	}
 
 	Paths::~Paths()
@@ -280,12 +274,6 @@ namespace HCSearch
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE, rankID);
-
-		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)

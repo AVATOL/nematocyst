@@ -171,44 +171,6 @@ namespace HCSearch
 			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(ranker);
 			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
 		}
-		else if (ranker->rankerType() == ONLINE_RANK)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
-
-			// find the best scoring output in the best set according to the current heuristic model
-			RankFeatures bestHeuristicFeature;
-			double bestScore;
-			double bestLoss;
-
-			const int numBestFeatures = bestFeatures.size();
-			for (int i = 0; i < numBestFeatures; i++)
-			{
-				RankFeatures feature = bestFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (i == 0 || score <= bestScore)
-				{
-					bestHeuristicFeature = feature;
-					bestScore = score;
-					bestLoss = bestLosses[i];
-				}
-			}
-
-			// perform update
-			const int numWorstFeatures = worstFeatures.size();
-			for (int i = 0; i < numWorstFeatures; i++)
-			{
-				RankFeatures worseFeature = worstFeatures[i];
-				double score = onlineRankModel->rank(worseFeature);
-				double bestScore = onlineRankModel->rank(bestHeuristicFeature);
-
-				if (score >= bestScore)
-				{
-					double delta = worstLosses[i] - bestLoss;
-					VectorXd featureDiff = bestHeuristicFeature.data - worseFeature.data;
-					onlineRankModel->performOnlineUpdate(delta, featureDiff);
-				}
-			}
-		}
 		else
 		{
 			LOG(ERROR) << "unknown ranker type";
@@ -258,73 +220,6 @@ namespace HCSearch
 			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(ranker);
 			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
 
-		}
-		else if (ranker->rankerType() == ONLINE_RANK)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(ranker);
-
-			// find the best scoring output overall according to the current cost model
-			double bestScore;
-			bool fromWorstSet = false;
-
-			const int numBestFeatures = bestFeatures.size();
-			for (int i = 0; i < numBestFeatures; i++)
-			{
-				RankFeatures feature = bestFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (i == 0 || score <= bestScore)
-				{
-					bestScore = score;
-				}
-			}
-			const int numWorstFeatures = worstFeatures.size();
-			for (int i = 0; i < numWorstFeatures; i++)
-			{
-				RankFeatures feature = worstFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (score <= bestScore)
-				{
-					bestScore = score;
-					fromWorstSet = true;
-				}
-			}
-
-			// perform update if necessary
-			if (fromWorstSet)
-			{
-				// find best scoring output in the best set according to current weights
-				RankFeatures bestCostFeature;
-				double bestScore;
-				double bestLoss;
-
-				const int numBestFeatures = bestFeatures.size();
-				for (int i = 0; i < numBestFeatures; i++)
-				{
-					RankFeatures feature = bestFeatures[i];
-					double score = onlineRankModel->rank(feature);
-					if (i == 0 || score < bestScore)
-					{
-						bestCostFeature = feature;
-						bestScore = score;
-						bestLoss = bestLosses[i];
-					}
-				}
-
-				// perform update
-				for (int i = 0; i < numWorstFeatures; i++)
-				{
-					RankFeatures worseFeature = worstFeatures[i];
-					double score = onlineRankModel->rank(worseFeature);
-					double bestScore = onlineRankModel->rank(bestCostFeature);
-
-					if (score >= bestScore)
-					{
-						double delta = worstLosses[i] - bestLoss;
-						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
-						onlineRankModel->performOnlineUpdate(delta, featureDiff);
-					}
-				}
-			}
 		}
 		else
 		{
