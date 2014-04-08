@@ -595,12 +595,9 @@ namespace HCSearch
 
 	void SVMRankModel::addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature)
 	{
-		vector<RankFeatures> better;
-		better.push_back(betterFeature);
-		vector<RankFeatures> worse;
-		worse.push_back(worseFeature);
-		
-		addTrainingExamples(better, worse);
+		(*this->rankingFile) << vector2svmrank(betterFeature, 1, this->qid) << endl;
+		(*this->rankingFile) << vector2svmrank(worseFeature, 2, this->qid) << endl;
+		this->qid++;
 	}
 
 	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
@@ -674,7 +671,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED && searchType != LEARN_PRUNE )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -1087,16 +1084,8 @@ namespace HCSearch
 
 	void VWRankModel::addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature, double betterLoss, double worstLoss)
 	{
-		vector<RankFeatures> better;
-		better.push_back(betterFeature);
-		vector<RankFeatures> worse;
-		worse.push_back(worseFeature);
-		vector<double> betterLosses;
-		betterLosses.push_back(betterLoss);
-		vector<double> worstLosses;
-		worstLosses.push_back(worstLoss);
-		
-		addTrainingExamples(better, worse, betterLosses, worstLosses);
+		double loss = abs(betterLoss - worstLoss);
+		(*this->rankingFile) << vector2vwformat(betterFeature, worseFeature, loss) << endl;
 	}
 
 	void VWRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses)
@@ -1133,7 +1122,7 @@ namespace HCSearch
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
 
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED && searchType != LEARN_PRUNE )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
