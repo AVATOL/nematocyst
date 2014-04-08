@@ -292,7 +292,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		break;
 	case MyProgramOptions::ProgramOptions::RANKER_PRUNE:
 		LOG() << "ranker prune" << endl;
-		pruneFunc = new HCSearch::RankerPrune(pruneFeatFunc);
+		pruneFunc = new HCSearch::RankerPrune(po.pruneRatio, pruneFeatFunc);
 		break;
 	case MyProgramOptions::ProgramOptions::ORACLE_PRUNE:
 		LOG() << "oracle prune" << endl;

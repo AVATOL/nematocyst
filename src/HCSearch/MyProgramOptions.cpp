@@ -49,6 +49,7 @@ namespace MyProgramOptions
 		boundSuccessorCandidates = 100;
 		uniqueIterId = 0;
 		saveOutputMask = false;
+		pruneRatio = 0.5;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -439,6 +440,18 @@ namespace MyProgramOptions
 						po.pruneMode = ORACLE_PRUNE;
 				}
 			}
+			else if (strcmp(argv[i], "--prune-ratio") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.pruneRatio = atof(argv[i+1]);
+					if (po.pruneRatio < 0 || po.pruneRatio >= 1)
+					{
+						LOG(ERROR) << "Prune ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -495,6 +508,7 @@ namespace MyProgramOptions
 		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
 		cerr << "\t--loss arg\t\t" << ": hamming|pixel-hamming" << endl;
 		cerr << "\t--prune arg\t\t" << ": none|classifier|ranker|oracle" << endl;
+		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
 		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;

@@ -70,6 +70,7 @@ namespace MyProgramOptions
 		int boundSuccessorCandidates;
 		int uniqueIterId;
 		bool saveOutputMask;
+		double pruneRatio;
 
 	public:
 		ProgramOptions();
