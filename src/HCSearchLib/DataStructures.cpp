@@ -11,7 +11,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom", "learndecomposed"};
+	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom"};
 	const string DatasetTypeStrings[] = {"test", "train", "validation"};
 
 	/**************** Priority Queues ****************/
@@ -324,7 +324,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -361,12 +361,6 @@ namespace HCSearch
 			STARTMSG = "MERGECRHSTART";
 			ENDMSG = "MERGECRHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_DECOMPOSED)
-		{
-			STARTMSG = "MERGEDSTART";
-			ENDMSG = "MERGEDEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
@@ -752,7 +746,7 @@ namespace HCSearch
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
 
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -789,12 +783,6 @@ namespace HCSearch
 			STARTMSG = "MERGECRHSTART";
 			ENDMSG = "MERGECRHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_DECOMPOSED)
-		{
-			STARTMSG = "MERGEDSTART";
-			ENDMSG = "MERGEDEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);

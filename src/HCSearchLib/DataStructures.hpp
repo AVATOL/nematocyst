@@ -19,7 +19,7 @@ namespace HCSearch
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
 		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
-		RL, RC, LEARN_C_RANDOM_H, LEARN_DECOMPOSED };
+		RL, RC, LEARN_C_RANDOM_H };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 

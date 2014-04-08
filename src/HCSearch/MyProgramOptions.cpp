@@ -125,8 +125,6 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
 					//else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "crh") == 0)
 					//	po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
-					//else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "decomposed") == 0)
-					//	po.schedule.push_back(HCSearch::LEARN_DECOMPOSED);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);

@@ -207,7 +207,6 @@ namespace HCSearch
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
 		OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE = "cost_randomH_features";
-		OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE = "decomposed_features";
 	}
 
 	Paths::~Paths()
@@ -251,13 +250,11 @@ namespace HCSearch
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
 		this->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_randomH.txt";
-		this->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_decomposed.txt";
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_randomH.txt";
-		this->paths->OUTPUT_ARCHIVED_DECOMPOSED_LEARNING_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_decomposed.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -273,7 +270,6 @@ namespace HCSearch
 		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE, rankID);
-		this->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
