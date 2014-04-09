@@ -806,40 +806,18 @@ namespace HCSearch
 		if (rankerType == SVM_RANK)
 		{
 			learningModel = new SVMRankModel();
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			if (searchType == LEARN_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
-			else if (searchType == LEARN_C)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_ORACLE_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else
-			{
-				LOG(ERROR) << "unknown search type!";
-				abort();
-			}
 		}
 		else if (rankerType == VW_RANK)
 		{
 			learningModel = new VWRankModel();
-			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
-			if (searchType == LEARN_H)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
-			else if (searchType == LEARN_C)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_ORACLE_H)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else
-			{
-				LOG(ERROR) << "unknown search type!";
-				abort();
-			}
 		}
 		else
 		{
 			LOG(ERROR) << "unsupported rank learner.";
 			abort();
 		}
+
+		restartLearning(learningModel, searchType);
 
 		return learningModel;
 	}

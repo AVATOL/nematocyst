@@ -372,6 +372,12 @@ namespace MyProgramOptions
 						po.lossMode = PIXEL_HAMMING;
 				}
 			}
+			else
+			{
+				string argvi = argv[i];
+				if (argvi.find("--") == 0)
+					LOG(WARNING) << "IGNORING UNKNOWN PROGRAM OPTION: " << argv[i];
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
