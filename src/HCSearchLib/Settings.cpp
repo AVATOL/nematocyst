@@ -206,7 +206,6 @@ namespace HCSearch
 		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
-		OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE = "cost_randomH_features";
 	}
 
 	Paths::~Paths()
@@ -249,12 +248,10 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
-		this->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_randomH.txt";
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
-		this->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_randomH.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -269,7 +266,6 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
@@ -335,12 +331,6 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
-		RANDOM_SUCCESSOR_PRUNE = false;
-		RANDOM_SUCCESSOR_PRUNE_MAX_CANDIDATES = 100;
-		PRUNE_SVM_RANK_EXAMPLES = false;
-		PRUNE_SVM_RANK_RATIO = 0.25;
-		PRUNE_SVM_RANK_MIN_EXAMPLES = 5;
-		PRUNE_SVM_RANK_MAX_EXAMPLES = 75;
 
 		/**************** Experiment Settings ****************/
 

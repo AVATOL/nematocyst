@@ -11,7 +11,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom"};
+	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle"};
 	const string DatasetTypeStrings[] = {"test", "train", "validation"};
 
 	/**************** Priority Queues ****************/
@@ -266,44 +266,6 @@ namespace HCSearch
 
 		LOG() << "Training with " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
 
-		// Prune examples for efficiency vs. accuracy trade-off
-		if (Global::settings->PRUNE_SVM_RANK_EXAMPLES)
-		{
-			// prune best set
-			if (betterSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-			{
-				int newBetterSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * betterSetSize);
-				if (newBetterSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-					newBetterSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
-				if (newBetterSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
-					newBetterSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
-
-				random_shuffle(betterSet.begin(), betterSet.end());
-				for (int i = 0; i < betterSetSize - newBetterSize; i++)
-					betterSet.pop_back();
-
-				betterSetSize = betterSet.size();
-			}
-
-			// prune worst set
-			if (worseSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-			{
-				int newWorseSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * worseSetSize);
-				if (newWorseSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-					newWorseSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
-				if (newWorseSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
-					newWorseSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
-
-				random_shuffle(worseSet.begin(), worseSet.end());
-				for (int i = 0; i < worseSetSize - newWorseSize; i++)
-					worseSet.pop_back();
-
-				worseSetSize = worseSet.size();
-			}
-
-			LOG() << "\tPruned to " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
-		}
-
 		// good examples
 		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
 		{
@@ -324,7 +286,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -355,12 +317,6 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
@@ -746,7 +702,7 @@ namespace HCSearch
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
 
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -777,12 +733,6 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);

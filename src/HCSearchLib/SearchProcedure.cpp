@@ -300,7 +300,7 @@ namespace HCSearch
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
-		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H || searchType == LEARN_C_RANDOM_H)
+		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
 			trainCostRanker(costModel, costSet);
 
 		// clean up cost set
@@ -353,12 +353,6 @@ namespace HCSearch
 			case HC:
 				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
 				break;
-			case RL:
-				root = new RLSearchNode(&X, YTruth, searchSpace);
-				break;
-			case RC:
-				root = new RCSearchNode(&X, searchSpace, costModel);
-				break;
 			case LEARN_H:
 				root = new LearnHSearchNode(&X, YTruth, searchSpace);
 				break;
@@ -367,9 +361,6 @@ namespace HCSearch
 				break;
 			case LEARN_C_ORACLE_H:
 				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
-				break;
-			case LEARN_C_RANDOM_H:
-				root = new LearnCRandomHSearchNode(&X, YTruth, searchSpace);
 				break;
 			default:
 				LOG(ERROR) << "searchType constant is invalid.";
@@ -606,18 +597,6 @@ namespace HCSearch
 					successors.push_back(successor);
 				}
 				break;
-			case RL:
-				{
-					RLSearchNode* successor = new RLSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case RC:
-				{
-					RCSearchNode* successor = new RCSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
 			case LEARN_H:
 				{
 					LearnHSearchNode* successor = new LearnHSearchNode(this, YPred);
@@ -633,12 +612,6 @@ namespace HCSearch
 			case LEARN_C_ORACLE_H:
 				{
 					LearnCOracleHSearchNode* successor = new LearnCOracleHSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case LEARN_C_RANDOM_H:
-				{
-					LearnCRandomHSearchNode* successor = new LearnCRandomHSearchNode(this, YPred);
 					successors.push_back(successor);
 				}
 				break;
@@ -886,107 +859,6 @@ namespace HCSearch
 		return HC;
 	}
 
-	/**************** RL Search Node ****************/
-
-	ISearchProcedure::RLSearchNode::RLSearchNode()
-	{
-	}
-
-	ISearchProcedure::RLSearchNode::RLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->YTruth = YTruth;
-		this->heuristic = Rand::unifDist();
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::RLSearchNode::RLSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		RLSearchNode* parentCast = dynamic_cast<RLSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->YTruth = parentCast->YTruth;
-		this->heuristic = Rand::unifDist();
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	double ISearchProcedure::RLSearchNode::getHeuristic()
-	{
-		return this->heuristic;
-	}
-
-	double ISearchProcedure::RLSearchNode::getCost()
-	{
-		return this->loss;
-	}
-
-	SearchType ISearchProcedure::RLSearchNode::getType()
-	{
-		return RL;
-	}
-
-	/**************** RC Search Node ****************/
-
-	ISearchProcedure::RCSearchNode::RCSearchNode()
-	{
-	}
-
-	ISearchProcedure::RCSearchNode::RCSearchNode(ImgFeatures* X, SearchSpace* searchSpace, IRankModel* costModel)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
-		this->costModel = costModel;
-		this->cost = costModel->rank(this->costFeatures);
-		this->heuristic = Rand::unifDist();
-	}
-
-	ISearchProcedure::RCSearchNode::RCSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		RCSearchNode* parentCast = dynamic_cast<RCSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->costModel = parentCast->costModel;
-		this->cost = this->costModel->rank(this->costFeatures);
-		this->heuristic = Rand::unifDist();
-	}
-
-	RankFeatures ISearchProcedure::RCSearchNode::getCostFeatures()
-	{
-		return this->costFeatures;
-	}
-
-	double ISearchProcedure::RCSearchNode::getHeuristic()
-	{
-		return this->heuristic;
-	}
-
-	double ISearchProcedure::RCSearchNode::getCost()
-	{
-		return this->cost;
-	}
-
-	SearchType ISearchProcedure::RCSearchNode::getType()
-	{
-		return RC;
-	}
-
 	/**************** Learn H Search Node ****************/
 
 	ISearchProcedure::LearnHSearchNode::LearnHSearchNode()
@@ -1117,50 +989,6 @@ namespace HCSearch
 	SearchType ISearchProcedure::LearnCOracleHSearchNode::getType()
 	{
 		return LEARN_C_ORACLE_H;
-	}
-
-	/**************** Learn C Given Random H Search Node ****************/
-
-	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode()
-	{
-	}
-
-	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
-		this->YTruth = YTruth;
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-		this->heuristic = Rand::unifDist();
-	}
-
-	ISearchProcedure::LearnCRandomHSearchNode::LearnCRandomHSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		LearnCRandomHSearchNode* parentCast = dynamic_cast<LearnCRandomHSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->YTruth = parentCast->YTruth;
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-		this->heuristic = Rand::unifDist();
-	}
-
-	RankFeatures ISearchProcedure::LearnCRandomHSearchNode::getCostFeatures()
-	{
-		return this->costFeatures;
-	}
-
-	SearchType ISearchProcedure::LearnCRandomHSearchNode::getType()
-	{
-		return LEARN_C_RANDOM_H;
 	}
 
 	/**************** Compare Search Node ****************/
