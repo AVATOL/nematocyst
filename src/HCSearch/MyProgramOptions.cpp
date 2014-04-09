@@ -408,30 +408,30 @@ namespace MyProgramOptions
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
-		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
-		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
-		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
-		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
-		cerr << "\t--hfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+		cerr << "\t--anytime arg\t\t\t" << ": turn on saving anytime predictions if true" << endl;
+		cerr << "\t--beam-size arg\t\t\t" << ": beam size for beam search" << endl;
+		cerr << "\t--cut-mode arg\t\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
+		cerr << "\t--cut-param arg\t\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
-		cerr << "\t--cfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
-		cerr << "\t--learner arg\t\t" << ": svmrank|vw" << endl;
-		cerr << "\t--loss arg\t\t" << ": hamming|pixel-hamming" << endl;
-		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
-		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
-		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
-		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
+		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
+		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
+		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--save-mask arg\t\t\t" << ": save final prediction label masks if true" << endl;
+		cerr << "\t--search arg\t\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
+		cerr << "\t--splits-path arg\t\t" << ": specify alternate path to splits folder" << endl;
 		cerr << "\t--splits-train-file arg\t" << ": specify alternate file name to train file" << endl;
 		cerr << "\t--splits-valid-file arg\t" << ": specify alternate file name to validation file" << endl;
 		cerr << "\t--splits-test-file arg\t" << ": specify alternate file name to test file" << endl;
-		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
+		cerr << "\t--successor arg\t\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
-		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
-		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
+		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
+		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
 		cerr << "Notes:" << endl;
