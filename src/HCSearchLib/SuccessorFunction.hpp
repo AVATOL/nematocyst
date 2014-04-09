@@ -13,9 +13,6 @@ namespace HCSearch
 	 */
 	class ISuccessorFunction
 	{
-	protected:
-		int maxNumSuccessorCandidates;
-
 	public:
 		virtual ~ISuccessorFunction() {}
 		
@@ -41,7 +38,6 @@ namespace HCSearch
 
 	public:
 		FlipbitSuccessor();
-		FlipbitSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -56,7 +52,6 @@ namespace HCSearch
 	{
 	public:
 		FlipbitNeighborSuccessor();
-		FlipbitNeighborSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitNeighborSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -71,7 +66,6 @@ namespace HCSearch
 	{
 	public:
 		FlipbitConfidencesNeighborSuccessor();
-		FlipbitConfidencesNeighborSuccessor(int maxNumSuccessorCandidates);
 		~FlipbitConfidencesNeighborSuccessor();
 		
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -94,7 +88,6 @@ namespace HCSearch
 	public:
 		StochasticSuccessor();
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam);
-		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -122,7 +115,6 @@ namespace HCSearch
 	public:
 		StochasticNeighborSuccessor();
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
-		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticNeighborSuccessor();
 
 	protected:
@@ -140,7 +132,6 @@ namespace HCSearch
 	public:
 		StochasticConfidencesNeighborSuccessor();
 		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
-		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, int maxNumSuccessorCandidates);
 		~StochasticConfidencesNeighborSuccessor();
 
 	protected:
@@ -163,7 +154,6 @@ namespace HCSearch
 	public:
 		CutScheduleSuccessor();
 		CutScheduleSuccessor(double cutParam);
-		CutScheduleSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleSuccessor();
 
 		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
@@ -184,7 +174,6 @@ namespace HCSearch
 	public:
 		CutScheduleNeighborSuccessor();
 		CutScheduleNeighborSuccessor(double cutParam);
-		CutScheduleNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleNeighborSuccessor();
 
 	protected:
@@ -202,7 +191,6 @@ namespace HCSearch
 	public:
 		CutScheduleConfidencesNeighborSuccessor();
 		CutScheduleConfidencesNeighborSuccessor(double cutParam);
-		CutScheduleConfidencesNeighborSuccessor(double cutParam, int maxNumSuccessorCandidates);
 		~CutScheduleConfidencesNeighborSuccessor();
 
 	protected:

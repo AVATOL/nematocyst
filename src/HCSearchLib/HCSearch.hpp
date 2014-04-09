@@ -733,50 +733,12 @@ namespace HCSearch
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
-		/*!
-		 * Learn cost function given random heuristic function.
-		 * Given training data, validation data, time bound, search space and procedure, 
-		 * learn a cost model using a random H and return it.
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
-		 * @param[in] timeBound  Time bound for learning
-		 * @param[in] searchSpace Search space definition
-		 * @param[in] searchProcedure Search procedure
-		 * @param[in] rankerType Rank learner type
-		 * @param[in] numIter Number of iterations for each training image
-		 * @return Returns the learned cost (using oracle H) model
-		 */
-		static IRankModel* learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
-
-		/*!
-		 * Learn heuristic or cost function via decomposed learning. 
-		 * @param[in] XTrain Vector of structured features for training
-		 * @param[in] YTrain Vector of structured labelings for training
-		 * @param[in] XValidation Vector of structured features for validation
-		 * @param[in] YValidation Vector of structured labelings for validation
-		 * @param[in] numHops Number of hops from ground truth
-		 * @param[in] searchSpace Search space definition
-		 * @param[in] rankerType Rank learner type
-		 * @return Returns the learned model
-		 */
-		static IRankModel* learnDecomposed(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, int numHops, SearchSpace* searchSpace, RankerType rankerType);
-
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
 		static void restartLearning(IRankModel* learningModel, SearchType searchType);
 
 		static void finishLearning(IRankModel* learningModel, SearchType searchType);
-
-		static void learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel);
-
-		static void learnDecomposedProcedureHelper(ImgFeatures& X, ImgLabeling* YTruth, set<int> nodeSet, int numHops, SearchSpace* searchSpace, IRankModel* learningModel, 
-			vector< RankFeatures >& worstFeatures, vector< double >& worstLosses);
     };
 
 	/*! @} */
@@ -871,34 +833,6 @@ namespace HCSearch
 			SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 			IRankModel* heuristicModel, IRankModel* costModel, 
 			ISearchProcedure::SearchMetadata searchMetadata);
-
-		/*!
-		 * Run RL-search (random heuristic, oracle cost).
-		 * @param[in] X Input structured features
-		 * @param[in] YTruth Groundtruth structured labeling
-		 * @param[in] timeBound Time bound for learning
-		 * @param[in] searchSpace Search space definition
-		 * @param[in] searchProcedure Search procedure
-		 * @param[in] SearchMetadata Meta information
-		 * @return Inference labeling
-		 */
-		static ImgLabeling runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
-			ISearchProcedure::SearchMetadata searchMetadata);
-
-		/*!
-		 * Run RC-search (random heuristic, learned cost).
-		 * @param[in] X Input structured features
-		 * @param[in] timeBound Time bound for learning
-		 * @param[in] searchSpace Search space definition
-		 * @param[in] searchProcedure Search procedure
-		 * @param[in] costRandomHModel Learned cost (using random H) model
-		 * @param[in] SearchMetadata Meta information
-		 * @return Inference labeling
-		 */
-		static ImgLabeling runRCSearch(ImgFeatures* X, 
-			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
-			IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata);
     };
 
 	/*! @} */

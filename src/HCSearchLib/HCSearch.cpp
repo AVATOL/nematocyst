@@ -609,13 +609,7 @@ namespace HCSearch
 
 	IRankModel* Model::loadModel(string fileName, RankerType rankerType)
 	{
-		if (rankerType == ONLINE_RANK)
-		{
-			OnlineRankModel* model = new OnlineRankModel();
-			model->load(fileName);
-			return model;
-		}
-		else if (rankerType == SVM_RANK)
+		if (rankerType == SVM_RANK)
 		{
 			SVMRankModel* model = new SVMRankModel();
 			model->load(fileName);
@@ -650,11 +644,6 @@ namespace HCSearch
 		else if (rankerType == VW_RANK)
 		{
 			VWRankModel* modelCast = dynamic_cast<VWRankModel*>(model);
-			modelCast->save(fileName);
-		}
-		else if (rankerType == ONLINE_RANK)
-		{
-			OnlineRankModel* modelCast = dynamic_cast<OnlineRankModel*>(model);
 			modelCast->save(fileName);
 		}
 		else
@@ -700,10 +689,6 @@ namespace HCSearch
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_H);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -752,10 +737,6 @@ namespace HCSearch
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_C);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -804,10 +785,6 @@ namespace HCSearch
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_C_ORACLE_H);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
 			}
 		}
 		
@@ -817,86 +794,6 @@ namespace HCSearch
 
 		clock_t toc = clock();
 		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
-
-		return learningModel;
-	}
-
-	IRankModel* Learning::learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
-	{
-		clock_t tic = clock();
-
-		LOG() << "Learning the cost function with random heuristic..." << endl;
-
-		// Setup model for learning
-		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_RANDOM_H);
-
-		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
-		{
-			for (int iter = 0; iter < numIter; iter++)
-			{
-				LOG() << "Cost with random H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
-
-				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = false;
-				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = XTrain[i]->getFileName();
-				meta.iter = iter;
-
-				// run search
-				searchProcedure->performSearch(LEARN_C_RANDOM_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE);
-			}
-		}
-		
-		// Merge and learn step
-		finishLearning(learningModel, LEARN_C_RANDOM_H);
-
-		clock_t toc = clock();
-		LOG() << "total learnCWithRandomH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
-
-		return learningModel;
-	}
-
-	IRankModel* Learning::learnDecomposed(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, int numHops, SearchSpace* searchSpace, RankerType rankerType)
-	{
-		clock_t tic = clock();
-
-		LOG() << "Learning a ranking function via decomposed learning..." << endl;
-		
-		// Setup model for learning
-		IRankModel* learningModel = initializeLearning(rankerType, LEARN_DECOMPOSED);
-
-		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
-		{
-			LOG() << "Decomposed learning on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
-
-			// generate examples for decomposed learning
-			learnDecomposedProcedure(*XTrain[i], YTrain[i], numHops, searchSpace, learningModel);
-
-			// save online weights progress in case
-			if (learningModel->rankerType() == ONLINE_RANK)
-				learningModel->save(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE);
-		}
-		
-		// Merge and learn step
-		finishLearning(learningModel, LEARN_DECOMPOSED);
-
-		clock_t toc = clock();
-		LOG() << "total decomposed learning time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -916,20 +813,11 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_RANDOM_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
-			else if (searchType == LEARN_DECOMPOSED)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
-		}
-		else if (rankerType == ONLINE_RANK)
-		{
-			learningModel = new OnlineRankModel();
-			// at this point, it is still not initialized!
 		}
 		else if (rankerType == VW_RANK)
 		{
@@ -941,10 +829,6 @@ namespace HCSearch
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_RANDOM_H)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
-			else if (searchType == LEARN_DECOMPOSED)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -971,19 +855,11 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_RANDOM_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
-			else if (searchType == LEARN_DECOMPOSED)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
-		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
-		{
-			// at this point, it is still not initialized!
 		}
 		else if (learningModel->rankerType() == VW_RANK)
 		{
@@ -994,10 +870,6 @@ namespace HCSearch
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_RANDOM_H)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
-			else if (searchType == LEARN_DECOMPOSED)
-				vwRankModel->startTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1022,70 +894,11 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
-			else if (searchType == LEARN_C_RANDOM_H)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
-			else if (searchType == LEARN_DECOMPOSED)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
-		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
-		{
-			// do nothing - online weights just stay persistent
-			// ...unless using MPI, then merge...
-#ifdef USE_MPI
-		string STARTMSG;
-		string ENDMSG;
-		string onlineModelFileBase;
-		if (searchType == LEARN_H)
-		{
-			STARTMSG = "MERGEHSTART";
-			ENDMSG = "MERGEHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C)
-		{
-			STARTMSG = "MERGECSTART";
-			ENDMSG = "MERGECEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_ORACLE_H)
-		{
-			STARTMSG = "MERGECOHSTART";
-			ENDMSG = "MERGECOHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_DECOMPOSED)
-		{
-			STARTMSG = "MERGEDSTART";
-			ENDMSG = "MERGEDEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else
-		{
-			LOG(ERROR) << "unknown search type!";
-			abort();
-		}
-
-		MPI::Synchronize::masterWait(STARTMSG);
-
-		if (Global::settings->RANK == 0)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
-			onlineRankModel->performMerge(onlineModelFileBase, searchType);
-		}
-
-		MPI::Synchronize::slavesWait(ENDMSG);
-#endif
 		}
 		else if (learningModel->rankerType() == VW_RANK)
 		{
@@ -1096,10 +909,6 @@ namespace HCSearch
 				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
 				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
-			else if (searchType == LEARN_C_RANDOM_H)
-				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
-			else if (searchType == LEARN_DECOMPOSED)
-				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -1110,168 +919,6 @@ namespace HCSearch
 		{
 			LOG(ERROR) << "unsupported rank learner.";
 			abort();
-		}
-	}
-
-	void Learning::learnDecomposedProcedure(ImgFeatures& X, ImgLabeling* YTruth, int numHops, SearchSpace* searchSpace, IRankModel* learningModel)
-	{
-		vector< RankFeatures > bestFeatures;
-		vector< double > bestLosses;
-		ImgLabeling YPred = searchSpace->getInitialPrediction(X);
-		YTruth->confidences = YPred.confidences;
-		YTruth->confidencesAvailable = true;
-		bestFeatures.push_back(searchSpace->computeHeuristicFeatures(X, *YTruth));
-		YTruth->confidencesAvailable = false;
-		bestLosses.push_back(0);
-
-		vector< RankFeatures > worstFeatures;
-		vector< double > worstLosses;
-
-		learnDecomposedProcedureHelper(X, YTruth, set<int>(), numHops, searchSpace, learningModel, worstFeatures, worstLosses);
-
-		// train depending on ranker
-		if (learningModel->rankerType() == SVM_RANK)
-		{
-			// train
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
-
-		}
-		else if (learningModel->rankerType() == VW_RANK)
-		{
-			// train
-			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
-			vwRankModel->addTrainingExamples(bestFeatures, worstFeatures, bestLosses, worstLosses);
-
-		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
-
-			// find the best scoring output overall according to the current cost model
-			double bestScore;
-			bool fromWorstSet = false;
-
-			const int numBestFeatures = bestFeatures.size();
-			for (int i = 0; i < numBestFeatures; i++)
-			{
-				RankFeatures feature = bestFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (i == 0 || score <= bestScore)
-				{
-					bestScore = score;
-				}
-			}
-			const int numWorstFeatures = worstFeatures.size();
-			for (int i = 0; i < numWorstFeatures; i++)
-			{
-				RankFeatures feature = worstFeatures[i];
-				double score = onlineRankModel->rank(feature);
-				if (score <= bestScore)
-				{
-					bestScore = score;
-					fromWorstSet = true;
-				}
-			}
-
-			// perform update if necessary
-			if (fromWorstSet)
-			{
-				// find best scoring output in the best set according to current weights
-				RankFeatures bestCostFeature;
-				double bestScore;
-				double bestLoss;
-
-				const int numBestFeatures = bestFeatures.size();
-				for (int i = 0; i < numBestFeatures; i++)
-				{
-					RankFeatures feature = bestFeatures[i];
-					double score = onlineRankModel->rank(feature);
-					if (i == 0 || score < bestScore)
-					{
-						bestCostFeature = feature;
-						bestScore = score;
-						bestLoss = bestLosses[i];
-					}
-				}
-
-				// perform update
-				for (int i = 0; i < numWorstFeatures; i++)
-				{
-					RankFeatures worseFeature = worstFeatures[i];
-					double score = onlineRankModel->rank(worseFeature);
-					double bestScore = onlineRankModel->rank(bestCostFeature);
-
-					if (score >= bestScore)
-					{
-						double delta = worstLosses[i] - bestLoss;
-						VectorXd featureDiff = bestCostFeature.data - worseFeature.data;
-						onlineRankModel->performOnlineUpdate(delta, featureDiff);
-					}
-				}
-			}
-		}
-		else
-		{
-			LOG(ERROR) << "unknown ranker type";
-			abort();
-		}
-	}
-
-	void Learning::learnDecomposedProcedureHelper(ImgFeatures& X, ImgLabeling* YTruth, set<int> nodeSet, int numHops, SearchSpace* searchSpace, IRankModel* learningModel, 
-		vector< RankFeatures >& worstFeatures, vector< double >& worstLosses)
-	{
-		const int numNodes = YTruth->getNumNodes();
-		if (numHops < 0)
-		{
-			LOG(ERROR) << "number of hops for decomposed learning cannot be negative!";
-			abort();
-		}
-		else if (numHops > 0 && nodeSet.size() == numNodes)
-		{
-			// in case number of hops is larger than number of nodes
-			learnDecomposedProcedureHelper(X, YTruth, nodeSet, 0, searchSpace, learningModel, worstFeatures, worstLosses);
-		}
-		else if (numHops == 0)
-		{
-			ImgLabeling YPred = searchSpace->getInitialPrediction(X);
-
-			// generate bad example for each node and label combination
-			for (set<int>::iterator it = nodeSet.begin(); it != nodeSet.end(); ++it)
-			{
-				int node = *it;
-
-				set<int> allLabels = Global::settings->CLASSES.getLabels();
-				allLabels.erase(YTruth->getLabel(node));
-				for (set<int>::iterator it2 = allLabels.begin(); it2 != allLabels.end(); ++it2)
-				{
-					int label = *it2;
-
-					// create bad example
-					ImgLabeling YNew;
-					YNew.graph = YTruth->graph;
-					YNew.graph.nodesData(node) = label;
-					YNew.confidences = YPred.confidences;
-					YNew.confidencesAvailable = true;
-
-					// generate ranking example
-					worstFeatures.push_back(searchSpace->computeHeuristicFeatures(X, YNew));
-					worstLosses.push_back(searchSpace->computeLoss(YNew, *YTruth));
-				}
-			}
-		}
-		else
-		{
-			// main recursive case
-			for (int node = 0; node < numNodes; node++)
-			{
-				if (nodeSet.count(node) != 0)
-					continue;
-
-				set<int> newNodes = nodeSet;
-				newNodes.insert(node);
-				learnDecomposedProcedureHelper(X, YTruth, newNodes, numHops-1, searchSpace, learningModel, worstFeatures, worstLosses);
-			}
 		}
 	}
 
@@ -1317,21 +964,5 @@ namespace HCSearch
 	{
 		return searchProcedure->performSearch(HC, *X, YTruth, timeBound, 
 			searchSpace, heuristicModel, costModel, searchMetadata);
-	}
-
-	ImgLabeling Inference::runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
-		ISearchProcedure::SearchMetadata searchMetadata)
-	{
-		return searchProcedure->performSearch(RL, *X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, searchMetadata);
-	}
-
-	ImgLabeling Inference::runRCSearch(ImgFeatures* X, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
-		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
-	{
-		return searchProcedure->performSearch(RC, *X, NULL, timeBound, 
-			searchSpace, NULL, costOracleHModel, searchMetadata);
 	}
 }

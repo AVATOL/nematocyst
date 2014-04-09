@@ -18,8 +18,7 @@ namespace HCSearch
 
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
-		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
-		RL, RC, LEARN_C_RANDOM_H, LEARN_DECOMPOSED };
+		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 
@@ -295,8 +294,7 @@ namespace HCSearch
 	 * @brief Abstract class for model/weights for ranking.
 	 * 
 	 * The main purpose is to rank features using a rank model. 
-	 * Abstract class is useful for extending different kinds of 
-	 * rankers, like offline vs. online and linear vs. nonlinear.
+	 * Abstract class is useful for extending different kinds of rankers.
 	 */
 	class IRankModel
 	{
@@ -557,104 +555,6 @@ namespace HCSearch
 		 * Merge feature files when using MPI.
 		 */
 		static void mergeRankingFiles(string fileNameBase, int numProcesses);
-	};
-
-	/**************** Online Rank Model ****************/
-
-	/*!
-	 * @brief Rank model for online passive-aggressive ranking. 
-	 * 
-	 * Has methods to perform online updates and ranking
-	 */
-	class OnlineRankModel : public IRankModel
-	{
-	private:
-		/*!
-		 * Latest weights.
-		 */
-		VectorXd latestWeights;
-
-		/*!
-		 * Cumulative sum of weights.
-		 */
-		VectorXd cumSumWeights;
-
-		/*!
-		 * Number of weights in cumulative sum for averaging. 
-		 * -1 => OnlineRankModel not initialized
-		 */
-		int numSum;
-
-	public:
-		OnlineRankModel();
-
-		/*!
-		 * Construct with online weights from model file.
-		 */
-		OnlineRankModel(string fileName);
-
-		virtual double rank(RankFeatures features);
-		virtual RankerType rankerType();
-		virtual void load(string fileName);
-		virtual void save(string fileName);
-
-		/*!
-		 * Get latest weights.
-		 */
-		VectorXd getLatestWeights();
-
-		/*!
-		 * Get averaged weights.
-		 */
-		VectorXd getAvgWeights();
-
-		/*!
-		 * Perform an update. 
-		 * - delta = loss (bad) - loss (good)
-		 * - featureDiff = feature (good) - feature (bad)
-		 */
-		void performOnlineUpdate(double delta, VectorXd featureDiff);
-		
-		/*!
-		 * Initialize weights to zero vector with dimension dim.
-		 */
-		void initialize(int dim);
-
-		/*!
-		 * Merge online rank models.
-		 */
-		void performMerge(string modelFileBase, SearchType searchType);
-
-	private:
-		/*!
-		 * Load weights from file.
-		 * 
-		 * File format:
-		 *     line 1 (numsum): int
-		 *     line 2 (cumsumweights): 1:val 2:val ...
-		 *	   line 3 (latestweights): 1:val 2:val ...
-		 */
-		static void parseModelFile(string fileName, VectorXd& latestWeights, VectorXd& cumSumWeights, int& numSum);
-
-		/*!
-		 * Write weights to file.
-		 * 
-		 * File format:
-		 *     line 1 (numsum): int
-		 *     line 2 (cumsumweights): 1:val 2:val ...
-		 *	   line 3 (latestweights): 1:val 2:val ...
-		 */
-		static void writeModelFile(string fileName, const VectorXd& latestWeights, const VectorXd& cumSumWeights, int numSum);
-
-		/*!
-		 * Merge online rank model files when using MPI.
-		 * @param[out] masterLatestWeights
-		 * @param[out] masterCumSumWeights
-		 * @param[out] masterNumSum
-		 * @param[in] fileNameBase
-		 * @param[in] numProcesses
-		 */
-		static void mergeRankingFiles(VectorXd& masterLatestWeights, VectorXd& masterCumSumWeights, int& masterNumSum, string fileNameBase, int numProcesses);
 	};
 }
 
