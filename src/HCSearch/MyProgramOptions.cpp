@@ -376,7 +376,7 @@ namespace MyProgramOptions
 			{
 				string argvi = argv[i];
 				if (argvi.find("--") == 0)
-					LOG(WARNING) << "Unknown program option: " << argv[i];
+					LOG(WARNING) << "IGNORING UNKNOWN PROGRAM OPTION: " << argv[i];
 			}
 		}
 
