@@ -165,7 +165,7 @@ namespace HCSearch
 			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(ranker);
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
 		}
-		if (ranker->rankerType() == VW_RANK)
+		else if (ranker->rankerType() == VW_RANK)
 		{
 			// train
 			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(ranker);
@@ -214,7 +214,7 @@ namespace HCSearch
 			svmRankModel->addTrainingExamples(bestFeatures, worstFeatures);
 
 		}
-		if (ranker->rankerType() == VW_RANK)
+		else if (ranker->rankerType() == VW_RANK)
 		{
 			// train
 			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(ranker);
