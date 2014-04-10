@@ -67,7 +67,6 @@ namespace MyProgramOptions
 		int numTrainIterations;
 		int numTestIterations;
 		bool verboseMode;
-		int boundSuccessorCandidates;
 		int uniqueIterId;
 		bool saveOutputMask;
 		double pruneRatio;

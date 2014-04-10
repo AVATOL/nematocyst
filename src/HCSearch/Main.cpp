@@ -205,65 +205,47 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::FLIPBIT:
 		LOG() << "flipbit" << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::FlipbitSuccessor(po.boundSuccessorCandidates);
 		successor = new HCSearch::FlipbitSuccessor();
 		break;
 	case MyProgramOptions::ProgramOptions::FLIPBIT_NEIGHBORS:
 		LOG() << "flipbit neighbors" << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::FlipbitNeighborSuccessor(po.boundSuccessorCandidates);
 		successor = new HCSearch::FlipbitNeighborSuccessor();
 		break;
 	case MyProgramOptions::ProgramOptions::FLIPBIT_CONFIDENCES_NEIGHBORS:
 		LOG() << "flipbit confidences neighbors" << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::FlipbitConfidencesNeighborSuccessor(po.boundSuccessorCandidates);
 		successor = new HCSearch::FlipbitConfidencesNeighborSuccessor();
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC:
 		LOG() << "stochastic" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		///successor = new HCSearch::StochasticSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
 		successor = new HCSearch::StochasticSuccessor(cutEdgesIndependently, po.cutParam);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_NEIGHBORS:
 		LOG() << "stochastic neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.boundSuccessorCandidates);
 		successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_CONFIDENCES_NEIGHBORS:
 		LOG() << "stochastic confidences neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::StochasticConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam);
 		successor = new HCSearch::StochasticConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE:
 		LOG() << "cut schedule" << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::CutScheduleSuccessor(po.cutParam, po.boundSuccessorCandidates);
 		successor = new HCSearch::CutScheduleSuccessor(po.cutParam);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE_NEIGHBORS:
 		LOG() << "cut schedule neighbors" << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::CutScheduleNeighborSuccessor(po.cutParam, po.boundSuccessorCandidates);
 		successor = new HCSearch::CutScheduleNeighborSuccessor(po.cutParam);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE_CONFIDENCES_NEIGHBORS:
 		LOG() << "cut schedule confidences neighbors" << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		//LOG() << "\tMax num candidates: " << po.boundSuccessorCandidates << endl;
-		//successor = new HCSearch::CutScheduleConfidencesNeighborSuccessor(po.cutParam, po.boundSuccessorCandidates);
 		successor = new HCSearch::CutScheduleConfidencesNeighborSuccessor(po.cutParam);
 		break;
 	default:
@@ -347,8 +329,6 @@ void run(MyProgramOptions::ProgramOptions po)
 	string heuristicModelPath = HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE;
 	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
 	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE;
-	string costRandomHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE;
-	string decomposedModelPath = HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_MODEL_FILE;
 	string pruneModelPath = HCSearch::Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE;
 	string mutexPath = HCSearch::Global::settings->paths->OUTPUT_MUTEX_FILE;
 
@@ -514,61 +494,6 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNCOHSTART");
 		MPI::Synchronize::slavesWait("LEARNCOHEND");
-#endif
-
-			break;
-		}
-		case HCSearch::LEARN_C_RANDOM_H:
-		{
-			LOG() << "=== Learning C with Random H ===" << endl;
-
-			// learn cost, save cost model
-			HCSearch::IRankModel* costRandomHModel = HCSearch::Learning::learnCWithRandomH(XTrain, YTrain, XValidation, YValidation, 
-				timeBound, searchSpace, searchProcedure, po.rankLearnerType, po.numTrainIterations);
-			
-			if (HCSearch::Global::settings->RANK == 0)
-			{
-				HCSearch::Model::saveModel(costRandomHModel, costRandomHModelPath, rankerType);
-				if (po.saveFeaturesFiles && HCSearch::RankerTypeSaveable[po.rankLearnerType])
-					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE, 
-						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE);
-			}
-			
-			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
-			delete costRandomHModel;
-
-#ifdef USE_MPI
-		MPI::Synchronize::masterWait("LEARNCRHSTART");
-		MPI::Synchronize::slavesWait("LEARNCRHEND");
-#endif
-
-			break;
-		}
-		case HCSearch::LEARN_DECOMPOSED:
-		{
-			LOG() << "=== Decomposed Learning ===" << endl;
-
-			// decomposed learning model
-			HCSearch::IRankModel* decomposedModel = HCSearch::Learning::learnDecomposed(XTrain, YTrain, XValidation, YValidation, 
-				1, searchSpace, po.rankLearnerType);
-			
-			if (HCSearch::Global::settings->RANK == 0)
-			{
-				// save as heuristic and cost models
-				HCSearch::Model::saveModel(decomposedModel, heuristicModelPath, rankerType);
-				HCSearch::Model::saveModel(decomposedModel, costModelPath, rankerType);
-				HCSearch::Model::saveModel(decomposedModel, costOracleHModelPath, rankerType);
-				if (po.saveFeaturesFiles && HCSearch::RankerTypeSaveable[po.rankLearnerType])
-					MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE, 
-						HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_DECOMPOSED_LEARNING_FEATURES_FILE);
-			}
-			
-			MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE);
-			delete decomposedModel;
-
-#ifdef USE_MPI
-		MPI::Synchronize::masterWait("LEARNDSTART");
-		MPI::Synchronize::slavesWait("LEARNDEND");
 #endif
 
 			break;
@@ -891,136 +816,6 @@ void run(MyProgramOptions::ProgramOptions po)
 
 			break;
 		}
-		case HCSearch::RL:
-		{
-			LOG() << "=== Inference RL ===" << endl;
-
-			// run RL search on test examples
-			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
-				HCSearch::Global::settings->NUM_PROCESSES, start, end);
-			for (int i = start; i < end; i++)
-			{
-				for (int iter = 0; iter < po.numTestIterations; iter++)
-				{
-					if (po.numTestIterations == 1)
-						iter = po.uniqueIterId;
-
-					LOG() << endl << "RL Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
-
-					// setup meta
-					HCSearch::ISearchProcedure::SearchMetadata meta;
-					meta.saveAnytimePredictions = po.saveAnytimePredictions;
-					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
-					meta.iter = iter;
-
-					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runRLSearch(XTest[i], YTest[i], 
-						timeBound, searchSpace, searchProcedure, meta);
-				
-					// save the prediction
-					stringstream ssPredictNodes;
-					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::RL] 
-						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-						<< "_time" << timeBound 
-							<< "_fold" << meta.iter 
-							<< "_" << meta.exampleName << ".txt";
-					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
-
-					// save the prediction mask
-					if (po.saveOutputMask)
-					{
-						stringstream ssPredictSegments;
-						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-							<< "_" << HCSearch::SearchTypeStrings[HCSearch::RL] 
-							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-							<< "_time" << timeBound 
-								<< "_fold" << meta.iter 
-								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
-					}
-
-					if (po.numTestIterations == 1)
-						break;
-				}
-			}
-
-#ifdef USE_MPI
-		MPI::Synchronize::masterWait("INFERRLSTART");
-		MPI::Synchronize::slavesWait("INFERRLEND");
-#endif
-
-			break;
-		}
-		case HCSearch::RC:
-		{
-			LOG() << "=== Inference RC ===" << endl;
-
-			// load cost random H, run RC search on test examples
-			HCSearch::IRankModel* costModel = HCSearch::Model::loadModel(costRandomHModelPath, rankerType);
-
-			int start, end;
-			HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTest.size(), 
-				HCSearch::Global::settings->NUM_PROCESSES, start, end);
-			for (int i = start; i < end; i++)
-			{
-				for (int iter = 0; iter < po.numTestIterations; iter++)
-				{
-					if (po.numTestIterations == 1)
-						iter = po.uniqueIterId;
-
-					LOG() << endl << "RC Search: (iter " << iter << ") beginning search on " << XTest[i]->getFileName() << " (example " << i << ")..." << endl;
-
-					// setup meta
-					HCSearch::ISearchProcedure::SearchMetadata meta;
-					meta.saveAnytimePredictions = po.saveAnytimePredictions;
-					meta.setType = HCSearch::TEST;
-					meta.exampleName = XTest[i]->getFileName();
-					meta.iter = iter;
-
-					// inference
-					HCSearch::ImgLabeling YPred = HCSearch::Inference::runRCSearch(XTest[i], 
-						timeBound, searchSpace, searchProcedure, costModel, meta);
-				
-					// save the prediction
-					stringstream ssPredictNodes;
-					ssPredictNodes << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final" 
-						<< "_nodes_" << HCSearch::SearchTypeStrings[HCSearch::RC] 
-						<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-						<< "_time" << timeBound 
-							<< "_fold" << meta.iter 
-							<< "_" << meta.exampleName << ".txt";
-					HCSearch::SavePrediction::saveLabels(YPred, ssPredictNodes.str());
-
-					// save the prediction mask
-					if (po.saveOutputMask)
-					{
-						stringstream ssPredictSegments;
-						ssPredictSegments << HCSearch::Global::settings->paths->OUTPUT_RESULTS_DIR << "final"
-							<< "_" << HCSearch::SearchTypeStrings[HCSearch::RC] 
-							<< "_" << HCSearch::DatasetTypeStrings[meta.setType] 
-							<< "_time" << timeBound 
-								<< "_fold" << meta.iter 
-								<< "_" << meta.exampleName << ".txt";
-						HCSearch::SavePrediction::saveLabelMask(*XTest[i], YPred, ssPredictSegments.str());
-					}
-
-					if (po.numTestIterations == 1)
-						break;
-				}
-			}
-
-			delete costModel;
-
-#ifdef USE_MPI
-		MPI::Synchronize::masterWait("INFERRCSTART");
-		MPI::Synchronize::slavesWait("INFERRCEND");
-#endif
-
-			break;
-		}
 		default:
 			LOG(ERROR) << "invalid mode!";
 		}
@@ -1103,22 +898,14 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 		LOG() << "OUTPUT_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE << endl;
-		LOG() << "OUTPUT_COST_RANDOM_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE << endl;
 
 		LOG() << "OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_ARCHIVED_COST_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE  << endl;
 		LOG() << "OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE  << endl;
-		LOG() << "OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE: " << HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE  << endl;
-
-		LOG() << "OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE  << endl;
-		LOG() << "OUTPUT_COST_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE  << endl;
-		LOG() << "OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE << endl;
-		LOG() << "OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE << endl;
 
 		LOG() << "OUTPUT_HEURISTIC_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE  << endl;
 		LOG() << "OUTPUT_COST_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE  << endl;
 		LOG() << "OUTPUT_COST_ORACLE_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE  << endl;
-		LOG() << "OUTPUT_COST_RANDOM_H_MODEL_FILE: " << HCSearch::Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE  << endl;
 
 		LOG() << "OUTPUT_LOG_FILE: " << HCSearch::Global::settings->paths->OUTPUT_LOG_FILE  << endl;
 

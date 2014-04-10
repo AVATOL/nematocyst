@@ -11,7 +11,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "rl", "rc", "learncrandom", "learndecomposed", "learnp", "discoverpairwise"};
+	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "learnp", "discoverpairwise"};
 	const string DatasetTypeStrings[] = {"test", "train", "validation"};
 
 	/**************** Priority Queues ****************/
@@ -613,44 +613,6 @@ namespace HCSearch
 
 		LOG() << "Training with " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
 
-		// Prune examples for efficiency vs. accuracy trade-off
-		if (Global::settings->PRUNE_SVM_RANK_EXAMPLES)
-		{
-			// prune best set
-			if (betterSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-			{
-				int newBetterSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * betterSetSize);
-				if (newBetterSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-					newBetterSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
-				if (newBetterSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
-					newBetterSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
-
-				random_shuffle(betterSet.begin(), betterSet.end());
-				for (int i = 0; i < betterSetSize - newBetterSize; i++)
-					betterSet.pop_back();
-
-				betterSetSize = betterSet.size();
-			}
-
-			// prune worst set
-			if (worseSetSize > Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-			{
-				int newWorseSize = static_cast<int>(Global::settings->PRUNE_SVM_RANK_RATIO * worseSetSize);
-				if (newWorseSize <= Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES)
-					newWorseSize = Global::settings->PRUNE_SVM_RANK_MIN_EXAMPLES;
-				if (newWorseSize > Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES)
-					newWorseSize = Global::settings->PRUNE_SVM_RANK_MAX_EXAMPLES;
-
-				random_shuffle(worseSet.begin(), worseSet.end());
-				for (int i = 0; i < worseSetSize - newWorseSize; i++)
-					worseSet.pop_back();
-
-				worseSetSize = worseSet.size();
-			}
-
-			LOG() << "\tPruned to " << betterSetSize << " best examples and " << worseSetSize << " worst examples..." << endl;
-		}
-
 		// good examples
 		for (vector< RankFeatures >::iterator it = betterSet.begin(); it != betterSet.end(); ++it)
 		{
@@ -671,7 +633,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED && searchType != LEARN_PRUNE )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_PRUNE)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -702,18 +664,6 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_DECOMPOSED)
-		{
-			STARTMSG = "MERGEDSTART";
-			ENDMSG = "MERGEDEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
@@ -1082,10 +1032,18 @@ namespace HCSearch
 		this->rankingFileName = featuresFileName;
 	}
 
-	void VWRankModel::addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature, double betterLoss, double worstLoss)
+	void VWRankModel::addTrainingExample(RankFeatures better, RankFeatures worse, double betterLoss, double worstLoss)
 	{
-		double loss = abs(betterLoss - worstLoss);
-		(*this->rankingFile) << vector2vwformat(betterFeature, worseFeature, loss) << endl;
+		vector<RankFeatures> betterSet;
+		betterSet.push_back(better);
+		vector<RankFeatures> worseSet;
+		worseSet.push_back(worse);
+		vector<double> betterLosses;
+		betterLosses.push_back(betterLoss);
+		vector<double> worstLosses;
+		worstLosses.push_back(worstLoss);
+
+		addTrainingExamples(betterSet, worseSet, betterLosses, worstLosses);
 	}
 
 	void VWRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses)
@@ -1122,7 +1080,7 @@ namespace HCSearch
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
 
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_C_RANDOM_H && searchType != LEARN_DECOMPOSED && searchType != LEARN_PRUNE )
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -1153,18 +1111,6 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
-		}
-		else if (searchType == LEARN_DECOMPOSED)
-		{
-			STARTMSG = "MERGEDSTART";
-			ENDMSG = "MERGEDEND";
-			featuresFileBase = Global::settings->paths->OUTPUT_DECOMPOSED_LEARNING_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
@@ -1428,322 +1374,5 @@ namespace HCSearch
 		{
 			LOG(ERROR) << "master process could not open ranking file!";
 		}
-	}
-
-	/**************** Online Rank Model ****************/
-
-	OnlineRankModel::OnlineRankModel()
-	{
-		this->initialized = false;
-	}
-
-	OnlineRankModel::OnlineRankModel(string fileName)
-	{
-		load(fileName);
-	}
-
-	double OnlineRankModel::rank(RankFeatures features)
-	{
-		if (!initialized)
-		{
-			LOG() << "Initializing online rank weights..." << endl;
-			initialize(features.data.size());
-		}
-
-		return vectorDot(getAvgWeights(), features.data);
-	}
-
-	vector<double> OnlineRankModel::rank(vector<RankFeatures> featuresList)
-	{
-		if (!initialized)
-		{
-			LOG() << "Initializing online rank weights..." << endl;
-			if (!featuresList.empty())
-				initialize(featuresList[0].data.size());
-			else
-				abort();
-		}
-
-		int numExamples = featuresList.size();
-		vector<double> ranks;
-		for (int i = 0; i < numExamples; i++)
-		{
-			ranks.push_back(vectorDot(getAvgWeights(), featuresList[i].data));
-		}
-		return ranks;
-	}
-
-	RankerType OnlineRankModel::rankerType()
-	{
-		return ONLINE_RANK;
-	}
-
-	void OnlineRankModel::load(string fileName)
-	{
-		parseModelFile(fileName, this->latestWeights, this->cumSumWeights, this->numSum);
-		this->initialized = true;
-	}
-
-	void OnlineRankModel::save(string fileName)
-	{
-		writeModelFile(fileName, this->latestWeights, this->cumSumWeights, this->numSum);
-	}
-
-	VectorXd OnlineRankModel::getLatestWeights()
-	{
-		if (!initialized)
-		{
-			LOG(ERROR) << "online ranker not initialized for getting latest weights";
-			abort();
-		}
-
-		return this->latestWeights;
-	}
-
-	VectorXd OnlineRankModel::getAvgWeights()
-	{
-		if (!initialized)
-		{
-			LOG(ERROR) << "online ranker not initialized for getting avg weights";
-			abort();
-		}
-
-		return (1.0/this->numSum)*this->cumSumWeights;
-	}
-
-	void OnlineRankModel::performOnlineUpdate(double delta, VectorXd featureDiff)
-	{
-		if (!initialized)
-		{
-			LOG() << "Initializing online rank weights..." << endl;
-			initialize(featureDiff.size());
-		}
-
-		LOG() << "Performing online update..." << endl;
-
-		double tauNumerator = sqrt(delta) - vectorDot(getLatestWeights(), featureDiff);
-		double tauDenominator = pow(featureDiff.norm(), 2);
-
-		if (tauDenominator == 0 && tauNumerator == 0)
-		{
-			LOG(WARNING) << "tau indeterminant form error";
-		}
-		else if (tauDenominator == 0 && tauNumerator != 0)
-		{
-			LOG(WARNING) << "tau division by zero error";
-		}
-		else
-		{
-			double tau = tauNumerator/tauDenominator;
-			VectorXd newWeights = getLatestWeights() + tau * featureDiff;
-
-			// perform update
-			this->latestWeights = newWeights;
-			this->cumSumWeights += newWeights;
-			this->numSum += 1;
-		}
-	}
-
-	void OnlineRankModel::initialize(int dim)
-	{
-		this->latestWeights = VectorXd::Zero(dim);
-		this->cumSumWeights = VectorXd::Zero(dim);
-		this->numSum = 1;
-		this->initialized = true;
-	}
-
-	void OnlineRankModel::performMerge(string modelFileBase, SearchType searchType)
-	{
-		mergeRankingFiles(this->latestWeights, this->cumSumWeights, this->numSum, modelFileBase, Global::settings->NUM_PROCESSES);
-		this->initialized = true;
-	}
-
-	void OnlineRankModel::parseModelFile(string fileName, VectorXd& latestWeights, VectorXd& cumSumWeights, int& numSum)
-	{
-		string line;
-		vector<int> indices;
-		vector<double> values;
-		vector<int> indices2;
-		vector<double> values2;
-
-		ifstream fh(fileName.c_str());
-		if (fh.is_open())
-		{
-			int lineNum = 0;
-			while (fh.good())
-			{
-				lineNum++;
-				getline(fh, line);
-
-				if (lineNum == 1)
-				{
-					numSum = atoi(line.c_str());
-				}
-				else if (lineNum == 2)
-				{
-					istringstream iss(line);
-
-					string token;
-					while (getline(iss, token, ' '))
-					{
-						if (token.find(':') == std::string::npos)
-							continue;
-
-						istringstream isstoken(token);
-						string sIndex;
-						string sValue;
-						getline(isstoken, sIndex, ':');
-						getline(isstoken, sValue, ':');
-
-						int index = atoi(sIndex.c_str());
-						double value = atof(sValue.c_str());
-
-						indices.push_back(index);
-						values.push_back(value);
-					}
-				}
-				else if (lineNum == 3)
-				{
-					istringstream iss(line);
-
-					string token;
-					while (getline(iss, token, ' '))
-					{
-						if (token.find(':') == std::string::npos)
-							continue;
-
-						istringstream isstoken(token);
-						string sIndex;
-						string sValue;
-						getline(isstoken, sIndex, ':');
-						getline(isstoken, sValue, ':');
-
-						int index = atoi(sIndex.c_str());
-						double value = atof(sValue.c_str());
-
-						indices2.push_back(index);
-						values2.push_back(value);
-					}
-				}
-			}
-			fh.close();
-		}
-		else
-		{
-			LOG(ERROR) << "cannot open model file for reading weights!!";
-			abort();
-		}
-
-		int valuesSize = values.size();
-		if (valuesSize == 0)
-		{
-			LOG(ERROR) << "found empty cumsumweights from '" + fileName + "'!";
-			abort();
-		}
-		cumSumWeights = VectorXd::Zero(indices.back());
-		for (int i = 0; i < valuesSize; i++)
-		{
-			int ind = indices[i]-1;
-			cumSumWeights(ind) = values[i];
-		}
-
-		int valuesSize2 = values2.size();
-		if (valuesSize2 == 0)
-		{
-			LOG(ERROR) << "found empty latestweights from '" + fileName + "'!";
-			abort();
-		}
-		latestWeights = VectorXd::Zero(indices.back());
-		for (int i = 0; i < valuesSize2; i++)
-		{
-			int ind = indices2[i]-1;
-			latestWeights(ind) = values2[i];
-		}
-	}
-
-	void OnlineRankModel::writeModelFile(string fileName, const VectorXd& latestWeights, const VectorXd& cumSumWeights, int numSum)
-	{
-		ofstream fh(fileName.c_str());
-		if (fh.is_open())
-		{
-			// write num to file
-			fh << numSum << endl;
-
-			// write cumulative sum weights to file
-			const int cumSumWeightsLength = cumSumWeights.size();
-			for (int i = 0; i < cumSumWeightsLength; i++)
-			{
-				double val = cumSumWeights(i);
-				if (val != 0)
-				{
-					int ind = i+1;
-					fh << ind << ":" << val << " ";
-				}
-			}
-			fh << endl;
-
-			// write latest weights to file
-			const int latestWeightsLength = latestWeights.size();
-			for (int i = 0; i < latestWeightsLength; i++)
-			{
-				double val = latestWeights(i);
-				if (val != 0)
-				{
-					int ind = i+1;
-					fh << ind << ":" << val << " ";
-				}
-			}
-			fh << endl;
-
-			fh.close();
-		}
-		else
-		{
-			LOG(ERROR) << "cannot open online model file for writing weights!!";
-			abort();
-		}
-	}
-
-	void OnlineRankModel::mergeRankingFiles(VectorXd& masterLatestWeights, VectorXd& masterCumSumWeights, int& masterNumSum, string fileNameBase, int numProcesses)
-	{
-		LOG() << "Merging online model files...";
-
-		vector< VectorXd > latestWeights;
-		vector< VectorXd > weights;
-		vector< int > sums;
-		int largestDim = 0;
-
-		for (int rank = 0; rank < numProcesses; rank++)
-		{
-			string WEIGHTS_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, fileNameBase, rank);
-			cout << WEIGHTS_FILE << endl;
-
-			VectorXd lw;
-			VectorXd w;
-			int s;
-			parseModelFile(WEIGHTS_FILE, lw, w, s);
-
-			if (w.size() > largestDim)
-				largestDim = w.size();
-
-			latestWeights.push_back(lw);
-			weights.push_back(w);
-			sums.push_back(s);
-		}
-
-		masterLatestWeights = VectorXd::Zero(largestDim);
-		masterCumSumWeights = VectorXd::Zero(largestDim);
-		masterNumSum = 0;
-
-		for (int rank = 0; rank < numProcesses; rank++)
-		{
-			masterLatestWeights += latestWeights[rank];
-			masterCumSumWeights += weights[rank];
-			masterNumSum += sums[rank];
-		}
-
-		masterLatestWeights /= numProcesses;
-
-		LOG() << "...done merging online model files." << endl;
 	}
 }

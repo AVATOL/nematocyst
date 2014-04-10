@@ -239,7 +239,6 @@ function [ allData ] = preprocess( imagesPath, labelsPath, splitsPath, outputPat
 ### HC-Search Command Line Options
 
 ```
-
 Program usage: ./HCSearch INPUT_DIR OUTPUT_DIR TIMEBOUND [--learn (H|C|COH)]* [--infer (HC|HL|LC|LL)]* ... [--option=value]
 Main options:
 	--help		: produce help message
@@ -259,26 +258,26 @@ Main options:
 				(none): short-hand for HC
 
 Advanced options:
-	--anytime arg		: turn on saving anytime predictions if true
-	--beam-size arg		: beam size for beam search
-	--cut-mode arg		: edges|state (cut edges by edges independently or by state)
-	--cut-param arg		: temperature parameter for stochastic cuts
-	--hfeatures arg		: standard|standard-conf|unary|unary-conf|standard-pair-counts|standard-conf-pair-counts
-	--cfeatures arg		: standard|standard-conf|unary|unary-conf|standard-pair-counts|standard-conf-pair-counts
+	--anytime arg			: turn on saving anytime predictions if true
+	--beam-size arg			: beam size for beam search
+	--cut-mode arg			: edges|state (cut edges by edges independently or by state)
+	--cut-param arg			: temperature parameter for stochastic cuts
+	--hfeatures arg			: standard|standard-conf|unary|unary-conf|standard-pair-counts|standard-conf-pair-counts|dense-crf
+	--cfeatures arg			: standard|standard-conf|unary|unary-conf|standard-pair-counts|standard-conf-pair-counts|dense-crf
 	--num-test-iters arg	: number of test iterations
 	--num-train-iters arg	: number of training iterations
-	--learner arg		: svmrank|online
-	--loss arg		: hamming|pixel-hamming
-	--save-features arg	: save rank features during learning if true
-	--save-mask arg		: save final prediction label masks if true
-	--search arg		: greedy|breadthbeam|bestbeam
-	--splits-path arg	: specify alternate path to splits folder
+	--ranker arg			: svmrank|vw
+	--loss arg				: hamming|pixel-hamming
+	--save-features arg		: save rank features during learning if true
+	--save-mask arg			: save final prediction label masks if true
+	--search arg			: greedy|breadthbeam|bestbeam
+	--splits-path arg		: specify alternate path to splits folder
 	--splits-train-file arg	: specify alternate file name to train file
 	--splits-valid-file arg	: specify alternate file name to validation file
 	--splits-test-file arg	: specify alternate file name to test file
-	--successor arg		: flipbit|flipbit-neighbors|flipbit-confidences-neighbors|stochastic|stochastic-neighbors|stochastic-confidences-neighbors|cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors
-	--unique-iter arg	: unique iteration ID (num-test-iters needs to be 1)
-	--verbose arg		: turn on verbose output if true
+	--successor arg			: flipbit|flipbit-neighbors|flipbit-confidences-neighbors|stochastic|stochastic-neighbors|stochastic-confidences-neighbors|cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors
+	--unique-iter arg		: unique iteration ID (num-test-iters needs to be 1)
+	--verbose arg			: turn on verbose output if true
 
 Notes:
 * The first three arguments are required. They are the input directory, output directory and time bound.
