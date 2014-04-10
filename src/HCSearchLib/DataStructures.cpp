@@ -1034,16 +1034,8 @@ namespace HCSearch
 
 	void VWRankModel::addTrainingExample(RankFeatures better, RankFeatures worse, double betterLoss, double worstLoss)
 	{
-		vector<RankFeatures> betterSet;
-		betterSet.push_back(better);
-		vector<RankFeatures> worseSet;
-		worseSet.push_back(worse);
-		vector<double> betterLosses;
-		betterLosses.push_back(betterLoss);
-		vector<double> worstLosses;
-		worstLosses.push_back(worstLoss);
-
-		addTrainingExamples(betterSet, worseSet, betterLosses, worstLosses);
+		double loss = abs(betterLoss - worstLoss);
+		(*this->rankingFile) << vector2vwformat(better, worse, loss) << endl;
 	}
 
 	void VWRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses)
@@ -1080,7 +1072,7 @@ namespace HCSearch
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
 
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_PRUNE)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
