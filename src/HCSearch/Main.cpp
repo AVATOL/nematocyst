@@ -248,6 +248,24 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		successor = new HCSearch::CutScheduleConfidencesNeighborSuccessor(po.cutParam);
 		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE:
+		LOG() << "stochastic schedule" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		successor = new HCSearch::StochasticScheduleSuccessor(cutEdgesIndependently, po.cutParam);
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE_NEIGHBORS:
+		LOG() << "stochastic schedule neighbors" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		successor = new HCSearch::StochasticScheduleNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE_CONFIDENCES_NEIGHBORS:
+		LOG() << "stochastic schedule confidences neighbors" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		successor = new HCSearch::StochasticScheduleConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";
 	}

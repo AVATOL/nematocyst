@@ -234,6 +234,12 @@ namespace MyProgramOptions
 						po.successorsMode = CUT_SCHEDULE_NEIGHBORS;
 					else if (strcmp(argv[i+1], "cut-schedule-confidences-neighbors") == 0)
 						po.successorsMode = CUT_SCHEDULE_CONFIDENCES_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-schedule") == 0)
+						po.successorsMode = STOCHASTIC_SCHEDULE;
+					else if (strcmp(argv[i+1], "stochastic-schedule-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_SCHEDULE_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-schedule-confidences-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_SCHEDULE_CONFIDENCES_NEIGHBORS;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
@@ -497,7 +503,8 @@ namespace MyProgramOptions
 		cerr << "\t--splits-test-file arg\t" << ": specify alternate file name to test file" << endl;
 		cerr << "\t--successor arg\t\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
-			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
+			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors"
+			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|" << endl;
 		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
