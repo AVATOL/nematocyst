@@ -19,7 +19,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > FlipbitSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -85,7 +85,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > FlipbitNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -164,7 +164,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > FlipbitConfidencesNeighborSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -258,7 +258,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > StochasticSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 
@@ -584,7 +584,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > CutScheduleSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
 		clock_t tic = clock();
 

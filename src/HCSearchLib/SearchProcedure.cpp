@@ -262,7 +262,7 @@ namespace HCSearch
 
 			/***** expand these elements *****/
 
-			SearchNodeHeuristicPQ candidateSet = expandElements(subsetOpenSet, openSet, costSet, pruneModel, YTruth, searchType);
+			SearchNodeHeuristicPQ candidateSet = expandElements(subsetOpenSet, openSet, costSet, pruneModel, YTruth, searchType, timeStep, timeBound);
 
 			/***** choose successors and put them into the open set *****/
 			/***** put these expanded elements into the cost set *****/
@@ -402,7 +402,7 @@ namespace HCSearch
 	}
 
 	ISearchProcedure::SearchNodeHeuristicPQ BreadthFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
 	{
 		SearchNodeHeuristicPQ candidateSet;
 		
@@ -414,9 +414,9 @@ namespace HCSearch
 
 			vector< ISearchNode* > expansionSet;
 			if (searchType == LEARN_PRUNE)
-				expansionSet = current->generateSuccessorNodesForPruneLearning(pruneModel, YTruth);
+				expansionSet = current->generateSuccessorNodesForPruneLearning(pruneModel, YTruth, timeStep, timeBound);
 			else
-				expansionSet = current->generateSuccessorNodes(true);
+				expansionSet = current->generateSuccessorNodes(true, timeStep, timeBound);
 
 			// only accept expanded element if not a duplicate state
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
@@ -517,7 +517,7 @@ namespace HCSearch
 	}
 
 	ISearchProcedure::SearchNodeHeuristicPQ BestFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
 	{
 		SearchNodeHeuristicPQ candidateSet;
 		
@@ -529,9 +529,9 @@ namespace HCSearch
 
 			vector< ISearchNode* > expansionSet;
 			if (searchType == LEARN_PRUNE)
-				expansionSet = current->generateSuccessorNodesForPruneLearning(pruneModel, YTruth);
+				expansionSet = current->generateSuccessorNodesForPruneLearning(pruneModel, YTruth, timeStep, timeBound);
 			else
-				expansionSet = current->generateSuccessorNodes(true);
+				expansionSet = current->generateSuccessorNodes(true, timeStep, timeBound);
 
 			// only accept expanded element if not a duplicate state
 			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
@@ -576,12 +576,12 @@ namespace HCSearch
 
 	/**************** Search Node ****************/
 
-	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodes(bool prune)
+	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodes(bool prune, int timeStep, int timeBound)
 	{
 		vector< ISearchNode* > successors;
-
+		
 		// generate successors
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
 		
 		// prune successors
 		if (prune)
@@ -645,7 +645,7 @@ namespace HCSearch
 	}
 
 	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
-		ImgLabeling* YTruth)
+		ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		vector< ISearchNode* > successors;
 
@@ -653,7 +653,7 @@ namespace HCSearch
 		RankFeatures prevPruneFeatures = this->searchSpace->computePruneFeatures(*this->X, *YTruth, set<int>());
 
 		// generate successors
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
 
 		// collect training examples
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
@@ -745,14 +745,14 @@ namespace HCSearch
 	}
 
 	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
-		ImgLabeling* YTruth)
+		ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		vector< ISearchNode* > successors;
 
 		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
 
 		// generate successors
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
 
 		// collect training examples
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)

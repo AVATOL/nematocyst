@@ -122,7 +122,7 @@ namespace HCSearch
 		 * @param[in] YPred Current structured output labeling
 		 * @return List of successors, which are structured output labelings
 		 */
-		vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 
 		/*!
 		 * @brief Generate a list of successors from a current labeling.

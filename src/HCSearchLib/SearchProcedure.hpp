@@ -132,7 +132,7 @@ namespace HCSearch
 		 * openSet may be modified. costSet is used for duplicate checking.
 		 */
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType)=0;
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)=0;
 
 		/*!
 		 * @brief Stub for choosing successors among the expanded.
@@ -184,7 +184,7 @@ namespace HCSearch
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
-			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound);
 		virtual void chooseSuccessors(SearchType searchType, SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
 	};
@@ -203,7 +203,7 @@ namespace HCSearch
 
 		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
 		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
-			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType);
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound);
 	};
 
 	/**************** Greedy Procedure ****************/
@@ -253,11 +253,11 @@ namespace HCSearch
 		/*!
 		 * Generate successor nodes.
 		 */
-		vector< ISearchNode* > generateSuccessorNodes(bool prune);
+		vector< ISearchNode* > generateSuccessorNodes(bool prune, int timeStep, int timeBound);
 		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
-			ImgLabeling* YTruth);
+			ImgLabeling* YTruth, int timeStep, int timeBound);
 		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
-			ImgLabeling* YTruth);
+			ImgLabeling* YTruth, int timeStep, int timeBound);
 
 		/*!
 		 * Get the heuristic features of the node. 
