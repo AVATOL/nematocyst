@@ -798,7 +798,7 @@ namespace HCSearch
 		clock_t tic = clock();
 
 		// generate random threshold
-		double threshold = Rand::unifDist() * max(0, min(1, (timeBound-timeStep-1)/timeBound)); // ~ Uniform(0, 1) schedule
+		double threshold = Rand::unifDist() * max(0.0, min(1.0, (timeBound*0.75-timeStep-1)/timeBound)); // ~ Uniform(0, 1) schedule
 		LOG() << "Using threshold=" << threshold << endl;
 
 		// perform cut
