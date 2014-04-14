@@ -494,7 +494,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
 		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
-		cerr << "\t--prune arg\t\t" << ": none|classifier|ranker|oracle" << endl;
+		cerr << "\t--prune arg\t\t" << ": none|classifier|ranker|oracle|simulated" << endl;
 		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
 		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t\t" << ": save final prediction label masks if true" << endl;
