@@ -878,6 +878,8 @@ namespace HCSearch
 				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				willCut = edgeWeights[i] <= scheduledThreshold;
+
+				LOG() << "\toriginal threshold=" << threshold << ", scheduled threshold=" << scheduledThreshold << ", will cut=" << willCut << endl;
 			}
 			else
 			{
@@ -891,6 +893,8 @@ namespace HCSearch
 				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				willCut = edgeWeights[i] <= scheduledThreshold;
+
+				LOG() << "\toriginal threshold=" << indepThreshold << ", scheduled threshold=" << scheduledThreshold << ", will cut=" << willCut << endl;
 			}
 
 			if (!willCut)
