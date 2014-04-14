@@ -798,11 +798,11 @@ namespace HCSearch
 		clock_t tic = clock();
 
 		// generate random threshold
-		double threshold = Rand::unifDist() * max(0.0, min(1.0, (timeBound*0.75-timeStep-1)/timeBound)); // ~ Uniform(0, 1) schedule
+		double threshold = Rand::unifDist(); // ~ Uniform(0, 1) schedule
 		LOG() << "Using threshold=" << threshold << endl;
 
 		// perform cut
-		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
+		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam, timeStep, timeBound);
 
 		LOG() << "generating successors..." << endl;
 
@@ -821,7 +821,7 @@ namespace HCSearch
 		return successors;
 	}
 
-	MyGraphAlgorithms::SubgraphSet* StochasticScheduleSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T)
+	MyGraphAlgorithms::SubgraphSet* StochasticScheduleSuccessor::cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T, int timeStep, int timeBound)
 	{
 		const int numNodes = X.getNumNodes();
 		map< int, set<int> > edges = YPred.graph.adjList;
@@ -869,20 +869,31 @@ namespace HCSearch
 			int node1 = nodePair.first;
 			int node2 = nodePair.second;
 
-			bool decideToCut;
+			bool willCut;
 			if (!cutEdgesIndependently)
 			{
 				// uniform state
-				decideToCut = edgeWeights[i] <= threshold;
+				double inverseThreshold = 1.0 - threshold;
+				double scheduleRatio = 1.0 - (1.0*timeStep/timeBound);
+				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
+				double scheduledThreshold = 1 - scheduledInverseThreshold;
+				willCut = edgeWeights[i] <= scheduledThreshold;
 			}
 			else
 			{
 				// bernoulli independent
-				double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
-				decideToCut = biasedCoin <= 1-edgeWeights[i];
+				//double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
+				//willCut = biasedCoin <= 1-edgeWeights[i];
+
+				double indepThreshold = Rand::unifDist(); // ~ Uniform(0, 1)
+				double inverseThreshold = 1.0 - indepThreshold;
+				double scheduleRatio = 1.0 - (1.0*timeStep/timeBound);
+				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
+				double scheduledThreshold = 1 - scheduledInverseThreshold;
+				willCut = edgeWeights[i] <= scheduledThreshold;
 			}
 
-			if (!decideToCut)
+			if (!willCut)
 			{
 				// keep these uncut edges
 				if (cutEdges.count(node1) == 0)
