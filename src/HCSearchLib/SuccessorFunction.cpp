@@ -874,7 +874,7 @@ namespace HCSearch
 			{
 				// uniform state
 				double inverseThreshold = 1.0 - threshold;
-				double scheduleRatio = 1.0 - (1.0*timeStep/timeBound);
+				double scheduleRatio = 1.0 - 1.0*max(0.0, min(1.0, (1.0*(timeStep+timeBound/4)/timeBound)));
 				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				willCut = edgeWeights[i] <= scheduledThreshold;
@@ -889,7 +889,7 @@ namespace HCSearch
 
 				double indepThreshold = Rand::unifDist(); // ~ Uniform(0, 1)
 				double inverseThreshold = 1.0 - indepThreshold;
-				double scheduleRatio = 1.0 - (1.0*timeStep/timeBound);
+				double scheduleRatio = 1.0 - 1.0*max(0.0, min(1.0, (1.0*(timeStep+timeBound/4)/timeBound)));
 				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				willCut = edgeWeights[i] <= scheduledThreshold;
