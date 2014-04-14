@@ -236,7 +236,7 @@ namespace HCSearch
 	 * Stochastically cut edges to form subgraphs. 
 	 * For each subgraph, flip its label to a label of a neighboring node.
 	 */
-	class StochasticScheduleNeighborSuccessor : public StochasticSuccessor
+	class StochasticScheduleNeighborSuccessor : public StochasticScheduleSuccessor
 	{
 	public:
 		StochasticScheduleNeighborSuccessor();
@@ -253,7 +253,7 @@ namespace HCSearch
 	 * Stochastically cut edges to form subgraphs. 
 	 * For each subgraph, flip its label to a label of a confident or neighboring node.
 	 */
-	class StochasticScheduleConfidencesNeighborSuccessor : public StochasticSuccessor
+	class StochasticScheduleConfidencesNeighborSuccessor : public StochasticScheduleSuccessor
 	{
 	public:
 		StochasticScheduleConfidencesNeighborSuccessor();
