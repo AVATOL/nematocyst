@@ -117,18 +117,24 @@ for fold = foldRange
                 [labels, ~] = libsvmread(nodesPath);
                 
                 %% read edges
-                cutMat = dlmread(cutsPath);
-                cutMat = spconvert(cutMat);
-                cutMat = full(cutMat);
+                cutFile = dir(cutsPath);
+                if cutFile.bytes == 0
+                    %% visualize inference
+                    inferImage = visualize_image(image, labels, label2color, segMat); 
+                else
+                    cutMat = dlmread(cutsPath);
+                    cutMat = spconvert(cutMat);
+                    cutMat = full(cutMat);
 
-                nNodes = length(truthLabels);
-                [h, w] = size(cutMat);
-                cutMat = [cutMat zeros(h, nNodes-w)];
-                [h, w] = size(cutMat);
-                cutMat = [cutMat; zeros(nNodes-h, w)];
-                
-                %% visualize inference
-                inferImage = visualize_image(image, labels, label2color, segMat, cutMat);
+                    nNodes = length(truthLabels);
+                    [h, w] = size(cutMat);
+                    cutMat = [cutMat zeros(h, nNodes-w)];
+                    [h, w] = size(cutMat);
+                    cutMat = [cutMat; zeros(nNodes-h, w)];
+
+                    %% visualize inference
+                    inferImage = visualize_image(image, labels, label2color, segMat, cutMat); 
+                end
                 
                 inferOutPath = sprintf('%s/%s/infer_%s_%s_test_time%d_fold%d.png', outputDir, searchType, fileName, searchType, timeStep+1, fold);
                 imwrite(inferImage, inferOutPath);
