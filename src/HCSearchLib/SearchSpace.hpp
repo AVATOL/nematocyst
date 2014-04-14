@@ -130,7 +130,7 @@ namespace HCSearch
 		 * @param[in] YPred Current structured output labeling
 		 * @return List of successors, which are structured output labelings
 		 */
-		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates);
+		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 
 		/*!
 		 * @brief Compute the loss between a predicted labeling and its groundtruth labeling.
@@ -142,6 +142,7 @@ namespace HCSearch
 
 		IPruneFunction* getPruneFunction();
 		IInitialPredictionFunction* getInitialPredictionFunction();
+		ILossFunction* getLossFunction();
 	};
 
 	/*! @} */

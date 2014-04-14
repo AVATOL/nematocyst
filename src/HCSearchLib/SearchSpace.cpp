@@ -96,7 +96,7 @@ namespace HCSearch
 		return this->successorFunction->generateSuccessors(X, YPred, timeStep, timeBound);
 	}
 
-	vector< ImgCandidate > SearchSpace::pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates)
+	vector< ImgCandidate > SearchSpace::pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
 	{
 		if (this->pruneFunction == NULL)
 		{
@@ -105,7 +105,7 @@ namespace HCSearch
 		}
 		else
 		{
-			return this->pruneFunction->pruneSuccessors(X, YPred, YCandidates);
+			return this->pruneFunction->pruneSuccessors(X, YPred, YCandidates, YTruth, lossFunc);
 		}
 	}
 
@@ -128,5 +128,10 @@ namespace HCSearch
 	IInitialPredictionFunction* SearchSpace::getInitialPredictionFunction()
 	{
 		return this->initialPredictionFunction;
+	}
+
+	ILossFunction* SearchSpace::getLossFunction()
+	{
+		return this->lossFunction;
 	}
 }

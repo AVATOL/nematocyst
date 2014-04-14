@@ -1,5 +1,6 @@
 #include "PruneFunction.hpp"
 #include "MyLogger.hpp"
+#include "Globals.hpp"
 
 namespace HCSearch
 {
@@ -20,7 +21,7 @@ namespace HCSearch
 	{
 	}
 		
-	vector< ImgCandidate > NoPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates)
+	vector< ImgCandidate > NoPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
 	{
 		return YCandidates;
 	}
@@ -43,7 +44,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > ClassifierPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates)
+	vector< ImgCandidate > ClassifierPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
 	{
 		vector< ImgCandidate > YPrunedCandidates;
 
@@ -122,7 +123,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > RankerPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates)
+	vector< ImgCandidate > RankerPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
 	{
 		vector< ImgCandidate > YPrunedCandidates;
 
@@ -183,6 +184,103 @@ namespace HCSearch
 		return lhs.rank > rhs.rank;
 	}
 
+	/**************** Simulated Ranker Prune ****************/
+
+	const double SimulatedRankerPrune::DEFAULT_PRUNE_FRACTION = 0.5;
+
+	SimulatedRankerPrune::SimulatedRankerPrune()
+	{
+		this->pruneFraction = DEFAULT_PRUNE_FRACTION;
+		this->featureFunction = NULL;
+	}
+
+	SimulatedRankerPrune::SimulatedRankerPrune(double pruneFraction)
+	{
+		this->pruneFraction = pruneFraction;
+		this->featureFunction = NULL;
+	}
+
+	SimulatedRankerPrune::SimulatedRankerPrune(IFeatureFunction* featureFunction)
+	{
+		this->pruneFraction = DEFAULT_PRUNE_FRACTION;
+		this->featureFunction = featureFunction;
+	}
+
+	SimulatedRankerPrune::SimulatedRankerPrune(double pruneFraction, IFeatureFunction* featureFunction)
+	{
+		this->pruneFraction = pruneFraction;
+		this->featureFunction = featureFunction;
+	}
+
+	SimulatedRankerPrune::~SimulatedRankerPrune()
+	{
+	}
+	
+	vector< ImgCandidate > SimulatedRankerPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
+	{
+		if (YTruth == NULL || lossFunc == NULL)
+		{
+			LOG(ERROR) << "need ground truth and loss function for simulated pruning!";
+			abort();
+		}
+
+		double prevLoss = lossFunc->computeLoss(Y, *YTruth);
+
+		vector< ImgCandidate > YPrunedCandidates;
+
+		RankNodePQ goodRankPQ;
+		RankNodePQ badRankPQ;
+
+		// split into good and bad groups based on loss function
+		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
+		{
+			ImgCandidate YCand = *it;
+
+			double thisLoss = lossFunc->computeLoss(YCand.labeling, *YTruth);
+
+			RankPruneNode rankNode;
+			rankNode.rank = Rand::unifDist();
+			rankNode.YCandidate = YCand;
+
+			if (thisLoss <= prevLoss)
+			{
+				goodRankPQ.push(rankNode);
+			}
+			else
+			{
+				badRankPQ.push(rankNode);
+			}
+		}
+
+		const int numNewGoodCandidates = static_cast<int>((1-pruneFraction)*goodRankPQ.size());
+		const int numNewBadCandidates = static_cast<int>((1-pruneFraction)*badRankPQ.size());
+
+		for (int i = 0; i < numNewGoodCandidates; i++)
+		{
+			if (goodRankPQ.empty())
+				break;
+
+			RankPruneNode rankNode = goodRankPQ.top();
+			goodRankPQ.pop();
+			YPrunedCandidates.push_back(rankNode.YCandidate);
+		}
+
+		for (int i = 0; i < numNewBadCandidates; i++)
+		{
+			if (badRankPQ.empty())
+				break;
+
+			RankPruneNode rankNode = badRankPQ.top();
+			badRankPQ.pop();
+			YPrunedCandidates.push_back(rankNode.YCandidate);
+		}
+		
+		LOG() << "num of successors before pruning=" << YCandidates.size() << endl;
+		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
+
+		return YPrunedCandidates;
+	}
+
 	/**************** Oracle Prune ****************/
 
 	OraclePrune::OraclePrune()
@@ -203,7 +301,7 @@ namespace HCSearch
 	{
 	}
 	
-	vector< ImgCandidate > OraclePrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates)
+	vector< ImgCandidate > OraclePrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
 	{
 		if (YTruth == NULL)
 		{
@@ -246,7 +344,7 @@ namespace HCSearch
 		}
 
 		this->YTruth = YTruth;
-		vector<ImgCandidate> pruned = pruneSuccessors(X, Y, YCandidates);
+		vector<ImgCandidate> pruned = pruneSuccessors(X, Y, YCandidates, YTruth, this->lossFunction);
 		this->YTruth = NULL;
 		return pruned;
 	}

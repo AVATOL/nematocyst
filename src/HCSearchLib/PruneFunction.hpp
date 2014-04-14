@@ -24,7 +24,7 @@ namespace HCSearch
 		/*!
 		 * @brief Prune successors.
 		 */
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates)=0;
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)=0;
 
 		IFeatureFunction* getFeatureFunction();
 	};
@@ -40,7 +40,7 @@ namespace HCSearch
 		NoPrune();
 		~NoPrune();
 		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 	};
 
 	/*!
@@ -55,7 +55,7 @@ namespace HCSearch
 		ClassifierPrune(IFeatureFunction* featureFunction);
 		~ClassifierPrune();
 		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 		
 		IClassifierModel* getClassifier();
 		void setClassifier(IClassifierModel* classifier);
@@ -92,10 +92,29 @@ namespace HCSearch
 		RankerPrune(double pruneFraction, IFeatureFunction* featureFunction);
 		~RankerPrune();
 		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 		
 		IRankModel* getRanker();
 		void setRanker(IRankModel* ranker);
+	};
+
+	/*!
+	 * @brief Pruning function using ranker for ranking good/bad actions.
+	 */
+	class SimulatedRankerPrune : public IPruneFunction
+	{
+		static const double DEFAULT_PRUNE_FRACTION;
+		
+		double pruneFraction; //!< 0 = no pruning, 1 = prune everything
+
+	public:
+		SimulatedRankerPrune();
+		SimulatedRankerPrune(double pruneFraction);
+		SimulatedRankerPrune(IFeatureFunction* featureFunction);
+		SimulatedRankerPrune(double pruneFraction, IFeatureFunction* featureFunction);
+		~SimulatedRankerPrune();
+		
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 	};
 
 	/*!
@@ -112,7 +131,7 @@ namespace HCSearch
 		OraclePrune(ILossFunction* lossFunction);
 		~OraclePrune();
 		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates);
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 
 		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth);
 

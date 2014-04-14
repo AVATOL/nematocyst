@@ -253,7 +253,7 @@ namespace HCSearch
 		/*!
 		 * Generate successor nodes.
 		 */
-		vector< ISearchNode* > generateSuccessorNodes(bool prune, int timeStep, int timeBound);
+		vector< ISearchNode* > generateSuccessorNodes(bool prune, int timeStep, int timeBound, ImgLabeling* YTruth);
 		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
 			ImgLabeling* YTruth, int timeStep, int timeBound);
 		vector< ISearchNode* > generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
