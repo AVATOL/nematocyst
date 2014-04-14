@@ -421,6 +421,8 @@ namespace MyProgramOptions
 						po.pruneMode = RANKER_PRUNE;
 					else if (strcmp(argv[i+1], "oracle") == 0)
 						po.pruneMode = ORACLE_PRUNE;
+					else if (strcmp(argv[i+1], "simulated") == 0)
+						po.pruneMode = SIMULATED_RANKER_PRUNE;
 				}
 			}
 			else if (strcmp(argv[i], "--prune-ratio") == 0)

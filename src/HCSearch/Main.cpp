@@ -298,6 +298,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "oracle prune" << endl;
 		pruneFunc = new HCSearch::OraclePrune(lossFunc); //TODO: possibly replace with alternative
 		break;
+	case MyProgramOptions::ProgramOptions::SIMULATED_RANKER_PRUNE:
+		LOG() << "simulated ranker prune" << endl;
+		pruneFunc = new HCSearch::SimulatedRankerPrune(po.pruneRatio, pruneFeatFunc);
+		break;
 	default:
 		LOG(ERROR) << "undefined prune mode.";
 	}
@@ -400,6 +404,23 @@ void run(MyProgramOptions::ProgramOptions po)
 		{
 			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
 			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
+			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
+			HCSearch::IInitialPredictionFunction* initPredFunc = searchSpace->getInitialPredictionFunction();
+			HCSearch::MutexLogRegInit* initPredFuncCast = dynamic_cast<HCSearch::MutexLogRegInit*>(initPredFunc);
+
+			if (MyFileSystem::FileSystem::checkFileExists(mutexPath))
+			{
+				map<string, int> mutex = HCSearch::Model::loadPairwiseConstraints(mutexPath);
+				featCast->setMutex(mutex);
+				initPredFuncCast->setMutex(mutex);
+			}
+		}
+		else if (mode != HCSearch::DISCOVER_PAIRWISE && po.pruneFeaturesMode == MyProgramOptions::ProgramOptions::STANDARD_PRUNE
+			&& po.pruneMode == MyProgramOptions::ProgramOptions::SIMULATED_RANKER_PRUNE)
+		{
+			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			HCSearch::SimulatedRankerPrune* pruneCast = dynamic_cast<HCSearch::SimulatedRankerPrune*>(pruneFunc);
 			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
 			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
 			HCSearch::IInitialPredictionFunction* initPredFunc = searchSpace->getInitialPredictionFunction();
