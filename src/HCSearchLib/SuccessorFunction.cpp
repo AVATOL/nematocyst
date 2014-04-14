@@ -269,7 +269,7 @@ namespace HCSearch
 		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
 
-		LOG() << "generating successors..." << endl;
+		LOG() << "generating stochastic successors..." << endl;
 
 		// generate candidates
 		vector< ImgCandidate > successors = createCandidates(YPred, subgraphs);
@@ -593,7 +593,7 @@ namespace HCSearch
 		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
 
-		LOG() << "generating successors..." << endl;
+		LOG() << "generating cut schedule successors..." << endl;
 
 		// generate candidates
 		vector< ImgCandidate > successors = createCandidates(YPred, subgraphs);
@@ -804,7 +804,7 @@ namespace HCSearch
 		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam, timeStep, timeBound);
 
-		LOG() << "generating successors..." << endl;
+		LOG() << "generating stochastic schedule successors..." << endl;
 
 		// generate candidates
 		vector< ImgCandidate > successors = createCandidates(YPred, subgraphs);
@@ -879,7 +879,7 @@ namespace HCSearch
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				willCut = edgeWeights[i] <= scheduledThreshold;
 
-				LOG() << "\toriginal threshold=" << threshold << ", scheduled threshold=" << scheduledThreshold << ", will cut=" << willCut << endl;
+				//LOG() << "\toriginal threshold=" << threshold << ", scheduled threshold=" << scheduledThreshold << ", will cut=" << willCut << endl;
 			}
 			else
 			{
@@ -894,7 +894,7 @@ namespace HCSearch
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				willCut = edgeWeights[i] <= scheduledThreshold;
 
-				LOG() << "\toriginal threshold=" << indepThreshold << ", scheduled threshold=" << scheduledThreshold << ", will cut=" << willCut << endl;
+				//LOG() << "\toriginal threshold=" << indepThreshold << ", scheduled threshold=" << scheduledThreshold << ", will cut=" << willCut << endl;
 			}
 
 			if (!willCut)
