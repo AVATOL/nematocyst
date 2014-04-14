@@ -42,7 +42,7 @@ for row = 1:height
             prevSegmentId = segMat(row-1, col);
             if prevSegmentId ~= segmentId
                 if ~cutAvailable
-                    boundary = 0;
+                    boundary = 2;
                 elseif cutMat(prevSegmentId, segmentId) ~= 0
                     boundary = 1;
                 else
@@ -54,7 +54,7 @@ for row = 1:height
             prevSegmentId = segMat(row, col-1);
             if prevSegmentId ~= segmentId
                 if ~cutAvailable
-                    boundary = 0;
+                    boundary = 2;
                 elseif cutMat(prevSegmentId, segmentId) ~= 0
                     boundary = 1;
                 else
