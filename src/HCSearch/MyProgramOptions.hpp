@@ -71,6 +71,7 @@ namespace MyProgramOptions
 		int uniqueIterId;
 		bool saveOutputMask;
 		double pruneRatio;
+		double badPruneRatio;
 
 	public:
 		ProgramOptions();

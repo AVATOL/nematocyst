@@ -49,6 +49,7 @@ namespace MyProgramOptions
 		uniqueIterId = 0;
 		saveOutputMask = false;
 		pruneRatio = 0.5;
+		badPruneRatio = 1.0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -437,6 +438,18 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			else if (strcmp(argv[i], "--prune-bad-ratio") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.badPruneRatio = atof(argv[i+1]);
+					if (po.badPruneRatio < 0 || po.badPruneRatio > 1)
+					{
+						LOG(ERROR) << "Prune ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
 			else
 			{
 				string argvi = argv[i];
@@ -496,6 +509,7 @@ namespace MyProgramOptions
 		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
 		cerr << "\t--prune arg\t\t" << ": none|classifier|ranker|oracle|simulated" << endl;
 		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
+		cerr << "\t--prune-bad-ratio arg\t\t" << ": fraction of bad candidates to prune for oracle pruner" << endl;
 		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
