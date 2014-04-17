@@ -283,11 +283,22 @@ namespace HCSearch
 
 	/**************** Oracle Prune ****************/
 
+	const double OraclePrune::DEFAULT_PRUNE_FRACTION = 1.0;
+
 	OraclePrune::OraclePrune()
 	{
 		this->featureFunction = NULL;
 		this->lossFunction = NULL;
 		this->YTruth = NULL;
+		this->badPruneFraction = DEFAULT_PRUNE_FRACTION;
+	}
+
+	OraclePrune::OraclePrune(double badPruneFraction)
+	{
+		this->featureFunction = NULL;
+		this->lossFunction = NULL;
+		this->YTruth = NULL;
+		this->badPruneFraction = badPruneFraction;
 	}
 
 	OraclePrune::OraclePrune(ILossFunction* lossFunction)
@@ -295,6 +306,15 @@ namespace HCSearch
 		this->featureFunction = NULL;
 		this->lossFunction = lossFunction;
 		this->YTruth = NULL;
+		this->badPruneFraction = DEFAULT_PRUNE_FRACTION;
+	}
+
+	OraclePrune::OraclePrune(ILossFunction* lossFunction, double badPruneFraction)
+	{
+		this->featureFunction = NULL;
+		this->lossFunction = lossFunction;
+		this->YTruth = NULL;
+		this->badPruneFraction = badPruneFraction;
 	}
 
 	OraclePrune::~OraclePrune()
@@ -303,7 +323,7 @@ namespace HCSearch
 	
 	vector< ImgCandidate > OraclePrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
 	{
-		if (YTruth == NULL)
+		if (YTruth == NULL || lossFunc == NULL)
 		{
 			LOG(ERROR) << "YTruth is null for oracle pruning and in the inside function";
 			abort();
@@ -311,21 +331,44 @@ namespace HCSearch
 
 		vector< ImgCandidate > YPrunedCandidates;
 
-		double prevLoss = this->lossFunction->computeLoss(Y, *YTruth);
+		double prevLoss = lossFunc->computeLoss(Y, *YTruth);
+
+		RankNodePQ badRankPQ;
 
 		// remove bad candidates (keep good candidates)
 		vector<ClassifierFeatures> featuresList;
 		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
 		{
 			ImgCandidate YCand = *it;
-			double candLoss = this->lossFunction->computeLoss(YCand.labeling, *YTruth);
+			double candLoss = lossFunc->computeLoss(YCand.labeling, *YTruth);
 			
 			if (candLoss < prevLoss)
+			{
 				YPrunedCandidates.push_back(YCand);
+			}
+			else
+			{
+				RankPruneNode rankNode;
+				rankNode.rank = Rand::unifDist();
+				rankNode.YCandidate = YCand;
+				badRankPQ.push(rankNode);
+			}
+		}
+
+		const int numNewBadCandidates = static_cast<int>((1-badPruneFraction)*badRankPQ.size());
+		for (int i = 0; i < numNewBadCandidates; i++)
+		{
+			if (badRankPQ.empty())
+				break;
+
+			RankPruneNode rankNode = badRankPQ.top();
+			badRankPQ.pop();
+			YPrunedCandidates.push_back(rankNode.YCandidate);
 		}
 
 		LOG() << "num of successors before pruning=" << YCandidates.size() << endl;
 		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
+		LOG() << "\tnum of bad successors=" << numNewBadCandidates << endl;
 
 		return YPrunedCandidates;
 	}

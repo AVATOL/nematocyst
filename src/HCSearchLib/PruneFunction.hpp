@@ -122,13 +122,19 @@ namespace HCSearch
 	 */
 	class OraclePrune : public IPruneFunction
 	{
+		static const double DEFAULT_PRUNE_FRACTION;
+
 	protected:
 		ILossFunction* lossFunction;
 		ImgLabeling* YTruth;
 
+		double badPruneFraction; //!< 0 = no pruning, 1 = prune everything
+
 	public:
 		OraclePrune();
+		OraclePrune(double badPruneFraction);
 		OraclePrune(ILossFunction* lossFunction);
+		OraclePrune(ILossFunction* lossFunction, double badPruneFraction);
 		~OraclePrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
