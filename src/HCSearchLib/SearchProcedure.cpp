@@ -690,7 +690,7 @@ namespace HCSearch
 		return prediction;
 	}
 
-	GreedySearchProcedure::SearchNodeList GreedySearchProcedure::expandElements(SearchNode* bestHeuristicNode, SearchNode* bestCostNode, SearchNodeList& costSet, 
+	GreedySearchProcedure::SearchNodeList GreedySearchProcedure::expandElements(SearchNode*& bestHeuristicNode, SearchNode*& bestCostNode, SearchNodeList& costSet, 
 		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
 	{
 		SearchNodeList candidateSet;
