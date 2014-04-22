@@ -427,7 +427,10 @@ namespace HCSearch
 			}
 		}
 
-		LOG() << "num non-duplicates=" << candidateSet.size() << endl;
+		string disclaimer = "";
+		if (!Global::settings->CHECK_FOR_DUPLICATES)
+			disclaimer = " (duplicate checking disabled)";
+		LOG() << "num non-duplicates=" << candidateSet.size() << disclaimer << endl;
 
 		return candidateSet;
 	}
@@ -558,7 +561,10 @@ namespace HCSearch
 			}
 		}
 
-		LOG() << "num non-duplicates=" << candidateSet.size() << endl;
+		string disclaimer = "";
+		if (!Global::settings->CHECK_FOR_DUPLICATES)
+			disclaimer = " (duplicate checking disabled)";
+		LOG() << "num non-duplicates=" << candidateSet.size() << disclaimer << endl;
 		
 		// side effect: openSet now empty
 
@@ -727,7 +733,10 @@ namespace HCSearch
 			}
 		}
 
-		LOG() << "num non-duplicates=" << candidateSet.size() << endl;
+		string disclaimer = "";
+		if (!Global::settings->CHECK_FOR_DUPLICATES)
+			disclaimer = " (duplicate checking disabled)";
+		LOG() << "num non-duplicates=" << candidateSet.size() << disclaimer << endl;
 
 		return candidateSet;
 	}
