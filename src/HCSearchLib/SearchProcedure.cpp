@@ -750,49 +750,7 @@ namespace HCSearch
 			}
 			else
 			{
-				LOG(ERROR) << "unknown classifier for prune training positive example";
-				abort();
-			}
-
-			// generate examples
-			SearchNode* successor = new SearchNode(this, YCandPred);
-			successors.push_back(successor);
-		}
-		return successors;
-	}
-
-	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
-		ImgLabeling* YTruth, int timeStep, int timeBound)
-	{
-		vector< SearchNode* > successors;
-
-		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
-
-		// generate successors
-		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
-
-		// collect training examples
-		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
-		{
-			ImgCandidate YCandidate = *it;
-			ImgLabeling YCandPred = YCandidate.labeling;
-			
-			// collect training examples
-			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
-			set<int> action = YCandidate.action;
-			ClassifierFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
-
-			if (learningModel->classifierType() == SVM_CLASSIFIER)
-			{
-				SVMClassifierModel* svmModel = dynamic_cast<SVMClassifierModel*>(learningModel);
-				if (candLoss <= prevLoss)
-					svmModel->addTrainingExample(pruneFeatures, 1);
-				else
-					svmModel->addTrainingExample(pruneFeatures, -1);
-			}
-			else
-			{
-				LOG(ERROR) << "unknown classifier for prune training positive example";
+				LOG(ERROR) << "unknown ranker for prune training positive example";
 				abort();
 			}
 

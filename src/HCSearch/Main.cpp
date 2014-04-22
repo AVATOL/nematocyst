@@ -286,10 +286,6 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "no prune" << endl;
 		pruneFunc = new HCSearch::NoPrune();
 		break;
-	case MyProgramOptions::ProgramOptions::CLASSIFIER_PRUNE:
-		LOG() << "classifier prune" << endl;
-		pruneFunc = new HCSearch::ClassifierPrune(pruneFeatFunc);
-		break;
 	case MyProgramOptions::ProgramOptions::RANKER_PRUNE:
 		LOG() << "ranker prune" << endl;
 		pruneFunc = new HCSearch::RankerPrune(po.pruneRatio, pruneFeatFunc);
@@ -383,23 +379,6 @@ void run(MyProgramOptions::ProgramOptions po)
 		HCSearch::SearchType mode = *it;
 
 		if (mode != HCSearch::DISCOVER_PAIRWISE && po.pruneFeaturesMode == MyProgramOptions::ProgramOptions::STANDARD_PRUNE
-			&& po.pruneMode == MyProgramOptions::ProgramOptions::CLASSIFIER_PRUNE)
-		{
-			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
-			HCSearch::ClassifierPrune* pruneCast = dynamic_cast<HCSearch::ClassifierPrune*>(pruneFunc);
-			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
-			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
-			HCSearch::IInitialPredictionFunction* initPredFunc = searchSpace->getInitialPredictionFunction();
-			HCSearch::MutexLogRegInit* initPredFuncCast = dynamic_cast<HCSearch::MutexLogRegInit*>(initPredFunc);
-
-			if (MyFileSystem::FileSystem::checkFileExists(mutexPath))
-			{
-				map<string, int> mutex = HCSearch::Model::loadPairwiseConstraints(mutexPath);
-				featCast->setMutex(mutex);
-				initPredFuncCast->setMutex(mutex);
-			}
-		}
-		else if (mode != HCSearch::DISCOVER_PAIRWISE && po.pruneFeaturesMode == MyProgramOptions::ProgramOptions::STANDARD_PRUNE
 			&& po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 		{
 			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
@@ -434,17 +413,7 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 		}
 
-		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::CLASSIFIER_PRUNE)
-		{
-			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
-			HCSearch::ClassifierPrune* pruneCast = dynamic_cast<HCSearch::ClassifierPrune*>(pruneFunc);
-			if (pruneCast->getClassifier() == NULL)
-			{
-				HCSearch::IClassifierModel* pruneModel = HCSearch::Model::loadModel(pruneModelPath);
-				pruneCast->setClassifier(pruneModel);
-			}
-		}
-		else if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
+		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 		{
 			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
 			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);

@@ -107,7 +107,7 @@ namespace HCSearch
 		 * @param[in] Y Structured output labeling
 		 * @return Prune features for classification
 		 */
-		ClassifierFeatures computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		RankFeatures computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
 
 		/*!
 		 * @brief Get the initial labeling from image features.

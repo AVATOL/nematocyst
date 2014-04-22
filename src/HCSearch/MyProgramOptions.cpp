@@ -416,8 +416,6 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "none") == 0)
 						po.pruneMode = NO_PRUNE;
-					else if (strcmp(argv[i+1], "classifer") == 0)
-						po.pruneMode = CLASSIFIER_PRUNE;
 					else if (strcmp(argv[i+1], "ranker") == 0)
 						po.pruneMode = RANKER_PRUNE;
 					else if (strcmp(argv[i+1], "oracle") == 0)
@@ -507,7 +505,7 @@ namespace MyProgramOptions
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
 		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
-		cerr << "\t--prune arg\t\t" << ": none|classifier|ranker|oracle|simulated" << endl;
+		cerr << "\t--prune arg\t\t" << ": none|ranker|oracle|simulated" << endl;
 		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
 		cerr << "\t--prune-bad-ratio arg\t\t" << ": fraction of bad candidates to prune for oracle pruner" << endl;
 		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;

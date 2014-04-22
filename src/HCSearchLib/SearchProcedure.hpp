@@ -258,9 +258,6 @@ namespace HCSearch
 		vector< SearchNode* > generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
 			ImgLabeling* YTruth, int timeStep, int timeBound);
 
-		vector< SearchNode* > generateSuccessorNodesForPruneLearning(IClassifierModel* learningModel, 
-			ImgLabeling* YTruth, int timeStep, int timeBound);
-
 		/*!
 		 * Get the heuristic features of the node. 
 		 * May not be defined depending on search type.

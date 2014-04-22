@@ -641,8 +641,6 @@ namespace HCSearch
 		 */
 		static IRankModel* loadModel(string fileName, RankerType rankerType);
 
-		static IClassifierModel* loadModel(string fileName);
-
 		static map<string, int> loadPairwiseConstraints(string fileName);
 
 		/*!
@@ -652,8 +650,6 @@ namespace HCSearch
 		 * @param[in] rankerType Type of ranking model
 		 */
 		static void saveModel(IRankModel* model, string fileName, RankerType rankerType);
-
-		static void saveModel(IClassifierModel* model, string fileName);
 
 		static void savePairwiseConstraints(map<string, int>& pairwiseConstraints, string fileName);
 	};
@@ -765,13 +761,9 @@ namespace HCSearch
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
 
-		static IClassifierModel* initializeLearning(ClassifierType classifierType, SearchType searchType);
-
 		static void restartLearning(IRankModel* learningModel, SearchType searchType);
 
 		static void finishLearning(IRankModel* learningModel, SearchType searchType);
-
-		static void finishLearning(IClassifierModel* learningModel, SearchType searchType);
     };
 
 	/*! @} */

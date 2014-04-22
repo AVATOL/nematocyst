@@ -43,24 +43,6 @@ namespace HCSearch
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 	};
 
-	/*!
-	 * @brief Pruning function using classifer for good/bad actions.
-	 */
-	class ClassifierPrune : public IPruneFunction
-	{
-		IClassifierModel* classifier;
-
-	public:
-		ClassifierPrune();
-		ClassifierPrune(IFeatureFunction* featureFunction);
-		~ClassifierPrune();
-		
-		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
-		
-		IClassifierModel* getClassifier();
-		void setClassifier(IClassifierModel* classifier);
-	};
-
 	struct RankPruneNode
 	{
 		double rank;

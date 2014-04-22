@@ -634,13 +634,6 @@ namespace HCSearch
 		}
 	}
 
-	IClassifierModel* Model::loadModel(string fileName)
-	{
-		SVMClassifierModel* model = new SVMClassifierModel();
-		model->load(fileName);
-		return model;
-	}
-
 	map<string, int> Model::loadPairwiseConstraints(string fileName)
 	{
 		map<string, int> pairwiseConstraints;
@@ -736,12 +729,6 @@ namespace HCSearch
 		{
 			LOG(ERROR) << "ranker type is invalid for saving model";
 		}
-	}
-
-	void Model::saveModel(IClassifierModel* model, string fileName)
-	{
-		SVMClassifierModel* modelCast = dynamic_cast<SVMClassifierModel*>(model);
-		modelCast->save(fileName);
 	}
 
 	void Model::savePairwiseConstraints(map<string, int>& pairwiseConstraints, string fileName)
@@ -939,7 +926,6 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				//TODO: generalize ranker to classifier
 				searchProcedure->performSearch(LEARN_PRUNE, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, NULL, learningModel, meta);
 			}
 		}
@@ -1068,32 +1054,6 @@ namespace HCSearch
 		return learningModel;
 	}
 
-	IClassifierModel* Learning::initializeLearning(ClassifierType classifierType, SearchType searchType)
-	{
-		// Setup model for learning
-		IClassifierModel* learningModel = NULL;
-		
-		if (classifierType == SVM_CLASSIFIER)
-		{
-			learningModel = new SVMClassifierModel();
-			SVMClassifierModel* svmModel = dynamic_cast<SVMClassifierModel*>(learningModel);
-			if (searchType == LEARN_PRUNE)
-				svmModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
-			else
-			{
-				LOG(ERROR) << "unknown search type for initializing classifier learning!";
-				abort();
-			}
-		}
-		else
-		{
-			LOG(ERROR) << "unsupported classifier learner.";
-			abort();
-		}
-
-		return learningModel;
-	}
-
 	void Learning::restartLearning(IRankModel* learningModel, SearchType searchType)
 	{
 		if (learningModel->rankerType() == SVM_RANK)
@@ -1176,26 +1136,6 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "unsupported rank learner.";
-			abort();
-		}
-	}
-
-	void Learning::finishLearning(IClassifierModel* learningModel, SearchType searchType)
-	{
-		if (learningModel->classifierType() == SVM_CLASSIFIER)
-		{
-			SVMClassifierModel* svmModel = dynamic_cast<SVMClassifierModel*>(learningModel);
-			if (searchType == LEARN_PRUNE)
-				svmModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE);
-			else
-			{
-				LOG(ERROR) << "invalid search type for finish learning classifier!";
-				abort();
-			}
-		}
-		else
-		{
-			LOG(ERROR) << "unsupported classifier learner.";
 			abort();
 		}
 	}

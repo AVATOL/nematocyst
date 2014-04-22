@@ -63,7 +63,7 @@ namespace HCSearch
 		return this->costFeatureFunction->computeFeatures(X, Y, action);
 	}
 
-	ClassifierFeatures SearchSpace::computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	RankFeatures SearchSpace::computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
 	{
 		if (this->pruneFunction->getFeatureFunction() == NULL)
 		{
