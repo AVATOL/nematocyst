@@ -75,8 +75,6 @@ namespace HCSearch
 		typedef priority_queue<SearchNode*, vector<SearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
 		typedef priority_queue<SearchNode*, vector<SearchNode*>, CompareByCost> SearchNodeCostPQ;
 
-		static const int PRUNE_MAX_NUM_CANDIDATES;
-
 	public:
 		virtual ~ISearchProcedure() {}
 
@@ -90,6 +88,12 @@ namespace HCSearch
 			IRankModel* pruneModel, SearchMetadata searchMetadata)=0;
 
 	protected:
+		/*!
+		 * @brief Create the root node of the search tree.
+		 */
+		SearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
+
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
 		void trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses);
@@ -108,12 +112,6 @@ namespace HCSearch
 			IRankModel* pruneModel, SearchMetadata searchMetadata);
 
 	protected:
-		/*!
-		 * @brief Create the root node of the search tree.
-		 */
-		SearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
-
 		/*!
 		 * @brief Stub for selecting a subset of the open set for processing.
 		 */

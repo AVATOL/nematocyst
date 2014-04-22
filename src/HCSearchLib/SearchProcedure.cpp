@@ -117,8 +117,38 @@ namespace HCSearch
 
 	/**************** Search Procedure ****************/
 
-	//TODO: get this value from command line
-	const int ISearchProcedure::PRUNE_MAX_NUM_CANDIDATES = 100;
+	ISearchProcedure::SearchNode* ISearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
+	{
+		SearchNode* root = NULL;
+		switch (searchType)
+		{
+			case LL:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			case HL:
+				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
+				break;
+			case LC:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, costModel, searchType);
+				break;
+			case HC:
+				root = new SearchNode(&X, NULL, searchSpace, heuristicModel, costModel, searchType);
+				break;
+			case LEARN_H:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			case LEARN_C:
+				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
+				break;
+			case LEARN_C_ORACLE_H:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			default:
+				LOG(ERROR) << "searchType constant is invalid.";
+		}
+		return root;
+	}
 
 	ISearchProcedure::SearchMetadata::SearchMetadata()
 	{
@@ -334,39 +364,6 @@ namespace HCSearch
 		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return prediction;
-	}
-
-	ISearchProcedure::SearchNode* IBasicSearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-		SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
-	{
-		SearchNode* root = NULL;
-		switch (searchType)
-		{
-			case LL:
-				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
-				break;
-			case HL:
-				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
-				break;
-			case LC:
-				root = new SearchNode(&X, YTruth, searchSpace, NULL, costModel, searchType);
-				break;
-			case HC:
-				root = new SearchNode(&X, NULL, searchSpace, heuristicModel, costModel, searchType);
-				break;
-			case LEARN_H:
-				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
-				break;
-			case LEARN_C:
-				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
-				break;
-			case LEARN_C_ORACLE_H:
-				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
-				break;
-			default:
-				LOG(ERROR) << "searchType constant is invalid.";
-		}
-		return root;
 	}
 
 	/**************** Breadth-First Beam Search Procedure ****************/
