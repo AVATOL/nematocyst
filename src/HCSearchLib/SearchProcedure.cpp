@@ -942,7 +942,7 @@ namespace HCSearch
 		{
 			ImgCandidate YCandidate = *it;
 			ImgLabeling YCandPred = YCandidate.labeling;
-			SearchNode* successor = new SearchNode(this, YPred);
+			SearchNode* successor = new SearchNode(this, YCandPred);
 			successors.push_back(successor);
 		}
 		return successors;
