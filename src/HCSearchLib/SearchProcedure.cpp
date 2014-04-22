@@ -716,7 +716,7 @@ namespace HCSearch
 			if (!Global::settings->CHECK_FOR_DUPLICATES || !isDuplicate(state, costSet))
 			{
 				// store to cost set in order to check for duplicates
-				if (Global::settings->CHECK_FOR_DUPLICATES)
+				if (Global::settings->CHECK_FOR_DUPLICATES || searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
 					costSet.push_back(state);
 
 				// only return nodes when learning H
