@@ -414,6 +414,8 @@ namespace HCSearch
 			else
 				expansionSet = current->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
 
+			LOG() << "num expansion=" << expansionSet.size() << endl;
+
 			// only accept expanded element if not a duplicate state
 			for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
@@ -424,6 +426,8 @@ namespace HCSearch
 				}
 			}
 		}
+
+		LOG() << "num non-duplicates=" << candidateSet.size() << endl;
 
 		return candidateSet;
 	}
@@ -529,6 +533,8 @@ namespace HCSearch
 			else
 				expansionSet = current->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
 
+			LOG() << "num expansion=" << expansionSet.size() << endl;
+
 			// only accept expanded element if not a duplicate state
 			for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
@@ -551,6 +557,8 @@ namespace HCSearch
 				candidateSet.push(current);
 			}
 		}
+
+		LOG() << "num non-duplicates=" << candidateSet.size() << endl;
 		
 		// side effect: openSet now empty
 
@@ -693,6 +701,8 @@ namespace HCSearch
 		// reset best heuristic
 		bestHeuristicNode = NULL;
 
+		LOG() << "num expansion=" << expansionSet.size() << endl;
+
 		// only accept expanded element if not a duplicate state
 		for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 		{
@@ -700,7 +710,8 @@ namespace HCSearch
 			if (!Global::settings->CHECK_FOR_DUPLICATES || !isDuplicate(state, costSet))
 			{
 				// store to cost set in order to check for duplicates
-				costSet.push_back(state);
+				if (Global::settings->CHECK_FOR_DUPLICATES)
+					costSet.push_back(state);
 
 				// only return nodes when learning H
 				if (searchType == LEARN_H)
@@ -715,6 +726,8 @@ namespace HCSearch
 					bestCostNode = state;
 			}
 		}
+
+		LOG() << "num non-duplicates=" << candidateSet.size() << endl;
 
 		return candidateSet;
 	}
