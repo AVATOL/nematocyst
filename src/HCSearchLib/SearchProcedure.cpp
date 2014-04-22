@@ -1003,7 +1003,7 @@ namespace HCSearch
 
 	RankFeatures ISearchProcedure::SearchNode::getHeuristicFeatures()
 	{
-		if (getType() == LL || getType() == LC || getType() == LEARN_C)
+		if (getType() == LL || getType() == LC || getType() == LEARN_C_ORACLE_H)
 		{
 			LOG(ERROR) << "heuristic features are not defined";
 			return RankFeatures();
@@ -1014,7 +1014,7 @@ namespace HCSearch
 
 	RankFeatures ISearchProcedure::SearchNode::getCostFeatures()
 	{
-		if (getType() == LL || getType() == HL || getType() == LEARN_H || getType() == LEARN_C_ORACLE_H)
+		if (getType() == LL || getType() == HL || getType() == LEARN_H)
 		{
 			LOG(ERROR) << "cost features are not defined";
 			return RankFeatures();
