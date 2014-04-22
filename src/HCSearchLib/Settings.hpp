@@ -220,6 +220,11 @@ namespace HCSearch
 		 */
 		bool USE_DAGGER;
 
+		/*!
+		 * @brief Check for duplicates when searching.
+		 */
+		bool CHECK_FOR_DUPLICATES;
+
 		/**************** Experiment Settings ****************/
 
 		/*!

@@ -418,7 +418,7 @@ namespace HCSearch
 			for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
 				SearchNode* state = *it;
-				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
+				if (!Global::settings->CHECK_FOR_DUPLICATES || (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet)))
 				{
 					candidateSet.push(state);
 				}
@@ -546,7 +546,7 @@ namespace HCSearch
 			SearchNode* current = openSet.top();
 			openSet.pop();
 
-			if (!isDuplicate(current, candidateSet) && !isDuplicate(current, costSet))
+			if (!Global::settings->CHECK_FOR_DUPLICATES || (!isDuplicate(current, candidateSet) && !isDuplicate(current, costSet)))
 			{
 				candidateSet.push(current);
 			}
@@ -697,7 +697,7 @@ namespace HCSearch
 		for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 		{
 			SearchNode* state = *it;
-			if (!isDuplicate(state, costSet))
+			if (!Global::settings->CHECK_FOR_DUPLICATES || !isDuplicate(state, costSet))
 			{
 				// store to cost set in order to check for duplicates
 				costSet.push_back(state);

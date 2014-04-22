@@ -337,6 +337,7 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
+		CHECK_FOR_DUPLICATES = false;
 
 		/**************** Experiment Settings ****************/
 
