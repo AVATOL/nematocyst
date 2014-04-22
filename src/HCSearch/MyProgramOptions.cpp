@@ -30,9 +30,11 @@ namespace MyProgramOptions
 		searchProcedureMode = GREEDY;
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
+		pruneFeaturesMode = STANDARD_PRUNE;
 		initialFunctionMode = LOG_REG;
 		successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
 		lossMode = HAMMING;
+		pruneMode = NO_PRUNE;
 
 		stochasticCutMode = EDGES;
 		beamSize = 1;
@@ -46,6 +48,8 @@ namespace MyProgramOptions
 		verboseMode = true;
 		uniqueIterId = 0;
 		saveOutputMask = false;
+		pruneRatio = 0.5;
+		badPruneRatio = 1.0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -122,6 +126,10 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
+					else if (strcmp(argv[i+1], "P") == 0 || strcmp(argv[i+1], "p") == 0)
+						po.schedule.push_back(HCSearch::LEARN_PRUNE);
+					else if (strcmp(argv[i+1], "MUTEX") == 0 || strcmp(argv[i+1], "mutex") == 0)
+						po.schedule.push_back(HCSearch::DISCOVER_PAIRWISE);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);
@@ -227,6 +235,12 @@ namespace MyProgramOptions
 						po.successorsMode = CUT_SCHEDULE_NEIGHBORS;
 					else if (strcmp(argv[i+1], "cut-schedule-confidences-neighbors") == 0)
 						po.successorsMode = CUT_SCHEDULE_CONFIDENCES_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-schedule") == 0)
+						po.successorsMode = STOCHASTIC_SCHEDULE;
+					else if (strcmp(argv[i+1], "stochastic-schedule-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_SCHEDULE_NEIGHBORS;
+					else if (strcmp(argv[i+1], "stochastic-schedule-confidences-neighbors") == 0)
+						po.successorsMode = STOCHASTIC_SCHEDULE_CONFIDENCES_NEIGHBORS;
 				}
 			}
 			else if (strcmp(argv[i], "--cut-param") == 0)
@@ -362,6 +376,30 @@ namespace MyProgramOptions
 						po.costFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
 				}
 			}
+			else if (strcmp(argv[i], "--pfeatures") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "standard") == 0)
+						po.pruneFeaturesMode = STANDARD;
+					//else if (strcmp(argv[i+1], "standard-alt") == 0)
+					//	po.pruneFeaturesMode = STANDARD_ALT;
+					else if (strcmp(argv[i+1], "standard-conf") == 0)
+						po.pruneFeaturesMode = STANDARD_CONF;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.pruneFeaturesMode = DENSE_CRF;
+					else if (strcmp(argv[i+1], "unary") == 0)
+						po.pruneFeaturesMode = UNARY;
+					else if (strcmp(argv[i+1], "unary-conf") == 0)
+						po.pruneFeaturesMode = UNARY_CONF;
+					else if (strcmp(argv[i+1], "standard-pair-counts") == 0)
+						po.pruneFeaturesMode = STANDARD_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
+						po.pruneFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-prune") == 0)
+						po.pruneFeaturesMode = STANDARD_PRUNE;
+				}
+			}
 			else if (strcmp(argv[i], "--loss") == 0)
 			{
 				if (i + 1 != argc)
@@ -370,6 +408,44 @@ namespace MyProgramOptions
 						po.lossMode = HAMMING;
 					else if (strcmp(argv[i+1], "pixel-hamming") == 0)
 						po.lossMode = PIXEL_HAMMING;
+				}
+			}
+			else if (strcmp(argv[i], "--prune") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "none") == 0)
+						po.pruneMode = NO_PRUNE;
+					else if (strcmp(argv[i+1], "ranker") == 0)
+						po.pruneMode = RANKER_PRUNE;
+					else if (strcmp(argv[i+1], "oracle") == 0)
+						po.pruneMode = ORACLE_PRUNE;
+					else if (strcmp(argv[i+1], "simulated") == 0)
+						po.pruneMode = SIMULATED_RANKER_PRUNE;
+				}
+			}
+			else if (strcmp(argv[i], "--prune-ratio") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.pruneRatio = atof(argv[i+1]);
+					if (po.pruneRatio < 0 || po.pruneRatio >= 1)
+					{
+						LOG(ERROR) << "Prune ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--prune-bad-ratio") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.badPruneRatio = atof(argv[i+1]);
+					if (po.badPruneRatio < 0 || po.badPruneRatio > 1)
+					{
+						LOG(ERROR) << "Prune ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
 				}
 			}
 			else
@@ -402,6 +478,7 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
+		cerr << "\t\t\t\tP: learn prune function" << endl;
 		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
 		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
 		cerr << "\t--infer arg\t" << ": inference" << endl;
@@ -422,10 +499,15 @@ namespace MyProgramOptions
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
+		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
 		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
+		cerr << "\t--prune arg\t\t" << ": none|ranker|oracle|simulated" << endl;
+		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
+		cerr << "\t--prune-bad-ratio arg\t\t" << ": fraction of bad candidates to prune for oracle pruner" << endl;
 		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
@@ -435,7 +517,8 @@ namespace MyProgramOptions
 		cerr << "\t--splits-test-file arg\t" << ": specify alternate file name to test file" << endl;
 		cerr << "\t--successor arg\t\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
-			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
+			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors"
+			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|" << endl;
 		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;

@@ -11,7 +11,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle"};
+	const string SearchTypeStrings[] = {"ll", "hl", "lc", "hc", "learnh", "learnc", "learncoracle", "learnp", "discoverpairwise"};
 	const string DatasetTypeStrings[] = {"test", "train", "validation"};
 
 	/**************** Priority Queues ****************/
@@ -169,18 +169,48 @@ namespace HCSearch
 		return labels;
 	}
 
-	/**************** Rank Features ****************/
+	vector<int> ImgLabeling::getLabelsByConfidence(int node)
+	{
+		// check if confidences are available
+		if (!this->confidencesAvailable)
+		{
+			LOG(ERROR) << "confidences are not available to get sorted confident labels.";
+			abort();
+		}
 
-	RankFeatures::RankFeatures()
+		const int numLabels = this->confidences.cols();
+		vector<int> labels;
+
+		// get top K confident labels
+		LabelConfidencePQ sortedByConfidence;
+		for (int i = 0; i < numLabels; i++)
+		{
+			int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+			double confidence = this->confidences(node, i);
+			sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+		}
+		for (int i = 0; i < numLabels; i++)
+		{
+			MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+			sortedByConfidence.pop();
+			labels.push_back(p.first);
+		}
+
+		return labels;
+	}
+
+	/**************** Classify/Rank Features ****************/
+
+	GenericFeatures::GenericFeatures()
 	{
 	}
 
-	RankFeatures::RankFeatures(VectorXd features)
+	GenericFeatures::GenericFeatures(VectorXd features)
 	{
 		this->data = features;
 	}
 
-	RankFeatures::~RankFeatures()
+	GenericFeatures::~GenericFeatures()
 	{
 	}
 
@@ -206,6 +236,23 @@ namespace HCSearch
 		}
 
 		return vectorDot(getWeights(), features.data);
+	}
+
+	vector<double> SVMRankModel::rank(vector<RankFeatures> featuresList)
+	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "svm ranker not initialized for ranking";
+			abort();
+		}
+
+		int numExamples = featuresList.size();
+		vector<double> ranks;
+		for (int i = 0; i < numExamples; i++)
+		{
+			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+		}
+		return ranks;
 	}
 
 	RankerType SVMRankModel::rankerType()
@@ -253,6 +300,13 @@ namespace HCSearch
 		this->rankingFileName = featuresFileName;
 	}
 
+	void SVMRankModel::addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature)
+	{
+		(*this->rankingFile) << vector2svmrank(betterFeature, 1, this->qid) << endl;
+		(*this->rankingFile) << vector2svmrank(worseFeature, 2, this->qid) << endl;
+		this->qid++;
+	}
+
 	void SVMRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet)
 	{
 		int betterSetSize = betterSet.size();
@@ -286,7 +340,7 @@ namespace HCSearch
 
 	void SVMRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_PRUNE)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();
@@ -624,6 +678,23 @@ namespace HCSearch
 		return vectorDot(getWeights(), features.data);
 	}
 
+	vector<double> VWRankModel::rank(vector<RankFeatures> featuresList)
+	{
+		if (!this->initialized)
+		{
+			LOG(ERROR) << "VW ranker not initialized for ranking";
+			abort();
+		}
+
+		int numExamples = featuresList.size();
+		vector<double> ranks;
+		for (int i = 0; i < numExamples; i++)
+		{
+			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+		}
+		return ranks;
+	}
+
 	RankerType VWRankModel::rankerType()
 	{
 		return VW_RANK;
@@ -668,6 +739,12 @@ namespace HCSearch
 		this->rankingFileName = featuresFileName;
 	}
 
+	void VWRankModel::addTrainingExample(RankFeatures better, RankFeatures worse, double betterLoss, double worstLoss)
+	{
+		double loss = abs(betterLoss - worstLoss);
+		(*this->rankingFile) << vector2vwformat(better, worse, loss) << endl;
+	}
+
 	void VWRankModel::addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses)
 	{
 		int betterSetSize = betterSet.size();
@@ -702,7 +779,7 @@ namespace HCSearch
 	void VWRankModel::finishTraining(string modelFileName, SearchType searchType)
 	{
 
-		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H && searchType != LEARN_PRUNE)
 		{
 			LOG(ERROR) << "invalid search type for training.";
 			abort();

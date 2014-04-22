@@ -6,6 +6,8 @@ namespace HCSearch
 {
 	/**************** Initial Prediction Functions ****************/
 
+	/**************** Logistic Regression ****************/
+
 	const double LogRegInit::DEFAULT_C = 10;
 	const double LogRegInit::BINARY_CONFIDENCE_THRESHOLD = 0.75;
 
@@ -257,5 +259,173 @@ namespace HCSearch
 		}
 
 		return hasNeighbors;
+	}
+	
+	/**************** Logistic Regression with Mutex ****************/
+
+	const int MutexLogRegInit::MUTEX_THRESHOLD = 100;
+
+	MutexLogRegInit::MutexLogRegInit()
+	{
+		this->initialized = false;
+	}
+	
+	MutexLogRegInit::~MutexLogRegInit()
+	{
+	}
+
+	ImgLabeling MutexLogRegInit::getInitialPrediction(ImgFeatures& X)
+	{
+		ImgLabeling Y = LogRegInit::getInitialPrediction(X);
+
+		if (this->initialized)
+		{
+			LOG() << "Checking if initial prediction satisfies mutex..." << endl;
+
+			bool satisfied = false;
+			
+			const int numNodes = X.getNumNodes();
+			const int numClasses = Global::settings->CLASSES.numClasses();
+			VectorXi confidenceIndices = VectorXi::Zero(numNodes);
+
+			while (!satisfied)
+			{
+				satisfied = true;
+				for (int node1 = 0; node1 < numNodes && satisfied; node1++)
+				{
+					for (int node2 = 0; node2 < numNodes && satisfied; node2++)
+					{
+						if (node1 == node2)
+							continue;
+
+						// get node features and label
+						VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+						double nodeLocationX1 = X.getNodeLocationX(node1);
+						double nodeLocationY1 = X.getNodeLocationY(node1);
+						int nodeLabel1 = Y.getLabel(node1);
+
+						VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+						double nodeLocationX2 = X.getNodeLocationX(node2);
+						double nodeLocationY2 = X.getNodeLocationY(node2);
+						int nodeLabel2 = Y.getLabel(node2);
+
+						vector<int> node1ConfidentLabels = Y.getLabelsByConfidence(node1);
+
+						if (nodeLabel1 != nodeLabel2)
+						{
+							if (nodeLocationX1 < nodeLocationX2)
+							{
+								string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "L");
+								if (this->mutex.count(mutexKey) == 0)
+									satisfied = false;
+								else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+									satisfied = false;
+
+								if (!satisfied)
+								{
+									LOG(DEBUG) << "not satisfied: " << node1 << ", " << node2;
+									if (confidenceIndices(node1)+1 >= numClasses)
+									{
+										satisfied = true;
+									}
+									else
+									{
+										Y.graph.nodesData(node1) = node1ConfidentLabels[confidenceIndices(node1)+1];
+										confidenceIndices(node1) += 1;
+									}
+								}
+							}
+							else if (nodeLocationX1 > nodeLocationX2)
+							{
+								string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "R");
+								if (this->mutex.count(mutexKey) == 0)
+									satisfied = false;
+								else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+									satisfied = false;
+
+								if (!satisfied)
+								{
+									LOG(DEBUG) << "not satisfied: " << node1 << ", " << node2;
+									if (confidenceIndices(node1)+1 >= numClasses)
+									{
+										satisfied = true;
+									}
+									else
+									{
+										Y.graph.nodesData(node1) = node1ConfidentLabels[confidenceIndices(node1)+1];
+										confidenceIndices(node1) += 1;
+									}
+								}
+							}
+			
+							if (nodeLocationY1 < nodeLocationY2)
+							{
+								string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "U");
+								if (this->mutex.count(mutexKey) == 0)
+									satisfied = false;
+								else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+									satisfied = false;
+
+								if (!satisfied)
+								{
+									LOG(DEBUG) << "not satisfied: " << node1 << ", " << node2;
+									if (confidenceIndices(node1)+1 >= numClasses)
+									{
+										satisfied = true;
+									}
+									else
+									{
+										Y.graph.nodesData(node1) = node1ConfidentLabels[confidenceIndices(node1)+1];
+										confidenceIndices(node1) += 1;
+									}
+								}
+							}
+							else if (nodeLocationY1 > nodeLocationY2)
+							{
+								string mutexKey = mutexStringHelper(nodeLabel1, nodeLabel2, "D");
+								if (this->mutex.count(mutexKey) == 0)
+									satisfied = false;
+								else if (this->mutex[mutexKey] <= MUTEX_THRESHOLD)
+									satisfied = false;
+
+								if (!satisfied)
+								{
+									LOG(DEBUG) << "not satisfied: " << node1 << ", " << node2;
+									if (confidenceIndices(node1)+1 >= numClasses)
+									{
+										satisfied = true;
+									}
+									else
+									{
+										Y.graph.nodesData(node1) = node1ConfidentLabels[confidenceIndices(node1)+1];
+										confidenceIndices(node1) += 1;
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return Y;
+	}
+
+	void MutexLogRegInit::setMutex(map<string, int>& mutex)
+	{
+		this->mutex = mutex;
+		this->initialized = true;
+	}
+
+	map<string, int> MutexLogRegInit::getMutex()
+	{
+		return this->mutex;
+	}
+
+	string MutexLogRegInit::mutexStringHelper(int class1, int class2, string config)
+	{
+		stringstream ss;
+		ss << class1 << " " << class2 << " " << config;
+		return ss.str();
 	}
 }

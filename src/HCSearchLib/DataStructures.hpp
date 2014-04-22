@@ -18,7 +18,8 @@ namespace HCSearch
 
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
-		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
+		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
+		LEARN_PRUNE, DISCOVER_PAIRWISE };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 
@@ -258,16 +259,37 @@ namespace HCSearch
 		 * @return Returns the set of top K confident labels for the node
 		 */
 		set<int> getTopConfidentLabels(int node, int K);
+
+		vector<int> getLabelsByConfidence(int node);
 	};
 
-	/**************** Rank Features ****************/
+	/*!
+	 * @brief Structured output labeling candidate: labeling and action.
+	 * 
+	 * This stores an ImgLabeling with a corresponding action, i.e. the set of nodes that changed.
+	 */
+	class ImgCandidate
+	{
+	public:
+		/*!
+		 * New labeling.
+		 */
+		ImgLabeling labeling;
+
+		/*!
+		 * Set of nodes that changed.
+		 */
+		set<int> action;
+	};
+
+	/**************** Classify/Rank Features ****************/
 
 	/*!
-	 * @brief Stores features for ranking.
+	 * @brief Stores features for ranking or classification.
 	 * 
 	 * This is nothing more than a wrapper around a VectorXd object.
 	 */
-	class RankFeatures
+	class GenericFeatures
 	{
 	public:
 		/*!
@@ -278,15 +300,17 @@ namespace HCSearch
 		/*!
 		 * Default constructor does nothing.
 		 */
-		RankFeatures();
+		GenericFeatures();
 
 		/*!
 		 * Constructor to initialize features data.
 		 */
-		RankFeatures(VectorXd features);
+		GenericFeatures(VectorXd features);
 		
-		~RankFeatures();
+		~GenericFeatures();
 	};
+
+	typedef GenericFeatures RankFeatures;
 
 	/**************** Rank Model ****************/
 
@@ -310,6 +334,13 @@ namespace HCSearch
 		 * @return Returns the ranking of the feature
 		 */
 		virtual double rank(RankFeatures features)=0;
+
+		/*!
+		 * Use the model to rank a list of features.
+		 * @param[in] featuresList List of features for ranking
+		 * @return Returns the list of ranking values of the features
+		 */
+		virtual vector<double> rank(vector<RankFeatures> featuresList)=0;
 
 		/*!
 		 * Get the ranker type.
@@ -396,6 +427,7 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
@@ -408,6 +440,11 @@ namespace HCSearch
 		 * Initialize learning.
 		 */
 		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training example.
+		 */
+		void addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature);
 
 		/*!
 		 * Add training examples.
@@ -499,6 +536,7 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
@@ -511,6 +549,11 @@ namespace HCSearch
 		 * Initialize learning.
 		 */
 		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training example.
+		 */
+		void addTrainingExample(RankFeatures better, RankFeatures worse, double betterLoss, double worstLoss);
 
 		/*!
 		 * Add training examples.

@@ -53,7 +53,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 {
 	LOG() << "=== Search Space ===" << endl;
 
-	// use Hamming loss function
+	// select some loss function
 	LOG() << "Loss function: ";
 	HCSearch::ILossFunction* lossFunc = NULL;
 	switch (po.lossMode)
@@ -152,7 +152,52 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG(ERROR) << "undefined feature mode.";
 	}
 
-	// use stochastic successor function
+	// select prune feature function
+	LOG() << "Prune feature function: ";
+	HCSearch::IFeatureFunction* pruneFeatFunc = NULL;
+	switch (po.pruneFeaturesMode)
+	{
+	case MyProgramOptions::ProgramOptions::STANDARD:
+		LOG() << "standard CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_ALT:
+		LOG() << "standard 2 CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardAltFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_CONF:
+		LOG() << "standard 3 CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardConfFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::UNARY:
+		LOG() << "unary CRF features" << endl;
+		pruneFeatFunc = new HCSearch::UnaryFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::UNARY_CONF:
+		LOG() << "unary confidences CRF features" << endl;
+		pruneFeatFunc = new HCSearch::UnaryConfFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_PAIR_COUNTS:
+		LOG() << "pairwise bigram CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardPairwiseCountsFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_CONF_PAIR_COUNTS:
+		LOG() << "pairwise bigram confidences CRF features" << endl;
+		pruneFeatFunc = new HCSearch::StandardConfPairwiseCountsFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::DENSE_CRF:
+		LOG() << "dense CRF features" << endl;
+		pruneFeatFunc = new HCSearch::DenseCRFFeatures();
+		break;
+	case MyProgramOptions::ProgramOptions::STANDARD_PRUNE:
+		LOG() << "standard prune features" << endl;
+		pruneFeatFunc = new HCSearch::StandardPruneFeatures();
+		break;
+	default:
+		LOG(ERROR) << "undefined feature mode.";
+	}
+
+	// select some successor function
 	LOG() << "Successor function: ";
 	HCSearch::ISuccessorFunction* successor = NULL;
 	bool cutEdgesIndependently = po.stochasticCutMode == MyProgramOptions::ProgramOptions::EDGES;
@@ -203,6 +248,24 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		successor = new HCSearch::CutScheduleConfidencesNeighborSuccessor(po.cutParam);
 		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE:
+		LOG() << "stochastic schedule" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		successor = new HCSearch::StochasticScheduleSuccessor(cutEdgesIndependently, po.cutParam);
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE_NEIGHBORS:
+		LOG() << "stochastic schedule neighbors" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		successor = new HCSearch::StochasticScheduleNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		break;
+	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE_CONFIDENCES_NEIGHBORS:
+		LOG() << "stochastic schedule confidences neighbors" << endl;
+		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
+		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		successor = new HCSearch::StochasticScheduleConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";
 	}
@@ -210,12 +273,37 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	// use IID logistic regression as initial state prediction function
 	LOG() << "Initial state prediction function: ";
 	LOG() << "IID logistic regression" << endl;
-	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::LogRegInit();
+	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::MutexLogRegInit(); //new HCSearch::LogRegInit();
 
 	LOG() << endl;
 
+	// select some pruning function
+	LOG() << "Pruning function: ";
+	HCSearch::IPruneFunction* pruneFunc = NULL;
+	switch (po.pruneMode)
+	{
+	case MyProgramOptions::ProgramOptions::NO_PRUNE:
+		LOG() << "no prune" << endl;
+		pruneFunc = new HCSearch::NoPrune();
+		break;
+	case MyProgramOptions::ProgramOptions::RANKER_PRUNE:
+		LOG() << "ranker prune" << endl;
+		pruneFunc = new HCSearch::RankerPrune(po.pruneRatio, pruneFeatFunc);
+		break;
+	case MyProgramOptions::ProgramOptions::ORACLE_PRUNE:
+		LOG() << "oracle prune" << endl;
+		pruneFunc = new HCSearch::OraclePrune(lossFunc, po.badPruneRatio);
+		break;
+	case MyProgramOptions::ProgramOptions::SIMULATED_RANKER_PRUNE:
+		LOG() << "simulated ranker prune" << endl;
+		pruneFunc = new HCSearch::SimulatedRankerPrune(po.pruneRatio, pruneFeatFunc);
+		break;
+	default:
+		LOG(ERROR) << "undefined prune mode.";
+	}
+
 	// construct search space from these functions that we specified
-	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, lossFunc);
+	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, pruneFunc, lossFunc);
 }
 
 HCSearch::ISearchProcedure* setupSearchProcedure(MyProgramOptions::ProgramOptions po)
@@ -259,6 +347,8 @@ void run(MyProgramOptions::ProgramOptions po)
 	string heuristicModelPath = HCSearch::Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE;
 	string costModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_H_MODEL_FILE;
 	string costOracleHModelPath = HCSearch::Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE;
+	string pruneModelPath = HCSearch::Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE;
+	string mutexPath = HCSearch::Global::settings->paths->OUTPUT_MUTEX_FILE;
 
 	// params
 	HCSearch::RankerType rankerType = po.rankLearnerType;
@@ -287,6 +377,53 @@ void run(MyProgramOptions::ProgramOptions po)
 		HCSearch::Global::settings->stats->resetSuccessorCount();
 
 		HCSearch::SearchType mode = *it;
+
+		if (mode != HCSearch::DISCOVER_PAIRWISE && po.pruneFeaturesMode == MyProgramOptions::ProgramOptions::STANDARD_PRUNE
+			&& po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
+		{
+			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
+			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
+			HCSearch::IInitialPredictionFunction* initPredFunc = searchSpace->getInitialPredictionFunction();
+			HCSearch::MutexLogRegInit* initPredFuncCast = dynamic_cast<HCSearch::MutexLogRegInit*>(initPredFunc);
+
+			if (MyFileSystem::FileSystem::checkFileExists(mutexPath))
+			{
+				map<string, int> mutex = HCSearch::Model::loadPairwiseConstraints(mutexPath);
+				featCast->setMutex(mutex);
+				initPredFuncCast->setMutex(mutex);
+			}
+		}
+		else if (mode != HCSearch::DISCOVER_PAIRWISE && po.pruneFeaturesMode == MyProgramOptions::ProgramOptions::STANDARD_PRUNE
+			&& po.pruneMode == MyProgramOptions::ProgramOptions::SIMULATED_RANKER_PRUNE)
+		{
+			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			HCSearch::SimulatedRankerPrune* pruneCast = dynamic_cast<HCSearch::SimulatedRankerPrune*>(pruneFunc);
+			HCSearch::IFeatureFunction* featFunc = pruneCast->getFeatureFunction();
+			HCSearch::StandardPruneFeatures* featCast = dynamic_cast<HCSearch::StandardPruneFeatures*>(featFunc);
+			HCSearch::IInitialPredictionFunction* initPredFunc = searchSpace->getInitialPredictionFunction();
+			HCSearch::MutexLogRegInit* initPredFuncCast = dynamic_cast<HCSearch::MutexLogRegInit*>(initPredFunc);
+
+			if (MyFileSystem::FileSystem::checkFileExists(mutexPath))
+			{
+				map<string, int> mutex = HCSearch::Model::loadPairwiseConstraints(mutexPath);
+				featCast->setMutex(mutex);
+				initPredFuncCast->setMutex(mutex);
+			}
+		}
+
+		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
+		{
+			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+			if (pruneCast->getRanker() == NULL)
+			{
+				HCSearch::IRankModel* pruneModel = HCSearch::Model::loadModel(pruneModelPath, HCSearch::VW_RANK);
+				pruneCast->setRanker(pruneModel);
+			}
+		}
+
 		switch (mode)
 		{
 		case HCSearch::LEARN_H:
@@ -365,6 +502,58 @@ void run(MyProgramOptions::ProgramOptions po)
 #ifdef USE_MPI
 		MPI::Synchronize::masterWait("LEARNCOHSTART");
 		MPI::Synchronize::slavesWait("LEARNCOHEND");
+#endif
+
+			break;
+		}
+		case HCSearch::LEARN_PRUNE:
+		{
+			LOG() << "=== Learning P ===" << endl;
+
+			// learn cost, save cost model
+			if (po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
+			{
+				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
+					timeBound, searchSpace, searchProcedure, HCSearch::VW_RANK, po.numTrainIterations);
+				
+				if (HCSearch::Global::settings->RANK == 0)
+				{
+					pruneModel->save(pruneModelPath);
+					if (po.saveFeaturesFiles)
+						MyFileSystem::FileSystem::copyFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE, 
+							HCSearch::Global::settings->paths->OUTPUT_ARCHIVED_PRUNE_FEATURES_FILE);
+				}
+				
+				MyFileSystem::FileSystem::deleteFile(HCSearch::Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
+				delete pruneModel;
+			}
+			else
+			{
+				LOG(ERROR) << "unsupported pruning" << endl;
+			}
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("LEARNPSTART");
+		MPI::Synchronize::slavesWait("LEARNPEND");
+#endif
+
+			break;
+		}
+		case HCSearch::DISCOVER_PAIRWISE:
+		{
+			LOG() << "=== Discovering Mutex ===" << endl;
+
+			// discover mutex constraints
+			map<string, int> pairwiseConstraints = HCSearch::Learning::discoverPairwiseClassConstraints(XTrain, YTrain);
+			
+			if (HCSearch::Global::settings->RANK == 0)
+			{
+				HCSearch::Model::savePairwiseConstraints(pairwiseConstraints, mutexPath);
+			}
+
+#ifdef USE_MPI
+		MPI::Synchronize::masterWait("DISCOVERMUTEXSTART");
+		MPI::Synchronize::slavesWait("DISCOVERMUTEXEND");
 #endif
 
 			break;

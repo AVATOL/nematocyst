@@ -125,7 +125,8 @@ namespace Testing
 			X.graph = graph2;
 
 			IFeatureFunction* featureFunctionTest = new StandardAltFeatures();
-			RankFeatures phi = featureFunctionTest->computeFeatures(X, YPred);
+			set<int> action;
+			RankFeatures phi = featureFunctionTest->computeFeatures(X, YPred, action);
 
 			const int featureDim = X.getFeatureDim();
 			const int numClasses = Global::settings->CLASSES.numClasses();

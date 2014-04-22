@@ -28,6 +28,7 @@ namespace HCSearch
 	 */
 	class LogRegInit : public IInitialPredictionFunction
 	{
+	protected:
 		static const double DEFAULT_C;
 		static const double BINARY_CONFIDENCE_THRESHOLD;
 
@@ -51,6 +52,27 @@ namespace HCSearch
 		 * @brief Eliminate 1-islands.
 		 */
 		void eliminateIslands(ImgLabeling& Y);
+	};
+
+	class MutexLogRegInit : public LogRegInit
+	{
+		static const int MUTEX_THRESHOLD;
+
+	protected:
+		map<string, int> mutex;
+		bool initialized;
+
+	public:
+		MutexLogRegInit();
+		~MutexLogRegInit();
+
+		virtual ImgLabeling getInitialPrediction(ImgFeatures& X);
+
+		void setMutex(map<string, int>& mutex);
+		map<string, int> getMutex();
+
+	private:
+		string mutexStringHelper(int class1, int class2, string config);
 	};
 }
 

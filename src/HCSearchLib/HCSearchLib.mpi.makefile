@@ -32,8 +32,8 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
-	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
+Debug: create_folders gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
+	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/PruneFunction.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Debug configuration...
 -include gccDebug/DataStructures.d
@@ -101,6 +101,12 @@ gccDebug/MyLogger.o: MyLogger.cpp
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c MyLogger.cpp $(Debug_Include_Path) -o gccDebug/MyLogger.o
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM MyLogger.cpp $(Debug_Include_Path) > gccDebug/MyLogger.d
 
+# Compiles file PruneFunction.cpp for the Debug configuration...
+-include gccDebug/PruneFunction.d
+gccDebug/PruneFunction.o: PruneFunction.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c PruneFunction.cpp $(Debug_Include_Path) -o gccDebug/PruneFunction.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM PruneFunction.cpp $(Debug_Include_Path) > gccDebug/PruneFunction.d
+
 # Compiles file SearchProcedure.cpp for the Debug configuration...
 -include gccDebug/SearchProcedure.d
 gccDebug/SearchProcedure.o: SearchProcedure.cpp
@@ -127,8 +133,8 @@ gccDebug/SuccessorFunction.o: SuccessorFunction.cpp
 
 # Builds the Release configuration...
 .PHONY: Release
-Release: create_folders gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
-	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
+Release: create_folders gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
+	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/PruneFunction.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Release configuration...
 -include gccRelease/DataStructures.d
@@ -195,6 +201,12 @@ gccRelease/MyGraphAlgorithms.o: MyGraphAlgorithms.cpp
 gccRelease/MyLogger.o: MyLogger.cpp
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c MyLogger.cpp $(Release_Include_Path) -o gccRelease/MyLogger.o
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM MyLogger.cpp $(Release_Include_Path) > gccRelease/MyLogger.d
+
+# Compiles file PruneFunction.cpp for the Release configuration...
+-include gccRelease/PruneFunction.d
+gccRelease/PruneFunction.o: PruneFunction.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c PruneFunction.cpp $(Release_Include_Path) -o gccRelease/PruneFunction.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM PruneFunction.cpp $(Release_Include_Path) > gccRelease/PruneFunction.d
 
 # Compiles file SearchProcedure.cpp for the Release configuration...
 -include gccRelease/SearchProcedure.d

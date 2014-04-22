@@ -13,22 +13,25 @@ namespace HCSearch
 		this->costFeatureFunction = NULL;
 		this->initialPredictionFunction = NULL;
 		this->successorFunction = NULL;
+		this->pruneFunction = NULL;
 		this->lossFunction = NULL;
 	}
 
 	SearchSpace::SearchSpace(IFeatureFunction* heuristicFeatureFunction, IFeatureFunction* costFeatureFunction,
 		IInitialPredictionFunction* initialPredictionFunction, ISuccessorFunction* successorFunction,
-		ILossFunction* lossFunction)
+		IPruneFunction* pruneFunction, ILossFunction* lossFunction)
 	{
 		this->heuristicFeatureFunction = heuristicFeatureFunction;
 		this->costFeatureFunction = costFeatureFunction;
 		this->initialPredictionFunction = initialPredictionFunction;
 		this->successorFunction = successorFunction;
+		this->pruneFunction = pruneFunction;
 		this->lossFunction = lossFunction;
 	}
 
 	SearchSpace::~SearchSpace()
 	{
+		delete this->pruneFunction;
 		delete this->heuristicFeatureFunction;
 		delete this->costFeatureFunction;
 		delete this->initialPredictionFunction;
@@ -44,7 +47,8 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->heuristicFeatureFunction->computeFeatures(X, Y);
+		set<int> action;
+		return this->heuristicFeatureFunction->computeFeatures(X, Y, action);
 	}
 
 	RankFeatures SearchSpace::computeCostFeatures(ImgFeatures& X, ImgLabeling& Y)
@@ -55,7 +59,19 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->costFeatureFunction->computeFeatures(X, Y);
+		set<int> action;
+		return this->costFeatureFunction->computeFeatures(X, Y, action);
+	}
+
+	RankFeatures SearchSpace::computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action)
+	{
+		if (this->pruneFunction->getFeatureFunction() == NULL)
+		{
+			LOG(ERROR) << "prune feature function is null";
+			abort();
+		}
+
+		return this->pruneFunction->getFeatureFunction()->computeFeatures(X, Y, action);
 	}
 
 	ImgLabeling SearchSpace::getInitialPrediction(ImgFeatures& X)
@@ -69,7 +85,7 @@ namespace HCSearch
 		return this->initialPredictionFunction->getInitialPrediction(X);
 	}
 
-	vector< ImgLabeling > SearchSpace::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)
+	vector< ImgCandidate > SearchSpace::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
 		if (this->successorFunction == NULL)
 		{
@@ -77,7 +93,20 @@ namespace HCSearch
 			abort();
 		}
 
-		return this->successorFunction->generateSuccessors(X, YPred);
+		return this->successorFunction->generateSuccessors(X, YPred, timeStep, timeBound);
+	}
+
+	vector< ImgCandidate > SearchSpace::pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
+	{
+		if (this->pruneFunction == NULL)
+		{
+			LOG(DEBUG) << "prune function is null; no pruning done";
+			return YCandidates;
+		}
+		else
+		{
+			return this->pruneFunction->pruneSuccessors(X, YPred, YCandidates, YTruth, lossFunc);
+		}
 	}
 
 	double SearchSpace::computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth)
@@ -89,5 +118,20 @@ namespace HCSearch
 		}
 
 		return this->lossFunction->computeLoss(YPred, YTruth);
+	}
+
+	IPruneFunction* SearchSpace::getPruneFunction()
+	{
+		return this->pruneFunction;
+	}
+
+	IInitialPredictionFunction* SearchSpace::getInitialPredictionFunction()
+	{
+		return this->initialPredictionFunction;
+	}
+
+	ILossFunction* SearchSpace::getLossFunction()
+	{
+		return this->lossFunction;
 	}
 }
