@@ -95,7 +95,7 @@ namespace HCSearch
 			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
 
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
-		void trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
+		void trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses);
 		void trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet);
 	};
@@ -202,11 +202,42 @@ namespace HCSearch
 	/*!
 	 * @brief Greedy search procedure.
 	 */
-	class GreedySearchProcedure : public BreadthFirstBeamSearchProcedure
+	class GreedySearchProcedure : public ISearchProcedure
 	{
+	protected:
+		typedef vector< SearchNode* > SearchNodeList;
+
 	public:
 		GreedySearchProcedure();
 		~GreedySearchProcedure();
+
+		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+			IRankModel* pruneModel, SearchMetadata searchMetadata);
+
+	protected:
+		/*!
+		 * @brief Stub for expanding the element. 
+		 * 
+		 * (costSet used for checking duplicates.)
+		 * 
+		 * @post bestHeuristicNode and bestCostNode updated with the best node, 
+		 */
+		SearchNodeList expandElements(SearchNode* bestHeuristicNode, SearchNode* bestCostNode, SearchNodeList& costSet, 
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound);
+
+		/*!
+		 * @brief Stub for choosing successors among the expanded.
+		 * 
+		 * Sorts the list of search nodes into best and worst sets
+		 */
+		void sortNodes(SearchType searchType, SearchNodeList& candidateSet, 
+			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
+
+		/*!
+		 * @brief Checks if the state is duplicate among the states in the priority queue.
+		 */
+		bool isDuplicate(SearchNode* state, SearchNodeList& list);
 	};
 
 	/*! @} */

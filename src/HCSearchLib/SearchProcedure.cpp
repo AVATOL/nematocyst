@@ -185,7 +185,7 @@ namespace HCSearch
 		}
 	}
 
-	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
+	void ISearchProcedure::trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses)
 	{
 		// train depending on ranker
@@ -306,7 +306,7 @@ namespace HCSearch
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 
 			if (searchType == LEARN_H)
-				trainHeuristicRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+				trainRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
 
 			/***** done with this search step *****/
 
@@ -561,14 +561,257 @@ namespace HCSearch
 
 	GreedySearchProcedure::GreedySearchProcedure()
 	{
-		this->beamSize = 1;
 	}
 
 	GreedySearchProcedure::~GreedySearchProcedure()
 	{
 	}
 
+	ImgLabeling GreedySearchProcedure::performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+	IRankModel* pruneModel, SearchMetadata searchMetadata)
+	{
+		clock_t tic = clock();
 
+		// set up cost set list to check for duplicates and for learning if necessary
+		// maintain best cost and heuristic node pointers
+		SearchNodeList costSet;
+		SearchNode* bestCostNode;
+		SearchNode* bestHeuristicNode;
+
+		// push initial state into queue
+		SearchNode* root = createRootNode(searchType, X, YTruth, searchSpace, heuristicModel, costModel);
+		bestHeuristicNode = root;
+		bestCostNode = root;
+		costSet.push_back(root);
+
+		// while the open set is not empty and the time step is less than the time bound,
+		// perform search...
+		int timeStep = 0;
+		while (bestHeuristicNode != NULL && timeStep < timeBound)
+		{
+			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
+			clock_t ticInside = clock();
+
+			// save current best if anytime prediction enabled
+			saveAnyTimePrediction(bestCostNode->getY(), timeStep, searchMetadata, searchType);
+
+			/***** expand the best heuristic node and update the best heuristic and cost nodes *****/
+
+			SearchNodeList candidateSet = expandElements(bestHeuristicNode, bestCostNode, costSet, pruneModel, YTruth, searchType, timeStep, timeBound);
+
+			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
+
+			if (searchType == LEARN_H)
+			{
+				vector< RankFeatures > bestFeatures;
+				vector< RankFeatures > worstFeatures;
+				vector< double > bestLosses; // heuristic values technically, but definitely losses for learning H
+				vector< double > worstLosses;
+				sortNodes(searchType, candidateSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
+				trainRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			}
+
+			/***** done with this search step *****/
+
+			clock_t tocInside = clock();
+			LOG() << "search step " << timeStep << " total time: " << (double)(tocInside - ticInside)/CLOCKS_PER_SEC << endl;
+
+			/***** increment time step *****/
+			timeStep++;
+		}
+
+		/***** search is done, return the lowest cost search node *****/
+
+		if (bestCostNode == NULL)
+		{
+			LOG(ERROR) << "the cost set is empty, which is not possible!";
+			abort();
+		}
+
+		// Get lowest cost node
+		SearchNode* lowestCost = bestCostNode;
+		ImgLabeling prediction = lowestCost->getY();
+		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
+
+		// use best/worst cost set candidates as training examples for cost learning (if applicable)
+		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+		{
+			vector< RankFeatures > bestFeatures;
+			vector< RankFeatures > worstFeatures;
+			vector< double > bestLosses;
+			vector< double > worstLosses;
+			sortNodes(searchType, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			trainRanker(costModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+		}
+
+		// clean up cost set
+		vector<double> candidateLosses;
+		while (!costSet.empty())
+		{
+			SearchNode* state = costSet.back();
+			costSet.pop_back();
+			if (YTruth != NULL)
+			{
+				ImgLabeling YPred = state->getY();
+				candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
+			}
+			delete state;
+		}
+		if (YTruth != NULL)
+		{
+			stringstream ssLosses;
+			ssLosses << Global::settings->paths->OUTPUT_RESULTS_DIR << "candidatelosses" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+			SavePrediction::saveCandidateLosses(candidateLosses, ssLosses.str());
+		}
+
+		clock_t toc = clock();
+		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return prediction;
+	}
+
+	GreedySearchProcedure::SearchNodeList GreedySearchProcedure::expandElements(SearchNode* bestHeuristicNode, SearchNode* bestCostNode, SearchNodeList& costSet, 
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
+	{
+		SearchNodeList candidateSet;
+		
+		// expand best heuristic node
+		LOG() << "Expansion Node: Heuristic=" << bestHeuristicNode->getHeuristic() << ", Cost=" << bestHeuristicNode->getCost() << endl;
+
+		vector< SearchNode* > expansionSet;
+		if (searchType == LEARN_PRUNE)
+			expansionSet = bestHeuristicNode->generateSuccessorNodesForPruneLearning(pruneModel, YTruth, timeStep, timeBound);
+		else
+			expansionSet = bestHeuristicNode->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
+
+		// reset best heuristic
+		bestHeuristicNode = NULL;
+
+		// only accept expanded element if not a duplicate state
+		for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
+		{
+			SearchNode* state = *it;
+			if (!isDuplicate(state, costSet))
+			{
+				// store to cost set in order to check for duplicates
+				costSet.push_back(state);
+
+				// only return nodes when learning H
+				if (searchType == LEARN_H)
+					candidateSet.push_back(state);
+
+				// get the best heuristic node
+				if (bestHeuristicNode == NULL || state->getHeuristic() < bestHeuristicNode->getHeuristic())
+					bestHeuristicNode = state;
+
+				// get the best cost node
+				if (state->getCost() < bestCostNode->getCost())
+					bestCostNode = state;
+			}
+		}
+
+		return candidateSet;
+	}
+
+	void GreedySearchProcedure::sortNodes(SearchType searchType, SearchNodeList& candidateSet, 
+		vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)
+	{
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		{
+			LOG(ERROR) << "inappropriate search type for sorting";
+			abort();
+		}
+		if (candidateSet.empty())
+		{
+			LOG(WARNING) << "candidate set is empty; cannot partition";
+			return;
+		}
+
+		// first pass: find minimum value
+		double minValue;
+		bool first = true;
+		for (SearchNodeList::iterator it = candidateSet.begin(); it != candidateSet.end(); ++it)
+		{
+			SearchNode* current = *it;
+			if (first)
+			{
+				if (searchType == LEARN_H)
+					minValue = current->getHeuristic();
+				else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+					minValue = current->getCost();
+
+				first = false;
+			}
+			else
+			{
+				if (searchType == LEARN_H)
+					minValue = min(minValue, current->getHeuristic());
+				else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+					minValue = min(minValue, current->getCost());
+			}
+		}
+
+		// second pass: partition
+		bool foundMinNode = false;
+		first = false;
+		for (SearchNodeList::iterator it = candidateSet.begin(); it != candidateSet.end(); ++it)
+		{
+			SearchNode* current = *it;
+
+			// get the current value and features of the node
+			double currentValue;
+			RankFeatures currentFeatures;
+			if (searchType == LEARN_H)
+			{
+				currentValue = current->getHeuristic();
+				currentFeatures = current->getHeuristicFeatures();
+			}
+			else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+			{
+				currentValue = current->getCost();
+				currentFeatures = current->getCostFeatures();
+			}
+
+			// put into appropriate set
+			if (currentValue <= minValue && first)
+			{
+				bestSet.push_back(currentFeatures);
+				bestLosses.push_back(currentValue);
+				first = true;
+			}
+			else if (currentValue <= minValue && !first)
+			{
+				//TODO: add switch to enable or disable adding ties
+				bestSet.push_back(currentFeatures);
+				bestLosses.push_back(currentValue);
+			}
+			else
+			{
+				worstSet.push_back(currentFeatures);
+				worstLosses.push_back(currentValue);
+			}
+		}
+	}
+
+	bool GreedySearchProcedure::isDuplicate(SearchNode* state, SearchNodeList& list)
+	{
+		for (SearchNodeList::iterator it = list.begin(); it != list.end(); ++it)
+		{
+			SearchNode* current = *it;
+			if (current->getY().graph.nodesData == state->getY().graph.nodesData)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**************** Search Node ****************/
 
