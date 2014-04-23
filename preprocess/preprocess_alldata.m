@@ -29,6 +29,9 @@ TRAIN_LIST = 'Train.txt';
 VALID_LIST = 'Validation.txt';
 TEST_LIST = 'Test.txt';
 
+EXTERNAL_PATH = 'external';
+LIBLINEAR_PATH = [EXTERNAL_PATH '/' 'liblinear'];
+
 %% create output folder
 if ~exist(outputPath, 'dir')
     mkdir(outputPath);
@@ -53,6 +56,9 @@ if ~exist([outputPath '/meta/'], 'dir')
 end
 if ~exist([outputPath '/splits/'], 'dir')
     mkdir([outputPath '/splits/']);
+end
+if ~exist([outputPath '/initstate/'], 'dir')
+    mkdir([outputPath '/initstate/']);
 end
 
 %% initialize
@@ -189,6 +195,58 @@ for i = trainRange
        unix(typeCmd);
        unix(delCmd);
        unix(renameCmd);
+    end
+end
+
+%% train initial prediction classifier on the training file just generated
+INITFUNC_MODEL_FILE = 'initfunc_model.txt';
+fprintf('Training initial classifier model...\n');
+if ispc
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/windows/train'];
+    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '/', '\');
+    outputPathWin = strrep(outputPath, '/', '\');
+    dos([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+        outputPathWin '\' INITFUNC_TRAINING_FILE ' ' ...
+        outputPathWin '\' INITFUNC_MODEL_FILE]);
+elseif isunix
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/train'];
+    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '\', '/');
+    outputPathLinux = strrep(outputPath, '\', '/');
+    unix([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+        outputPathLinux '/' INITFUNC_TRAINING_FILE ' ' ...
+        outputPathLinux '/' INITFUNC_MODEL_FILE]);
+end
+
+%% generate the initial prediction files
+for i = 1:nFiles
+    fprintf('Predicting example %d...\n', i-1);
+    
+    filename = sprintf('%d', i-1);
+    if isfield(allData{i}, 'filename');
+        filename = allData{i}.filename;
+    else
+        allData{i}.filename = filename;
+    end
+    
+    initPredFile = sprintf('%s.txt', filename);
+    nodesFile = sprintf('%s.txt', filename);
+    
+    if ispc
+        LIBLINEAR_PREDICT = [LIBLINEAR_PATH '/windows/predict'];
+        LIBLINEAR_PREDICT = strrep(LIBLINEAR_PREDICT, '/', '\');
+        outputPathWin = strrep(outputPath, '/', '\');
+        dos([LIBLINEAR_PREDICT ' -b 1 ' ...
+            outputPathWin '\nodes\' nodesFile ' ' ...
+            outputPathWin '\' INITFUNC_MODEL_FILE ' ' ...
+            outputPathWin '\initstate\' initPredFile]);
+    elseif isunix
+        LIBLINEAR_PREDICT = [LIBLINEAR_PATH '/predict'];
+        LIBLINEAR_PREDICT = strrep(LIBLINEAR_PREDICT, '\', '/');
+        outputPathLinux = strrep(outputPath, '\', '/');
+        unix([LIBLINEAR_PREDICT ' -b 1 ' ...
+            outputPathWin '/nodes/' nodesFile ' ' ...
+            outputPathLinux '/' INITFUNC_MODEL_FILE ' ' ...
+            outputPathLinux '/initstate/' initPredFile]);
     end
 end
 
