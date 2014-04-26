@@ -1,4 +1,4 @@
-function [ meanVal, stdVal, accuracies, marginMeanVals, marginStdVals, marginAccuracies, model ] = initial_state_performance( allData, evalRange, trainRange, model )
+function [ meanVal, stdVal, accuracies, marginMeanVals, marginStdVals, marginAccuracies, margin2Accuracies, model ] = initial_state_performance( allData, evalRange, trainRange, model )
 %INITIAL_STATE_PERFORMANCE Summary of this function goes here
 %   allData:	data structure containing all preprocessing data
 %                   allData{i}.img mxnx3 uint8
@@ -9,6 +9,14 @@ function [ meanVal, stdVal, accuracies, marginMeanVals, marginStdVals, marginAcc
 %                   allData{i}.adj sxs logical
 %                   allData{i}.filename string (optional)
 %                   allData{i}.segLocations sx2 double (optional)
+
+meanVal = 0;
+stdVal = 0;
+accuracies = [];
+marginMeanVals = [];
+marginStdVals = [];
+marginAccuracies = [];
+margin2Accuracies = [];
 
 IGNORE_CLASSES = 0;
 
@@ -43,6 +51,8 @@ cnt = 1;
 marginThresholds = 0:0.1:1;
 marginCorrect = zeros(1, length(marginThresholds));
 marginTotal = zeros(1, length(marginThresholds));
+margin2Correct = zeros(1, length(marginThresholds));
+margin2Total = zeros(1, length(marginThresholds));
 
 for i = evalRange
     %% get probabilities
@@ -95,7 +105,7 @@ for i = evalRange
     %% for generating rank graphs
     nSegments = size(gtLabels, 1);
     allMarginCounts = [allMarginCounts; zeros(nSegments, length(marginThresholds))];
-    for tIndex = 1:length(marginThresholds);
+    for tIndex = 1:length(marginThresholds)
         t = marginThresholds(tIndex);
         
         labelPositionsToKeep = margins <= t;
@@ -127,6 +137,39 @@ for i = evalRange
         marginTotal(1, tIndex) = marginTotal(1, tIndex) + numel(pixelGT);
     end
     cnt = cnt + nSegments;
+    
+    %% for generating threshold results
+    for tIndex = 1:length(marginThresholds)
+        t = marginThresholds(tIndex);
+        labelPositionsIfConfident = [ones(size(sorted, 1), 1) zeros(size(sorted, 1), size(sorted, 2)-1)];
+        labelPositionsIfNotConfident = [ones(size(sorted, 1), 4) zeros(size(sorted, 1), size(sorted, 2)-4)];
+        labelPositionsToKeep = repmat((sorted(:, 1) >= t), 1, size(sorted, 2)) .* labelPositionsIfConfident ...
+            + repmat((sorted(:, 1) < t), 1, size(sorted, 2)) .* labelPositionsIfNotConfident;
+        
+        restrictedPredict = predictedOrderedLabels .* labelPositionsToKeep + -314*(1-labelPositionsToKeep);
+        presence = (restrictedPredict == repmat(gtLabels, 1, size(restrictedPredict, 2)));
+        presence = sum(presence, 2);
+        segLabels = gtLabels .* presence + (gtLabels+1) .* (1-presence);
+        
+        %% ground truth pixel level
+        pixelGT = allData{i}.labels;
+        pixelGT = pixelGT(:);
+        
+        %% ground truth segment-level restricted to margin threshold
+        segGT = infer_pixels(segLabels, segments);
+        segGT = segGT(:);
+
+        %% eliminate IGNORE CLASSES
+        for ignoreClass = IGNORE_CLASSES
+            ignoreIndices = find(pixelGT == ignoreClass);
+            pixelGT(ignoreIndices) = [];
+            segGT(ignoreIndices) = [];
+        end
+
+        %% compute
+        margin2Correct(1, tIndex) = margin2Correct(1, tIndex) + sum(sum(segGT == pixelGT));
+        margin2Total(1, tIndex) = margin2Total(1, tIndex) + numel(pixelGT);
+    end
 end
 
 meanVal = mean(allRanks);
@@ -135,6 +178,7 @@ accuracies = correct ./ total;
 marginMeanVals = mean(allMarginCounts, 1);
 marginStdVals = std(allMarginCounts, 0, 1);
 marginAccuracies = marginCorrect ./ marginTotal;
+margin2Accuracies = margin2Correct ./ margin2Total;
 
 plot(1:nLabels, accuracies, 's--');
 title('Upper bound pixel accuracy for all ranks');
@@ -145,6 +189,15 @@ pause;
 
 plot(marginThresholds, marginAccuracies, 's--');
 title('Upper bound pixel accuracy for all margin thresholds');
+xlabel('Threshold');
+ylabel('Upper bound pixel accuracy');
+
+pause;
+
+pause;
+
+plot(marginThresholds, margin2Accuracies, 's--');
+title('Upper bound pixel accuracy for confidence thresholds');
 xlabel('Threshold');
 ylabel('Upper bound pixel accuracy');
 
