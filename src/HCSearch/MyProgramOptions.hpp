@@ -35,6 +35,9 @@ namespace MyProgramOptions
 		string splitsTrainName;
 		string splitsValidName;
 		string splitsTestName;
+		string nodesFolderName;
+		string edgesFolderName;
+		string edgeFeaturesFolderName;
 
 		// time bound
 

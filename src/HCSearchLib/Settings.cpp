@@ -196,6 +196,9 @@ namespace HCSearch
 		// input directories
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
+		INPUT_NODES_FOLDER_NAME = "nodes";
+		INPUT_EDGES_FOLDER_NAME = "edges";
+		INPUT_EDGE_FEATURES_FOLDER_NAME = "edgefeatures";
 
 		INPUT_SPLITS_TRAIN_FILE_BASE = "Train.txt";
 		INPUT_SPLITS_VALIDATION_FILE_BASE = "Validation.txt";
@@ -218,9 +221,10 @@ namespace HCSearch
 		this->paths->INPUT_DIR = this->paths->BASE_PATH + dataDir + this->paths->DIR_SEP;
 
 		// data directories
-		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + "nodes" + this->paths->DIR_SEP;
+		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_NODES_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->INPUT_NODE_LOCATIONS_DIR = this->paths->INPUT_DIR + "nodelocations" + this->paths->DIR_SEP;
-		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + "edges" + this->paths->DIR_SEP;
+		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_EDGES_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->INPUT_EDGE_FEATURES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_EDGE_FEATURES_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->INPUT_META_DIR = this->paths->INPUT_DIR + "meta" + this->paths->DIR_SEP;
 		this->paths->INPUT_SEGMENTS_DIR = this->paths->INPUT_DIR + "segments" + this->paths->DIR_SEP;
 		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + this->paths->INPUT_SPLITS_FOLDER_NAME + this->paths->DIR_SEP;

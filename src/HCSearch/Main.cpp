@@ -31,6 +31,9 @@ int main(int argc, char* argv[])
 	HCSearch::Global::settings->paths->INPUT_SPLITS_TRAIN_FILE_BASE = po.splitsTrainName;
 	HCSearch::Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE_BASE = po.splitsValidName;
 	HCSearch::Global::settings->paths->INPUT_SPLITS_TEST_FILE_BASE = po.splitsTestName;
+	HCSearch::Global::settings->paths->INPUT_NODES_FOLDER_NAME = po.nodesFolderName;
+	HCSearch::Global::settings->paths->INPUT_EDGES_FOLDER_NAME = po.edgesFolderName;
+	HCSearch::Global::settings->paths->INPUT_EDGE_FEATURES_FOLDER_NAME = po.edgeFeaturesFolderName;
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);

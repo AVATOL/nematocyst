@@ -14,6 +14,9 @@ namespace MyProgramOptions
 		splitsTrainName = "Train.txt";
 		splitsValidName = "Validation.txt";
 		splitsTestName = "Test.txt";
+		nodesFolderName = "nodes";
+		edgesFolderName = "edges";
+		edgeFeaturesFolderName = "edgefeatures";
 
 		// time bound
 
@@ -114,6 +117,27 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					po.splitsTestName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--nodes-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.nodesFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--edges-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.edgesFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--edge-features-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.edgeFeaturesFolderName = argv[i+1];
 				}
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
@@ -495,12 +519,15 @@ namespace MyProgramOptions
 		cerr << "\t--beam-size arg\t\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--cut-mode arg\t\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--edges-path arg\t" << ": edges folder name" << endl;
+		cerr << "\t--edge-features-path arg\t" << ": edge features folder name" << endl;
 		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
+		cerr << "\t--nodes-path arg\t" << ": nodes folder name" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
 		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
