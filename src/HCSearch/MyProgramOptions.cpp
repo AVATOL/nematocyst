@@ -53,6 +53,12 @@ namespace MyProgramOptions
 		saveOutputMask = false;
 		pruneRatio = 0.5;
 		badPruneRatio = 1.0;
+
+		nodeClamp = false;
+		edgeClamp = false;
+		nodeClampThreshold = 0.75;
+		edgeClampPositiveThreshold = 0.9;
+		edgeClampNegativeThreshold = 0.1;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -472,6 +478,60 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			else if (strcmp(argv[i], "--node-clamp") == 0)
+			{
+				po.nodeClamp = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.nodeClamp = false;
+				}
+			}
+			else if (strcmp(argv[i], "--edge-clamp") == 0)
+			{
+				po.edgeClamp = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.edgeClamp = false;
+				}
+			}
+			else if (strcmp(argv[i], "--node-clamp-threshold") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.nodeClampThreshold = atof(argv[i+1]);
+					if (po.nodeClampThreshold < 0 || po.nodeClampThreshold > 1)
+					{
+						LOG(ERROR) << "Clamp ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--edge-clamp-positive-threshold") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.edgeClampPositiveThreshold = atof(argv[i+1]);
+					if (po.edgeClampPositiveThreshold < 0 || po.edgeClampPositiveThreshold > 1)
+					{
+						LOG(ERROR) << "Clamp ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--edge-clamp-negative-threshold") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.edgeClampNegativeThreshold = atof(argv[i+1]);
+					if (po.edgeClampNegativeThreshold < 0 || po.edgeClampNegativeThreshold > 1)
+					{
+						LOG(ERROR) << "Clamp ratio needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
 			else
 			{
 				string argvi = argv[i];
@@ -519,6 +579,9 @@ namespace MyProgramOptions
 		cerr << "\t--beam-size arg\t\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--cut-mode arg\t\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--edge-clamp arg\t" << ": clamp edges if true" << endl;
+		cerr << "\t--edge-clamp-positive-threshold arg\t" << ": edge clamp positive threshold" << endl;
+		cerr << "\t--edge-clamp-negative-threshold arg\t" << ": edge clamp negative threshold" << endl;
 		cerr << "\t--edges-path arg\t" << ": edges folder name" << endl;
 		cerr << "\t--edge-features-path arg\t" << ": edge features folder name" << endl;
 		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
@@ -527,6 +590,8 @@ namespace MyProgramOptions
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
+		cerr << "\t--node-clamp arg\t" << ": clamp nodes if true" << endl;
+		cerr << "\t--node-clamp-threshold arg\t" << ": node clamp threshold" << endl;
 		cerr << "\t--nodes-path arg\t" << ": nodes folder name" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;

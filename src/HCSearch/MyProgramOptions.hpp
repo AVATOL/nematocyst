@@ -76,6 +76,12 @@ namespace MyProgramOptions
 		double pruneRatio;
 		double badPruneRatio;
 
+		bool nodeClamp;
+		bool edgeClamp;
+		double nodeClampThreshold;
+		double edgeClampPositiveThreshold;
+		double edgeClampNegativeThreshold;
+
 	public:
 		ProgramOptions();
 

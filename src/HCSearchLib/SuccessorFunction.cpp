@@ -775,18 +775,43 @@ namespace HCSearch
 	/**************** Stochastic Schedule Successor Function ****************/
 
 	const double StochasticScheduleSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
-	const double StochasticScheduleSuccessor::DEFAULT_T_PARM = 0.5;
+	const double StochasticScheduleSuccessor::DEFAULT_T_PARAM = 0.5;
+	const double StochasticScheduleSuccessor::DEFAULT_NODE_CLAMP_THRESHOLD = 0.75;
+	const double StochasticScheduleSuccessor::DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD = 0.9;
+	const double StochasticScheduleSuccessor::DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD = 0.1;
 
 	StochasticScheduleSuccessor::StochasticScheduleSuccessor()
 	{
-		this->cutParam = DEFAULT_T_PARM;
+		this->cutParam = DEFAULT_T_PARAM;
 		this->cutEdgesIndependently = true;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
 	}
 
 	StochasticScheduleSuccessor::StochasticScheduleSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+	}
+
+	StochasticScheduleSuccessor::StochasticScheduleSuccessor(bool cutEdgesIndependently, double cutParam, 
+	bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = clampNodes;
+		this->clampEdges = clampEdges;
+		this->nodeClampThreshold = nodeClampThreshold;
+		this->edgeClampPositiveThreshold = edgeClampPositiveThreshold;
+		this->edgeClampNegativeThreshold = edgeClampNegativeThreshold;
 	}
 
 	StochasticScheduleSuccessor::~StochasticScheduleSuccessor()
@@ -1070,14 +1095,36 @@ namespace HCSearch
 
 	StochasticScheduleNeighborSuccessor::StochasticScheduleNeighborSuccessor()
 	{
-		this->cutParam = DEFAULT_T_PARM;
+		this->cutParam = DEFAULT_T_PARAM;
 		this->cutEdgesIndependently = true;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
 	}
-	
+
 	StochasticScheduleNeighborSuccessor::StochasticScheduleNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+	}
+
+	StochasticScheduleNeighborSuccessor::StochasticScheduleNeighborSuccessor(bool cutEdgesIndependently, double cutParam, 
+	bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = clampNodes;
+		this->clampEdges = clampEdges;
+		this->nodeClampThreshold = nodeClampThreshold;
+		this->edgeClampPositiveThreshold = edgeClampPositiveThreshold;
+		this->edgeClampNegativeThreshold = edgeClampNegativeThreshold;
 	}
 
 	StochasticScheduleNeighborSuccessor::~StochasticScheduleNeighborSuccessor()
@@ -1093,14 +1140,36 @@ namespace HCSearch
 
 	StochasticScheduleConfidencesNeighborSuccessor::StochasticScheduleConfidencesNeighborSuccessor()
 	{
-		this->cutParam = DEFAULT_T_PARM;
+		this->cutParam = DEFAULT_T_PARAM;
 		this->cutEdgesIndependently = true;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
 	}
 
 	StochasticScheduleConfidencesNeighborSuccessor::StochasticScheduleConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+	}
+
+	StochasticScheduleConfidencesNeighborSuccessor::StochasticScheduleConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, 
+	bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = clampNodes;
+		this->clampEdges = clampEdges;
+		this->nodeClampThreshold = nodeClampThreshold;
+		this->edgeClampPositiveThreshold = edgeClampPositiveThreshold;
+		this->edgeClampNegativeThreshold = edgeClampNegativeThreshold;
 	}
 
 	StochasticScheduleConfidencesNeighborSuccessor::~StochasticScheduleConfidencesNeighborSuccessor()
