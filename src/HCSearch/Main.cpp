@@ -255,19 +255,22 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "stochastic schedule" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		successor = new HCSearch::StochasticScheduleSuccessor(cutEdgesIndependently, po.cutParam);
+		successor = new HCSearch::StochasticScheduleSuccessor(cutEdgesIndependently, po.cutParam, 
+			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE_NEIGHBORS:
 		LOG() << "stochastic schedule neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		successor = new HCSearch::StochasticScheduleNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		successor = new HCSearch::StochasticScheduleNeighborSuccessor(cutEdgesIndependently, po.cutParam, 
+			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_SCHEDULE_CONFIDENCES_NEIGHBORS:
 		LOG() << "stochastic schedule confidences neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		successor = new HCSearch::StochasticScheduleConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		successor = new HCSearch::StochasticScheduleConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam, 
+			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
 	default:
 		LOG(ERROR) << "undefined successor mode.";
