@@ -368,6 +368,8 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "standard") == 0)
 						po.heuristicFeaturesMode = STANDARD;
+					else if (strcmp(argv[i+1], "standard-context") == 0)
+						po.heuristicFeaturesMode = STANDARD_CONTEXT;
 					//else if (strcmp(argv[i+1], "standard-alt") == 0)
 					//	po.heuristicFeaturesMode = STANDARD_ALT;
 					else if (strcmp(argv[i+1], "standard-conf") == 0)
@@ -390,6 +392,8 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "standard") == 0)
 						po.costFeaturesMode = STANDARD;
+					else if (strcmp(argv[i+1], "standard-context") == 0)
+						po.costFeaturesMode = STANDARD_CONTEXT;
 					//else if (strcmp(argv[i+1], "standard-alt") == 0)
 					//	po.costFeaturesMode = STANDARD_ALT;
 					else if (strcmp(argv[i+1], "standard-conf") == 0)
@@ -412,6 +416,8 @@ namespace MyProgramOptions
 				{
 					if (strcmp(argv[i+1], "standard") == 0)
 						po.pruneFeaturesMode = STANDARD;
+					else if (strcmp(argv[i+1], "standard-context") == 0)
+						po.pruneFeaturesMode = STANDARD_CONTEXT;
 					//else if (strcmp(argv[i+1], "standard-alt") == 0)
 					//	po.pruneFeaturesMode = STANDARD_ALT;
 					else if (strcmp(argv[i+1], "standard-conf") == 0)
@@ -584,11 +590,11 @@ namespace MyProgramOptions
 		cerr << "\t--edge-clamp-negative-threshold arg\t" << ": edge clamp negative threshold" << endl;
 		cerr << "\t--edges-path arg\t" << ": edges folder name" << endl;
 		cerr << "\t--edge-features-path arg\t" << ": edge features folder name" << endl;
-		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
+		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
-		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
+		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
-		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-conf|unary|unary-conf|"
+		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
 		cerr << "\t--node-clamp arg\t" << ": clamp nodes if true" << endl;
 		cerr << "\t--node-clamp-threshold arg\t" << ": node clamp threshold" << endl;

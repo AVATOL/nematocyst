@@ -60,6 +60,48 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Standard CRF features with raw unary and raw pairwise potentials.
+	 */
+	class StandardContextFeatures : public IFeatureFunction
+	{
+	public:
+		StandardContextFeatures();
+		~StandardContextFeatures();
+
+		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+		virtual int featureSize(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+	protected:
+		/*!
+		 * @brief Compute unary term.
+		 */
+		virtual VectorXd computeUnaryTerm(ImgFeatures& X, ImgLabeling& Y);
+		
+		/*!
+		 * @brief Compute pairwise term.
+		 */
+		virtual VectorXd computePairwiseTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute pairwise features.
+		 */
+		virtual VectorXd computePairwiseFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+
+		/*!
+		 * @brief Compute context term.
+		 */
+		virtual VectorXd computeContextTerm(ImgFeatures& X, ImgLabeling& Y);
+
+		/*!
+		 * @brief Compute context features.
+		 */
+		VectorXd computeContextFeatures(VectorXd& nodeFeatures1, VectorXd& nodeFeatures2, 
+			double nodeLocationX1, double nodeLocationY1, double nodeLocationX2, double nodeLocationY2, 
+			int nodeLabel1, int nodeLabel2, int& classIndex);
+	};
+
+	/*!
 	 * @brief Standard CRF features with raw unary and raw pairwise potentials, 
 	 * but pairwise does not distinguish non-class matches.
 	 */
