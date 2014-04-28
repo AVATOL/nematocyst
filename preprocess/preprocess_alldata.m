@@ -45,6 +45,9 @@ end
 if ~exist([outputPath '/edges/'], 'dir')
     mkdir([outputPath '/edges/']);
 end
+if ~exist([outputPath '/edgefeatures/'], 'dir')
+    mkdir([outputPath '/edgefeatures/']);
+end
 if ~exist([outputPath '/segments/'], 'dir')
     mkdir([outputPath '/segments/']);
 end
@@ -99,6 +102,7 @@ for i = 1:nFiles
     nodesFile = sprintf('%s.txt', filename);
     nodeLocationsFile = sprintf('%s.txt', filename);
     edgesFile = sprintf('%s.txt', filename);
+    edgeFeaturesFile = sprintf('%s.txt', filename);
     segmentsFile = sprintf('%s.txt', filename);
     groundtruthFile = sprintf('%s.txt', filename);
     metaFile = sprintf('%s.txt', filename);
@@ -122,6 +126,20 @@ for i = 1:nFiles
     [ai,aj,aval] = find(allData{i}.adj);
     spAdj = [ai,aj,aval];
     dlmwrite([outputPath '/edges/' edgesFile], spAdj, ' ');
+    
+    % write edge features
+    featDim = size(allData{i}.feat2, 2);
+    edgeFeatures = zeros(length(ai), featDim);
+    edgeLabels = zeros(length(ai), 1);
+    for j = 1:length(ai)
+        e1 = allData{i}.feat2(ai(j), :);
+        e2 = allData{i}.feat2(aj(j), :);
+        edgeFeatures(j, :) = abs(e1 - e2);
+        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) == allData{i}.segLabels(aj(j), 1);
+    end
+    edgeLabels(edgeLabels == 0) = -1;
+    
+    libsvmwrite([outputPath '/edgefeatures/' edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
     
     % write segments
     dlmwrite([outputPath '/segments/' segmentsFile], allData{i}.segs2, ' ');
@@ -198,6 +216,45 @@ for i = trainRange
     end
 end
 
+%% create edge classifier training file
+EDGECLASSIFIER_TRAINING_FILE = 'edgeclassifier_training.txt';
+EDGECLASSIFIER_TEMP_FILE = 'edgeclassifier_temp.txt';
+if ispc
+    outputPathWin = strrep(outputPath, '/', '\');
+    dos(['copy NUL ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE]);
+elseif isunix
+    outputPathLinux = strrep(outputPath, '\', '/');
+    unix(['touch ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE]);
+end
+for i = trainRange
+    file = sprintf('%d.txt', i-1);
+    if isfield(allData{i}, 'filename');
+        file = sprintf('%s.txt', allData{i}.filename);
+    end
+    
+    if ispc
+       outputPathWin = strrep(outputPath, '/', '\');
+       typeCmd = ['type ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE ' '...
+           outputPathWin '\edgefeatures\' file ' > ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE];
+       delCmd = ['del ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
+       renameCmd = ['move ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE ' '...
+           outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
+       dos(typeCmd);
+       dos(delCmd);
+       dos(renameCmd);
+    elseif isunix
+       outputPathLinux = strrep(outputPath, '\', '/');
+       typeCmd = ['cat ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE ' '...
+           outputPathLinux '\edgefeatures\' file ' > ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE];
+       delCmd = ['rm -f ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
+       renameCmd = ['mv ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE ' '...
+           outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
+       unix(typeCmd);
+       unix(delCmd);
+       unix(renameCmd);
+    end
+end
+
 %% train initial prediction classifier on the training file just generated
 INITFUNC_MODEL_FILE = 'initfunc_model.txt';
 fprintf('Training initial classifier model...\n');
@@ -215,6 +272,25 @@ elseif isunix
     unix([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
         outputPathLinux '/' INITFUNC_TRAINING_FILE ' ' ...
         outputPathLinux '/' INITFUNC_MODEL_FILE]);
+end
+
+%% train initial prediction classifier on the edge training file just generated
+EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
+fprintf('Training initial classifier model...\n');
+if ispc
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/windows/train'];
+    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '/', '\');
+    outputPathWin = strrep(outputPath, '/', '\');
+    dos([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+        outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE ' ' ...
+        outputPathWin '\' EDGECLASSIFIER_MODEL_FILE]);
+elseif isunix
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/train'];
+    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '\', '/');
+    outputPathLinux = strrep(outputPath, '\', '/');
+    unix([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+        outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE ' ' ...
+        outputPathLinux '/' EDGECLASSIFIER_MODEL_FILE]);
 end
 
 %% generate the initial prediction files
