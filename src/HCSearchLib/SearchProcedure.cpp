@@ -329,7 +329,7 @@ namespace HCSearch
 		SearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
-		LOG() << endl << "Num of outputs generated=" << costSet.size() << endl;
+		LOG() << "Num of outputs generated=" << costSet.size() << endl << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
@@ -650,7 +650,7 @@ namespace HCSearch
 		SearchNode* lowestCost = bestCostNode;
 		ImgLabeling prediction = lowestCost->getY();
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
-		LOG() << endl << "Num of outputs generated=" << numOutputs << endl;
+		LOG() << "Num of outputs generated=" << numOutputs << endl << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)

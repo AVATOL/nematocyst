@@ -1070,7 +1070,7 @@ namespace HCSearch
 		if (numSumLabels > 0)
 			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
 
-		LOG() << "num nodes clamped=" << numNodeClamp << endl;
+		LOG() << "num nodes clamped=" << numNodeClamp << " out of " << YPred.getNumNodes() << endl;
 
 		return successors;
 	}
