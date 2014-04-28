@@ -329,6 +329,7 @@ namespace HCSearch
 		SearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
+		LOG() << endl << "Num of outputs generated=" << costSet.size() << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
@@ -599,6 +600,8 @@ namespace HCSearch
 		bestCostNode = root;
 		costSet.push_back(root);
 
+		int numOutputs = 1;
+
 		// while the open set is not empty and the time step is less than the time bound,
 		// perform search...
 		int timeStep = 0;
@@ -612,7 +615,7 @@ namespace HCSearch
 
 			/***** expand the best heuristic node and update the best heuristic and cost nodes *****/
 
-			SearchNodeList candidateSet = expandElements(bestHeuristicNode, bestCostNode, costSet, pruneModel, YTruth, searchType, timeStep, timeBound);
+			SearchNodeList candidateSet = expandElements(bestHeuristicNode, bestCostNode, costSet, pruneModel, YTruth, searchType, timeStep, timeBound, numOutputs);
 
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 
@@ -647,6 +650,7 @@ namespace HCSearch
 		SearchNode* lowestCost = bestCostNode;
 		ImgLabeling prediction = lowestCost->getY();
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
+		LOG() << endl << "Num of outputs generated=" << numOutputs << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
@@ -691,7 +695,7 @@ namespace HCSearch
 	}
 
 	GreedySearchProcedure::SearchNodeList GreedySearchProcedure::expandElements(SearchNode*& bestHeuristicNode, SearchNode*& bestCostNode, SearchNodeList& costSet, 
-		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound, int& numOutputs)
 	{
 		SearchNodeList candidateSet;
 		
@@ -730,6 +734,8 @@ namespace HCSearch
 				// get the best cost node
 				if (state->getCost() < bestCostNode->getCost())
 					bestCostNode = state;
+
+				numOutputs++;
 			}
 		}
 

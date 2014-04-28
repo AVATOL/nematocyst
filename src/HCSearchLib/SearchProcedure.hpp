@@ -224,7 +224,7 @@ namespace HCSearch
 		 * @post bestHeuristicNode and bestCostNode updated with the best node, 
 		 */
 		SearchNodeList expandElements(SearchNode*& bestHeuristicNode, SearchNode*& bestCostNode, SearchNodeList& costSet, 
-			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound);
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound, int& numOutputs);
 
 		/*!
 		 * @brief Stub for choosing successors among the expanded.
