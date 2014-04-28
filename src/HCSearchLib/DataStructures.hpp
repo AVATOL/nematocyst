@@ -261,6 +261,10 @@ namespace HCSearch
 		set<int> getTopConfidentLabels(int node, int K);
 
 		vector<int> getLabelsByConfidence(int node);
+
+		int getMostConfidentLabel(int node);
+
+		double getConfidence(int node, int label);
 	};
 
 	/*!

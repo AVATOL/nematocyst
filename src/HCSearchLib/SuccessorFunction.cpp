@@ -860,6 +860,10 @@ namespace HCSearch
 		// edge weights using KL divergence measure
 		vector<double> edgeWeights;
 
+		// keep track of which edges to clamp
+		vector<bool> positiveEdgeClamps;
+		vector<bool> negativeEdgeClamps;
+
 		// iterate over all edges to store
 		for (map< int, set<int> >::iterator it = edges.begin();
 			it != edges.end(); ++it)
@@ -880,6 +884,11 @@ namespace HCSearch
 				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
 				edgeWeights.push_back(weight);
 
+				// for now do not clamp
+				// TODO: read weights and make decision with threshold
+				positiveEdgeClamps.push_back(false);
+				negativeEdgeClamps.push_back(false);
+
 				// add
 				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
 				edgeNodes.push_back(nodePair);
@@ -894,8 +903,20 @@ namespace HCSearch
 			int node1 = nodePair.first;
 			int node2 = nodePair.second;
 
+			// get clamp decisions
+			bool positiveClamp = positiveEdgeClamps[i];
+			bool negativeClamp = negativeEdgeClamps[i];
+
 			bool willCut;
-			if (!cutEdgesIndependently)
+			if (positiveClamp && !negativeClamp)
+			{
+				willCut = false;
+			}
+			else if (negativeClamp && !positiveClamp)
+			{
+				willCut = true;
+			}
+			else if (!cutEdgesIndependently)
 			{
 				// uniform state
 				double inverseThreshold = 1.0 - threshold;
@@ -957,6 +978,32 @@ namespace HCSearch
 
 		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
 
+		// node clamp decisions
+		vector<bool> nodeClampDecisions;
+		int numNodeClamp = 0;
+		for (int node = 0; node < YPred.getNumNodes(); node++)
+		{
+			bool decision;
+			if (!YPred.confidencesAvailable)
+				decision = false;
+			else if (!this->clampNodes)
+				decision = false;
+			else
+			{
+				// get most confident label's confidence
+				int label = YPred.getMostConfidentLabel(node);
+				double confidence = YPred.getConfidence(node, label);
+
+				// make decision
+				decision = (confidence >= nodeClampThreshold);
+			}
+
+			nodeClampDecisions.push_back(decision);
+
+			if (decision)
+				numNodeClamp++;
+		}
+
 		// successors set
 		vector< ImgCandidate > successors;
 
@@ -1004,7 +1051,10 @@ namespace HCSearch
 					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
 					{
 						int node = *it4;
-						YNew.graph.nodesData(node) = label;
+						if (this->clampNodes && nodeClampDecisions[node])
+							YNew.graph.nodesData(node) = YPred.getMostConfidentLabel(node);
+						else
+							YNew.graph.nodesData(node) = label;
 						action.insert(node);
 					}
 
@@ -1019,6 +1069,8 @@ namespace HCSearch
 
 		if (numSumLabels > 0)
 			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
+
+		LOG() << "num nodes clamped=" << numNodeClamp << endl;
 
 		return successors;
 	}

@@ -255,6 +255,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "stochastic schedule" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tNode clamping: " << po.nodeClamp << ", Edge clamping: " << po.edgeClamp << endl;
+		LOG() << "\t\tNode clamp threshold: " << po.nodeClampThreshold << endl;
+		LOG() << "\t\tEdge clamp positive threshold: " << po.edgeClampPositiveThreshold << endl;
+		LOG() << "\t\tEdge clamp negative threshold: " << po.edgeClampNegativeThreshold << endl;
 		successor = new HCSearch::StochasticScheduleSuccessor(cutEdgesIndependently, po.cutParam, 
 			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
@@ -262,6 +266,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "stochastic schedule neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tNode clamping: " << po.nodeClamp << ", Edge clamping: " << po.edgeClamp << endl;
+		LOG() << "\t\tNode clamp threshold: " << po.nodeClampThreshold << endl;
+		LOG() << "\t\tEdge clamp positive threshold: " << po.edgeClampPositiveThreshold << endl;
+		LOG() << "\t\tEdge clamp negative threshold: " << po.edgeClampNegativeThreshold << endl;
 		successor = new HCSearch::StochasticScheduleNeighborSuccessor(cutEdgesIndependently, po.cutParam, 
 			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
@@ -269,6 +277,10 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "stochastic schedule confidences neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
+		LOG() << "\tNode clamping: " << po.nodeClamp << ", Edge clamping: " << po.edgeClamp << endl;
+		LOG() << "\t\tNode clamp threshold: " << po.nodeClampThreshold << endl;
+		LOG() << "\t\tEdge clamp positive threshold: " << po.edgeClampPositiveThreshold << endl;
+		LOG() << "\t\tEdge clamp negative threshold: " << po.edgeClampNegativeThreshold << endl;
 		successor = new HCSearch::StochasticScheduleConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam, 
 			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
