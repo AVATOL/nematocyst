@@ -776,7 +776,7 @@ namespace HCSearch
 
 	const double StochasticScheduleSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const double StochasticScheduleSuccessor::DEFAULT_T_PARAM = 0.5;
-	const double StochasticScheduleSuccessor::DEFAULT_NODE_CLAMP_THRESHOLD = 0.75;
+	const double StochasticScheduleSuccessor::DEFAULT_NODE_CLAMP_THRESHOLD = 0.9;
 	const double StochasticScheduleSuccessor::DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD = 0.9;
 	const double StochasticScheduleSuccessor::DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD = 0.1;
 
