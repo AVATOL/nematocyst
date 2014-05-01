@@ -1274,7 +1274,7 @@ namespace HCSearch
 
 		clock_t tic = clock();
 
-		LOG() << "generating stochastic schedule successors..." << endl;
+		LOG() << "generating stochastic constrained successors..." << endl;
 
 		if (!YPred.confidencesAvailable)
 		{
