@@ -1270,11 +1270,36 @@ namespace HCSearch
 	
 	vector< ImgCandidate > StochasticConstrainedSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
 	{
+		using namespace MyPrimitives;
+
 		clock_t tic = clock();
 
 		LOG() << "generating stochastic schedule successors..." << endl;
 
+		if (!YPred.confidencesAvailable)
+		{
+			LOG(WARNING) << "node confidences are not available for constrained successor. turning off clamp.";
+		}
+
+		vector< Pair<int, bool> > nodesClamped;
+		vector< Triple<int, int, bool> > edgesClamped;
+		vector< Triple<int, int, bool> > edgesCut;
+
 		// assign node clamping
+		for (int node = 0; node < YPred.getNumNodes(); node++)
+		{
+			if (!YPred.confidencesAvailable)
+			{
+				nodesClamped.push_back(Pair<int, bool>(node, false));
+			}
+			else
+			{
+				int label = YPred.getLabel(node);
+				double confidence = YPred.getConfidence(node, label);
+				bool clamp = confidence >= this->nodeClampThreshold;
+				nodesClamped.push_back(Pair<int, bool>(node, clamp));
+			}
+		}
 
 		// assign edge clamping
 
