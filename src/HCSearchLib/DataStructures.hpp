@@ -68,6 +68,11 @@ namespace HCSearch
 		 * Node -> set of neighbor nodes
 		 */
 		AdjList_t adjList;
+
+		/*!
+		 * Number of edges (cached).
+		 */
+		int numEdges;
 	};
 
 	/*!
@@ -88,6 +93,11 @@ namespace HCSearch
 		 * Node -> set of neighbor nodes
 		 */
 		AdjList_t adjList;
+
+		/*!
+		 * Number of edges (cached).
+		 */
+		int numEdges;
 	};
 
 	/**************** Features and Labelings ****************/
@@ -127,8 +137,22 @@ namespace HCSearch
 		 */
 		MatrixXd nodeLocations;
 
+		/*!
+		 * Edge weights.
+		 * Indexed by (node 1, node 2)
+		 */
+		map< MyPrimitives::Pair<int, int>, double > edgeWeights;
+
+		/*!
+		 * Edge features.
+		 * Indexed by (node 1, node 2)
+		 */
+		map< MyPrimitives::Pair<int, int>, VectorXd > edgeFeatures;
+
 		bool segmentsAvailable;
 		bool nodeLocationsAvailable;
+		bool edgeWeightsAvailable;
+		bool edgeFeaturesAvailable;
 
 	public:
 		ImgFeatures();
@@ -145,6 +169,12 @@ namespace HCSearch
 		 * @return Returns the number of nodes
 		 */
 		int getNumNodes();
+
+		/*!
+		 * Function to get the number of edges.
+		 * @return Returns the number of edges
+		 */
+		int getNumEdges();
 
 		/*!
 		 * Convenience function to get a feature component at a node.
@@ -223,6 +253,12 @@ namespace HCSearch
 		 * @return Returns the number of nodes
 		 */
 		int getNumNodes();
+
+		/*!
+		 * Function to get the number of edges.
+		 * @return Returns the number of edges
+		 */
+		int getNumEdges();
 
 		/*!
 		 * Convenience function to get a node's label.

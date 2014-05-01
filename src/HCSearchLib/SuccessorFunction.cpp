@@ -1276,19 +1276,26 @@ namespace HCSearch
 
 		LOG() << "generating stochastic constrained successors..." << endl;
 
+		bool useConstraints = true;
 		if (!YPred.confidencesAvailable)
 		{
 			LOG(WARNING) << "node confidences are not available for constrained successor. turning off clamp.";
+			useConstraints = false;
+		}
+		else if (!X.edgeWeightsAvailable)
+		{
+			LOG(WARNING) << "edge weights are not available for constrained successor. turning off clamp.";
+			useConstraints = false;
 		}
 
 		vector< bool > nodesClamped;
-		vector< Triple<int, int, bool> > edgesClamped;
-		vector< Triple<int, int, bool> > edgesCut;
+		map< Pair<int, int>, bool > edgesClamped;
+		map< Pair<int, int>, bool > edgesCut;
 
 		// assign node clamping
 		for (int node = 0; node < YPred.getNumNodes(); node++)
 		{
-			if (!YPred.confidencesAvailable)
+			if (!useConstraints)
 			{
 				nodesClamped.push_back(false);
 			}
@@ -1302,6 +1309,34 @@ namespace HCSearch
 		}
 
 		// assign edge clamping
+		int numEdges = X.getNumEdges();
+		for (map< Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
+		{
+			Pair<int, int> key = it->first;
+			double edgeWeight = it->second;
+
+			if (!useConstraints)
+			{
+				edgesClamped[key] = false;
+			}
+			else
+			{
+				if (edgeWeight >= this->edgeClampPositiveThreshold)
+				{
+					edgesClamped[key] = true;
+					edgesCut[key] = false;
+				}
+				else if (edgeWeight <= this->edgeClampNegativeThreshold)
+				{
+					edgesClamped[key] = true;
+					edgesCut[key] = true;
+				}
+				else
+				{
+					edgesClamped[key] = false;
+				}
+			}
+		}
 
 		// constraint propagation 1: propagate information with must-link edges
 

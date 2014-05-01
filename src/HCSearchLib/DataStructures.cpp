@@ -44,6 +44,11 @@ namespace HCSearch
 		return this->graph.nodesData.rows();
 	}
 
+	int ImgFeatures::getNumEdges()
+	{
+		return this->graph.numEdges;
+	}
+
 	double ImgFeatures::getFeature(int node, int featIndex)
 	{
 		return this->graph.nodesData(node, featIndex);
@@ -90,6 +95,11 @@ namespace HCSearch
 	int ImgLabeling::getNumNodes()
 	{
 		return this->graph.nodesData.size();
+	}
+
+	int ImgLabeling::getNumEdges()
+	{
+		return this->graph.numEdges;
 	}
 
 	int ImgLabeling::getLabel(int node)
