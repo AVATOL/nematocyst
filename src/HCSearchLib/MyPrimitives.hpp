@@ -13,6 +13,7 @@ using namespace std;
 namespace MyPrimitives
 {
 	template <class T, class U> struct Pair;
+	template <class T, class U, class V> struct Triple;
 	template <class T> class Bimap;
 
 	/*!
@@ -32,6 +33,27 @@ namespace MyPrimitives
 
 		Pair() {}
 		~Pair() {}
+	};
+
+	/*!
+	 * Triple stores a basic 3-tuple
+	 */
+	template <class T, class U=T, class V=T>
+	struct Triple
+	{
+		T first;
+		U second;
+		V third;
+
+		Triple(T first, U second, V third)
+		{
+			this->first = first;
+			this->second = second;
+			this->third = third;
+		}
+
+		Triple() {}
+		~Triple() {}
 	};
 
 	/*!
