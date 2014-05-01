@@ -280,6 +280,41 @@ namespace HCSearch
 	protected:
 		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 	};
+
+	/*!
+	 * @brief Stochastic constrained successor function.
+	 * 
+	 * Stochastically cut edges to form subgraphs.
+	 * Also uses node and edge clamping for constraints.
+	 */
+	class StochasticConstrainedSuccessor : public ISuccessorFunction
+	{
+	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
+		static const double DEFAULT_T_PARAM;
+		static const double DEFAULT_NODE_CLAMP_THRESHOLD;
+		static const double DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		static const double DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+
+		double cutParam; //!< temperature parameter
+		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
+
+		bool clampNodes;
+		bool clampEdges;
+
+		double nodeClampThreshold;
+		double edgeClampPositiveThreshold;
+		double edgeClampNegativeThreshold;
+
+	public:
+		StochasticConstrainedSuccessor();
+		StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam, 
+			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
+		~StochasticConstrainedSuccessor();
+
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
+	};
 }
 
 #endif

@@ -1233,4 +1233,74 @@ namespace HCSearch
 		getConfidencesNeighborLabels(candidateLabelsSet, cc);	
 	}
 
+	/**************** Stochastic Constrained Successor Function ****************/
+
+	const double StochasticConstrainedSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
+	const double StochasticConstrainedSuccessor::DEFAULT_T_PARAM = 0.5;
+	const double StochasticConstrainedSuccessor::DEFAULT_NODE_CLAMP_THRESHOLD = 0.9;
+	const double StochasticConstrainedSuccessor::DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD = 0.9;
+	const double StochasticConstrainedSuccessor::DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD = 0.1;
+
+	StochasticConstrainedSuccessor::StochasticConstrainedSuccessor()
+	{
+		this->cutParam = DEFAULT_T_PARAM;
+		this->cutEdgesIndependently = true;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+	}
+
+	StochasticConstrainedSuccessor::StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = false;
+		this->clampEdges = false;
+		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
+		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+	}
+
+	StochasticConstrainedSuccessor::StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam, 
+	bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->clampNodes = clampNodes;
+		this->clampEdges = clampEdges;
+		this->nodeClampThreshold = nodeClampThreshold;
+		this->edgeClampPositiveThreshold = edgeClampPositiveThreshold;
+		this->edgeClampNegativeThreshold = edgeClampNegativeThreshold;
+	}
+
+	StochasticConstrainedSuccessor::~StochasticConstrainedSuccessor()
+	{
+	}
+	
+	vector< ImgCandidate > StochasticConstrainedSuccessor::generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)
+	{
+		clock_t tic = clock();
+
+		LOG() << "generating stochastic schedule successors..." << endl;
+
+		// assign node clamping
+
+		// assign edge clamping
+
+		// constraint propagation 1: propagate information with must-link edges
+
+		// cut edges without clamping
+
+		// constraint propagation 2: propose labels that satisfy must-not-link edges
+
+		// generate candidates
+		vector< ImgCandidate > successors;
+
+		clock_t toc = clock();
+		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+		return successors;
+	}
 }
