@@ -33,6 +33,15 @@ namespace MyPrimitives
 
 		Pair() {}
 		~Pair() {}
+
+		bool operator<( const Pair& other) const
+		{
+			if ( first == other.first )
+			{
+				return second < other.second;
+			}
+			return first < other.first;
+		}
 	};
 
 	/*!
