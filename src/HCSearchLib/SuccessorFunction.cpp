@@ -1252,17 +1252,6 @@ namespace HCSearch
 		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
 	}
 
-	StochasticConstrainedSuccessor::StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam)
-	{
-		this->cutParam = cutParam;
-		this->cutEdgesIndependently = cutEdgesIndependently;
-		this->clampNodes = false;
-		this->clampEdges = false;
-		this->nodeClampThreshold = DEFAULT_NODE_CLAMP_THRESHOLD;
-		this->edgeClampPositiveThreshold = DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
-		this->edgeClampNegativeThreshold = DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
-	}
-
 	StochasticConstrainedSuccessor::StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam, 
 	bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold)
 	{

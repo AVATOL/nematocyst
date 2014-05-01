@@ -308,7 +308,6 @@ namespace HCSearch
 
 	public:
 		StochasticConstrainedSuccessor();
-		StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam);
 		StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam, 
 			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
 		~StochasticConstrainedSuccessor();
