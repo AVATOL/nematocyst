@@ -1281,7 +1281,7 @@ namespace HCSearch
 			LOG(WARNING) << "node confidences are not available for constrained successor. turning off clamp.";
 		}
 
-		vector< Pair<int, bool> > nodesClamped;
+		vector< bool > nodesClamped;
 		vector< Triple<int, int, bool> > edgesClamped;
 		vector< Triple<int, int, bool> > edgesCut;
 
@@ -1290,14 +1290,14 @@ namespace HCSearch
 		{
 			if (!YPred.confidencesAvailable)
 			{
-				nodesClamped.push_back(Pair<int, bool>(node, false));
+				nodesClamped.push_back(false);
 			}
 			else
 			{
 				int label = YPred.getLabel(node);
 				double confidence = YPred.getConfidence(node, label);
 				bool clamp = confidence >= this->nodeClampThreshold;
-				nodesClamped.push_back(Pair<int, bool>(node, clamp));
+				nodesClamped.push_back(clamp);
 			}
 		}
 
