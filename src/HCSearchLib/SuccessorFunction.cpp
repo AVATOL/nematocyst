@@ -1293,6 +1293,7 @@ namespace HCSearch
 		map< Pair<int, int>, bool > edgesCut;
 
 		// assign node clamping
+		int numClampedNodes = 0;
 		for (int node = 0; node < YPred.getNumNodes(); node++)
 		{
 			if (!useConstraints)
@@ -1305,11 +1306,15 @@ namespace HCSearch
 				double confidence = YPred.getConfidence(node, label);
 				bool clamp = confidence >= this->nodeClampThreshold;
 				nodesClamped.push_back(clamp);
+				if (clamp)
+					numClampedNodes++;
 			}
 		}
 
 		// assign edge clamping
 		int numEdges = X.getNumEdges();
+		int numPositiveClampedEdges = 0;
+		int numNegativeClampedEdges = 0;
 		for (map< Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
 		{
 			Pair<int, int> key = it->first;
@@ -1325,11 +1330,13 @@ namespace HCSearch
 				{
 					edgesClamped[key] = true;
 					edgesCut[key] = false;
+					numPositiveClampedEdges++;
 				}
 				else if (edgeWeight <= this->edgeClampNegativeThreshold)
 				{
 					edgesClamped[key] = true;
 					edgesCut[key] = true;
+					numNegativeClampedEdges++;
 				}
 				else
 				{
@@ -1338,7 +1345,14 @@ namespace HCSearch
 			}
 		}
 
+		LOG() << "num clamped nodes=" << numClampedNodes << endl;
+		LOG() << "num positive clamped edges=" << numPositiveClampedEdges << endl;
+		LOG() << "num negative clamped edges=" << numNegativeClampedEdges << endl;
+
 		// constraint propagation 1: propagate information with must-link edges
+		// 1) compute transitive closure on must-link edges
+		// 2) if one node in CC is clamped, then propagate label
+		//		otherwise >1 node, pick highest confidence
 
 		// cut edges without clamping
 
