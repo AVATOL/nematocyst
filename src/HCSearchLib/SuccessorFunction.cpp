@@ -1375,8 +1375,26 @@ namespace HCSearch
 		}
 
 		// cut edges without clamping (stochastic cutting)
+		for (map< Pair<int, int>, bool >:: iterator it = edgesClamped.begin(); it != edgesClamped.end(); ++it)
+		{
+			bool isClamped = it->second;
+			if (!isClamped)
+			{
+				Pair<int, int> edge = it->first;
+				double edgeWeight = X.edgeWeights[edge];
+
+				// perform cutting based on stochastic threshold
+				double indepThreshold = Rand::unifDist(); // ~ Uniform(0, 1)
+				double inverseThreshold = 1.0 - indepThreshold;
+				double scheduleRatio = 1.0 - 1.0*max(0.0, min(1.0, (1.0*(timeStep+timeBound/4)/timeBound)));
+				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
+				double scheduledThreshold = 1 - scheduledInverseThreshold;
+				edgesCut[edge] = edgeWeight <= scheduledThreshold;
+			}
+		}
 
 		// constraint propagation 2: propose labels that satisfy must-not-link edges
+
 
 		// generate candidates
 		vector< ImgCandidate > successors;
