@@ -21,6 +21,19 @@ namespace HCSearch
 		return lhs.second < rhs.second;
 	}
 
+	/**************** Graphs ****************/
+
+	int IGraph::getNumEdges()
+	{
+		int numEdges = 0;
+		for (AdjList_t::iterator it = this->adjList.begin(); it != this->adjList.end(); ++it)
+		{
+			NeighborSet_t neighbors = it->second;
+			numEdges += neighbors.size();
+		}
+		return numEdges;
+	}
+
 	/**************** Features and Labelings ****************/
 
 	ImgFeatures::ImgFeatures()
@@ -46,7 +59,7 @@ namespace HCSearch
 
 	int ImgFeatures::getNumEdges()
 	{
-		return this->graph.numEdges;
+		return this->graph.getNumEdges();
 	}
 
 	double ImgFeatures::getFeature(int node, int featIndex)
@@ -99,7 +112,7 @@ namespace HCSearch
 
 	int ImgLabeling::getNumEdges()
 	{
-		return this->graph.numEdges;
+		return this->graph.getNumEdges();
 	}
 
 	int ImgLabeling::getLabel(int node)

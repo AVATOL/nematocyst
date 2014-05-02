@@ -50,19 +50,10 @@ namespace HCSearch
 	typedef map< int, NeighborSet_t > AdjList_t;
 
 	/*!
-	 * @brief Basic graph implementation with feature data at nodes.
-	 * 
-	 * This data structure is publicly accessible so you can perform 
-	 * direct reading and manipulations.
+	 * @brief Anstract graph implementation to avoid redundancy.
 	 */
-	struct FeatureGraph
+	struct IGraph
 	{
-		/*!
-		 * Node data stores features at nodes.
-		 * Rows = nodes, cols = feature data
-		 */
-		MatrixXd nodesData;
-
 		/*!
 		 * Adjacency list of the graph.
 		 * Node -> set of neighbor nodes
@@ -70,9 +61,24 @@ namespace HCSearch
 		AdjList_t adjList;
 
 		/*!
-		 * Number of edges (cached).
+		 * Get the number of edges in the graph.
 		 */
-		int numEdges;
+		int getNumEdges();
+	};
+
+	/*!
+	 * @brief Basic graph implementation with feature data at nodes.
+	 * 
+	 * This data structure is publicly accessible so you can perform 
+	 * direct reading and manipulations.
+	 */
+	struct FeatureGraph : public IGraph
+	{
+		/*!
+		 * Node data stores features at nodes.
+		 * Rows = nodes, cols = feature data
+		 */
+		MatrixXd nodesData;
 	};
 
 	/*!
@@ -81,23 +87,12 @@ namespace HCSearch
 	 * This data structure is publicly accessible so you can perform 
 	 * direct reading and manipulations.
 	 */
-	struct LabelGraph
+	struct LabelGraph : public IGraph
 	{
 		/*!
 		 * Nodes with labels.
 		 */
 		VectorXi nodesData;
-
-		/*!
-		 * Adjacency list of the graph.
-		 * Node -> set of neighbor nodes
-		 */
-		AdjList_t adjList;
-
-		/*!
-		 * Number of edges (cached).
-		 */
-		int numEdges;
 	};
 
 	/**************** Features and Labelings ****************/
