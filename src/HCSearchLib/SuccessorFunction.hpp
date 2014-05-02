@@ -313,6 +313,10 @@ namespace HCSearch
 		~StochasticConstrainedSuccessor();
 
 		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
+
+	protected:
+		AdjList_t transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
+			map< MyPrimitives::Pair<int, int>, bool > edgesCut);
 	};
 }
 

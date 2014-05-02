@@ -1288,9 +1288,13 @@ namespace HCSearch
 			useConstraints = false;
 		}
 
+		// data strutures to keep track of node and edge clamping
 		vector< bool > nodesClamped;
 		map< Pair<int, int>, bool > edgesClamped;
 		map< Pair<int, int>, bool > edgesCut;
+
+		// keep track of new YPred with constrained labels
+		ImgLabeling YPredConstrained = YPred;
 
 		// assign node clamping
 		int numClampedNodes = 0;
@@ -1351,8 +1355,24 @@ namespace HCSearch
 
 		// constraint propagation 1: propagate information with must-link edges
 		// 1) compute transitive closure on must-link edges
-		// 2) if one node in CC is clamped, then propagate label
-		//		otherwise >1 node, pick highest confidence
+		AdjList_t closure = transitiveClosurePositiveEdges(edgesClamped, edgesCut);
+
+		// 2) if a node in CC is clamped, then propagate label
+		for (AdjList_t::iterator it = closure.begin(); it != closure.end(); ++it)
+		{
+			// if node is clamped, propagate information to connected component
+			int node1 = it->first;
+			if (nodesClamped[node1])
+			{
+				NeighborSet_t neighbors = it->second;
+				for (NeighborSet_t::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+				{
+					int node2 = *it2;
+					YPredConstrained.graph.nodesData(node2) = YPred.graph.nodesData(node1);
+				}
+			}
+			//TODO: what if connected components has multiple clamped nodes with different labels?
+		}
 
 		// cut edges without clamping
 
@@ -1365,5 +1385,12 @@ namespace HCSearch
 		LOG() << "successor total time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
 		return successors;
+	}
+
+	AdjList_t StochasticConstrainedSuccessor::transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
+			map< MyPrimitives::Pair<int, int>, bool > edgesCut)
+	{
+		AdjList_t closure;
+		return closure;
 	}
 }
