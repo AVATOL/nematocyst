@@ -1287,6 +1287,7 @@ namespace HCSearch
 			LOG(WARNING) << "edge weights are not available for constrained successor. turning off clamp.";
 			useConstraints = false;
 		}
+		//TODO: use edge weights or just compute from KL
 
 		// data strutures to keep track of node and edge clamping
 		vector< bool > nodesClamped;
@@ -1390,6 +1391,8 @@ namespace HCSearch
 				double scheduledInverseThreshold = 1.0*max(0.0, min(1.0, scheduleRatio)) * inverseThreshold;
 				double scheduledThreshold = 1 - scheduledInverseThreshold;
 				edgesCut[edge] = edgeWeight <= scheduledThreshold;
+
+				//TODO options: uniform vs. independent edge thresholding
 			}
 		}
 
