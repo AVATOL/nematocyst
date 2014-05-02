@@ -1355,7 +1355,7 @@ namespace HCSearch
 
 		// constraint propagation 1: propagate information with must-link edges
 		// 1) compute transitive closure on must-link edges
-		AdjList_t closure = transitiveClosurePositiveEdges(edgesClamped, edgesCut);
+		AdjList_t closure = transitiveClosurePositiveEdges(edgesClamped, edgesCut, YPred.getNumNodes());
 
 		// 2) if a node in CC is clamped, then propagate label
 		for (AdjList_t::iterator it = closure.begin(); it != closure.end(); ++it)
@@ -1374,7 +1374,7 @@ namespace HCSearch
 			//TODO: what if connected components has multiple clamped nodes with different labels?
 		}
 
-		// cut edges without clamping
+		// cut edges without clamping (stochastic cutting)
 
 		// constraint propagation 2: propose labels that satisfy must-not-link edges
 
@@ -1388,9 +1388,72 @@ namespace HCSearch
 	}
 
 	AdjList_t StochasticConstrainedSuccessor::transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
-			map< MyPrimitives::Pair<int, int>, bool > edgesCut)
+			map< MyPrimitives::Pair<int, int>, bool > edgesCut, int numNodes)
 	{
+		using namespace MyPrimitives;
+
+		// initialize closure matrix
+		MatrixXi closureMatrix = MatrixXi::Zero(numNodes, numNodes);
+		for (map< Pair<int, int>, bool >:: iterator it = edgesClamped.begin(); it != edgesClamped.end(); ++it)
+		{
+			bool isClamped = it->second;
+			if (isClamped)
+			{
+				Pair<int, int> edge = it->first;
+				if (edgesCut.count(edge) != 0)
+				{
+					if (!edgesCut[edge])
+					{
+						// this edge is a positive edge (must-link) so add to closureMatrix
+						closureMatrix(edge.first, edge.second) = 1;
+					}
+				}
+				else
+				{
+					LOG(ERROR) << "edges cut should not be empty when edges are clamped!";
+				}
+			}
+		}
+
+		// compute transitive closure
+		for (int k = 0; k < numNodes; k++)
+		{
+			for (int i = 0; i < numNodes; i++)
+			{
+				for (int j = 0; j < numNodes; j++)
+				{
+					// really naive way to do the following:
+					// w_ij = w_ij || (w_ik && w_kj)
+
+					int a = 0;
+					if (closureMatrix(i, k) == 1 && closureMatrix(k, j) == 1)
+						a = 1;
+
+					closureMatrix(i, j) = 1;
+					if (closureMatrix(i, j) == 0 && a == 0)
+						closureMatrix(i, j) = 0;
+				}
+			}
+		}
+
+		// convert matrix to list form
 		AdjList_t closure;
+		for (int node1 = 0; node1 < numNodes; node1++)
+		{
+			for (int node2 = 0; node2 < numNodes; node2++)
+			{
+				if (closureMatrix(node1, node2) == 1)
+				{
+					// add
+					if (closure.count(node1) == 0)
+					{
+						closure[node1] = NeighborSet_t();
+					}
+					closure[node1].insert(node2);
+				}
+			}
+		}
+
 		return closure;
 	}
 }

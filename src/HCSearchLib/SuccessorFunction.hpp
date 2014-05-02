@@ -316,7 +316,7 @@ namespace HCSearch
 
 	protected:
 		AdjList_t transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
-			map< MyPrimitives::Pair<int, int>, bool > edgesCut);
+			map< MyPrimitives::Pair<int, int>, bool > edgesCut, int numNodes);
 	};
 }
 
