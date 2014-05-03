@@ -1,5 +1,5 @@
-function generate_edge_weights( allData, outputPath, trainRange, validRange, testRange )
-%PREPROCESS_ALLDATA Preprocesses allData cell struct variable into a
+function generate_edge_weights( allData, outputPath, trainRange )
+%GENERATE_EDGE_WEIGHTS Preprocesses allData cell struct variable into a
 %data format for HCSearch to work. Features are already extracted in
 %allData.
 %
@@ -15,8 +15,6 @@ function generate_edge_weights( allData, outputPath, trainRange, validRange, tes
 %   outputPath:	folder path to output preprocessed data
 %                       e.g. 'DataPreprocessed/SomeDataset'
 %   trainRange:	set range of training data
-%   validRange:	set range of hold-out validation data
-%   testRange:	set range of test data
 
 %% argument checking
 narginchk(5, 5);
