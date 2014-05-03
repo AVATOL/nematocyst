@@ -316,8 +316,6 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	LOG() << "IID logistic regression" << endl;
 	HCSearch::IInitialPredictionFunction* initPredFunc = new HCSearch::MutexLogRegInit(); //new HCSearch::LogRegInit();
 
-	LOG() << endl;
-
 	// select some pruning function
 	LOG() << "Pruning function: ";
 	HCSearch::IPruneFunction* pruneFunc = NULL;
@@ -342,6 +340,8 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	default:
 		LOG(ERROR) << "undefined prune mode.";
 	}
+
+	LOG() << endl;
 
 	// construct search space from these functions that we specified
 	return new HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, initPredFunc, successor, pruneFunc, lossFunc);

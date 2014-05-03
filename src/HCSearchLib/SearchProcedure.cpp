@@ -739,10 +739,8 @@ namespace HCSearch
 			}
 		}
 
-		string disclaimer = "";
-		if (!Global::settings->CHECK_FOR_DUPLICATES)
-			disclaimer = " (duplicate checking disabled)";
-		LOG() << "num non-duplicates=" << candidateSet.size() << disclaimer << endl;
+		if (Global::settings->CHECK_FOR_DUPLICATES)
+			LOG() << "num non-duplicates=" << candidateSet.size() << endl;
 
 		return candidateSet;
 	}

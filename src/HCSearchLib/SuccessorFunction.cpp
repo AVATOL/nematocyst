@@ -1432,6 +1432,7 @@ namespace HCSearch
 		// loop over each sub graph
 		int cumSumLabels = 0;
 		int numSumLabels = 0;
+		int numEdgeConstraintEnforcement = 0;
 		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
 		{
 			Subgraph* sub = *it;
@@ -1472,7 +1473,10 @@ namespace HCSearch
 						{
 							int clampedLabel = YPred.getLabel(node2);
 							if (candidateLabelsSet.count(clampedLabel) != 0)
+							{
 								candidateLabelsSet.erase(clampedLabel);
+								numEdgeConstraintEnforcement++;
+							}
 						}
 					}
 				}
@@ -1519,6 +1523,8 @@ namespace HCSearch
 
 		if (numSumLabels > 0)
 			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
+
+		LOG() << "num negative edge constraint enforcements=" << numEdgeConstraintEnforcement << endl;
 
 		return successors;
 	}
