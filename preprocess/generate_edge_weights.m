@@ -23,8 +23,8 @@ narginchk(3, 3);
 if ~exist(outputPath, 'dir')
     mkdir(outputPath);
 end
-if ~exist([outputPath '/edgesweights/'], 'dir')
-    mkdir([outputPath '/edgesweights/']);
+if ~exist([outputPath '/edgeweights/'], 'dir')
+    mkdir([outputPath '/edgeweights/']);
 end
 
 fprintf('Training edge model...\n');
@@ -84,7 +84,7 @@ for i = 1:nFiles
     [~, ~, probs] = predict(gtLabels, sparse(features), model, '-b 1');
     
     spAdj = [ai aj probs(:, 1)];
-    dlmwrite([outputPath 'edgeweights/' edgesFile], spAdj, ' ');
+    dlmwrite([outputPath '/edgeweights/' edgesFile], spAdj, ' ');
 end
 
 end
