@@ -463,6 +463,45 @@ namespace MyGraphAlgorithms
 
 	SubgraphSet::SubgraphSet(HCSearch::ImgLabeling& labeling, map< int, set<int> > cuts)
 	{
+		constructorHelper(labeling, cuts);
+	}
+
+	SubgraphSet::SubgraphSet(HCSearch::ImgLabeling& labeling, map< MyPrimitives::Pair<int, int>, bool > cuts)
+	{
+		map< int, set<int> > cutsConverted;
+
+		// convert cuts to format
+		for (map< MyPrimitives::Pair<int, int>, bool >::iterator it = cuts.begin(); it != cuts.end(); ++it)
+		{
+			// if not cut
+			if (!it->second)
+			{
+				MyPrimitives::Pair<int, int> edge = it->first;
+				int node1 = edge.first;
+				int node2 = edge.second;
+
+				if (cutsConverted.count(node1) == 0)
+				{
+					cutsConverted[node1] = set<int>();
+				}
+				cutsConverted[node1].insert(node2);
+			}
+		}
+
+		constructorHelper(labeling, cutsConverted);
+	}
+
+	SubgraphSet::~SubgraphSet()
+	{
+		for (vector< Subgraph* >::iterator it = subgraphs.begin(); it != subgraphs.end(); ++it)
+		{
+			Subgraph* sub = *it;
+			delete sub;
+		}
+	}
+
+	void SubgraphSet::constructorHelper(HCSearch::ImgLabeling& labeling, map< int, set<int> > cuts)
+	{
 		this->cuts = cuts;
 		this->original = labeling;
 
@@ -517,15 +556,6 @@ namespace MyGraphAlgorithms
 			{
 				this->exactlyOnePositiveCCSubgraphs.push_back(sub);
 			}
-		}
-	}
-
-	SubgraphSet::~SubgraphSet()
-	{
-		for (vector< Subgraph* >::iterator it = subgraphs.begin(); it != subgraphs.end(); ++it)
-		{
-			Subgraph* sub = *it;
-			delete sub;
 		}
 	}
 

@@ -315,6 +315,9 @@ namespace HCSearch
 		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 
 	protected:
+		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs,
+			vector< bool > nodesClamped, map< MyPrimitives::Pair<int, int>, bool > edgesClamped, map< MyPrimitives::Pair<int, int>, bool > edgesCut);
+
 		AdjList_t transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
 			map< MyPrimitives::Pair<int, int>, bool > edgesCut, int numNodes);
 	};

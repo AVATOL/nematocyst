@@ -221,7 +221,10 @@ namespace MyGraphAlgorithms
 	public:
 		SubgraphSet();
 		SubgraphSet(HCSearch::ImgLabeling& labeling, map< int, set<int> > cuts);
+		SubgraphSet(HCSearch::ImgLabeling& labeling, map< MyPrimitives::Pair<int, int>, bool > cuts);
 		~SubgraphSet();
+
+		void constructorHelper(HCSearch::ImgLabeling& labeling, map< int, set<int> > cuts);
 
 		/*!
 		 * @brief Get the number of subgraphs.
