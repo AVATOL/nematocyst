@@ -1442,12 +1442,13 @@ namespace HCSearch
 			{
 				ConnectedComponent* cc = *it2;
 
+				// setup
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
 				candidateLabelsSet.insert(nodeLabel);
 				
 				// get labels - top 4 confidences
-				// TODO: determine validity with edge constraints
+				// TODO: remove from label set if edge constraints violate
 				int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
 				candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
 				if (cc->hasNeighbors())
@@ -1458,6 +1459,7 @@ namespace HCSearch
 				}
 				candidateLabelsSet.erase(nodeLabel);
 
+				// statistics purposes
 				cumSumLabels += candidateLabelsSet.size();
 				numSumLabels++;
 

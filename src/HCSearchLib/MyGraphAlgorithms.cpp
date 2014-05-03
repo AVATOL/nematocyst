@@ -152,29 +152,67 @@ namespace MyGraphAlgorithms
 		set<int> labels;
 		labels.insert(this->label);
 
-		// get nodes in connected component
+		// get nodes in connected component and recompute label distribution
+		int numNodes = 0;
+		VectorXd labelDist = VectorXd::Zero(numLabels);
 		for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
 		{
 			int node1 = *it;
 
-			// get top K confident labels
-			HCSearch::LabelConfidencePQ sortedByConfidence;
-			for (int i = 0; i < numLabels; i++)
-			{
-				int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
-				double confidence = original.confidences(node1, i);
-				sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
-			}
-			for (int i = 0; i < K; i++)
-			{
-				MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
-				sortedByConfidence.pop();
-				labels.insert(p.first);
-			}
+			labelDist += original.confidences.row(node1);
+			numNodes++;
+		}
+		if (numNodes == 0)
+		{
+			LOG(ERROR) << "connected component contains no nodes";
+			HCSearch::abort();
+		}
+		labelDist /= numNodes;
+
+		// get top K confident labels
+		HCSearch::LabelConfidencePQ sortedByConfidence;
+		for (int i = 0; i < numLabels; i++)
+		{
+			int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+			double confidence = labelDist(i);
+			sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+		}
+		for (int i = 0; i < K; i++)
+		{
+			MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+			sortedByConfidence.pop();
+			labels.insert(p.first);
 		}
 
 		labels.erase(this->label);
 		return labels;
+
+		//set<int> labels;
+		//labels.insert(this->label);
+
+		//// get nodes in connected component
+		//for (set<int>::iterator it = nodes.begin(); it != nodes.end(); ++it)
+		//{
+		//	int node1 = *it;
+
+		//	// get top K confident labels
+		//	HCSearch::LabelConfidencePQ sortedByConfidence;
+		//	for (int i = 0; i < numLabels; i++)
+		//	{
+		//		int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
+		//		double confidence = original.confidences(node1, i);
+		//		sortedByConfidence.push(MyPrimitives::Pair<int, double>(label, confidence));
+		//	}
+		//	for (int i = 0; i < K; i++)
+		//	{
+		//		MyPrimitives::Pair<int, double> p = sortedByConfidence.top();
+		//		sortedByConfidence.pop();
+		//		labels.insert(p.first);
+		//	}
+		//}
+
+		//labels.erase(this->label);
+		//return labels;
 	}
 
 	bool ConnectedComponent::hasNeighbors()
