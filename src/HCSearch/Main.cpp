@@ -297,7 +297,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 			po.nodeClamp, po.edgeClamp, po.nodeClampThreshold, po.edgeClampPositiveThreshold, po.edgeClampNegativeThreshold);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_CONSTRAINED:
-		LOG() << "stochastic schedule" << endl;
+		LOG() << "stochastic constrained" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
 		LOG() << "\tNode clamping: " << po.nodeClamp << ", Edge clamping: " << po.edgeClamp << endl;
