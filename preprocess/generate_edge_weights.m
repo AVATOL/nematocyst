@@ -17,7 +17,7 @@ function generate_edge_weights( allData, outputPath, trainRange )
 %   trainRange:	set range of training data
 
 %% argument checking
-narginchk(5, 5);
+narginchk(3, 3);
 
 %% create output folder
 if ~exist(outputPath, 'dir')
