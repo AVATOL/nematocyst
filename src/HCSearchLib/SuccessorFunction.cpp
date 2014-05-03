@@ -1298,8 +1298,9 @@ namespace HCSearch
 		ImgLabeling YPredConstrained = YPred;
 
 		// assign node clamping
+		const int numNodes = YPred.getNumNodes();
 		int numClampedNodes = 0;
-		for (int node = 0; node < YPred.getNumNodes(); node++)
+		for (int node = 0; node < numNodes; node++)
 		{
 			if (!useConstraints)
 			{
@@ -1317,7 +1318,7 @@ namespace HCSearch
 		}
 
 		// assign edge clamping
-		int numEdges = X.getNumEdges();
+		const int numEdges = X.getNumEdges();
 		int numPositiveClampedEdges = 0;
 		int numNegativeClampedEdges = 0;
 		for (map< Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
@@ -1350,9 +1351,9 @@ namespace HCSearch
 			}
 		}
 
-		LOG() << "num clamped nodes=" << numClampedNodes << endl;
-		LOG() << "num positive clamped edges=" << numPositiveClampedEdges << endl;
-		LOG() << "num negative clamped edges=" << numNegativeClampedEdges << endl;
+		LOG() << "num clamped nodes=" << numClampedNodes << "/" << numNodes << endl;
+		LOG() << "num positive clamped edges=" << numPositiveClampedEdges << "/" << numEdges << endl;
+		LOG() << "num negative clamped edges=" << numNegativeClampedEdges << "/" << numEdges << endl;
 
 		// constraint propagation 1: propagate information with must-link edges
 		// 1) compute transitive closure on must-link edges
