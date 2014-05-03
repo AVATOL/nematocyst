@@ -1462,7 +1462,6 @@ namespace HCSearch
 				numSumLabels++;
 
 				// loop over each candidate label
-				// TODO: node constraints
 				for (set<int>::iterator it3 = candidateLabelsSet.begin(); it3 != candidateLabelsSet.end(); ++it3)
 				{
 					int label = *it3;
@@ -1481,7 +1480,11 @@ namespace HCSearch
 					for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
 					{
 						int node = *it4;
-						YNew.graph.nodesData(node) = label;
+						// clamp node otherwise flip it
+						if (nodesClamped[node])
+							YNew.graph.nodesData(node) = YPred.getLabel(node);
+						else
+							YNew.graph.nodesData(node) = label;
 						action.insert(node);
 					}
 
