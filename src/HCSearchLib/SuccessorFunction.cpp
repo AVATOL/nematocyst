@@ -1405,7 +1405,7 @@ namespace HCSearch
 		MyGraphAlgorithms::SubgraphSet* subgraphs = new MyGraphAlgorithms::SubgraphSet(Ycopy, edgesCut);
 
 		// constraint propagation 2: generate successors and propose labels that satisfy must-not-link edges
-		vector< ImgCandidate > successors = createCandidates(YPred, subgraphs, nodesClamped, edgesClamped, edgesCut);
+		vector< ImgCandidate > successors = createCandidates(YPredConstrained, subgraphs, nodesClamped, edgesClamped, edgesCut);
 
 		LOG() << "num successors generated=" << successors.size() << endl;
 
