@@ -1448,7 +1448,6 @@ namespace HCSearch
 				candidateLabelsSet.insert(nodeLabel);
 				
 				// get labels - top 4 confidences
-				// TODO: remove from label set if edge constraints violate
 				int topKConfidences = static_cast<int>(ceil(TOP_CONFIDENCES_PROPORTION * Global::settings->CLASSES.numClasses()));
 				candidateLabelsSet = cc->getTopConfidentLabels(topKConfidences);
 				if (cc->hasNeighbors())
@@ -1458,6 +1457,25 @@ namespace HCSearch
 					candidateLabelsSet.insert(neighborSet.begin(), neighborSet.end());
 				}
 				candidateLabelsSet.erase(nodeLabel);
+
+				// remove from label set if there is a must-not link edge constraint with clamped neighbor node
+				set<int> component = cc->getNodes();
+				for (set<int>::iterator it4 = component.begin(); it4 != component.end(); ++it4)
+				{
+					int node1 = *it4;
+					set<int> neighbors = YPred.graph.adjList[node1];
+					for (set<int>::iterator it5 = neighbors.begin(); it5 != neighbors.end(); ++it5)
+					{
+						int node2 = *it5;
+						MyPrimitives::Pair<int, int> edge = MyPrimitives::Pair<int, int>(node1, node2);
+						if (edgesCut[edge] && edgesClamped[edge] && nodesClamped[node2])
+						{
+							int clampedLabel = YPred.getLabel(node2);
+							if (candidateLabelsSet.count(clampedLabel) != 0)
+								candidateLabelsSet.erase(clampedLabel);
+						}
+					}
+				}
 
 				// statistics purposes
 				cumSumLabels += candidateLabelsSet.size();
