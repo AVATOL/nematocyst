@@ -601,7 +601,7 @@ namespace HCSearch
 		 * @param[in] filename Path to edges file
 		 * @param[out] edges Adjacency list for graph edges of the image
 		 */
-		static void readEdgesFile(string filename, AdjList_t& edges);
+		static void readEdgesFile(string filename, AdjList_t& edges, map< MyPrimitives::Pair<int, int>, double >& edgeWeights);
 
 		/*!
 		 * Read a segments file for a particular image.

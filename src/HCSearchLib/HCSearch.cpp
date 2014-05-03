@@ -317,7 +317,8 @@ namespace HCSearch
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
+			map< MyPrimitives::Pair<int, int>, double > edgeWeights;
+			readEdgesFile(edgesFile, edges, edgeWeights);
 
 			// read segments file
 			string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + filename + ".txt";
@@ -335,6 +336,8 @@ namespace HCSearch
 			X->segments = segments;
 			X->nodeLocationsAvailable = true;
 			X->nodeLocations = nodeLocations;
+			X->edgeWeightsAvailable = true;
+			X->edgeWeights = edgeWeights;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -514,7 +517,7 @@ namespace HCSearch
 		}
 	}
 
-	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
+	void Dataset::readEdgesFile(string filename, AdjList_t& edges, map< MyPrimitives::Pair<int, int>, double >& edgeWeights)
 	{
 		// if 1, then node indices in edge file are 1-based
 		// if 0, then node indices in edge file are 0-based
@@ -554,6 +557,10 @@ namespace HCSearch
 						edges[node1] = set<int>();
 					}
 					edges[node1].insert(node2);
+
+					// add to edge weights
+					MyPrimitives::Pair<int, int> edge = MyPrimitives::Pair<int, int>(node1, node2);
+					edgeWeights[edge] = edgeWeight;
 				}
 			}
 			fh.close();
