@@ -1302,7 +1302,7 @@ namespace HCSearch
 		int numClampedNodes = 0;
 		for (int node = 0; node < numNodes; node++)
 		{
-			if (!useConstraints)
+			if (!useConstraints || !this->clampNodes)
 			{
 				nodesClamped.push_back(false);
 			}
@@ -1326,7 +1326,7 @@ namespace HCSearch
 			Pair<int, int> key = it->first;
 			double edgeWeight = it->second;
 
-			if (!useConstraints)
+			if (!useConstraints || !this->clampEdges)
 			{
 				edgesClamped[key] = false;
 			}
