@@ -206,6 +206,11 @@ namespace HCSearch
 
 		// output directories
 
+		OUTPUT_LOGS_FOLDER_NAME = "logs";
+		OUTPUT_MODELS_FOLDER_NAME = "models";
+		OUTPUT_RESULTS_FOLDER_NAME = "results";
+		OUTPUT_TEMP_FOLDER_NAME = "temp";
+
 		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
@@ -245,10 +250,10 @@ namespace HCSearch
 		this->paths->OUTPUT_DIR = this->paths->BASE_PATH + experimentDir + this->paths->DIR_SEP;
 
 		// experiment directories
-		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + "logs" + this->paths->DIR_SEP;
-		this->paths->OUTPUT_MODELS_DIR = this->paths->OUTPUT_DIR + "models" + this->paths->DIR_SEP;
-		this->paths->OUTPUT_RESULTS_DIR = this->paths->OUTPUT_DIR + "results" + this->paths->DIR_SEP;
-		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + "temp" + this->paths->DIR_SEP;
+		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_LOGS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->OUTPUT_MODELS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_MODELS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->OUTPUT_RESULTS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_RESULTS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_TEMP_FOLDER_NAME + this->paths->DIR_SEP;
 
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";

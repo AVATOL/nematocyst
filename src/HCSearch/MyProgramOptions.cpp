@@ -18,6 +18,11 @@ namespace MyProgramOptions
 		edgesFolderName = "edges";
 		edgeFeaturesFolderName = "edgefeatures";
 
+		logsFolderName = "logs";
+		modelsFolderName = "models";
+		resultsFolderName = "results";
+		tempFolderName = "temp";
+
 		// time bound
 
 		timeBound = 0;
@@ -56,7 +61,7 @@ namespace MyProgramOptions
 
 		nodeClamp = false;
 		edgeClamp = false;
-		nodeClampThreshold = 0.75;
+		nodeClampThreshold = 0.9;
 		edgeClampPositiveThreshold = 0.9;
 		edgeClampNegativeThreshold = 0.1;
 	}
@@ -144,6 +149,34 @@ namespace MyProgramOptions
 				if (i + 1 != argc)
 				{
 					po.edgeFeaturesFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--logs-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.logsFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--models-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.modelsFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--results-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.resultsFolderName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--temp-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.tempFolderName = argv[i+1];
 				}
 			}
 			else if (strcmp(argv[i], "--learn") == 0)
@@ -605,6 +638,8 @@ namespace MyProgramOptions
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
+		cerr << "\t--logs-path arg\t" << ": logs folder name" << endl;
+		cerr << "\t--models-path arg\t" << ": models folder name" << endl;
 		cerr << "\t--node-clamp arg\t" << ": clamp nodes if true" << endl;
 		cerr << "\t--node-clamp-threshold arg\t" << ": node clamp threshold" << endl;
 		cerr << "\t--nodes-path arg\t" << ": nodes folder name" << endl;
@@ -615,6 +650,7 @@ namespace MyProgramOptions
 		cerr << "\t--prune arg\t\t" << ": none|ranker|oracle|simulated" << endl;
 		cerr << "\t--prune-ratio arg\t\t" << ": fraction of candidates to prune" << endl;
 		cerr << "\t--prune-bad-ratio arg\t\t" << ": fraction of bad candidates to prune for oracle pruner" << endl;
+		cerr << "\t--results-path arg\t" << ": results folder name" << endl;
 		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;
 		cerr << "\t--save-mask arg\t\t\t" << ": save final prediction label masks if true" << endl;
 		cerr << "\t--search arg\t\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
@@ -626,6 +662,7 @@ namespace MyProgramOptions
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors"
 			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained" << endl;
+		cerr << "\t--temp-path arg\t" << ": temp folder name" << endl;
 		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;

@@ -34,6 +34,12 @@ int main(int argc, char* argv[])
 	HCSearch::Global::settings->paths->INPUT_NODES_FOLDER_NAME = po.nodesFolderName;
 	HCSearch::Global::settings->paths->INPUT_EDGES_FOLDER_NAME = po.edgesFolderName;
 	HCSearch::Global::settings->paths->INPUT_EDGE_FEATURES_FOLDER_NAME = po.edgeFeaturesFolderName;
+
+	HCSearch::Global::settings->paths->OUTPUT_LOGS_FOLDER_NAME = po.logsFolderName;
+	HCSearch::Global::settings->paths->OUTPUT_MODELS_FOLDER_NAME = po.modelsFolderName;
+	HCSearch::Global::settings->paths->OUTPUT_RESULTS_FOLDER_NAME = po.resultsFolderName;
+	HCSearch::Global::settings->paths->OUTPUT_TEMP_FOLDER_NAME = po.tempFolderName;
+
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);

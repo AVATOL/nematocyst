@@ -40,6 +40,11 @@ namespace MyProgramOptions
 		string edgesFolderName;
 		string edgeFeaturesFolderName;
 
+		string logsFolderName;
+		string modelsFolderName;
+		string resultsFolderName;
+		string tempFolderName;
+
 		// time bound
 
 		int timeBound;
