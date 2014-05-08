@@ -257,7 +257,13 @@ beginIndex = regexp(fileData, 'classes=')+length('classes=');
 endIndex = regexp(fileData, 'backgroundclasses=')-1;
 stringData = fileData(beginIndex:endIndex);
 stringArray = textscan(stringData, '%s', 'delimiter', ',');
-classSet = transpose(str2num(cell2mat(stringArray{1})));
+labelStrings = stringArray{1};
+classSet = zeros(1, length(labelStrings));
+for i = 1:length(labelStrings)
+    string = labelStrings{1};
+    num = str2num(string);
+    classSet(i) = num;
+end
 
 end
 
