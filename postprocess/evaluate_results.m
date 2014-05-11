@@ -260,7 +260,7 @@ stringArray = textscan(stringData, '%s', 'delimiter', ',');
 labelStrings = stringArray{1};
 classSet = zeros(1, length(labelStrings));
 for i = 1:length(labelStrings)
-    string = labelStrings{1};
+    string = labelStrings{i};
     num = str2num(string);
     classSet(i) = num;
 end
