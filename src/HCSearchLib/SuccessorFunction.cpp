@@ -335,12 +335,7 @@ namespace HCSearch
 			int node2 = nodePair.second;
 
 			bool decideToCut;
-			if (YPred.getLabel(node1) != YPred.getLabel(node2))
-			{
-				// cut automatically if nodes have different labels
-				decideToCut = true;
-			}
-			else if (!cutEdgesIndependently)
+			if (!cutEdgesIndependently)
 			{
 				// uniform state
 				decideToCut = edgeWeights[i] <= threshold;
