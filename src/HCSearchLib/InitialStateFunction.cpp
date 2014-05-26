@@ -31,21 +31,21 @@ namespace HCSearch
 
 	ImgLabeling LogRegInit::getInitialPrediction(ImgFeatures& X)
 	{
-		// output features
-		imgfeatures2liblinear(X, Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE);
-		
-		// perform IID SVM prediction on patches
-		stringstream ssPredictInitFuncCmd;
-		ssPredictInitFuncCmd << Global::settings->cmds->LIBLINEAR_PREDICT_CMD << " -b 1 " 
-			<< Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE 
-			<< " " << Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE;
+		//// output features
+		//imgfeatures2liblinear(X, Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE);
+		//
+		//// perform IID SVM prediction on patches
+		//stringstream ssPredictInitFuncCmd;
+		//ssPredictInitFuncCmd << Global::settings->cmds->LIBLINEAR_PREDICT_CMD << " -b 1 " 
+		//	<< Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE 
+		//	<< " " << Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE;
 
-		int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
-		if (retcode != 0)
-		{
-			LOG(ERROR) << "Initial prediction failed!";
-			abort();
-		}
+		//int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
+		//if (retcode != 0)
+		//{
+		//	LOG(ERROR) << "Initial prediction failed!";
+		//	abort();
+		//}
 
 		ImgLabeling Y = ImgLabeling();
 		Y.graph = LabelGraph();
@@ -54,7 +54,10 @@ namespace HCSearch
 
 		// now need to get labels data and confidences...
 		// read in initial prediction
-		liblinear2imglabeling(Y, Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE);
+		//liblinear2imglabeling(Y, Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE);
+
+		string initStatePath = Global::settings->paths->INPUT_INITIAL_STATES_DIR + X.getFileName() + ".txt";
+		liblinear2imglabeling(Y, initStatePath);
 
 		// eliminate 1-islands
 		eliminateIslands(Y);
