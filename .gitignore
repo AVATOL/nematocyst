@@ -25,5 +25,8 @@
 external/
 doc/
 Data*/
+data*/
 Results*/
+results*/
+scripts/
 **/gcc*/
