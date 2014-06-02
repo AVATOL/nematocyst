@@ -29,6 +29,8 @@ if nargin < 8
     searchTypes = [1 2 3 4];
 end
 
+USE_NEMATOCYST = 0;
+
 %% constants
 ANNOTATIONS_EXTENSION = '.jpg';
 
@@ -37,7 +39,7 @@ ANNOTATIONS_EXTENSION = '.jpg';
 %     {[0 0 0], [128 128 128], [128 128 0], [128 64 128], ...
 %     [0 128 0], [0 0 128], [128 0 0], [128 80 0], ...
 %     [255 128 0]});
-% label2color = containers.Map({-1, 1}, {[64 64 64], [0 128 0]});
+% label2color = containers.Map({-1, 1}, {[64 64 64], [0 255 0]});
 
 %% search types
 searchTypesCollection = cell(1, 5);
@@ -95,13 +97,20 @@ for fold = foldRange
             end
             
             %% visualize groundtruth
-            truthImage = visualize_image(image, truthLabels, label2color, segMat);
-            
             truthOutPath = sprintf('%s/%s/infer_%s_%s_test_time%d_fold%d.png', outputDir, searchType, fileName, searchType, 0, fold);
-            imwrite(truthImage, truthOutPath);
+            if ~USE_NEMATOCYST
+                truthImage = visualize_image(image, truthLabels, label2color, segMat);
+                imwrite(truthImage, truthOutPath);
+            else
+                visualize_grid_image(image, truthLabels, label2color, segMat);
+                print(gcf, '-dpng', truthOutPath);
+                close;
+                pause(0.05);
+            end
             
             %% for each time step
-            parfor timeStep = timeRange
+            %parfor timeStep = timeRange
+            for timeStep = timeRange
                 fprintf('On time step %d...\n', timeStep);
                 edgesFileName = sprintf('edges_%s_test_time%d_fold%d_%s.txt', searchType, timeStep, fold, fileName);
                 nodesFileName = sprintf('nodes_%s_test_time%d_fold%d_%s.txt', searchType, timeStep, fold, fileName);
@@ -120,7 +129,11 @@ for fold = foldRange
                 cutFile = dir(cutsPath);
                 if cutFile.bytes == 0
                     %% visualize inference
-                    inferImage = visualize_image(image, labels, label2color, segMat); 
+                    if ~USE_NEMATOCYST
+                        inferImage = visualize_grid_image(image, labels, label2color, segMat, cutMat);
+                    else
+                        visualize_grid_image(image, labels, label2color, segMat);
+                    end
                 else
                     cutMat = dlmread(cutsPath);
                     cutMat = spconvert(cutMat);
@@ -133,11 +146,21 @@ for fold = foldRange
                     cutMat = [cutMat; zeros(nNodes-h, w)];
 
                     %% visualize inference
-                    inferImage = visualize_image(image, labels, label2color, segMat, cutMat); 
+                    if ~USE_NEMATOCYST
+                        inferImage = visualize_grid_image(image, labels, label2color, segMat, cutMat);
+                    else
+                        visualize_grid_image(image, labels, label2color, segMat, cutMat);
+                    end
                 end
                 
                 inferOutPath = sprintf('%s/%s/infer_%s_%s_test_time%d_fold%d.png', outputDir, searchType, fileName, searchType, timeStep+1, fold);
-                imwrite(inferImage, inferOutPath);
+                if ~USE_NEMATOCYST
+                    imwrite(inferImage, inferOutPath);
+                else
+                    print(gcf, '-dpng', inferOutPath);
+                    close;
+                    pause(0.05);
+                end
             end
         end
     end
