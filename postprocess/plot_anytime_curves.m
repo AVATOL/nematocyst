@@ -11,6 +11,11 @@ if nargin < 2
     MODE = 1;
 end
 
+SHOW_PREC = 1;
+SHOW_REC = 1;
+SHOW_F1 = 1;
+SHOW_ACC = 1;
+
 %% search types
 searchTypesCollection = cell(1, 5);
 searchTypesCollection{1} = 'hc';
@@ -76,49 +81,57 @@ end
 
 timeBoundsMat = repmat(timeRange, length(searchTypesAvailable), 1)';
 
-errorbar(timeBoundsMat,...
-avgPrecMat,...
-stdPrecMat);
-hold on;
-title('Precision vs. Time Bound');
-xlabel('Time Bound');
-ylabel('Precision');
-legend(legendLabels);
-hold off;
-pause;
+if SHOW_PREC
+    figure;
+    errorbar(timeBoundsMat,...
+    avgPrecMat,...
+    stdPrecMat);
+    hold on;
+    title('Precision vs. Time Bound');
+    xlabel('Time Bound');
+    ylabel('Precision');
+    legend(legendLabels);
+    hold off;
+end
 
-errorbar(timeBoundsMat,...
-    avgRecMat,...
-    stdRecMat);
-hold on;
-title('Recall vs. Time Bound');
-xlabel('Time Bound');
-ylabel('Recall');
-legend(legendLabels);
-hold off;
-pause;
+if SHOW_REC
+    figure;
+    errorbar(timeBoundsMat,...
+        avgRecMat,...
+        stdRecMat);
+    hold on;
+    title('Recall vs. Time Bound');
+    xlabel('Time Bound');
+    ylabel('Recall');
+    legend(legendLabels);
+    hold off;
+end
 
-errorbar(timeBoundsMat,... 
-    avgF1Mat,... 
-    stdF1Mat);
-hold on;
-title('F1 vs. Time Bound');
-xlabel('Time Bound');
-ylabel('F1');
-legend(legendLabels);
-hold off;
-pause;
+if SHOW_F1
+    figure;
+    errorbar(timeBoundsMat,... 
+        avgF1Mat,... 
+        stdF1Mat);
+    hold on;
+    title('F1 vs. Time Bound');
+    xlabel('Time Bound');
+    ylabel('F1');
+    legend(legendLabels);
+    hold off;
+end
 
-errorbar(timeBoundsMat,... 
-    avgHammingMat,... 
-    stdHammingMat);
-hold on;
-title('Hamming Accuracy vs. Time Bound');
-xlabel('Time Bound');
-ylabel('Hamming Accuracy');
-legend(legendLabels);
-hold off;
-pause;
+if SHOW_ACC
+    figure;
+    errorbar(timeBoundsMat,... 
+        avgHammingMat,... 
+        stdHammingMat);
+    hold on;
+    title('Hamming Accuracy vs. Time Bound');
+    xlabel('Time Bound');
+    ylabel('Hamming Accuracy');
+    legend(legendLabels);
+    hold off;
+end
 
 end
 
