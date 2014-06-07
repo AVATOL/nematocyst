@@ -28,6 +28,7 @@ NUM_CODE_WORDS = 100;
 TRAIN_LIST = 'Train.txt';
 VALID_LIST = 'Validation.txt';
 TEST_LIST = 'Test.txt';
+ALL_LIST = 'All.txt';
 
 EXTERNAL_PATH = 'external';
 LIBLINEAR_PATH = [EXTERNAL_PATH '/' 'liblinear'];
@@ -68,10 +69,12 @@ end
 trainListFile = [outputPath '/splits/' TRAIN_LIST];
 validListFile = [outputPath '/splits/' VALID_LIST];
 testListFile = [outputPath '/splits/' TEST_LIST];
+allListFile = [outputPath '/splits/' ALL_LIST];
 
 train_fid = fopen(trainListFile, 'w');
 valid_fid = fopen(validListFile, 'w');
 test_fid = fopen(testListFile, 'w');
+all_fid = fopen(allListFile, 'w');
 
 nFiles = length(allData);
 classes = [];
@@ -98,6 +101,7 @@ for i = 1:nFiles
     else
         % error!
     end
+    fprintf(all_fid, '%s\n', filename);
     
     nodesFile = sprintf('%s.txt', filename);
     nodeLocationsFile = sprintf('%s.txt', filename);
@@ -164,6 +168,7 @@ end
 fclose(train_fid);
 fclose(valid_fid);
 fclose(test_fid);
+fclose(all_fid);
 
 %% write metadata file
 fid = fopen([outputPath '/metadata.txt'], 'w');
