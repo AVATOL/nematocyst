@@ -21,6 +21,10 @@ if nargin < 5
     splitsName = 'splits';
 end
 
+rawDir = cleanup_path(rawDir);
+preprocessedDir = cleanup_path(preprocessedDir);
+outputDir = cleanup_path(outputDir);
+
 %% constants
 ANNOTATIONS_EXTENSION = '.jpg';
 
@@ -32,19 +36,19 @@ ANNOTATIONS_EXTENSION = '.jpg';
 % label2color = containers.Map({-1, 1}, {[64 64 64], [0 128 0]});
 
 %% train, validation, test files
-trainSplitsFile = [preprocessedDir '/' splitsName '/Train.txt'];
+trainSplitsFile = [preprocessedDir filesep splitsName filesep 'Train.txt'];
 fid = fopen(trainSplitsFile, 'r');
 list = textscan(fid, '%s');
 fclose(fid);
 testFiles = list{1,1};
 
-validSplitsFile = [preprocessedDir '/' splitsName '/Validation.txt'];
+validSplitsFile = [preprocessedDir filesep splitsName filesep 'Validation.txt'];
 fid = fopen(validSplitsFile, 'r');
 list = textscan(fid, '%s');
 fclose(fid);
 testFiles = [testFiles; list{1,1}];
 
-testSplitsFile = [preprocessedDir '/' splitsName '/Test.txt'];
+testSplitsFile = [preprocessedDir filesep splitsName filesep 'Test.txt'];
 fid = fopen(testSplitsFile, 'r');
 list = textscan(fid, '%s');
 fclose(fid);
@@ -59,34 +63,38 @@ parfor f = 1:length(testFiles)
     fileName = testFiles{f};
     fprintf('On file %s...\n', fileName);
 
-    %% file stuff
-    originalImagePath = [rawDir '/Images/' fileName ANNOTATIONS_EXTENSION];
-    segmentsPath = [preprocessedDir '/segments/' fileName '.txt'];
-    truthNodesPath = [preprocessedDir '/nodes/' fileName '.txt'];
-
     %% read truth nodes
     if allDataAvailable
         truthLabels = allData{str2num(fileName)+1}.segLabels;
     else
+        truthNodesPath = [preprocessedDir filesep 'nodes' filesep fileName '.txt'];
         [truthLabels, ~] = libsvmread(truthNodesPath);
     end
 
     %% read segments
+    segmentsPath = [preprocessedDir filesep 'segments' filesep fileName '.txt'];
     segMat = dlmread(segmentsPath);
 
     %% read original image
     if allDataAvailable
         image =  allData{str2num(fileName)+1}.img;
     else
+        originalImagePath = [rawDir filesep 'Images' filesep fileName ANNOTATIONS_EXTENSION];
         image = imread(originalImagePath);
     end
 
     %% visualize groundtruth
     truthImage = visualize_image(image, truthLabels, label2color, segMat);
 
-    truthOutPath = sprintf('%s/%s.png', outputDir, fileName);
+    truthOutPath = [outputDir filesep fileName '.png'];
     imwrite(truthImage, truthOutPath);
 end
 
 end
 
+function path = cleanup_path(path)
+
+path = strrep(path, '/', filesep);
+path = strrep(path, '\', filesep);
+
+end
