@@ -31,45 +31,48 @@ TEST_LIST = 'Test.txt';
 ALL_LIST = 'All.txt';
 
 EXTERNAL_PATH = 'external';
-LIBLINEAR_PATH = [EXTERNAL_PATH '/' 'liblinear'];
+LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear'];
 
 %% create output folder
+outputPath = strrep(outputPath, '/', filesep);
+outputPath = strrep(outputPath, '\', filesep);
+
 if ~exist(outputPath, 'dir')
     mkdir(outputPath);
 end
-if ~exist([outputPath '/nodes/'], 'dir')
-    mkdir([outputPath '/nodes/']);
+if ~exist([outputPath filesep 'nodes' filesep], 'dir')
+    mkdir([outputPath filesep 'nodes' filesep]);
 end
-if ~exist([outputPath '/nodelocations/'], 'dir')
-    mkdir([outputPath '/nodelocations/']);
+if ~exist([outputPath filesep 'nodelocations' filesep], 'dir')
+    mkdir([outputPath filesep 'nodelocations' filesep]);
 end
-if ~exist([outputPath '/edges/'], 'dir')
-    mkdir([outputPath '/edges/']);
+if ~exist([outputPath filesep 'edges' filesep], 'dir')
+    mkdir([outputPath filesep 'edges' filesep]);
 end
-if ~exist([outputPath '/edgefeatures/'], 'dir')
-    mkdir([outputPath '/edgefeatures/']);
+if ~exist([outputPath filesep 'edgefeatures' filesep], 'dir')
+    mkdir([outputPath filesep 'edgefeatures' filesep]);
 end
-if ~exist([outputPath '/segments/'], 'dir')
-    mkdir([outputPath '/segments/']);
+if ~exist([outputPath filesep 'segments' filesep], 'dir')
+    mkdir([outputPath filesep 'segments' filesep]);
 end
-if ~exist([outputPath '/groundtruth/'], 'dir')
-    mkdir([outputPath '/groundtruth/']);
+if ~exist([outputPath filesep 'groundtruth' filesep], 'dir')
+    mkdir([outputPath filesep 'groundtruth' filesep]);
 end
-if ~exist([outputPath '/meta/'], 'dir')
-    mkdir([outputPath '/meta/']);
+if ~exist([outputPath filesep 'meta' filesep], 'dir')
+    mkdir([outputPath filesep 'meta' filesep]);
 end
-if ~exist([outputPath '/splits/'], 'dir')
-    mkdir([outputPath '/splits/']);
+if ~exist([outputPath filesep 'splits' filesep], 'dir')
+    mkdir([outputPath filesep 'splits' filesep]);
 end
-if ~exist([outputPath '/initstate/'], 'dir')
-    mkdir([outputPath '/initstate/']);
+if ~exist([outputPath filesep 'initstate' filesep], 'dir')
+    mkdir([outputPath filesep 'initstate' filesep]);
 end
 
 %% initialize
-trainListFile = [outputPath '/splits/' TRAIN_LIST];
-validListFile = [outputPath '/splits/' VALID_LIST];
-testListFile = [outputPath '/splits/' TEST_LIST];
-allListFile = [outputPath '/splits/' ALL_LIST];
+trainListFile = [outputPath filesep 'splits' filesep TRAIN_LIST];
+validListFile = [outputPath filesep 'splits' filesep VALID_LIST];
+testListFile = [outputPath filesep 'splits' filesep TEST_LIST];
+allListFile = [outputPath filesep 'splits' filesep ALL_LIST];
 
 train_fid = fopen(trainListFile, 'w');
 valid_fid = fopen(validListFile, 'w');
@@ -116,7 +119,7 @@ for i = 1:nFiles
     metaFile = sprintf('%s.txt', filename);
     
     % write nodes
-    libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
+    libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
     trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
     trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
     
@@ -130,12 +133,12 @@ for i = 1:nFiles
         allData{i}.segSizes = nodeSizes;
     end
     
-    dlmwrite([outputPath '/nodelocations/' nodeLocationsFile], [nodeLocations nodeSizes], ' ');
+    dlmwrite([outputPath filesep 'nodelocations' filesep nodeLocationsFile], [nodeLocations nodeSizes], ' ');
     
     % write edges
     [ai,aj,aval] = find(allData{i}.adj);
     spAdj = [ai,aj,aval];
-    dlmwrite([outputPath '/edges/' edgesFile], spAdj, ' ');
+    dlmwrite([outputPath filesep 'edges' filesep edgesFile], spAdj, ' ');
     
     % write edge features
     featDim = size(allData{i}.feat2, 2);
@@ -149,20 +152,20 @@ for i = 1:nFiles
     end
     edgeLabels(edgeLabels == 0) = -1;
     
-    libsvmwrite([outputPath '/edgefeatures/' edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
+    libsvmwrite([outputPath filesep 'edgefeatures' filesep edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
     trainEdgeLabels = [trainEdgeLabels; edgeLabels];
     trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
     
     % write segments
-    dlmwrite([outputPath '/segments/' segmentsFile], allData{i}.segs2, ' ');
+    dlmwrite([outputPath filesep 'segments' filesep segmentsFile], allData{i}.segs2, ' ');
     
     % write ground truth
-    dlmwrite([outputPath '/groundtruth/' groundtruthFile], allData{i}.labels, ' ');
+    dlmwrite([outputPath filesep 'groundtruth' filesep groundtruthFile], allData{i}.labels, ' ');
     
     classes = union(classes, allData{i}.segLabels);
     
     %% write meta file
-    fid = fopen([outputPath '/meta/' metaFile], 'w');
+    fid = fopen([outputPath filesep 'meta' filesep metaFile], 'w');
     fprintf(fid, 'nodes=%d\n', size(allData{i}.feat2, 1));
     fprintf(fid, 'features=%d\n', size(allData{i}.feat2, 2));
     fprintf(fid, 'height=%d\n', size(allData{i}.segs2, 1));
@@ -179,7 +182,7 @@ fclose(test_fid);
 fclose(all_fid);
 
 %% write metadata file
-fid = fopen([outputPath '/metadata.txt'], 'w');
+fid = fopen([outputPath filesep 'metadata.txt'], 'w');
 fprintf(fid, 'num=%d\n', nFiles);
 writeRange(fid, 'classes', classes);
 writeRange(fid, 'backgroundclasses', []);
@@ -188,124 +191,52 @@ fclose(fid);
 
 %% save copy of matlab variables
 fprintf('Saving variable allData to file...\n');
-save([outputPath '/allData.mat'], 'allData');
+save([outputPath filesep 'allData.mat'], 'allData');
 
 %% create initial classifier training file
 INITFUNC_TRAINING_FILE = 'initfunc_training.txt';
-% INITFUNC_TEMP_FILE = 'initfunc_temp.txt';
-libsvmwrite([outputPath '/' INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
-% if ispc
-%     outputPathWin = strrep(outputPath, '/', '\');
-%     dos(['copy NUL ' outputPathWin '\' INITFUNC_TRAINING_FILE]);
-% elseif isunix
-%     outputPathLinux = strrep(outputPath, '\', '/');
-%     unix(['touch ' outputPathLinux '/' INITFUNC_TRAINING_FILE]);
-% end
-% for i = trainRange
-%     file = sprintf('%d.txt', i-1);
-%     if isfield(allData{i}, 'filename');
-%         file = sprintf('%s.txt', allData{i}.filename);
-%     end
-%     
-%     if ispc
-%        outputPathWin = strrep(outputPath, '/', '\');
-%        typeCmd = ['type ' outputPathWin '\' INITFUNC_TRAINING_FILE ' '...
-%            outputPathWin '\nodes\' file ' > ' outputPathWin '\' INITFUNC_TEMP_FILE];
-%        delCmd = ['del ' outputPathWin '\' INITFUNC_TRAINING_FILE];
-%        renameCmd = ['move ' outputPathWin '\' INITFUNC_TEMP_FILE ' '...
-%            outputPathWin '\' INITFUNC_TRAINING_FILE];
-%        dos(typeCmd);
-%        dos(delCmd);
-%        dos(renameCmd);
-%     elseif isunix
-%        outputPathLinux = strrep(outputPath, '\', '/');
-%        typeCmd = ['cat ' outputPathLinux '/' INITFUNC_TRAINING_FILE ' '...
-%            outputPathLinux '\nodes\' file ' > ' outputPathLinux '/' INITFUNC_TEMP_FILE];
-%        delCmd = ['rm -f ' outputPathLinux '/' INITFUNC_TRAINING_FILE];
-%        renameCmd = ['mv ' outputPathLinux '/' INITFUNC_TEMP_FILE ' '...
-%            outputPathLinux '/' INITFUNC_TRAINING_FILE];
-%        unix(typeCmd);
-%        unix(delCmd);
-%        unix(renameCmd);
-%     end
-% end
+libsvmwrite([outputPath filesep INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
 
 %% create edge classifier training file
 EDGECLASSIFIER_TRAINING_FILE = 'edgeclassifier_training.txt';
-% EDGECLASSIFIER_TEMP_FILE = 'edgeclassifier_temp.txt';
-libsvmwrite([outputPath '/' EDGECLASSIFIER_TRAINING_FILE], trainEdgeLabels, sparse(trainEdgeFeatures));
-% if ispc
-%     outputPathWin = strrep(outputPath, '/', '\');
-%     dos(['copy NUL ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE]);
-% elseif isunix
-%     outputPathLinux = strrep(outputPath, '\', '/');
-%     unix(['touch ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE]);
-% end
-% for i = trainRange
-%     file = sprintf('%d.txt', i-1);
-%     if isfield(allData{i}, 'filename');
-%         file = sprintf('%s.txt', allData{i}.filename);
-%     end
-%     
-%     if ispc
-%        outputPathWin = strrep(outputPath, '/', '\');
-%        typeCmd = ['type ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE ' '...
-%            outputPathWin '\edgefeatures\' file ' > ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE];
-%        delCmd = ['del ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
-%        renameCmd = ['move ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE ' '...
-%            outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
-%        dos(typeCmd);
-%        dos(delCmd);
-%        dos(renameCmd);
-%     elseif isunix
-%        outputPathLinux = strrep(outputPath, '\', '/');
-%        typeCmd = ['cat ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE ' '...
-%            outputPathLinux '\edgefeatures\' file ' > ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE];
-%        delCmd = ['rm -f ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
-%        renameCmd = ['mv ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE ' '...
-%            outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
-%        unix(typeCmd);
-%        unix(delCmd);
-%        unix(renameCmd);
-%     end
-% end
+libsvmwrite([outputPath filesep EDGECLASSIFIER_TRAINING_FILE], trainEdgeLabels, sparse(trainEdgeFeatures));
 
 %% train initial prediction classifier on the training file just generated
 INITFUNC_MODEL_FILE = 'initfunc_model.txt';
 fprintf('Training initial classifier model...\n');
 if ispc
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/windows/train'];
-    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '/', '\');
-    outputPathWin = strrep(outputPath, '/', '\');
-    dos([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-        outputPathWin '\' INITFUNC_TRAINING_FILE ' ' ...
-        outputPathWin '\' INITFUNC_MODEL_FILE]);
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
 elseif isunix
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/train'];
-    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '\', '/');
-    outputPathLinux = strrep(outputPath, '\', '/');
-    unix([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-        outputPathLinux '/' INITFUNC_TRAINING_FILE ' ' ...
-        outputPathLinux '/' INITFUNC_MODEL_FILE]);
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
+end
+
+LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+    outputPath filesep INITFUNC_TRAINING_FILE ' ' ...
+    outputPath filesep INITFUNC_MODEL_FILE];
+
+if ispc
+    dos(LIBLINEAR_TRAIN_CMD);
+elseif isunix
+    unix(LIBLINEAR_TRAIN_CMD);
 end
 
 %% train initial prediction classifier on the edge training file just generated
 EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
 fprintf('Training initial classifier model...\n');
 if ispc
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/windows/train'];
-    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '/', '\');
-    outputPathWin = strrep(outputPath, '/', '\');
-    dos([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-        outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE ' ' ...
-        outputPathWin '\' EDGECLASSIFIER_MODEL_FILE]);
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
 elseif isunix
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH '/train'];
-    LIBLINEAR_TRAIN = strrep(LIBLINEAR_TRAIN, '\', '/');
-    outputPathLinux = strrep(outputPath, '\', '/');
-    unix([LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-        outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE ' ' ...
-        outputPathLinux '/' EDGECLASSIFIER_MODEL_FILE]);
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
+end
+
+LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+    outputPath filesep EDGECLASSIFIER_TRAINING_FILE ' ' ...
+    outputPath filesep EDGECLASSIFIER_MODEL_FILE];
+
+if ispc
+    dos(LIBLINEAR_TRAIN_CMD);
+elseif isunix
+    unix(LIBLINEAR_TRAIN_CMD);
 end
 
 %% generate the initial prediction files
@@ -323,28 +254,27 @@ for i = 1:nFiles
     nodesFile = sprintf('%s.txt', filename);
     
     if ispc
-        LIBLINEAR_PREDICT = [LIBLINEAR_PATH '/windows/predict'];
-        LIBLINEAR_PREDICT = strrep(LIBLINEAR_PREDICT, '/', '\');
-        outputPathWin = strrep(outputPath, '/', '\');
-        dos([LIBLINEAR_PREDICT ' -b 1 ' ...
-            outputPathWin '\nodes\' nodesFile ' ' ...
-            outputPathWin '\' INITFUNC_MODEL_FILE ' ' ...
-            outputPathWin '\initstate\' initPredFile]);
+        LIBLINEAR_PREDICT = [LIBLINEAR_PATH filesep 'windows' filesep 'predict'];
     elseif isunix
-        LIBLINEAR_PREDICT = [LIBLINEAR_PATH '/predict'];
-        LIBLINEAR_PREDICT = strrep(LIBLINEAR_PREDICT, '\', '/');
-        outputPathLinux = strrep(outputPath, '\', '/');
-        unix([LIBLINEAR_PREDICT ' -b 1 ' ...
-            outputPathWin '/nodes/' nodesFile ' ' ...
-            outputPathLinux '/' INITFUNC_MODEL_FILE ' ' ...
-            outputPathLinux '/initstate/' initPredFile]);
+        LIBLINEAR_PREDICT = [LIBLINEAR_PATH filesep 'predict'];
+    end
+    
+    LIBLINEAR_PREDICT_CMD = [LIBLINEAR_PREDICT ' -b 1 ' ...
+        outputPath filesep 'nodes' filesep nodesFile ' ' ...
+        outputPath filesep INITFUNC_MODEL_FILE ' ' ...
+        outputPath filesep 'initstate' filesep initPredFile];
+    
+    if ispc
+        dos(LIBLINEAR_PREDICT_CMD);
+    elseif isunix
+        unix(LIBLINEAR_PREDICT_CMD);
     end
 end
 
 %% generate codebook and write to file
 fprintf('generating codebook...\n');
 [centers, ~] = vl_kmeans(bowData, NUM_CODE_WORDS);
-dlmwrite([outputPath '/codebook.txt'], centers');
+dlmwrite([outputPath filesep 'codebook.txt'], centers');
 
 end
 
