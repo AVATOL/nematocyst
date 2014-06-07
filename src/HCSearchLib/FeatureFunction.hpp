@@ -34,8 +34,14 @@ namespace HCSearch
 	 */
 	class StandardFeatures : public IFeatureFunction
 	{
+	protected:
+		double lambda1;
+		double lambda2;
+		double lambda3;
+
 	public:
 		StandardFeatures();
+		StandardFeatures(double lambda1, double lambda2, double lambda3);
 		~StandardFeatures();
 
 		virtual RankFeatures computeFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);

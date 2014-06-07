@@ -88,6 +88,10 @@ namespace MyProgramOptions
 		double edgeClampPositiveThreshold;
 		double edgeClampNegativeThreshold;
 
+		double lambda1;
+		double lambda2;
+		double lambda3;
+
 	public:
 		ProgramOptions();
 

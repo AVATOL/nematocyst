@@ -86,7 +86,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
-		heuristicFeatFunc = new HCSearch::StandardFeatures();
+		heuristicFeatFunc = new HCSearch::StandardFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_CONTEXT:
 		LOG() << "standard context CRF features" << endl;
@@ -131,7 +131,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
-		costFeatFunc = new HCSearch::StandardFeatures();
+		costFeatFunc = new HCSearch::StandardFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_CONTEXT:
 		LOG() << "standard context CRF features" << endl;
@@ -176,7 +176,7 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
-		pruneFeatFunc = new HCSearch::StandardFeatures();
+		pruneFeatFunc = new HCSearch::StandardFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_CONTEXT:
 		LOG() << "standard context CRF features" << endl;

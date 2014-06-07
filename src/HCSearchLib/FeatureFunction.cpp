@@ -18,6 +18,16 @@ namespace HCSearch
 
 	StandardFeatures::StandardFeatures()
 	{
+		this->lambda1 = 1.0;
+		this->lambda2 = 1.0;
+		this->lambda3 = 1.0;
+	}
+
+	StandardFeatures::StandardFeatures(double lambda1, double lambda2, double lambda3)
+	{
+		this->lambda1 = lambda1;
+		this->lambda2 = lambda2;
+		this->lambda3 = lambda3;
 	}
 
 	StandardFeatures::~StandardFeatures()
@@ -36,8 +46,8 @@ namespace HCSearch
 
 		VectorXd phi = VectorXd::Zero(featureSize(X, Y, action));
 		
-		VectorXd unaryTerm = computeUnaryTerm(X, Y);
-		VectorXd pairwiseTerm = computePairwiseTerm(X, Y);
+		VectorXd unaryTerm = lambda1 * computeUnaryTerm(X, Y);
+		VectorXd pairwiseTerm = lambda2 * computePairwiseTerm(X, Y);
 
 		phi.segment(0, numClasses*unaryFeatDim) = unaryTerm;
 		phi.segment(numClasses*unaryFeatDim, numPairs*pairwiseFeatDim) = pairwiseTerm;

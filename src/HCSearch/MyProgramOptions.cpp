@@ -64,6 +64,10 @@ namespace MyProgramOptions
 		nodeClampThreshold = 0.9;
 		edgeClampPositiveThreshold = 0.9;
 		edgeClampNegativeThreshold = 0.1;
+
+		lambda1 = 1.0;
+		lambda2 = 1.0;
+		lambda3 = 1.0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -578,6 +582,27 @@ namespace MyProgramOptions
 						LOG(ERROR) << "Clamp ratio needs to be between 0 and 1";
 						HCSearch::abort();
 					}
+				}
+			}
+			else if (strcmp(argv[i], "--lambda1") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.lambda1 = atof(argv[i+1]);
+				}
+			}
+			else if (strcmp(argv[i], "--lambda2") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.lambda2 = atof(argv[i+1]);
+				}
+			}
+			else if (strcmp(argv[i], "--lambda3") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.lambda3 = atof(argv[i+1]);
 				}
 			}
 			else
