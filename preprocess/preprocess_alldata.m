@@ -82,6 +82,10 @@ classes = [];
 bowData = [];
 
 %% write files
+trainNodeLabels = [];
+trainNodeFeatures = [];
+trainEdgeLabels = [];
+trainEdgeFeatures = [];
 for i = 1:nFiles
     fprintf('Exporting example %d...\n', i-1);
     
@@ -113,6 +117,8 @@ for i = 1:nFiles
     
     % write nodes
     libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
+    trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
+    trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
     
     % write node locations and sizes
     if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
@@ -144,6 +150,8 @@ for i = 1:nFiles
     edgeLabels(edgeLabels == 0) = -1;
     
     libsvmwrite([outputPath '/edgefeatures/' edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
+    trainEdgeLabels = [trainEdgeLabels; edgeLabels];
+    trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
     
     % write segments
     dlmwrite([outputPath '/segments/' segmentsFile], allData{i}.segs2, ' ');
@@ -184,81 +192,83 @@ save([outputPath '/allData.mat'], 'allData');
 
 %% create initial classifier training file
 INITFUNC_TRAINING_FILE = 'initfunc_training.txt';
-INITFUNC_TEMP_FILE = 'initfunc_temp.txt';
-if ispc
-    outputPathWin = strrep(outputPath, '/', '\');
-    dos(['copy NUL ' outputPathWin '\' INITFUNC_TRAINING_FILE]);
-elseif isunix
-    outputPathLinux = strrep(outputPath, '\', '/');
-    unix(['touch ' outputPathLinux '/' INITFUNC_TRAINING_FILE]);
-end
-for i = trainRange
-    file = sprintf('%d.txt', i-1);
-    if isfield(allData{i}, 'filename');
-        file = sprintf('%s.txt', allData{i}.filename);
-    end
-    
-    if ispc
-       outputPathWin = strrep(outputPath, '/', '\');
-       typeCmd = ['type ' outputPathWin '\' INITFUNC_TRAINING_FILE ' '...
-           outputPathWin '\nodes\' file ' > ' outputPathWin '\' INITFUNC_TEMP_FILE];
-       delCmd = ['del ' outputPathWin '\' INITFUNC_TRAINING_FILE];
-       renameCmd = ['move ' outputPathWin '\' INITFUNC_TEMP_FILE ' '...
-           outputPathWin '\' INITFUNC_TRAINING_FILE];
-       dos(typeCmd);
-       dos(delCmd);
-       dos(renameCmd);
-    elseif isunix
-       outputPathLinux = strrep(outputPath, '\', '/');
-       typeCmd = ['cat ' outputPathLinux '/' INITFUNC_TRAINING_FILE ' '...
-           outputPathLinux '\nodes\' file ' > ' outputPathLinux '/' INITFUNC_TEMP_FILE];
-       delCmd = ['rm -f ' outputPathLinux '/' INITFUNC_TRAINING_FILE];
-       renameCmd = ['mv ' outputPathLinux '/' INITFUNC_TEMP_FILE ' '...
-           outputPathLinux '/' INITFUNC_TRAINING_FILE];
-       unix(typeCmd);
-       unix(delCmd);
-       unix(renameCmd);
-    end
-end
+% INITFUNC_TEMP_FILE = 'initfunc_temp.txt';
+libsvmwrite([outputPath '/' INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
+% if ispc
+%     outputPathWin = strrep(outputPath, '/', '\');
+%     dos(['copy NUL ' outputPathWin '\' INITFUNC_TRAINING_FILE]);
+% elseif isunix
+%     outputPathLinux = strrep(outputPath, '\', '/');
+%     unix(['touch ' outputPathLinux '/' INITFUNC_TRAINING_FILE]);
+% end
+% for i = trainRange
+%     file = sprintf('%d.txt', i-1);
+%     if isfield(allData{i}, 'filename');
+%         file = sprintf('%s.txt', allData{i}.filename);
+%     end
+%     
+%     if ispc
+%        outputPathWin = strrep(outputPath, '/', '\');
+%        typeCmd = ['type ' outputPathWin '\' INITFUNC_TRAINING_FILE ' '...
+%            outputPathWin '\nodes\' file ' > ' outputPathWin '\' INITFUNC_TEMP_FILE];
+%        delCmd = ['del ' outputPathWin '\' INITFUNC_TRAINING_FILE];
+%        renameCmd = ['move ' outputPathWin '\' INITFUNC_TEMP_FILE ' '...
+%            outputPathWin '\' INITFUNC_TRAINING_FILE];
+%        dos(typeCmd);
+%        dos(delCmd);
+%        dos(renameCmd);
+%     elseif isunix
+%        outputPathLinux = strrep(outputPath, '\', '/');
+%        typeCmd = ['cat ' outputPathLinux '/' INITFUNC_TRAINING_FILE ' '...
+%            outputPathLinux '\nodes\' file ' > ' outputPathLinux '/' INITFUNC_TEMP_FILE];
+%        delCmd = ['rm -f ' outputPathLinux '/' INITFUNC_TRAINING_FILE];
+%        renameCmd = ['mv ' outputPathLinux '/' INITFUNC_TEMP_FILE ' '...
+%            outputPathLinux '/' INITFUNC_TRAINING_FILE];
+%        unix(typeCmd);
+%        unix(delCmd);
+%        unix(renameCmd);
+%     end
+% end
 
 %% create edge classifier training file
 EDGECLASSIFIER_TRAINING_FILE = 'edgeclassifier_training.txt';
-EDGECLASSIFIER_TEMP_FILE = 'edgeclassifier_temp.txt';
-if ispc
-    outputPathWin = strrep(outputPath, '/', '\');
-    dos(['copy NUL ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE]);
-elseif isunix
-    outputPathLinux = strrep(outputPath, '\', '/');
-    unix(['touch ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE]);
-end
-for i = trainRange
-    file = sprintf('%d.txt', i-1);
-    if isfield(allData{i}, 'filename');
-        file = sprintf('%s.txt', allData{i}.filename);
-    end
-    
-    if ispc
-       outputPathWin = strrep(outputPath, '/', '\');
-       typeCmd = ['type ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE ' '...
-           outputPathWin '\edgefeatures\' file ' > ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE];
-       delCmd = ['del ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
-       renameCmd = ['move ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE ' '...
-           outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
-       dos(typeCmd);
-       dos(delCmd);
-       dos(renameCmd);
-    elseif isunix
-       outputPathLinux = strrep(outputPath, '\', '/');
-       typeCmd = ['cat ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE ' '...
-           outputPathLinux '\edgefeatures\' file ' > ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE];
-       delCmd = ['rm -f ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
-       renameCmd = ['mv ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE ' '...
-           outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
-       unix(typeCmd);
-       unix(delCmd);
-       unix(renameCmd);
-    end
-end
+% EDGECLASSIFIER_TEMP_FILE = 'edgeclassifier_temp.txt';
+libsvmwrite([outputPath '/' EDGECLASSIFIER_TRAINING_FILE], trainEdgeLabels, sparse(trainEdgeFeatures));
+% if ispc
+%     outputPathWin = strrep(outputPath, '/', '\');
+%     dos(['copy NUL ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE]);
+% elseif isunix
+%     outputPathLinux = strrep(outputPath, '\', '/');
+%     unix(['touch ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE]);
+% end
+% for i = trainRange
+%     file = sprintf('%d.txt', i-1);
+%     if isfield(allData{i}, 'filename');
+%         file = sprintf('%s.txt', allData{i}.filename);
+%     end
+%     
+%     if ispc
+%        outputPathWin = strrep(outputPath, '/', '\');
+%        typeCmd = ['type ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE ' '...
+%            outputPathWin '\edgefeatures\' file ' > ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE];
+%        delCmd = ['del ' outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
+%        renameCmd = ['move ' outputPathWin '\' EDGECLASSIFIER_TEMP_FILE ' '...
+%            outputPathWin '\' EDGECLASSIFIER_TRAINING_FILE];
+%        dos(typeCmd);
+%        dos(delCmd);
+%        dos(renameCmd);
+%     elseif isunix
+%        outputPathLinux = strrep(outputPath, '\', '/');
+%        typeCmd = ['cat ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE ' '...
+%            outputPathLinux '\edgefeatures\' file ' > ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE];
+%        delCmd = ['rm -f ' outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
+%        renameCmd = ['mv ' outputPathLinux '/' EDGECLASSIFIER_TEMP_FILE ' '...
+%            outputPathLinux '/' EDGECLASSIFIER_TRAINING_FILE];
+%        unix(typeCmd);
+%        unix(delCmd);
+%        unix(renameCmd);
+%     end
+% end
 
 %% train initial prediction classifier on the training file just generated
 INITFUNC_MODEL_FILE = 'initfunc_model.txt';
