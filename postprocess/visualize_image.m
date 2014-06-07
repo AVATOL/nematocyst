@@ -18,7 +18,7 @@ end
 alpha = 0.66;
 
 %% initialization
-inferImage = image;
+inferImage = uint8(image);
 [height, width, nChannels] = size(image);
 
 if nChannels == 1
