@@ -86,6 +86,9 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
 		heuristicFeatFunc = new HCSearch::StandardFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_CONTEXT:
@@ -131,6 +134,9 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
 		costFeatFunc = new HCSearch::StandardFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_CONTEXT:
@@ -176,6 +182,9 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 	{
 	case MyProgramOptions::ProgramOptions::STANDARD:
 		LOG() << "standard CRF features" << endl;
+		LOG() << "\tlambda1=" << po.lambda1 << endl;
+		LOG() << "\tlambda2=" << po.lambda2 << endl;
+		LOG() << "\tlambda3=" << po.lambda3 << endl;
 		pruneFeatFunc = new HCSearch::StandardFeatures(po.lambda1, po.lambda2, po.lambda3);
 		break;
 	case MyProgramOptions::ProgramOptions::STANDARD_CONTEXT:
