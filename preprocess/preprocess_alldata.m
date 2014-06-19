@@ -34,8 +34,7 @@ EXTERNAL_PATH = 'external';
 LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear'];
 
 %% create output folder
-outputPath = strrep(outputPath, '/', filesep);
-outputPath = strrep(outputPath, '\', filesep);
+outputPath = normalize_file_sep(outputPath);
 
 if ~exist(outputPath, 'dir')
     mkdir(outputPath);
