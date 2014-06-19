@@ -8,8 +8,8 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	const string RankerTypeStrings[] = {"svm-rank", "online"};
-	const bool RankerTypeSaveable[] = {true, false};
+	const string RankerTypeStrings[] = {"svm-rank", "vw"};
+	const bool RankerTypeSaveable[] = {true, true};
 
 	/**************** Class Map ****************/
 
@@ -191,22 +191,21 @@ namespace HCSearch
 		LIBLINEAR_DIR = EXTERNAL_DIR + "liblinear" + DIR_SEP;
 		LIBSVM_DIR = EXTERNAL_DIR + "libsvm" + DIR_SEP;
 		SVMRANK_DIR = EXTERNAL_DIR + "svm_rank" + DIR_SEP;
+		VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP;
 
 		// input directories
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
+
+		INPUT_SPLITS_TRAIN_FILE_BASE = "Train.txt";
+		INPUT_SPLITS_VALIDATION_FILE_BASE = "Validation.txt";
+		INPUT_SPLITS_TEST_FILE_BASE = "Test.txt";
 
 		// output directories
 
 		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
-		OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE = "cost_randomH_features";
-
-		OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE = "heuristic_online_weights";
-		OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE = "cost_H_online_weights";
-		OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE = "cost_oracleH_online_weights";
-		OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE = "cost_randomH_online_weights";
 	}
 
 	Paths::~Paths()
@@ -219,14 +218,15 @@ namespace HCSearch
 
 		// data directories
 		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + "nodes" + this->paths->DIR_SEP;
+		this->paths->INPUT_NODE_LOCATIONS_DIR = this->paths->INPUT_DIR + "nodelocations" + this->paths->DIR_SEP;
 		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + "edges" + this->paths->DIR_SEP;
 		this->paths->INPUT_META_DIR = this->paths->INPUT_DIR + "meta" + this->paths->DIR_SEP;
 		this->paths->INPUT_SEGMENTS_DIR = this->paths->INPUT_DIR + "segments" + this->paths->DIR_SEP;
 		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + this->paths->INPUT_SPLITS_FOLDER_NAME + this->paths->DIR_SEP;
 
-		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + "Train.txt";
-		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + "Validation.txt";
-		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + "Test.txt";
+		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TRAIN_FILE_BASE;
+		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_VALIDATION_FILE_BASE;
+		this->paths->INPUT_SPLITS_TEST_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TEST_FILE_BASE;
 
 		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";
 		this->paths->INPUT_CODEBOOK_FILE = this->paths->INPUT_DIR + "codebook.txt";
@@ -248,12 +248,10 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
-		this->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_randomH.txt";
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
-		this->paths->OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_randomH.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -268,12 +266,6 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE, rankID);
-
-		this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
-		this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
@@ -305,6 +297,8 @@ namespace HCSearch
 		LIBSVM_PREDICT_CMD = paths->LIBSVM_DIR + "windows" + paths->DIR_SEP + "svm-predict";
 		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "windows" + paths->DIR_SEP + "svm-train";
 
+		VOWPALWABBIT_TRAIN_CMD = paths->VOWPALWABBIT_DIR + "vw";
+
 		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
 #else
 		SYSTEM_COPY_CMD = "cp";
@@ -316,6 +310,8 @@ namespace HCSearch
 	
 		LIBSVM_PREDICT_CMD = paths->LIBSVM_DIR + "svm-predict";
 		LIBSVM_TRAIN_CMD = paths->LIBSVM_DIR + "svm-train";
+
+		VOWPALWABBIT_TRAIN_CMD = paths->VOWPALWABBIT_DIR + "vw";
 
 		SVMRANK_LEARN_CMD = paths->SVMRANK_DIR + "svm_rank_learn";
 #endif
@@ -335,10 +331,6 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
-		PRUNE_SVM_RANK_EXAMPLES = false;
-		PRUNE_SVM_RANK_RATIO = 0.25;
-		PRUNE_SVM_RANK_MIN_EXAMPLES = 10;
-		PRUNE_SVM_RANK_MAX_EXAMPLES = 100;
 
 		/**************** Experiment Settings ****************/
 

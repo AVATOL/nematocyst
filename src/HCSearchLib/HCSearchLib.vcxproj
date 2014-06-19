@@ -12,8 +12,11 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DataStructures.hpp" />
+    <ClInclude Include="FeatureFunction.hpp" />
     <ClInclude Include="Globals.hpp" />
     <ClInclude Include="HCSearch.hpp" />
+    <ClInclude Include="InitialStateFunction.hpp" />
+    <ClInclude Include="LossFunction.hpp" />
     <ClInclude Include="MPI.hpp" />
     <ClInclude Include="mtrand.h" />
     <ClInclude Include="MyFileSystem.hpp" />
@@ -23,11 +26,15 @@
     <ClInclude Include="SearchProcedure.hpp" />
     <ClInclude Include="SearchSpace.hpp" />
     <ClInclude Include="Settings.hpp" />
+    <ClInclude Include="SuccessorFunction.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DataStructures.cpp" />
+    <ClCompile Include="FeatureFunction.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="HCSearch.cpp" />
+    <ClCompile Include="InitialStateFunction.cpp" />
+    <ClCompile Include="LossFunction.cpp" />
     <ClCompile Include="MPI.cpp" />
     <ClCompile Include="mtrand.cpp" />
     <ClCompile Include="MyFileSystem.cpp" />
@@ -36,6 +43,7 @@
     <ClCompile Include="SearchProcedure.cpp" />
     <ClCompile Include="SearchSpace.cpp" />
     <ClCompile Include="Settings.cpp" />
+    <ClCompile Include="SuccessorFunction.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{8804CE0A-6DAA-45D9-9CBC-901E9E51676A}</ProjectGuid>

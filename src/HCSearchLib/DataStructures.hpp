@@ -3,6 +3,7 @@
 
 #include <map>
 #include <set>
+#include <queue>
 #include <fstream>
 #include "../../external/Eigen/Eigen/Dense"
 #include "MyPrimitives.hpp"
@@ -17,13 +18,22 @@ namespace HCSearch
 
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
-		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
-		RL, RC, LEARN_C_RANDOM_H };
+		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 
 	const extern string SearchTypeStrings[];
 	const extern string DatasetTypeStrings[];
+
+	/**************** Priority Queues ****************/
+
+	class CompareByConfidence
+	{
+	public:
+		bool operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const;
+	};
+
+	typedef priority_queue<MyPrimitives::Pair<int, double>, vector< MyPrimitives::Pair<int, double> >, CompareByConfidence> LabelConfidencePQ;
 
 	/**************** Graph ****************/
 
@@ -109,7 +119,15 @@ namespace HCSearch
 		 */
 		MatrixXi segments;
 
+		/*!
+		 * Matrix of node locations.
+		 * Dimensions: number of nodes x 2 (x, y coordinates)
+		 * Make sure to check if they are available using ImgLabeling::nodeLocationsAvailable.
+		 */
+		MatrixXd nodeLocations;
+
 		bool segmentsAvailable;
+		bool nodeLocationsAvailable;
 
 	public:
 		ImgFeatures();
@@ -140,6 +158,20 @@ namespace HCSearch
 		 * @return Returns the file name
 		 */
 		string getFileName();
+
+		/*!
+		 * Get the normalized x-position of the node.
+		 * @param[in] node Node index
+		 * @return Returns the X position of node
+		 */
+		double getNodeLocationX(int node);
+
+		/*!
+		 * Get the normalized y-position of the node.
+		 * @param[in] node Node index
+		 * @return Returns the Y position of node
+		 */
+		double getNodeLocationY(int node);
 	};
 
 	/*!
@@ -172,8 +204,14 @@ namespace HCSearch
 		 */
 		map< int, set<int> > stochasticCuts;
 
+		/*!
+		 * Node weights.
+		 */
+		VectorXd nodeWeights;
+
 		bool confidencesAvailable;
 		bool stochasticCutsAvailable;
+		bool nodeWeightsAvailable;
 
 	public:
 		ImgLabeling();
@@ -212,6 +250,14 @@ namespace HCSearch
 		 * @return Returns true if there are neighbors
 		 */
 		bool hasNeighbors(int node);
+
+		/*!
+		 * @brief Get the labels of the top K confident labels.
+		 * @param[in] node Node index
+		 * @param[in] K top K confident labels to return
+		 * @return Returns the set of top K confident labels for the node
+		 */
+		set<int> getTopConfidentLabels(int node, int K);
 	};
 
 	/**************** Rank Features ****************/
@@ -248,8 +294,7 @@ namespace HCSearch
 	 * @brief Abstract class for model/weights for ranking.
 	 * 
 	 * The main purpose is to rank features using a rank model. 
-	 * Abstract class is useful for extending different kinds of 
-	 * rankers, like offline vs. online and linear vs. nonlinear.
+	 * Abstract class is useful for extending different kinds of rankers.
 	 */
 	class IRankModel
 	{
@@ -409,102 +454,107 @@ namespace HCSearch
 		static int mergeRankingFiles(string fileNameBase, int numProcesses, int totalMasterQID);
 	};
 
-	/**************** Online Rank Model ****************/
+	/**************** Vowpal Wabbit Model ****************/
 
 	/*!
-	 * @brief Rank model for online passive-aggressive ranking. 
+	 * @brief Rank model for Vowpal Wabbit.
 	 * 
-	 * Has methods to perform online updates and ranking
+	 * Has methods to learn weights from training examples and ranking.
 	 */
-	class OnlineRankModel : public IRankModel
+	class VWRankModel : public IRankModel
 	{
 	private:
 		/*!
-		 * Latest weights.
+		 * Rank weights
 		 */
-		VectorXd latestWeights;
+		VectorXd weights;
 
 		/*!
-		 * Cumulative sum of weights.
+		 * Output stream to training file for learning
 		 */
-		VectorXd cumSumWeights;
+		ofstream* rankingFile;
 
 		/*!
-		 * Number of weights in cumulative sum for averaging. 
-		 * -1 => OnlineRankModel not initialized
+		 * Training file name
 		 */
-		int numSum;
+		string rankingFileName;
+
+		/*!
+		 * Model file name
+		 */
+		string modelFileName;
+
+		/*!
+		 * True if currently used for learning
+		 */
+		bool learningMode;
 
 	public:
-		OnlineRankModel();
+		VWRankModel();
 
 		/*!
-		 * Construct with online weights from model file.
+		 * Construct with weights from model file.
 		 */
-		OnlineRankModel(string fileName);
-
+		VWRankModel(string fileName);
+		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
 		/*!
-		 * Get latest weights.
+		 * Get weights.
 		 */
-		VectorXd getLatestWeights();
+		VectorXd getWeights();
 
 		/*!
-		 * Get averaged weights.
+		 * Initialize learning.
 		 */
-		VectorXd getAvgWeights();
+		void startTraining(string featuresFileName);
 
 		/*!
-		 * Perform an update. 
-		 * - delta = loss (bad) - loss (good)
-		 * - featureDiff = feature (good) - feature (bad)
+		 * Add training examples.
 		 */
-		void performOnlineUpdate(double delta, VectorXd featureDiff);
-		
-		/*!
-		 * Initialize weights to zero vector with dimension dim.
-		 */
-		void initialize(int dim);
+		void addTrainingExamples(vector< RankFeatures >& betterSet, vector< RankFeatures >& worseSet, vector< double >& betterLosses, vector< double >& worstLosses);
 
 		/*!
-		 * Merge online rank models.
+		 * End learning.
+		 *
+		 * Calls SVM Rank program to train on examples and produce model.
 		 */
-		void performMerge(string modelFileBase, SearchType searchType);
+		void finishTraining(string modelFileName, SearchType searchType);
+
+		/*!
+		 * Cancel learning. Closes training file.
+		 */
+		void cancelTraining();
 
 	private:
 		/*!
-		 * Load weights from file.
-		 * 
-		 * File format:
-		 *     line 1 (numsum): int
-		 *     line 2 (cumsumweights): 1:val 2:val ...
-		 *	   line 3 (latestweights): 1:val 2:val ...
+		 * Load weights from file. 
+		 * File format is the SVM-Rank model file 
+		 * (weights are on the 12th line).
 		 */
-		static void parseModelFile(string fileName, VectorXd& latestWeights, VectorXd& cumSumWeights, int& numSum);
+		static VectorXd parseModelFile(string fileName);
+
+		/*!
+		 * Convert vector difference to VW format line.
+		 */
+		static string vector2vwformat(RankFeatures bestfeature, RankFeatures worstfeature, double loss);
 
 		/*!
 		 * Write weights to file.
 		 * 
 		 * File format:
-		 *     line 1 (numsum): int
-		 *     line 2 (cumsumweights): 1:val 2:val ...
-		 *	   line 3 (latestweights): 1:val 2:val ...
+		 *     ...
+		 *	   line 12: 1:val 2:val ...
 		 */
-		static void writeModelFile(string fileName, const VectorXd& latestWeights, const VectorXd& cumSumWeights, int numSum);
+		static void writeModelFile(string fileName, const VectorXd& weights);
 
 		/*!
-		 * Merge online rank model files when using MPI.
-		 * @param[out] masterLatestWeights
-		 * @param[out] masterCumSumWeights
-		 * @param[out] masterNumSum
-		 * @param[in] fileNameBase
-		 * @param[in] numProcesses
+		 * Merge feature files when using MPI.
 		 */
-		static void mergeRankingFiles(VectorXd& masterLatestWeights, VectorXd& masterCumSumWeights, int& masterNumSum, string fileNameBase, int numProcesses);
+		static void mergeRankingFiles(string fileNameBase, int numProcesses);
 	};
 }
 

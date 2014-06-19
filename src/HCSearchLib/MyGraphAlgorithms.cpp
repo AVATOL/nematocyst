@@ -158,7 +158,7 @@ namespace MyGraphAlgorithms
 			int node1 = *it;
 
 			// get top K confident labels
-			LabelConfidencePQ sortedByConfidence;
+			HCSearch::LabelConfidencePQ sortedByConfidence;
 			for (int i = 0; i < numLabels; i++)
 			{
 				int label = HCSearch::Global::settings->CLASSES.getClassLabel(i);
@@ -205,11 +205,6 @@ namespace MyGraphAlgorithms
 		}
 
 		return hasNeighbors;
-	}
-
-	bool ConnectedComponent::CompareByConfidence::operator() (MyPrimitives::Pair<int, double>& lhs, MyPrimitives::Pair<int, double>& rhs) const
-	{
-		return lhs.second < rhs.second;
 	}
 
 	/**************** Connected Component Set ****************/

@@ -124,7 +124,7 @@ namespace Testing
 			ImgFeatures X;
 			X.graph = graph2;
 
-			IFeatureFunction* featureFunctionTest = new StandardFeatures();
+			IFeatureFunction* featureFunctionTest = new StandardAltFeatures();
 			RankFeatures phi = featureFunctionTest->computeFeatures(X, YPred);
 
 			const int featureDim = X.getFeatureDim();

@@ -32,14 +32,20 @@ build_all_configurations: Debug Release
 
 # Builds the Debug configuration...
 .PHONY: Debug
-Debug: create_folders gccDebug/DataStructures.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o 
-	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o  $(Debug_Implicitly_Linked_Objects)
+Debug: create_folders gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o 
+	ar rcs ../gccDebug/libHCSearchLib.a gccDebug/DataStructures.o gccDebug/FeatureFunction.o gccDebug/Globals.o gccDebug/HCSearch.o gccDebug/InitialStateFunction.o gccDebug/LossFunction.o gccDebug/MPI.o gccDebug/mtrand.o gccDebug/MyFileSystem.o gccDebug/MyGraphAlgorithms.o gccDebug/MyLogger.o gccDebug/SearchProcedure.o gccDebug/SearchSpace.o gccDebug/Settings.o gccDebug/SuccessorFunction.o  $(Debug_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Debug configuration...
 -include gccDebug/DataStructures.d
 gccDebug/DataStructures.o: DataStructures.cpp
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c DataStructures.cpp $(Debug_Include_Path) -o gccDebug/DataStructures.o
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM DataStructures.cpp $(Debug_Include_Path) > gccDebug/DataStructures.d
+
+# Compiles file FeatureFunction.cpp for the Debug configuration...
+-include gccDebug/FeatureFunction.d
+gccDebug/FeatureFunction.o: FeatureFunction.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c FeatureFunction.cpp $(Debug_Include_Path) -o gccDebug/FeatureFunction.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM FeatureFunction.cpp $(Debug_Include_Path) > gccDebug/FeatureFunction.d
 
 # Compiles file Globals.cpp for the Debug configuration...
 -include gccDebug/Globals.d
@@ -52,6 +58,18 @@ gccDebug/Globals.o: Globals.cpp
 gccDebug/HCSearch.o: HCSearch.cpp
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c HCSearch.cpp $(Debug_Include_Path) -o gccDebug/HCSearch.o
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM HCSearch.cpp $(Debug_Include_Path) > gccDebug/HCSearch.d
+
+# Compiles file InitialStateFunction.cpp for the Debug configuration...
+-include gccDebug/InitialStateFunction.d
+gccDebug/InitialStateFunction.o: InitialStateFunction.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c InitialStateFunction.cpp $(Debug_Include_Path) -o gccDebug/InitialStateFunction.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM InitialStateFunction.cpp $(Debug_Include_Path) > gccDebug/InitialStateFunction.d
+
+# Compiles file LossFunction.cpp for the Debug configuration...
+-include gccDebug/LossFunction.d
+gccDebug/LossFunction.o: LossFunction.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c LossFunction.cpp $(Debug_Include_Path) -o gccDebug/LossFunction.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM LossFunction.cpp $(Debug_Include_Path) > gccDebug/LossFunction.d
 
 # Compiles file MPI.cpp for the Debug configuration...
 -include gccDebug/MPI.d
@@ -101,16 +119,28 @@ gccDebug/Settings.o: Settings.cpp
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c Settings.cpp $(Debug_Include_Path) -o gccDebug/Settings.o
 	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM Settings.cpp $(Debug_Include_Path) > gccDebug/Settings.d
 
+# Compiles file SuccessorFunction.cpp for the Debug configuration...
+-include gccDebug/SuccessorFunction.d
+gccDebug/SuccessorFunction.o: SuccessorFunction.cpp
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -c SuccessorFunction.cpp $(Debug_Include_Path) -o gccDebug/SuccessorFunction.o
+	$(CPP_COMPILER) $(Debug_Preprocessor_Definitions) $(Debug_Compiler_Flags) -MM SuccessorFunction.cpp $(Debug_Include_Path) > gccDebug/SuccessorFunction.d
+
 # Builds the Release configuration...
 .PHONY: Release
-Release: create_folders gccRelease/DataStructures.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o 
-	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o  $(Release_Implicitly_Linked_Objects)
+Release: create_folders gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o 
+	ar rcs ../gccRelease/libHCSearchLib.a gccRelease/DataStructures.o gccRelease/FeatureFunction.o gccRelease/Globals.o gccRelease/HCSearch.o gccRelease/InitialStateFunction.o gccRelease/LossFunction.o gccRelease/MPI.o gccRelease/mtrand.o gccRelease/MyFileSystem.o gccRelease/MyGraphAlgorithms.o gccRelease/MyLogger.o gccRelease/SearchProcedure.o gccRelease/SearchSpace.o gccRelease/Settings.o gccRelease/SuccessorFunction.o  $(Release_Implicitly_Linked_Objects)
 
 # Compiles file DataStructures.cpp for the Release configuration...
 -include gccRelease/DataStructures.d
 gccRelease/DataStructures.o: DataStructures.cpp
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c DataStructures.cpp $(Release_Include_Path) -o gccRelease/DataStructures.o
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM DataStructures.cpp $(Release_Include_Path) > gccRelease/DataStructures.d
+
+# Compiles file FeatureFunction.cpp for the Release configuration...
+-include gccRelease/FeatureFunction.d
+gccRelease/FeatureFunction.o: FeatureFunction.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c FeatureFunction.cpp $(Release_Include_Path) -o gccRelease/FeatureFunction.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM FeatureFunction.cpp $(Release_Include_Path) > gccRelease/FeatureFunction.d
 
 # Compiles file Globals.cpp for the Release configuration...
 -include gccRelease/Globals.d
@@ -123,6 +153,18 @@ gccRelease/Globals.o: Globals.cpp
 gccRelease/HCSearch.o: HCSearch.cpp
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c HCSearch.cpp $(Release_Include_Path) -o gccRelease/HCSearch.o
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM HCSearch.cpp $(Release_Include_Path) > gccRelease/HCSearch.d
+
+# Compiles file InitialStateFunction.cpp for the Release configuration...
+-include gccRelease/InitialStateFunction.d
+gccRelease/InitialStateFunction.o: InitialStateFunction.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c InitialStateFunction.cpp $(Release_Include_Path) -o gccRelease/InitialStateFunction.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM InitialStateFunction.cpp $(Release_Include_Path) > gccRelease/InitialStateFunction.d
+
+# Compiles file LossFunction.cpp for the Release configuration...
+-include gccRelease/LossFunction.d
+gccRelease/LossFunction.o: LossFunction.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c LossFunction.cpp $(Release_Include_Path) -o gccRelease/LossFunction.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM LossFunction.cpp $(Release_Include_Path) > gccRelease/LossFunction.d
 
 # Compiles file MPI.cpp for the Release configuration...
 -include gccRelease/MPI.d
@@ -171,6 +213,12 @@ gccRelease/SearchSpace.o: SearchSpace.cpp
 gccRelease/Settings.o: Settings.cpp
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c Settings.cpp $(Release_Include_Path) -o gccRelease/Settings.o
 	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM Settings.cpp $(Release_Include_Path) > gccRelease/Settings.d
+
+# Compiles file SuccessorFunction.cpp for the Release configuration...
+-include gccRelease/SuccessorFunction.d
+gccRelease/SuccessorFunction.o: SuccessorFunction.cpp
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -c SuccessorFunction.cpp $(Release_Include_Path) -o gccRelease/SuccessorFunction.o
+	$(CPP_COMPILER) $(Release_Preprocessor_Definitions) $(Release_Compiler_Flags) -MM SuccessorFunction.cpp $(Release_Include_Path) > gccRelease/SuccessorFunction.d
 
 # Creates the intermediate and output folders for each configuration...
 .PHONY: create_folders

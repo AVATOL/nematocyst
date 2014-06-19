@@ -11,6 +11,9 @@ namespace MyProgramOptions
 		inputDir = "";
 		outputDir = "";
 		splitsFolderName = "splits";
+		splitsTrainName = "Train.txt";
+		splitsValidName = "Validation.txt";
+		splitsTestName = "Test.txt";
 
 		// time bound
 
@@ -28,7 +31,7 @@ namespace MyProgramOptions
 		heuristicFeaturesMode = STANDARD;
 		costFeaturesMode = STANDARD;
 		initialFunctionMode = LOG_REG;
-		successorsMode = STOCHASTIC_NEIGHBORS;
+		successorsMode = STOCHASTIC_CONFIDENCES_NEIGHBORS;
 		lossMode = HAMMING;
 
 		stochasticCutMode = EDGES;
@@ -40,8 +43,7 @@ namespace MyProgramOptions
 		saveFeaturesFiles = false;
 		numTrainIterations = 1;
 		numTestIterations = 1;
-		verboseMode = false;
-		boundSuccessorCandidates = 1000;
+		verboseMode = true;
 		uniqueIterId = 0;
 		saveOutputMask = false;
 	}
@@ -89,6 +91,27 @@ namespace MyProgramOptions
 					po.splitsFolderName = argv[i+1];
 				}
 			}
+			else if (strcmp(argv[i], "--splits-train-file") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsTrainName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--splits-valid-file") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsValidName = argv[i+1];
+				}
+			}
+			else if (strcmp(argv[i], "--splits-test-file") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.splitsTestName = argv[i+1];
+				}
+			}
 			else if (strcmp(argv[i], "--learn") == 0)
 			{
 				if (i + 1 != argc)
@@ -99,8 +122,6 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LEARN_C);
 					else if (strcmp(argv[i+1], "COH") == 0 || strcmp(argv[i+1], "coh") == 0)
 						po.schedule.push_back(HCSearch::LEARN_C_ORACLE_H);
-					else if (strcmp(argv[i+1], "CRH") == 0 || strcmp(argv[i+1], "crh") == 0)
-						po.schedule.push_back(HCSearch::LEARN_C_RANDOM_H);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::LEARN_H);
@@ -131,10 +152,6 @@ namespace MyProgramOptions
 						po.schedule.push_back(HCSearch::LC);
 					else if (strcmp(argv[i+1], "LL") == 0 || strcmp(argv[i+1], "ll") == 0)
 						po.schedule.push_back(HCSearch::LL);
-					else if (strcmp(argv[i+1], "RL") == 0 || strcmp(argv[i+1], "rl") == 0)
-						po.schedule.push_back(HCSearch::RL);
-					else if (strcmp(argv[i+1], "RC") == 0 || strcmp(argv[i+1], "rc") == 0)
-						po.schedule.push_back(HCSearch::RC);
 					else if (strcmp(argv[i+1], "ALL") == 0 || strcmp(argv[i+1], "all") == 0)
 					{
 						po.schedule.push_back(HCSearch::HC);
@@ -152,14 +169,14 @@ namespace MyProgramOptions
 					po.schedule.push_back(HCSearch::HC);
 				}
 			}
-			else if (strcmp(argv[i], "--learner") == 0)
+			else if (strcmp(argv[i], "--ranker") == 0)
 			{
 				if (i + 1 != argc)
 				{
 					if (strcmp(argv[i+1], "svmrank") == 0)
 						po.rankLearnerType = HCSearch::SVM_RANK;
-					else if (strcmp(argv[i+1], "online") == 0)
-						po.rankLearnerType = HCSearch::ONLINE_RANK;
+					else if (strcmp(argv[i+1], "vw") == 0)
+						po.rankLearnerType = HCSearch::VW_RANK;
 				}
 			}
 			else if (strcmp(argv[i], "--search") == 0)
@@ -196,6 +213,8 @@ namespace MyProgramOptions
 						po.successorsMode = FLIPBIT;
 					else if (strcmp(argv[i+1], "flipbit-neighbors") == 0)
 						po.successorsMode = FLIPBIT_NEIGHBORS;
+					else if (strcmp(argv[i+1], "flipbit-confidences-neighbors") == 0)
+						po.successorsMode = FLIPBIT_CONFIDENCES_NEIGHBORS;
 					else if (strcmp(argv[i+1], "stochastic") == 0)
 						po.successorsMode = STOCHASTIC;
 					else if (strcmp(argv[i+1], "stochastic-neighbors") == 0)
@@ -268,18 +287,6 @@ namespace MyProgramOptions
 						po.verboseMode = false;
 				}
 			}
-			else if (strcmp(argv[i], "--bound-successor") == 0)
-			{
-				if (i + 1 != argc)
-				{
-					po.boundSuccessorCandidates = atoi(argv[i+1]);
-					if (po.boundSuccessorCandidates <= 0)
-					{
-						LOG(ERROR) << "Invalid bound!";
-						HCSearch::abort();
-					}
-				}
-			}
 			else if (strcmp(argv[i], "--cut-mode") == 0)
 			{
 				if (i + 1 != argc)
@@ -311,6 +318,66 @@ namespace MyProgramOptions
 						po.saveOutputMask = false;
 				}
 			}
+			else if (strcmp(argv[i], "--hfeatures") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "standard") == 0)
+						po.heuristicFeaturesMode = STANDARD;
+					//else if (strcmp(argv[i+1], "standard-alt") == 0)
+					//	po.heuristicFeaturesMode = STANDARD_ALT;
+					else if (strcmp(argv[i+1], "standard-conf") == 0)
+						po.heuristicFeaturesMode = STANDARD_CONF;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.heuristicFeaturesMode = DENSE_CRF;
+					else if (strcmp(argv[i+1], "unary") == 0)
+						po.heuristicFeaturesMode = UNARY;
+					else if (strcmp(argv[i+1], "unary-conf") == 0)
+						po.heuristicFeaturesMode = UNARY_CONF;
+					else if (strcmp(argv[i+1], "standard-pair-counts") == 0)
+						po.heuristicFeaturesMode = STANDARD_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
+						po.heuristicFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
+				}
+			}
+			else if (strcmp(argv[i], "--cfeatures") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "standard") == 0)
+						po.costFeaturesMode = STANDARD;
+					//else if (strcmp(argv[i+1], "standard-alt") == 0)
+					//	po.costFeaturesMode = STANDARD_ALT;
+					else if (strcmp(argv[i+1], "standard-conf") == 0)
+						po.costFeaturesMode = STANDARD_CONF;
+					else if (strcmp(argv[i+1], "dense-crf") == 0)
+						po.costFeaturesMode = DENSE_CRF;
+					else if (strcmp(argv[i+1], "unary") == 0)
+						po.costFeaturesMode = UNARY;
+					else if (strcmp(argv[i+1], "unary-conf") == 0)
+						po.costFeaturesMode = UNARY_CONF;
+					else if (strcmp(argv[i+1], "standard-pair-counts") == 0)
+						po.costFeaturesMode = STANDARD_PAIR_COUNTS;
+					else if (strcmp(argv[i+1], "standard-conf-pair-counts") == 0)
+						po.costFeaturesMode = STANDARD_CONF_PAIR_COUNTS;
+				}
+			}
+			else if (strcmp(argv[i], "--loss") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "hamming") == 0)
+						po.lossMode = HAMMING;
+					else if (strcmp(argv[i+1], "pixel-hamming") == 0)
+						po.lossMode = PIXEL_HAMMING;
+				}
+			}
+			else
+			{
+				string argvi = argv[i];
+				if (argvi.find("--") == 0)
+					LOG(WARNING) << "IGNORING UNKNOWN PROGRAM OPTION: " << argv[i];
+			}
 		}
 
 		// demo mode if nothing specified or used --demo flag
@@ -335,7 +402,6 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tH: learn heuristic" << endl;
 		cerr << "\t\t\t\tC: learn cost" << endl;
 		cerr << "\t\t\t\tCOH: learn cost with oracle H" << endl;
-		cerr << "\t\t\t\tCRH: learn cost with random H" << endl;
 		cerr << "\t\t\t\tALL: short-hand for H, C, COH" << endl;
 		cerr << "\t\t\t\t(none): short-hand for H, C" << endl;
 		cerr << "\t--infer arg\t" << ": inference" << endl;
@@ -343,30 +409,35 @@ namespace MyProgramOptions
 		cerr << "\t\t\t\tHL: learned heuristic and oracle cost" << endl;
 		cerr << "\t\t\t\tLC: oracle heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tLL: oracle heuristic and cost" << endl;
-		cerr << "\t\t\t\tRL: random heuristic and oracle cost" << endl;
-		cerr << "\t\t\t\tRC: random heuristic and learned cost" << endl;
 		cerr << "\t\t\t\tALL: short-hand for HC, HL, LC, LL" << endl;
 		cerr << "\t\t\t\t(none): short-hand for HC" << endl;
 		cerr << endl;
 
 		cerr << "Advanced options:" << endl;
-		cerr << "\t--anytime arg\t\t" << ": turn on saving anytime predictions if true" << endl;
-		cerr << "\t--beam-size arg\t\t" << ": beam size for beam search" << endl;
-		cerr << "\t--bound-successor arg\t" << ": maximum number of successor candidates (default=1000)" << endl;
-		cerr << "\t--cut-mode arg\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
-		cerr << "\t--cut-param arg\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--anytime arg\t\t\t" << ": turn on saving anytime predictions if true" << endl;
+		cerr << "\t--beam-size arg\t\t\t" << ": beam size for beam search" << endl;
+		cerr << "\t--cut-mode arg\t\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
+		cerr << "\t--cut-param arg\t\t\t" << ": temperature parameter for stochastic cuts" << endl;
+		cerr << "\t--hfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
+		cerr << "\t--cfeatures arg\t\t\t" << ": standard|standard-conf|unary|unary-conf|"
+			"standard-pair-counts|standard-conf-pair-counts|dense-crf" << endl;
 		cerr << "\t--num-test-iters arg\t" << ": number of test iterations" << endl;
 		cerr << "\t--num-train-iters arg\t" << ": number of training iterations" << endl;
-		cerr << "\t--learner arg\t\t" << ": svmrank|online" << endl;
-		cerr << "\t--save-features arg\t" << ": save rank features during learning if true" << endl;
-		cerr << "\t--save-mask arg\t\t" << ": save final prediction label masks if true" << endl;
-		cerr << "\t--search arg\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
-		cerr << "\t--splits-path arg\t" << ": specify alternate path to splits folder" << endl;
-		cerr << "\t--successor arg\t\t" << ": flipbit|flipbit-neighbors|"
+		cerr << "\t--ranker arg\t\t\t" << ": svmrank|vw" << endl;
+		cerr << "\t--loss arg\t\t\t\t" << ": hamming|pixel-hamming" << endl;
+		cerr << "\t--save-features arg\t\t" << ": save rank features during learning if true" << endl;
+		cerr << "\t--save-mask arg\t\t\t" << ": save final prediction label masks if true" << endl;
+		cerr << "\t--search arg\t\t\t" << ": greedy|breadthbeam|bestbeam" << endl;
+		cerr << "\t--splits-path arg\t\t" << ": specify alternate path to splits folder" << endl;
+		cerr << "\t--splits-train-file arg\t" << ": specify alternate file name to train file" << endl;
+		cerr << "\t--splits-valid-file arg\t" << ": specify alternate file name to validation file" << endl;
+		cerr << "\t--splits-test-file arg\t" << ": specify alternate file name to test file" << endl;
+		cerr << "\t--successor arg\t\t\t" << ": flipbit|flipbit-neighbors|flipbit-confidences-neighbors|"
 			<< "stochastic|stochastic-neighbors|stochastic-confidences-neighbors|"
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors" << endl;
-		cerr << "\t--unique-iter arg\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
-		cerr << "\t--verbose arg\t\t" << ": turn on verbose output if true" << endl;
+		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
+		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
 
 		cerr << "Notes:" << endl;

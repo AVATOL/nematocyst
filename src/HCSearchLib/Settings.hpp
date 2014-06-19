@@ -18,7 +18,7 @@ namespace HCSearch
 {
 	/**************** Constants ****************/
 
-	enum RankerType { SVM_RANK, ONLINE_RANK };
+	enum RankerType { SVM_RANK, VW_RANK };
 	const extern string RankerTypeStrings[];
 	const extern bool RankerTypeSaveable[];
 
@@ -104,10 +104,12 @@ namespace HCSearch
 		string LIBLINEAR_DIR;
 		string LIBSVM_DIR;
 		string SVMRANK_DIR;
+		string VOWPALWABBIT_DIR;
 
 		// input directories
 
 		string INPUT_NODES_DIR;
+		string INPUT_NODE_LOCATIONS_DIR;
 		string INPUT_EDGES_DIR;
 		string INPUT_META_DIR;
 		string INPUT_SEGMENTS_DIR;
@@ -117,6 +119,10 @@ namespace HCSearch
 		string INPUT_SPLITS_TRAIN_FILE;
 		string INPUT_SPLITS_VALIDATION_FILE;
 		string INPUT_SPLITS_TEST_FILE;
+
+		string INPUT_SPLITS_TRAIN_FILE_BASE;
+		string INPUT_SPLITS_VALIDATION_FILE_BASE;
+		string INPUT_SPLITS_TEST_FILE_BASE;
 
 		string INPUT_METADATA_FILE;
 		string INPUT_CODEBOOK_FILE;
@@ -132,32 +138,18 @@ namespace HCSearch
 		string OUTPUT_HEURISTIC_FEATURES_FILE;
 		string OUTPUT_COST_H_FEATURES_FILE;
 		string OUTPUT_COST_ORACLE_H_FEATURES_FILE;
-		string OUTPUT_COST_RANDOM_H_FEATURES_FILE;
 
 		string OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
 		string OUTPUT_COST_H_FEATURES_FILE_BASE;
 		string OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
-		string OUTPUT_COST_RANDOM_H_FEATURES_FILE_BASE;
 
 		string OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE;
 		string OUTPUT_ARCHIVED_COST_H_FEATURES_FILE;
 		string OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE;
-		string OUTPUT_ARCHIVED_COST_RANDOM_H_FEATURES_FILE;
-
-		string OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE;
-		string OUTPUT_COST_H_ONLINE_WEIGHTS_FILE;
-		string OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE;
-		string OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE;
-
-		string OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
-		string OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
-		string OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
-		string OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
 
 		string OUTPUT_HEURISTIC_MODEL_FILE;
 		string OUTPUT_COST_H_MODEL_FILE;
 		string OUTPUT_COST_ORACLE_H_MODEL_FILE;
-		string OUTPUT_COST_RANDOM_H_MODEL_FILE;
 
 		string OUTPUT_LOG_FILE;
 
@@ -191,6 +183,8 @@ namespace HCSearch
 		string LIBSVM_PREDICT_CMD;
 		string LIBSVM_TRAIN_CMD;
 
+		string VOWPALWABBIT_TRAIN_CMD;
+
 		string SVMRANK_LEARN_CMD;
 
 		string RANKLIB_CMD;
@@ -216,29 +210,9 @@ namespace HCSearch
 
 		/*!
 		 * @brief Use DAgger to improve heuristic learning.
+		 * NOT IMPLEMENTED
 		 */
 		bool USE_DAGGER;
-
-		/*!
-		 * @brief Randomly prune SVM Rank examples to keep features file size low.
-		 */
-		bool PRUNE_SVM_RANK_EXAMPLES;
-
-		/*!
-		 * @brief Ratio controlling proportion of examples to keep.
-		 * 100% = keep everything
-		 */
-		double PRUNE_SVM_RANK_RATIO;
-
-		/*!
-		 * @brief Minimum number of examples before using pruning ratio.
-		 */
-		int PRUNE_SVM_RANK_MIN_EXAMPLES;
-
-		/*!
-		 * @brief Maximum number of examples before using pruning ratio.
-		 */
-		int PRUNE_SVM_RANK_MAX_EXAMPLES;
 
 		/**************** Experiment Settings ****************/
 

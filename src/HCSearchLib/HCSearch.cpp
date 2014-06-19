@@ -308,6 +308,12 @@ namespace HCSearch
 			MatrixXd features = MatrixXd::Zero(numNodes, numFeatures);
 			readNodesFile(nodesFile, labels, features);
 
+			// read node locations
+			string nodeLocationsFile = Global::settings->paths->INPUT_NODE_LOCATIONS_DIR + filename + ".txt";
+			MatrixXd nodeLocations = MatrixXd::Zero(numNodes, 2);
+			VectorXd nodeWeights = VectorXd::Zero(numNodes);
+			readNodeLocationsFile(nodeLocationsFile, nodeLocations, nodeWeights);
+
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			AdjList_t edges;
@@ -327,6 +333,8 @@ namespace HCSearch
 			X->filename = filename;
 			X->segmentsAvailable = true;
 			X->segments = segments;
+			X->nodeLocationsAvailable = true;
+			X->nodeLocations = nodeLocations;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -334,6 +342,8 @@ namespace HCSearch
 			labelGraph.nodesData = labels;
 			ImgLabeling* Y = new ImgLabeling();
 			Y->graph = labelGraph;
+			Y->nodeWeightsAvailable = true;
+			Y->nodeWeights = nodeWeights;
 			
 			// push into list
 			XSet.push_back(X);
@@ -457,6 +467,53 @@ namespace HCSearch
 		}
 	}
 
+	void Dataset::readNodeLocationsFile(string filename, MatrixXd& nodeLocations, VectorXd& nodeWeights)
+	{
+		int totalSize = 0;
+		string line;
+		ifstream fh(filename.c_str());
+		if (fh.is_open())
+		{
+			int lineIndex = 0;
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					istringstream iss(line);
+
+					// get x position
+					string token1;
+					getline(iss, token1, ' ');
+					nodeLocations(lineIndex, 0) = atof(token1.c_str());
+
+					// get y position
+					string token2;
+					getline(iss, token2, ' ');
+					nodeLocations(lineIndex, 1) = atof(token2.c_str());
+
+					// get segment size
+					string token3;
+					getline(iss, token3, ' ');
+					int size = atoi(token3.c_str());
+					nodeWeights(lineIndex) = size;
+					totalSize += size;
+				}
+				lineIndex++;
+			}
+			fh.close();
+
+			// normalize segment sizes
+			nodeWeights /= (1.0*totalSize);
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file to node locations data!";
+			abort();
+		}
+	}
+
 	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
 	{
 		// if 1, then node indices in edge file are 1-based
@@ -552,15 +609,15 @@ namespace HCSearch
 
 	IRankModel* Model::loadModel(string fileName, RankerType rankerType)
 	{
-		if (rankerType == ONLINE_RANK)
+		if (rankerType == SVM_RANK)
 		{
-			OnlineRankModel* model = new OnlineRankModel();
+			SVMRankModel* model = new SVMRankModel();
 			model->load(fileName);
 			return model;
 		}
-		else if (rankerType == SVM_RANK)
+		else if (rankerType == VW_RANK)
 		{
-			SVMRankModel* model = new SVMRankModel();
+			VWRankModel* model = new VWRankModel();
 			model->load(fileName);
 			return model;
 		}
@@ -584,9 +641,9 @@ namespace HCSearch
 			SVMRankModel* modelCast = dynamic_cast<SVMRankModel*>(model);
 			modelCast->save(fileName);
 		}
-		else if (rankerType == ONLINE_RANK)
+		else if (rankerType == VW_RANK)
 		{
-			OnlineRankModel* modelCast = dynamic_cast<OnlineRankModel*>(model);
+			VWRankModel* modelCast = dynamic_cast<VWRankModel*>(model);
 			modelCast->save(fileName);
 		}
 		else
@@ -618,6 +675,9 @@ namespace HCSearch
 			{
 				LOG() << "Heuristic learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_H);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -625,16 +685,16 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, meta);
 
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE);
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_H);
 			}
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_H);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -663,6 +723,9 @@ namespace HCSearch
 			{
 				LOG() << "Cost learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_C);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -670,16 +733,16 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnC(*XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
 
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE);
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_C);
 			}
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_C);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_C);
 
 		clock_t toc = clock();
 		LOG() << "total learnC time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
@@ -708,6 +771,9 @@ namespace HCSearch
 			{
 				LOG() << "Cost with oracle H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_C_ORACLE_H);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -715,64 +781,19 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->learnCWithOracleH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
 
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE);
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_C_ORACLE_H);
 			}
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_C_ORACLE_H);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_C_ORACLE_H);
 
 		clock_t toc = clock();
 		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
-
-		return learningModel;
-	}
-
-	IRankModel* Learning::learnCWithRandomH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
-		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
-	{
-		clock_t tic = clock();
-
-		LOG() << "Learning the cost function with random heuristic..." << endl;
-
-		// Setup model for learning
-		IRankModel* learningModel = initializeLearning(rankerType, LEARN_C_RANDOM_H);
-
-		// Learn on each training example
-		int start, end;
-		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
-			HCSearch::Global::settings->NUM_PROCESSES, start, end);
-		for (int i = start; i < end; i++)
-		{
-			for (int iter = 0; iter < numIter; iter++)
-			{
-				LOG() << "Cost with random H learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
-
-				HCSearch::ISearchProcedure::SearchMetadata meta;
-				meta.saveAnytimePredictions = false;
-				meta.setType = HCSearch::TRAIN;
-				meta.exampleName = XTrain[i]->getFileName();
-				meta.iter = iter;
-
-				// run search
-				searchProcedure->learnCWithRandomH(*XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, meta);
-
-				// save online weights progress in case
-				if (learningModel->rankerType() == ONLINE_RANK)
-					learningModel->save(Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE);
-			}
-		}
-		
-		// Merge and learn step
-		finishLearning(learningModel, LEARN_C_RANDOM_H);
-
-		clock_t toc = clock();
-		LOG() << "total learnCWithRandomH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
 	}
@@ -785,25 +806,10 @@ namespace HCSearch
 		if (rankerType == SVM_RANK)
 		{
 			learningModel = new SVMRankModel();
-			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
-			if (searchType == LEARN_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
-			else if (searchType == LEARN_C)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_ORACLE_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
-			else if (searchType == LEARN_C_RANDOM_H)
-				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_FEATURES_FILE);
-			else
-			{
-				LOG(ERROR) << "unknown search type!";
-				abort();
-			}
 		}
-		else if (rankerType == ONLINE_RANK)
+		else if (rankerType == VW_RANK)
 		{
-			learningModel = new OnlineRankModel();
-			// at this point, it is still not initialized!
+			learningModel = new VWRankModel();
 		}
 		else
 		{
@@ -811,7 +817,48 @@ namespace HCSearch
 			abort();
 		}
 
+		restartLearning(learningModel, searchType);
+
 		return learningModel;
+	}
+
+	void Learning::restartLearning(IRankModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
 	}
 
 	void Learning::finishLearning(IRankModel* learningModel, SearchType searchType)
@@ -825,62 +872,26 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
-			else if (searchType == LEARN_C_RANDOM_H)
-				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_RANDOM_H_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
 				abort();
 			}
 		}
-		else if (learningModel->rankerType() == ONLINE_RANK)
+		else if (learningModel->rankerType() == VW_RANK)
 		{
-			// do nothing - online weights just stay persistent
-			// ...unless using MPI, then merge...
-#ifdef USE_MPI
-		string STARTMSG;
-		string ENDMSG;
-		string onlineModelFileBase;
-		if (searchType == LEARN_H)
-		{
-			STARTMSG = "MERGEHSTART";
-			ENDMSG = "MERGEHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_HEURISTIC_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C)
-		{
-			STARTMSG = "MERGECSTART";
-			ENDMSG = "MERGECEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_ORACLE_H)
-		{
-			STARTMSG = "MERGECOHSTART";
-			ENDMSG = "MERGECOHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else if (searchType == LEARN_C_RANDOM_H)
-		{
-			STARTMSG = "MERGECRHSTART";
-			ENDMSG = "MERGECRHEND";
-			onlineModelFileBase = Global::settings->paths->OUTPUT_COST_RANDOM_H_ONLINE_WEIGHTS_FILE_BASE;
-		}
-		else
-		{
-			LOG(ERROR) << "unknown search type!";
-			abort();
-		}
-
-		MPI::Synchronize::masterWait(STARTMSG);
-
-		if (Global::settings->RANK == 0)
-		{
-			OnlineRankModel* onlineRankModel = dynamic_cast<OnlineRankModel*>(learningModel);
-			onlineRankModel->performMerge(onlineModelFileBase, searchType);
-		}
-
-		MPI::Synchronize::slavesWait(ENDMSG);
-#endif
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
 		}
 		else
 		{
@@ -895,21 +906,24 @@ namespace HCSearch
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->llSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
+		return searchProcedure->performSearch(LL, *X, YTruth, timeBound, 
+			searchSpace, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* heuristicModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->hlSearch(*X, YTruth, timeBound, searchSpace, heuristicModel, searchMetadata);
+		return searchProcedure->performSearch(HL, *X, YTruth, timeBound, 
+			searchSpace, heuristicModel, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runLCSearch(ImgFeatures* X, ImgLabeling* YTruth, 
 		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
 		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->lcSearch(*X, YTruth, timeBound, searchSpace, costOracleHModel, searchMetadata);
+		return searchProcedure->performSearch(LC, *X, YTruth, timeBound, 
+			searchSpace, NULL, costOracleHModel, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHCSearch(ImgFeatures* X, int timeBound, 
@@ -917,20 +931,16 @@ namespace HCSearch
 		IRankModel* heuristicModel, IRankModel* costModel, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->hcSearch(*X, timeBound, searchSpace, heuristicModel, costModel, searchMetadata);
+		return searchProcedure->performSearch(HC, *X, NULL, timeBound, 
+			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 
-	ImgLabeling Inference::runRLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, 
+	ImgLabeling Inference::runHCSearch(ImgFeatures* X, ImgLabeling* YTruth, int timeBound, 
+		SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
+		IRankModel* heuristicModel, IRankModel* costModel, 
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
-		return searchProcedure->rlSearch(*X, YTruth, timeBound, searchSpace, searchMetadata);
-	}
-
-	ImgLabeling Inference::runRCSearch(ImgFeatures* X, 
-		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure,
-		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
-	{
-		return searchProcedure->rcSearch(*X, timeBound, searchSpace, costOracleHModel, searchMetadata);
+		return searchProcedure->performSearch(HC, *X, YTruth, timeBound, 
+			searchSpace, heuristicModel, costModel, searchMetadata);
 	}
 }

@@ -35,6 +35,8 @@ avgRecMat = zeros(length(timeRange), length(evaluate));
 stdRecMat = zeros(length(timeRange), length(evaluate));
 avgF1Mat = zeros(length(timeRange), length(evaluate));
 stdF1Mat = zeros(length(timeRange), length(evaluate));
+avgHammingMat = zeros(length(timeRange), length(evaluate));
+stdHammingMat = zeros(length(timeRange), length(evaluate));
 
 legendLabels = cell(length(evaluate), 1);
 for i = 1:length(evaluate)
@@ -64,6 +66,9 @@ for i = 1:length(evaluate)
         avgF1Mat(:, i) = evaluateType.avgmicrof1';
         stdF1Mat(:, i) = evaluateType.stdmicrof1';
     end
+    
+    avgHammingMat(:, i) = evaluateType.avghamming';
+    stdHammingMat(:, i) = evaluateType.stdhamming';
     
     legendLabels{i} = sprintf('%s', labels{i});
 end
@@ -99,6 +104,17 @@ hold on;
 title(sprintf('%s: F1 vs. Time Bound', plotTitle));
 xlabel('Time Bound');
 ylabel('F1');
+legend(legendLabels);
+hold off;
+pause;
+
+errorbar(timeBoundsMat,... 
+    avgHammingMat,... 
+    stdHammingMat);
+hold on;
+title(sprintf('%s: Hamming Accuracy vs. Time Bound', plotTitle));
+xlabel('Time Bound');
+ylabel('Hamming Accuracy');
 legend(legendLabels);
 hold off;
 pause;

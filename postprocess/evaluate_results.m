@@ -9,12 +9,12 @@ function [ evaluate ] = evaluate_results( preprocessedDir, resultsDir, timeRange
 %   timeRange:          range of time bound
 %   foldRange:          range of folds
 %   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
-%   splitsName:         (optional) alternate name to splits folder
+%   splitsName:         (optional) alternate name to splits folder and file
 
 narginchk(4, 6);
 
 if nargin < 6
-    splitsName = 'splits';
+    splitsName = 'splits/Test.txt';
 end
 if nargin < 5
     searchTypes = [1 2 3 4];
@@ -29,16 +29,18 @@ searchTypesCollection{4} = 'll';
 searchTypesCollection{5} = 'rl';
 
 %% test files
-testSplitsFile = [preprocessedDir '/' splitsName '/Test.txt'];
+testSplitsFile = [preprocessedDir '/' splitsName];
 fid = fopen(testSplitsFile, 'r');
 list = textscan(fid, '%s');
 fclose(fid);
 testFiles = list{1,1};
 
 %% get all classes
-classes = get_classes(testFiles, preprocessedDir);
+classes = get_classes_from_metafile(preprocessedDir);
 BINARY_FOREGROUND_CLASS_INDEX = 8;  % [-1, 1] means index 2 is foreground
                                     % 8 means foreground class in Stanford
+IGNORE_CLASSES = 0;     % [] means nothing to ignore
+                        % Stanford uses 0 for ignore
 
 %% prepare output data structure
 evaluate = containers.Map;
@@ -73,6 +75,10 @@ for s = searchTypes
     stat.binary_rec = zeros(length(foldRange), length(timeRange));
     stat.binary_f1 = zeros(length(foldRange), length(timeRange));
     
+    stat.numcorrect = zeros(length(foldRange), length(timeRange));
+    stat.totals = zeros(length(foldRange), length(timeRange));
+    stat.hamming = zeros(length(foldRange), length(timeRange));
+    
     stat.avgmacroprec = zeros(1, length(timeRange));
     stat.avgmacrorec = zeros(1, length(timeRange));
     stat.avgmacrof1 = zeros(1, length(timeRange));
@@ -94,6 +100,9 @@ for s = searchTypes
     stat.binary_stdrec = zeros(1, length(timeRange));
     stat.binary_stdf1 = zeros(1, length(timeRange));
     
+    stat.avghamming = zeros(1, length(timeRange));
+    stat.stdhamming = zeros(1, length(timeRange));
+    
     %% for each fold
     for fd = 1:length(foldRange)
         fold = foldRange(fd);
@@ -107,6 +116,14 @@ for s = searchTypes
             %% read truth nodes
             truthNodesPath = [preprocessedDir '/nodes/' fileName '.txt'];
             [truthLabels, ~] = libsvmread(truthNodesPath);
+            
+            %% read segments
+            segmentsPath = [preprocessedDir '/segments/' fileName '.txt'];
+            segments = dlmread(segmentsPath);
+            
+            %% read truth labeling
+            fullTruthPath = [preprocessedDir '/groundtruth/' fileName '.txt'];
+            fullTruth = dlmread(fullTruthPath);
             
             %% for each time step
             prev = '';
@@ -124,11 +141,14 @@ for s = searchTypes
                 %% read nodes
                 [inferLabels, ~] = libsvmread(nodesPath);
                 
+                %% read inference on pixel level
+                inferPixels = infer_pixels(inferLabels, segments);
+                
                 %% calculations...
                 for c = 1:length(classes)
                     classLabel = classes(c);
                     
-                    [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel);
+                    [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel, IGNORE_CLASSES);
                     
                     stat.tp(fd, t, c) = stat.tp(fd, t, c) + tp;
                     stat.fp(fd, t, c) = stat.fp(fd, t, c) + fp;
@@ -136,11 +156,17 @@ for s = searchTypes
                     stat.fn(fd, t, c) = stat.fn(fd, t, c) + fn;
                 end % classes
                 
+                stat.numcorrect(fd, t) = stat.numcorrect(fd, t) + sum(sum(double(inferPixels == fullTruth)));
+                stat.totals(fd, t) = stat.totals(fd, t) + numel(fullTruth);
+                
                 prev = nodesPath;
             end % time range
         end % files
     end % fold
 
+    %% calculate hamming
+    stat.hamming = stat.numcorrect/stat.totals(fd, t);
+    
     %% calculate non-macro/micro measures
     stat.prec = stat.tp ./ (stat.tp + stat.fp);
     stat.rec = stat.tp ./ (stat.tp + stat.fn);
@@ -195,6 +221,9 @@ for s = searchTypes
     stat.binary_stdrec = std(stat.binary_rec, 0, 1);
     stat.binary_stdf1 = std(stat.binary_f1, 0, 1);
     
+    stat.avghamming = mean(stat.hamming, 1);
+    stat.stdhamming = std(stat.hamming, 0, 1);
+    
     %% add
     evaluate(searchType) = stat;
 end % search type
@@ -220,11 +249,44 @@ classSet = sort(classSet);
 
 end
 
-function [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel)
+function [classSet] = get_classes_from_metafile(preprocessedDir)
+
+fileData = fileread([preprocessedDir '/metadata.txt']);
+% following assumes classes appears before backgroundclasses appears at end
+beginIndex = regexp(fileData, 'classes=')+length('classes=');
+endIndex = regexp(fileData, 'backgroundclasses=')-1;
+stringData = fileData(beginIndex:endIndex);
+stringArray = textscan(stringData, '%s', 'delimiter', ',');
+classSet = transpose(str2num(cell2mat(stringArray{1})));
+
+end
+
+function [tp, fp, tn, fn] = calculate(inferLabels, truthLabels, classLabel, IGNORE_CLASSES)
+
+for ignoreClass = IGNORE_CLASSES
+    ignoreIndices = find(truthLabels == ignoreClass);
+    inferLabels(ignoreIndices) = [];
+    truthLabels(ignoreIndices) = [];
+end
 
 tp = sum(double((inferLabels == classLabel) & (truthLabels == classLabel)));
 fp = sum(double((inferLabels == classLabel) & (truthLabels ~= classLabel)));
 tn = sum(double((inferLabels ~= classLabel) & (truthLabels ~= classLabel)));
 fn = sum(double((inferLabels ~= classLabel) & (truthLabels == classLabel)));
+
+end
+
+function [inferPixels] = infer_pixels(inferLabels, segments)
+
+inferPixels = zeros(size(segments));
+nNodes = length(inferLabels);
+
+for i = 1:nNodes
+    temp = segments;
+    temp(temp ~= i) = 0;
+    temp(temp == i) = inferLabels(i);
+    
+    inferPixels = inferPixels + temp;
+end
 
 end
