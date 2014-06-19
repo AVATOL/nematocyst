@@ -117,8 +117,38 @@ namespace HCSearch
 
 	/**************** Search Procedure ****************/
 
-	//TODO: get this value from command line
-	const int ISearchProcedure::PRUNE_MAX_NUM_CANDIDATES = 100;
+	ISearchProcedure::SearchNode* ISearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+		SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
+	{
+		SearchNode* root = NULL;
+		switch (searchType)
+		{
+			case LL:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			case HL:
+				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
+				break;
+			case LC:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, costModel, searchType);
+				break;
+			case HC:
+				root = new SearchNode(&X, NULL, searchSpace, heuristicModel, costModel, searchType);
+				break;
+			case LEARN_H:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			case LEARN_C:
+				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
+				break;
+			case LEARN_C_ORACLE_H:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			default:
+				LOG(ERROR) << "searchType constant is invalid.";
+		}
+		return root;
+	}
 
 	ISearchProcedure::SearchMetadata::SearchMetadata()
 	{
@@ -155,7 +185,7 @@ namespace HCSearch
 		}
 	}
 
-	void ISearchProcedure::trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
+	void ISearchProcedure::trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses)
 	{
 		// train depending on ranker
@@ -189,7 +219,7 @@ namespace HCSearch
 		double overallBestLoss = costSet.top()->getCost();
 		while (!costSet.empty() && costSet.top()->getCost() <= overallBestLoss)
 		{
-			ISearchNode* state = costSet.top();
+			SearchNode* state = costSet.top();
 			bestFeatures.push_back(state->getCostFeatures());
 			bestLosses.push_back(state->getCost());
 			costSet.pop();
@@ -199,7 +229,7 @@ namespace HCSearch
 		// get worst states
 		while (!costSet.empty())
 		{
-			ISearchNode* state = costSet.top();
+			SearchNode* state = costSet.top();
 			worstFeatures.push_back(state->getCostFeatures());
 			worstLosses.push_back(state->getCost());
 			costSet.pop();
@@ -229,7 +259,8 @@ namespace HCSearch
 	}
 
 	ImgLabeling IBasicSearchProcedure::performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)
+	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+	IRankModel* pruneModel, SearchMetadata searchMetadata)
 	{
 		clock_t tic = clock();
 
@@ -240,7 +271,7 @@ namespace HCSearch
 		SearchNodeHeuristicPQ openSet;
 
 		// push initial state into queue
-		ISearchNode* root = createRootNode(searchType, X, YTruth, searchSpace, heuristicModel, costModel);
+		SearchNode* root = createRootNode(searchType, X, YTruth, searchSpace, heuristicModel, costModel);
 		openSet.push(root);
 		costSet.push(root);
 
@@ -257,11 +288,11 @@ namespace HCSearch
 
 			/***** pick some subset of elements from the open set *****/
 
-			vector< ISearchNode* > subsetOpenSet = selectSubsetOpenSet(openSet);
+			vector< SearchNode* > subsetOpenSet = selectSubsetOpenSet(openSet);
 
 			/***** expand these elements *****/
 
-			SearchNodeHeuristicPQ candidateSet = expandElements(subsetOpenSet, openSet, costSet);
+			SearchNodeHeuristicPQ candidateSet = expandElements(subsetOpenSet, openSet, costSet, pruneModel, YTruth, searchType, timeStep, timeBound);
 
 			/***** choose successors and put them into the open set *****/
 			/***** put these expanded elements into the cost set *****/
@@ -275,7 +306,7 @@ namespace HCSearch
 			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
 
 			if (searchType == LEARN_H)
-				trainHeuristicRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+				trainRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
 
 			/***** done with this search step *****/
 
@@ -295,9 +326,10 @@ namespace HCSearch
 		}
 
 		// Get lowest cost node
-		ISearchNode* lowestCost = costSet.top();
+		SearchNode* lowestCost = costSet.top();
 		ImgLabeling prediction = lowestCost->getY();
 		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
+		LOG() << "Num of outputs generated=" << costSet.size() << endl << endl;
 
 		// use best/worst cost set candidates as training examples for cost learning (if applicable)
 		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
@@ -308,7 +340,7 @@ namespace HCSearch
 		vector<double> candidateLosses;
 		while (!costSet.empty())
 		{
-			ISearchNode* state = costSet.top();
+			SearchNode* state = costSet.top();
 			costSet.pop();
 			if (YTruth != NULL)
 			{
@@ -335,39 +367,6 @@ namespace HCSearch
 		return prediction;
 	}
 
-	ISearchProcedure::ISearchNode* IBasicSearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-		SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
-	{
-		ISearchNode* root = NULL;
-		switch (searchType)
-		{
-			case LL:
-				root = new LLSearchNode(&X, YTruth, searchSpace);
-				break;
-			case HL:
-				root = new HLSearchNode(&X, YTruth, searchSpace, heuristicModel);
-				break;
-			case LC:
-				root = new LCSearchNode(&X, YTruth, searchSpace, costModel);
-				break;
-			case HC:
-				root = new HCSearchNode(&X, searchSpace, heuristicModel, costModel);
-				break;
-			case LEARN_H:
-				root = new LearnHSearchNode(&X, YTruth, searchSpace);
-				break;
-			case LEARN_C:
-				root = new LearnCSearchNode(&X, YTruth, searchSpace, heuristicModel);
-				break;
-			case LEARN_C_ORACLE_H:
-				root = new LearnCOracleHSearchNode(&X, YTruth, searchSpace);
-				break;
-			default:
-				LOG(ERROR) << "searchType constant is invalid.";
-		}
-		return root;
-	}
-
 	/**************** Breadth-First Beam Search Procedure ****************/
 
 	BreadthFirstBeamSearchProcedure::BreadthFirstBeamSearchProcedure()
@@ -384,14 +383,14 @@ namespace HCSearch
 	{
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BreadthFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)
+	vector< ISearchProcedure::SearchNode* > BreadthFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)
 	{
-		vector< ISearchNode* > subsetOpenSet;
+		vector< SearchNode* > subsetOpenSet;
 		
 		// just add everything (should only be at most B states)
 		while (!openSet.empty())
 		{
-			ISearchNode* current = openSet.top();
+			SearchNode* current = openSet.top();
 			openSet.pop();
 			subsetOpenSet.push_back(current);
 		}
@@ -399,28 +398,40 @@ namespace HCSearch
 		return subsetOpenSet;
 	}
 
-	ISearchProcedure::SearchNodeHeuristicPQ BreadthFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
+	ISearchProcedure::SearchNodeHeuristicPQ BreadthFirstBeamSearchProcedure::expandElements(vector< SearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
 	{
 		SearchNodeHeuristicPQ candidateSet;
 		
 		// expand each element
-		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
+		for (vector< SearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
-			ISearchNode* current = *it;
+			SearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
-			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
+			vector< SearchNode* > expansionSet;
+			if (searchType == LEARN_PRUNE)
+				expansionSet = current->generateSuccessorNodesForPruneLearning(pruneModel, YTruth, timeStep, timeBound);
+			else
+				expansionSet = current->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
+
+			LOG() << "num expansion=" << expansionSet.size() << endl;
 
 			// only accept expanded element if not a duplicate state
-			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
+			for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
-				ISearchNode* state = *it;
-				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
+				SearchNode* state = *it;
+				if (!Global::settings->CHECK_FOR_DUPLICATES || (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet)))
 				{
 					candidateSet.push(state);
 				}
 			}
 		}
+
+		string disclaimer = "";
+		if (!Global::settings->CHECK_FOR_DUPLICATES)
+			disclaimer = " (duplicate checking disabled)";
+		LOG() << "num non-duplicates=" << candidateSet.size() << disclaimer << endl;
 
 		return candidateSet;
 	}
@@ -435,7 +446,7 @@ namespace HCSearch
 			if (candidateSet.empty())
 				break;
 
-			ISearchNode* state = candidateSet.top();
+			SearchNode* state = candidateSet.top();
 			candidateSet.pop();
 			if (searchType == LEARN_H)
 			{
@@ -450,7 +461,7 @@ namespace HCSearch
 		// everything else that is still the same as best loss is not considered bad for training
 		while (!candidateSet.empty() && candidateSet.top()->getHeuristic() <= bestLoss)
 		{
-			ISearchNode* state = candidateSet.top();
+			SearchNode* state = candidateSet.top();
 			candidateSet.pop();
 			if (searchType == LEARN_H)
 			{
@@ -463,7 +474,7 @@ namespace HCSearch
 		// everything else is "bad" for training examples
 		while (!candidateSet.empty())
 		{
-			ISearchNode* state = candidateSet.top();
+			SearchNode* state = candidateSet.top();
 			candidateSet.pop();
 			if (searchType == LEARN_H)
 			{
@@ -494,14 +505,14 @@ namespace HCSearch
 	{
 	}
 
-	vector< ISearchProcedure::ISearchNode* > BestFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)
+	vector< ISearchProcedure::SearchNode* > BestFirstBeamSearchProcedure::selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)
 	{
-		vector< ISearchNode* > subsetOpenSet;
+		vector< SearchNode* > subsetOpenSet;
 		
 		// only add top element
 		if (!openSet.empty())
 		{
-			ISearchNode* current = openSet.top();
+			SearchNode* current = openSet.top();
 			openSet.pop();
 			subsetOpenSet.push_back(current);
 		}
@@ -509,22 +520,29 @@ namespace HCSearch
 		return subsetOpenSet;
 	}
 
-	ISearchProcedure::SearchNodeHeuristicPQ BestFirstBeamSearchProcedure::expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)
+	ISearchProcedure::SearchNodeHeuristicPQ BestFirstBeamSearchProcedure::expandElements(vector< SearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)
 	{
 		SearchNodeHeuristicPQ candidateSet;
 		
 		// expand each element
-		for (vector< ISearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
+		for (vector< SearchNode* >::iterator it = subsetOpenSet.begin(); it != subsetOpenSet.end(); ++it)
 		{
-			ISearchNode* current = *it;
+			SearchNode* current = *it;
 			LOG() << "Expansion Node: Heuristic=" << current->getHeuristic() << ", Cost=" << current->getCost() << endl;
 
-			vector< ISearchNode* > expansionSet = current->generateSuccessorNodes();
+			vector< SearchNode* > expansionSet;
+			if (searchType == LEARN_PRUNE)
+				expansionSet = current->generateSuccessorNodesForPruneLearning(pruneModel, YTruth, timeStep, timeBound);
+			else
+				expansionSet = current->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
+
+			LOG() << "num expansion=" << expansionSet.size() << endl;
 
 			// only accept expanded element if not a duplicate state
-			for (vector< ISearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
+			for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
 			{
-				ISearchNode* state = *it;
+				SearchNode* state = *it;
 				if (!isDuplicate(state, candidateSet) && !isDuplicate(state, costSet))
 				{
 					candidateSet.push(state);
@@ -535,14 +553,19 @@ namespace HCSearch
 		// add remaining openSet to candidate set
 		while (!openSet.empty())
 		{
-			ISearchNode* current = openSet.top();
+			SearchNode* current = openSet.top();
 			openSet.pop();
 
-			if (!isDuplicate(current, candidateSet) && !isDuplicate(current, costSet))
+			if (!Global::settings->CHECK_FOR_DUPLICATES || (!isDuplicate(current, candidateSet) && !isDuplicate(current, costSet)))
 			{
 				candidateSet.push(current);
 			}
 		}
+
+		string disclaimer = "";
+		if (!Global::settings->CHECK_FOR_DUPLICATES)
+			disclaimer = " (duplicate checking disabled)";
+		LOG() << "num non-duplicates=" << candidateSet.size() << disclaimer << endl;
 		
 		// side effect: openSet now empty
 
@@ -553,452 +576,507 @@ namespace HCSearch
 
 	GreedySearchProcedure::GreedySearchProcedure()
 	{
-		this->beamSize = 1;
 	}
 
 	GreedySearchProcedure::~GreedySearchProcedure()
 	{
 	}
 
+	ImgLabeling GreedySearchProcedure::performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+	int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+	IRankModel* pruneModel, SearchMetadata searchMetadata)
+	{
+		clock_t tic = clock();
 
+		// set up cost set list to check for duplicates and for learning if necessary
+		// maintain best cost and heuristic node pointers
+		SearchNodeList costSet;
+		SearchNode* bestCostNode;
+		SearchNode* bestHeuristicNode;
+
+		// push initial state into queue
+		SearchNode* root = createRootNode(searchType, X, YTruth, searchSpace, heuristicModel, costModel);
+		bestHeuristicNode = root;
+		bestCostNode = root;
+		costSet.push_back(root);
+
+		int numOutputs = 1;
+
+		// while the open set is not empty and the time step is less than the time bound,
+		// perform search...
+		int timeStep = 0;
+		while (bestHeuristicNode != NULL && timeStep < timeBound)
+		{
+			LOG() << endl << "Running " << SearchTypeStrings[searchType] << " search with time step " << timeStep+1 << "/" << timeBound << "..." << endl;
+			clock_t ticInside = clock();
+
+			// save current best if anytime prediction enabled
+			saveAnyTimePrediction(bestCostNode->getY(), timeStep, searchMetadata, searchType);
+
+			/***** expand the best heuristic node and update the best heuristic and cost nodes *****/
+
+			SearchNodeList candidateSet = expandElements(bestHeuristicNode, bestCostNode, costSet, pruneModel, YTruth, searchType, timeStep, timeBound, numOutputs);
+
+			/***** use best/worst candidates as training examples for heuristic learning (if applicable) *****/
+
+			if (searchType == LEARN_H)
+			{
+				vector< RankFeatures > bestFeatures;
+				vector< RankFeatures > worstFeatures;
+				vector< double > bestLosses; // heuristic values technically, but definitely losses for learning H
+				vector< double > worstLosses;
+				sortNodes(searchType, candidateSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
+				trainRanker(heuristicModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			}
+
+			/***** done with this search step *****/
+
+			clock_t tocInside = clock();
+			LOG() << "search step " << timeStep << " total time: " << (double)(tocInside - ticInside)/CLOCKS_PER_SEC << endl;
+
+			/***** increment time step *****/
+			timeStep++;
+		}
+
+		/***** search is done, return the lowest cost search node *****/
+
+		if (bestCostNode == NULL)
+		{
+			LOG(ERROR) << "the cost set is empty, which is not possible!";
+			abort();
+		}
+
+		// Get lowest cost node
+		SearchNode* lowestCost = bestCostNode;
+		ImgLabeling prediction = lowestCost->getY();
+		LOG() << endl << "Finished search. Cost=" << lowestCost->getCost() << endl;
+		LOG() << "Num of outputs generated=" << numOutputs << endl << endl;
+
+		// use best/worst cost set candidates as training examples for cost learning (if applicable)
+		if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+		{
+			vector< RankFeatures > bestFeatures;
+			vector< RankFeatures > worstFeatures;
+			vector< double > bestLosses;
+			vector< double > worstLosses;
+			sortNodes(searchType, costSet, bestFeatures, bestLosses, worstFeatures, worstLosses);
+			trainRanker(costModel, bestFeatures, bestLosses, worstFeatures, worstLosses);
+		}
+
+		// clean up cost set
+		vector<double> candidateLosses;
+		while (!costSet.empty())
+		{
+			SearchNode* state = costSet.back();
+			costSet.pop_back();
+			if (YTruth != NULL)
+			{
+				ImgLabeling YPred = state->getY();
+				candidateLosses.push_back(searchSpace->computeLoss(YPred, *YTruth));
+			}
+			delete state;
+		}
+		if (YTruth != NULL)
+		{
+			stringstream ssLosses;
+			ssLosses << Global::settings->paths->OUTPUT_RESULTS_DIR << "candidatelosses" 
+				<< "_" << SearchTypeStrings[searchType] 
+				<< "_" << DatasetTypeStrings[searchMetadata.setType] 
+				<< "_time" << timeBound 
+					<< "_fold" << searchMetadata.iter 
+					<< "_" << searchMetadata.exampleName << ".txt";
+			SavePrediction::saveCandidateLosses(candidateLosses, ssLosses.str());
+		}
+
+		clock_t toc = clock();
+		LOG() << "total search time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return prediction;
+	}
+
+	GreedySearchProcedure::SearchNodeList GreedySearchProcedure::expandElements(SearchNode*& bestHeuristicNode, SearchNode*& bestCostNode, SearchNodeList& costSet, 
+		IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound, int& numOutputs)
+	{
+		SearchNodeList candidateSet;
+		
+		// expand best heuristic node
+		LOG() << "Expansion Node: Heuristic=" << bestHeuristicNode->getHeuristic() << ", Cost=" << bestHeuristicNode->getCost() << endl;
+
+		vector< SearchNode* > expansionSet;
+		if (searchType == LEARN_PRUNE)
+			expansionSet = bestHeuristicNode->generateSuccessorNodesForPruneLearning(pruneModel, YTruth, timeStep, timeBound);
+		else
+			expansionSet = bestHeuristicNode->generateSuccessorNodes(true, timeStep, timeBound, YTruth);
+
+		// reset best heuristic
+		bestHeuristicNode = NULL;
+
+		LOG() << "num expansion=" << expansionSet.size() << endl;
+
+		// only accept expanded element if not a duplicate state
+		for (vector< SearchNode* >::iterator it = expansionSet.begin(); it != expansionSet.end(); ++it)
+		{
+			SearchNode* state = *it;
+			if (!Global::settings->CHECK_FOR_DUPLICATES || !isDuplicate(state, costSet))
+			{
+				// store to cost set in order to check for duplicates
+				if (Global::settings->CHECK_FOR_DUPLICATES || searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+					costSet.push_back(state);
+
+				// only return nodes when learning H
+				if (searchType == LEARN_H)
+					candidateSet.push_back(state);
+
+				// get the best heuristic node
+				if (bestHeuristicNode == NULL || state->getHeuristic() < bestHeuristicNode->getHeuristic())
+					bestHeuristicNode = state;
+
+				// get the best cost node
+				if (state->getCost() < bestCostNode->getCost())
+					bestCostNode = state;
+
+				numOutputs++;
+			}
+		}
+
+		if (Global::settings->CHECK_FOR_DUPLICATES)
+			LOG() << "num non-duplicates=" << candidateSet.size() << endl;
+
+		return candidateSet;
+	}
+
+	void GreedySearchProcedure::sortNodes(SearchType searchType, SearchNodeList& candidateSet, 
+		vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses)
+	{
+		if (searchType != LEARN_H && searchType != LEARN_C && searchType != LEARN_C_ORACLE_H)
+		{
+			LOG(ERROR) << "inappropriate search type for sorting";
+			abort();
+		}
+		if (candidateSet.empty())
+		{
+			LOG(WARNING) << "candidate set is empty; cannot partition";
+			return;
+		}
+
+		// first pass: find minimum value
+		double minValue;
+		bool first = true;
+		for (SearchNodeList::iterator it = candidateSet.begin(); it != candidateSet.end(); ++it)
+		{
+			SearchNode* current = *it;
+			if (first)
+			{
+				if (searchType == LEARN_H)
+					minValue = current->getHeuristic();
+				else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+					minValue = current->getCost();
+
+				first = false;
+			}
+			else
+			{
+				if (searchType == LEARN_H)
+					minValue = min(minValue, current->getHeuristic());
+				else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+					minValue = min(minValue, current->getCost());
+			}
+		}
+
+		// second pass: partition
+		bool foundMinNode = false;
+		first = false;
+		for (SearchNodeList::iterator it = candidateSet.begin(); it != candidateSet.end(); ++it)
+		{
+			SearchNode* current = *it;
+
+			// get the current value and features of the node
+			double currentValue;
+			RankFeatures currentFeatures;
+			if (searchType == LEARN_H)
+			{
+				currentValue = current->getHeuristic();
+				currentFeatures = current->getHeuristicFeatures();
+			}
+			else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+			{
+				currentValue = current->getCost();
+				currentFeatures = current->getCostFeatures();
+			}
+
+			// put into appropriate set
+			if (currentValue <= minValue && first)
+			{
+				bestSet.push_back(currentFeatures);
+				bestLosses.push_back(currentValue);
+				first = true;
+			}
+			else if (currentValue <= minValue && !first)
+			{
+				//TODO: add switch to enable or disable adding ties
+				bestSet.push_back(currentFeatures);
+				bestLosses.push_back(currentValue);
+			}
+			else
+			{
+				worstSet.push_back(currentFeatures);
+				worstLosses.push_back(currentValue);
+			}
+		}
+	}
+
+	bool GreedySearchProcedure::isDuplicate(SearchNode* state, SearchNodeList& list)
+	{
+		for (SearchNodeList::iterator it = list.begin(); it != list.end(); ++it)
+		{
+			SearchNode* current = *it;
+			if (current->getY().graph.nodesData == state->getY().graph.nodesData)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/**************** Search Node ****************/
 
-	vector< ISearchProcedure::ISearchNode* > ISearchProcedure::ISearchNode::generateSuccessorNodes()
+	ISearchProcedure::SearchNode::SearchNode()
 	{
-		vector< ISearchNode* > successors;
-		vector< ImgLabeling > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred);
-		for (vector< ImgLabeling >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+	}
+
+	ISearchProcedure::SearchNode::SearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, 
+			IRankModel* heuristicModel, IRankModel* costModel, SearchType searchType)
+	{
+		if (X == NULL || searchSpace == NULL)
 		{
-			ImgLabeling YPred = *it;
-			switch (getType())
-			{
+			LOG(ERROR) << "invalid parameters for search node initialization.";
+			abort();
+		}
+
+		this->parent = NULL;
+		this->searchSpace = searchSpace;
+		this->searchType = searchType;
+		this->X = X;
+		this->YTruth = YTruth;
+		this->heuristicModel = heuristicModel;
+		this->costModel = costModel;
+
+		this->YPred = this->searchSpace->getInitialPrediction(*this->X);
+
+		constructorHelper();
+	}
+
+	ISearchProcedure::SearchNode::SearchNode(SearchNode* parent, ImgLabeling YPred)
+	{
+		if (parent == NULL)
+		{
+			LOG(ERROR) << "invalid parameters for search node generation.";
+			abort();
+		}
+
+		this->parent = parent;
+		this->searchSpace = this->parent->searchSpace;
+		this->searchType = this->parent->searchType;
+		this->X = this->parent->X;
+		this->YTruth = this->parent->YTruth;
+		this->heuristicModel = this->parent->heuristicModel;
+		this->costModel = this->parent->costModel;
+
+		this->YPred = YPred;
+
+		constructorHelper();
+	}
+
+	void ISearchProcedure::SearchNode::constructorHelper()
+	{
+		double loss;
+		if (this->YTruth != NULL)
+		{
+			loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
+		}
+
+		switch (this->searchType)
+		{
 			case LL:
-				{
-					LLSearchNode* successor = new LLSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
+			{
+				this->heuristic = loss;
+				this->cost = loss;
 				break;
-			case HL:
-				{
-					HLSearchNode* successor = new HLSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case LC:
-				{
-					LCSearchNode* successor = new LCSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case HC:
-				{
-					HCSearchNode* successor = new HCSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case LEARN_H:
-				{
-					LearnHSearchNode* successor = new LearnHSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case LEARN_C:
-				{
-					LearnCSearchNode* successor = new LearnCSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			case LEARN_C_ORACLE_H:
-				{
-					LearnCOracleHSearchNode* successor = new LearnCOracleHSearchNode(this, YPred);
-					successors.push_back(successor);
-				}
-				break;
-			default:
-				LOG(ERROR) << "not a valid search type for generating successor";
 			}
+			case HL:
+			{
+				this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
+				this->heuristic = this->heuristicModel->rank(this->heuristicFeatures);
+				this->cost = loss;
+				break;
+			}
+			case LC:
+			{
+				this->heuristic = loss;
+				this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+				this->cost = this->costModel->rank(this->costFeatures);
+				break;
+			}
+			case HC:
+			{
+				this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
+				this->heuristic = this->heuristicModel->rank(this->heuristicFeatures);
+				this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+				this->cost = this->costModel->rank(this->costFeatures);
+				break;
+			}
+			case LEARN_H:
+			{
+				this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
+				this->heuristic = loss;
+				this->cost = loss;
+				break;
+			}
+			case LEARN_C:
+			{
+				this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
+				this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+				this->heuristic = this->heuristicModel->rank(this->heuristicFeatures);
+				this->cost = loss;
+				break;
+			}
+			case LEARN_C_ORACLE_H:
+			{
+				this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
+				this->heuristic = loss;
+				this->cost = loss;
+				break;
+			}
+			default:
+				LOG(ERROR) << "searchType constant is invalid.";
+		}
+	}
+
+	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodes(bool prune, int timeStep, int timeBound, ImgLabeling* YTruth)
+	{
+		vector< SearchNode* > successors;
+
+		// generate successors
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+
+		// prune successors
+		if (prune)
+			YPredSet = this->searchSpace->pruneSuccessors(*this->X, this->YPred, YPredSet, YTruth, this->searchSpace->getLossFunction());
+
+		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+		{
+			ImgCandidate YCandidate = *it;
+			ImgLabeling YCandPred = YCandidate.labeling;
+			SearchNode* successor = new SearchNode(this, YCandPred);
+			successors.push_back(successor);
 		}
 		return successors;
 	}
 
-	RankFeatures ISearchProcedure::ISearchNode::getHeuristicFeatures()
+	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
+		ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
-		LOG(ERROR) << "heuristic features are not defined";
-		return RankFeatures();
+		vector< SearchNode* > successors;
+
+		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
+		RankFeatures prevPruneFeatures = this->searchSpace->computePruneFeatures(*this->X, *YTruth, set<int>());
+
+		// generate successors
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+
+		// collect training examples
+		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+		{
+			ImgCandidate YCandidate = *it;
+			ImgLabeling YCandPred = YCandidate.labeling;
+			
+			// collect training examples
+			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+			set<int> action = YCandidate.action;
+			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+
+			if (learningModel->rankerType() == SVM_RANK)
+			{
+				SVMRankModel* svmModel = dynamic_cast<SVMRankModel*>(learningModel);
+				if (candLoss <= prevLoss)
+					svmModel->addTrainingExample(pruneFeatures, prevPruneFeatures);
+				else
+					svmModel->addTrainingExample(prevPruneFeatures, pruneFeatures);
+
+			}
+			else if (learningModel->rankerType() == VW_RANK)
+			{
+				VWRankModel* vwModel = dynamic_cast<VWRankModel*>(learningModel);
+				if (candLoss <= prevLoss)
+					vwModel->addTrainingExample(pruneFeatures, prevPruneFeatures, candLoss, prevLoss);
+				else
+					vwModel->addTrainingExample(prevPruneFeatures, pruneFeatures, prevLoss, candLoss);
+
+			}
+			else
+			{
+				LOG(ERROR) << "unknown ranker for prune training positive example";
+				abort();
+			}
+
+			// generate examples
+			SearchNode* successor = new SearchNode(this, YCandPred);
+			successors.push_back(successor);
+		}
+		return successors;
 	}
 
-	RankFeatures ISearchProcedure::ISearchNode::getCostFeatures()
+	RankFeatures ISearchProcedure::SearchNode::getHeuristicFeatures()
 	{
-		LOG(ERROR) << "cost features are not defined";
-		return RankFeatures();
+		if (getType() == LL || getType() == LC || getType() == LEARN_C_ORACLE_H)
+		{
+			LOG(ERROR) << "heuristic features are not defined";
+			return RankFeatures();
+		}
+
+		return this->heuristicFeatures;
 	}
 
-	ImgLabeling ISearchProcedure::ISearchNode::getY()
+	RankFeatures ISearchProcedure::SearchNode::getCostFeatures()
+	{
+		if (getType() == LL || getType() == HL || getType() == LEARN_H)
+		{
+			LOG(ERROR) << "cost features are not defined";
+			return RankFeatures();
+		}
+
+		return this->costFeatures;
+	}
+
+	double ISearchProcedure::SearchNode::getHeuristic()
+	{
+		return this->heuristic;
+	}
+
+	double ISearchProcedure::SearchNode::getCost()
+	{
+		return this->cost;
+	}
+
+	ImgLabeling ISearchProcedure::SearchNode::getY()
 	{
 		return this->YPred;
 	}
 
-	/**************** LL Search Node ****************/
-
-	ISearchProcedure::LLSearchNode::LLSearchNode()
+	SearchType ISearchProcedure::SearchNode::getType()
 	{
-	}
-
-	ISearchProcedure::LLSearchNode::LLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->YTruth = YTruth;
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::LLSearchNode::LLSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		LLSearchNode* parentCast = dynamic_cast<LLSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->YTruth = parentCast->YTruth;
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	double ISearchProcedure::LLSearchNode::getHeuristic()
-	{
-		return this->loss;
-	}
-
-	double ISearchProcedure::LLSearchNode::getCost()
-	{
-		return this->loss;
-	}
-
-	SearchType ISearchProcedure::LLSearchNode::getType()
-	{
-		return LL;
-	}
-
-	/**************** HL Search Node ****************/
-
-	ISearchProcedure::HLSearchNode::HLSearchNode()
-	{
-	}
-
-	ISearchProcedure::HLSearchNode::HLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, IRankModel* heuristicModel)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->heuristicFeatures = searchSpace->computeHeuristicFeatures(*X, this->YPred);
-		this->heuristicModel = heuristicModel;
-		this->YTruth = YTruth;
-		this->heuristic = heuristicModel->rank(this->heuristicFeatures);
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::HLSearchNode::HLSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		HLSearchNode* parentCast = dynamic_cast<HLSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
-		this->heuristicModel = parentCast->heuristicModel;
-		this->YTruth = parentCast->YTruth;
-		this->heuristic = this->heuristicModel->rank(this->heuristicFeatures);
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	RankFeatures ISearchProcedure::HLSearchNode::getHeuristicFeatures()
-	{
-		return this->heuristicFeatures;
-	}
-
-	double ISearchProcedure::HLSearchNode::getHeuristic()
-	{
-		return this->heuristic;
-	}
-
-	double ISearchProcedure::HLSearchNode::getCost()
-	{
-		return this->loss;
-	}
-
-	SearchType ISearchProcedure::HLSearchNode::getType()
-	{
-		return HL;
-	}
-
-	/**************** LC Search Node ****************/
-
-	ISearchProcedure::LCSearchNode::LCSearchNode()
-	{
-	}
-
-	ISearchProcedure::LCSearchNode::LCSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, IRankModel* costModel)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
-		this->costModel = costModel;
-		this->YTruth = YTruth;
-		this->cost = costModel->rank(this->costFeatures);
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::LCSearchNode::LCSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		LCSearchNode* parentCast = dynamic_cast<LCSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->costModel = parentCast->costModel;
-		this->YTruth = parentCast->YTruth;
-		this->cost = this->costModel->rank(this->costFeatures);
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	RankFeatures ISearchProcedure::LCSearchNode::getCostFeatures()
-	{
-		return this->costFeatures;
-	}
-
-	double ISearchProcedure::LCSearchNode::getHeuristic()
-	{
-		return this->loss;
-	}
-
-	double ISearchProcedure::LCSearchNode::getCost()
-	{
-		return this->cost;
-	}
-
-	SearchType ISearchProcedure::LCSearchNode::getType()
-	{
-		return LC;
-	}
-
-	/**************** HC Search Node ****************/
-
-	ISearchProcedure::HCSearchNode::HCSearchNode()
-	{
-	}
-
-	ISearchProcedure::HCSearchNode::HCSearchNode(ImgFeatures* X, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->heuristicFeatures = searchSpace->computeHeuristicFeatures(*X, this->YPred);
-		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
-		this->heuristicModel = heuristicModel;
-		this->costModel = costModel;
-		this->heuristic = heuristicModel->rank(this->heuristicFeatures);
-		this->cost = costModel->rank(this->costFeatures);
-	}
-
-	ISearchProcedure::HCSearchNode::HCSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		HCSearchNode* parentCast = dynamic_cast<HCSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->heuristicModel = parentCast->heuristicModel;
-		this->costModel = parentCast->costModel;
-		this->heuristic = this->heuristicModel->rank(this->heuristicFeatures);
-		this->cost = this->costModel->rank(this->costFeatures);
-	}
-
-	RankFeatures ISearchProcedure::HCSearchNode::getHeuristicFeatures()
-	{
-		return this->heuristicFeatures;
-	}
-
-	RankFeatures ISearchProcedure::HCSearchNode::getCostFeatures()
-	{
-		return this->costFeatures;
-	}
-
-	double ISearchProcedure::HCSearchNode::getHeuristic()
-	{
-		return this->heuristic;
-	}
-
-	double ISearchProcedure::HCSearchNode::getCost()
-	{
-		return this->cost;
-	}
-
-	SearchType ISearchProcedure::HCSearchNode::getType()
-	{
-		return HC;
-	}
-
-	/**************** Learn H Search Node ****************/
-
-	ISearchProcedure::LearnHSearchNode::LearnHSearchNode()
-	{
-	}
-
-	ISearchProcedure::LearnHSearchNode::LearnHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace= searchSpace;
-
-		this->heuristicFeatures = searchSpace->computeHeuristicFeatures(*X, this->YPred);
-		this->YTruth = YTruth;
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::LearnHSearchNode::LearnHSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		LearnHSearchNode* parentCast = dynamic_cast<LearnHSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
-		this->YTruth = parentCast->YTruth;
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	RankFeatures ISearchProcedure::LearnHSearchNode::getHeuristicFeatures()
-	{
-		return this->heuristicFeatures;
-	}
-
-	SearchType ISearchProcedure::LearnHSearchNode::getType()
-	{
-		return LEARN_H;
-	}
-
-	/**************** Learn C Search Node ****************/
-
-	ISearchProcedure::LearnCSearchNode::LearnCSearchNode()
-	{
-	}
-
-	ISearchProcedure::LearnCSearchNode::LearnCSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, IRankModel* heuristicModel)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace= searchSpace;
-
-		this->heuristicFeatures = searchSpace->computeHeuristicFeatures(*X, this->YPred);
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->heuristicModel = heuristicModel;
-		this->YTruth = YTruth;
-		this->heuristic = heuristicModel->rank(this->heuristicFeatures);
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::LearnCSearchNode::LearnCSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		LearnCSearchNode* parentCast = dynamic_cast<LearnCSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->heuristicFeatures = this->searchSpace->computeHeuristicFeatures(*this->X, this->YPred);
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->heuristicModel = parentCast->heuristicModel;
-		this->YTruth = parentCast->YTruth;
-		this->heuristic = this->heuristicModel->rank(this->heuristicFeatures);
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	RankFeatures ISearchProcedure::LearnCSearchNode::getCostFeatures()
-	{
-		return this->costFeatures;
-	}
-
-	SearchType ISearchProcedure::LearnCSearchNode::getType()
-	{
-		return LEARN_C;
-	}
-
-	/**************** Learn C Given Oracle H Search Node ****************/
-
-	ISearchProcedure::LearnCOracleHSearchNode::LearnCOracleHSearchNode()
-	{
-	}
-
-	ISearchProcedure::LearnCOracleHSearchNode::LearnCOracleHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace)
-	{
-		this->parent = NULL;
-		this->X = X;
-		this->YPred = searchSpace->getInitialPrediction(*X);
-		this->searchSpace = searchSpace;
-
-		this->costFeatures = searchSpace->computeCostFeatures(*X, this->YPred);
-		this->YTruth = YTruth;
-		this->loss = searchSpace->computeLoss(this->YPred, *YTruth);
-	}
-
-	ISearchProcedure::LearnCOracleHSearchNode::LearnCOracleHSearchNode(ISearchNode* parent, ImgLabeling YPred)
-	{
-		LearnCOracleHSearchNode* parentCast = dynamic_cast<LearnCOracleHSearchNode*>(parent);
-
-		this->parent = parentCast;
-		this->X = parentCast->X;
-		this->YPred = YPred;
-		this->searchSpace = parentCast->searchSpace;
-
-		this->costFeatures = this->searchSpace->computeCostFeatures(*this->X, this->YPred);
-		this->YTruth = parentCast->YTruth;
-		this->loss = this->searchSpace->computeLoss(this->YPred, *this->YTruth);
-	}
-
-	RankFeatures ISearchProcedure::LearnCOracleHSearchNode::getCostFeatures()
-	{
-		return this->costFeatures;
-	}
-
-	SearchType ISearchProcedure::LearnCOracleHSearchNode::getType()
-	{
-		return LEARN_C_ORACLE_H;
+		return this->searchType;
 	}
 
 	/**************** Compare Search Node ****************/
 
-	bool ISearchProcedure::CompareByHeuristic::operator() (ISearchNode*& lhs, ISearchNode*& rhs) const
+	bool ISearchProcedure::CompareByHeuristic::operator() (SearchNode*& lhs, SearchNode*& rhs) const
 	{
 		return lhs->getHeuristic() > rhs->getHeuristic();
 	}
 
-	bool ISearchProcedure::CompareByCost::operator() (ISearchNode*& lhs, ISearchNode*& rhs) const
+	bool ISearchProcedure::CompareByCost::operator() (SearchNode*& lhs, SearchNode*& rhs) const
 	{
 		return lhs->getCost() > rhs->getCost();
 	}

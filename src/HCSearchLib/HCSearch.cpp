@@ -317,7 +317,8 @@ namespace HCSearch
 			// read edges file
 			string edgesFile = Global::settings->paths->INPUT_EDGES_DIR + filename + ".txt";
 			AdjList_t edges;
-			readEdgesFile(edgesFile, edges);
+			map< MyPrimitives::Pair<int, int>, double > edgeWeights;
+			readEdgesFile(edgesFile, edges, edgeWeights);
 
 			// read segments file
 			string segmentsFile = Global::settings->paths->INPUT_SEGMENTS_DIR + filename + ".txt";
@@ -335,6 +336,8 @@ namespace HCSearch
 			X->segments = segments;
 			X->nodeLocationsAvailable = true;
 			X->nodeLocations = nodeLocations;
+			X->edgeWeightsAvailable = true;
+			X->edgeWeights = edgeWeights;
 
 			// construct ImgLabeling
 			LabelGraph labelGraph;
@@ -514,7 +517,7 @@ namespace HCSearch
 		}
 	}
 
-	void Dataset::readEdgesFile(string filename, AdjList_t& edges)
+	void Dataset::readEdgesFile(string filename, AdjList_t& edges, map< MyPrimitives::Pair<int, int>, double >& edgeWeights)
 	{
 		// if 1, then node indices in edge file are 1-based
 		// if 0, then node indices in edge file are 0-based
@@ -554,6 +557,10 @@ namespace HCSearch
 						edges[node1] = set<int>();
 					}
 					edges[node1].insert(node2);
+
+					// add to edge weights
+					MyPrimitives::Pair<int, int> edge = MyPrimitives::Pair<int, int>(node1, node2);
+					edgeWeights[edge] = edgeWeight;
 				}
 			}
 			fh.close();
@@ -621,11 +628,90 @@ namespace HCSearch
 			model->load(fileName);
 			return model;
 		}
+		else if (rankerType == VW_RANK)
+		{
+			VWRankModel* model = new VWRankModel();
+			model->load(fileName);
+			return model;
+		}
 		else
 		{
 			LOG(ERROR) << "ranker type is invalid for loading model";
 			return NULL;
 		}
+	}
+
+	map<string, int> Model::loadPairwiseConstraints(string fileName)
+	{
+		map<string, int> pairwiseConstraints;
+
+		//TODO
+		int lineIndex = 0;
+		string line;
+		ifstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			while (fh.good())
+			{
+				getline(fh, line);
+				if (!line.empty())
+				{
+					// parse line
+					stringstream ss(line);
+					string token;
+					int columnIndex = 0;
+					int class1, class2, counts;
+					string configuration;
+					while (getline(ss, token, ' '))
+					{
+						if (columnIndex == 0)
+						{
+							class1 = atoi(token.c_str());
+						}
+						else if (columnIndex == 1)
+						{
+							class2 = atoi(token.c_str());
+						}
+						else if (columnIndex == 2)
+						{
+							configuration = token.c_str();
+						}
+						else if (columnIndex == 3)
+						{
+							counts = atoi(token.c_str());
+						}
+						columnIndex++;
+					}
+					if (columnIndex < 4)
+					{
+						LOG(ERROR) << "parsing illegal format for pairwise discovery";
+						abort();
+					}
+
+					stringstream configSS;
+					configSS << class1 << " " << class2 << " " << configuration;
+					string configString = configSS.str();
+					if (pairwiseConstraints.count(configString) == 0)
+					{
+						pairwiseConstraints[configString] = counts;
+					}
+					else
+					{
+						LOG(WARNING) << "configuration string already in map!";
+					}
+				}
+
+				lineIndex++;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file for reading pairwise constraints!";
+			abort();
+		}
+
+		return pairwiseConstraints;
 	}
 
 	void Model::saveModel(IRankModel* model, string fileName, RankerType rankerType)
@@ -649,6 +735,27 @@ namespace HCSearch
 		else
 		{
 			LOG(ERROR) << "ranker type is invalid for saving model";
+		}
+	}
+
+	void Model::savePairwiseConstraints(map<string, int>& pairwiseConstraints, string fileName)
+	{
+		ofstream fh(fileName.c_str());
+		if (fh.is_open())
+		{
+			for (map<string, int>::iterator it = pairwiseConstraints.begin(); it != pairwiseConstraints.end(); ++it)
+			{
+				string key = it->first;
+				int value = it->second;
+
+				fh << key << " " << value << endl;
+			}
+			fh.close();
+		}
+		else
+		{
+			LOG(ERROR) << "cannot open file for saving pairwise constraints!";
+			abort();
 		}
 	}
 
@@ -685,7 +792,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, meta);
+				searchProcedure->performSearch(LEARN_H, *XTrain[i], YTrain[i], timeBound, searchSpace, learningModel, NULL, NULL, meta);
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_H);
@@ -733,7 +840,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C, *XTrain[i], YTrain[i], timeBound, searchSpace, heuristicModel, learningModel, NULL, meta);
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_C);
@@ -781,7 +888,7 @@ namespace HCSearch
 				meta.iter = iter;
 
 				// run search
-				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, meta);
+				searchProcedure->performSearch(LEARN_C_ORACLE_H, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, learningModel, NULL, meta);
 
 				if (rankerType == VW_RANK)
 					finishLearning(learningModel, LEARN_C_ORACLE_H);
@@ -796,6 +903,138 @@ namespace HCSearch
 		LOG() << "total learnCWithOracleH time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
 
 		return learningModel;
+	}
+
+	IRankModel* Learning::learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+		vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+		int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter)
+	{
+		clock_t tic = clock();
+
+		LOG() << "Learning the prune function..." << endl;
+
+		// Setup model for learning
+		IRankModel* learningModel = initializeLearning(rankerType, LEARN_PRUNE);
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			for (int iter = 0; iter < numIter; iter++)
+			{
+				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+				HCSearch::ISearchProcedure::SearchMetadata meta;
+				meta.saveAnytimePredictions = false;
+				meta.setType = HCSearch::TRAIN;
+				meta.exampleName = XTrain[i]->getFileName();
+				meta.iter = iter;
+
+				// run search
+				searchProcedure->performSearch(LEARN_PRUNE, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, NULL, learningModel, meta);
+			}
+		}
+		
+		// Merge and learn step
+		finishLearning(learningModel, LEARN_PRUNE);
+
+		clock_t toc = clock();
+		LOG() << "total learnP time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return learningModel;
+	}
+
+	map<string, int> Learning::discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain)
+	{
+		map<string, int> pairwiseConstraints;
+
+		clock_t tic = clock();
+
+		LOG() << "Discovering pairwise class constraints..." << endl;
+
+		// Learn on each training example
+		int start, end;
+		HCSearch::Dataset::computeTaskRange(HCSearch::Global::settings->RANK, XTrain.size(), 
+			HCSearch::Global::settings->NUM_PROCESSES, start, end);
+		for (int i = start; i < end; i++)
+		{
+			LOG() << "Pairwise class constraint: processing on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
+
+			// do stuff
+			ImgFeatures* X = XTrain[i];
+			ImgLabeling* Y = YTrain[i];
+			
+			const int numNodes = X->getNumNodes();
+			for (int node1 = 0; node1 < numNodes; node1++)
+			{
+				for (int node2 = 0; node2 < numNodes; node2++)
+				{
+					int node1Class = Y->getLabel(node1);
+					int node2Class = Y->getLabel(node2);
+
+					if (node1 == node2 || node1Class == node2Class)
+						continue;
+
+					double node1XCoord = X->getNodeLocationX(node1);
+					double node1YCoord = X->getNodeLocationY(node1);
+					double node2XCoord = X->getNodeLocationX(node2);
+					double node2YCoord = X->getNodeLocationY(node2);
+
+					// check left/right
+					if (node1XCoord != node2XCoord)
+					{
+						stringstream configSSLR;
+						configSSLR << node1Class << " " << node2Class << " ";
+						if (node1XCoord < node2XCoord)
+						{
+							// node 1 to the left of node 2
+							configSSLR << "L";
+						}
+						else if (node1XCoord > node2XCoord)
+						{
+							// node 1 to the right of node 2
+							configSSLR << "R";
+						}
+						string configStringLR = configSSLR.str();
+						if (pairwiseConstraints.count(configStringLR) == 0)
+						{
+							pairwiseConstraints[configStringLR] = 0;
+						}
+						pairwiseConstraints[configStringLR]++;
+					}
+
+					// check top/bottom
+					if (node1YCoord != node2YCoord)
+					{
+						stringstream configSSUD;
+						configSSUD << node1Class << " " << node2Class << " ";
+						if (node1YCoord < node2YCoord)
+						{
+							// node 1 above node 2
+							configSSUD << "U";
+						}
+						else if (node1YCoord > node2YCoord)
+						{
+							// node 1 below node 2
+							configSSUD << "D";
+						}
+						string configStringUD = configSSUD.str();
+						if (pairwiseConstraints.count(configStringUD) == 0)
+						{
+							pairwiseConstraints[configStringUD] = 0;
+						}
+						pairwiseConstraints[configStringUD]++;
+					}
+				}
+			}
+		}
+		
+		clock_t toc = clock();
+		LOG() << "total discoverPairwiseClassConstraints time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
+
+		return pairwiseConstraints;
 	}
 
 	IRankModel* Learning::initializeLearning(RankerType rankerType, SearchType searchType)
@@ -833,6 +1072,8 @@ namespace HCSearch
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -848,6 +1089,8 @@ namespace HCSearch
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
 			else if (searchType == LEARN_C_ORACLE_H)
 				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -872,6 +1115,8 @@ namespace HCSearch
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
 				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -887,6 +1132,8 @@ namespace HCSearch
 				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
 			else if (searchType == LEARN_C_ORACLE_H)
 				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE, searchType);
 			else
 			{
 				LOG(ERROR) << "unknown search type!";
@@ -907,7 +1154,7 @@ namespace HCSearch
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->performSearch(LL, *X, YTruth, timeBound, 
-			searchSpace, NULL, NULL, searchMetadata);
+			searchSpace, NULL, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHLSearch(ImgFeatures* X, ImgLabeling* YTruth, 
@@ -915,7 +1162,7 @@ namespace HCSearch
 		IRankModel* heuristicModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->performSearch(HL, *X, YTruth, timeBound, 
-			searchSpace, heuristicModel, NULL, searchMetadata);
+			searchSpace, heuristicModel, NULL, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runLCSearch(ImgFeatures* X, ImgLabeling* YTruth, 
@@ -923,7 +1170,7 @@ namespace HCSearch
 		IRankModel* costOracleHModel, ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->performSearch(LC, *X, YTruth, timeBound, 
-			searchSpace, NULL, costOracleHModel, searchMetadata);
+			searchSpace, NULL, costOracleHModel, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHCSearch(ImgFeatures* X, int timeBound, 
@@ -932,7 +1179,7 @@ namespace HCSearch
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->performSearch(HC, *X, NULL, timeBound, 
-			searchSpace, heuristicModel, costModel, searchMetadata);
+			searchSpace, heuristicModel, costModel, NULL, searchMetadata);
 	}
 
 	ImgLabeling Inference::runHCSearch(ImgFeatures* X, ImgLabeling* YTruth, int timeBound, 
@@ -941,6 +1188,6 @@ namespace HCSearch
 		ISearchProcedure::SearchMetadata searchMetadata)
 	{
 		return searchProcedure->performSearch(HC, *X, YTruth, timeBound, 
-			searchSpace, heuristicModel, costModel, searchMetadata);
+			searchSpace, heuristicModel, costModel, NULL, searchMetadata);
 	}
 }

@@ -23,6 +23,7 @@
     <ClInclude Include="MyGraphAlgorithms.hpp" />
     <ClInclude Include="MyLogger.hpp" />
     <ClInclude Include="MyPrimitives.hpp" />
+    <ClInclude Include="PruneFunction.hpp" />
     <ClInclude Include="SearchProcedure.hpp" />
     <ClInclude Include="SearchSpace.hpp" />
     <ClInclude Include="Settings.hpp" />
@@ -40,6 +41,7 @@
     <ClCompile Include="MyFileSystem.cpp" />
     <ClCompile Include="MyGraphAlgorithms.cpp" />
     <ClCompile Include="MyLogger.cpp" />
+    <ClCompile Include="PruneFunction.cpp" />
     <ClCompile Include="SearchProcedure.cpp" />
     <ClCompile Include="SearchSpace.cpp" />
     <ClCompile Include="Settings.cpp" />

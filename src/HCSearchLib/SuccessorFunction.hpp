@@ -19,7 +19,7 @@ namespace HCSearch
 		/*!
 		 * @brief Generate successors.
 		 */
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred)=0;
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound)=0;
 	};
 
 	/**************** Successor Functions ****************/
@@ -40,7 +40,7 @@ namespace HCSearch
 		FlipbitSuccessor();
 		~FlipbitSuccessor();
 		
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 	};
 
 	/*!
@@ -54,7 +54,7 @@ namespace HCSearch
 		FlipbitNeighborSuccessor();
 		~FlipbitNeighborSuccessor();
 		
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 	};
 
 	/*!
@@ -68,7 +68,7 @@ namespace HCSearch
 		FlipbitConfidencesNeighborSuccessor();
 		~FlipbitConfidencesNeighborSuccessor();
 		
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 	};
 
 	/*!
@@ -90,11 +90,11 @@ namespace HCSearch
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam);
 		~StochasticSuccessor();
 
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
-		virtual vector< ImgLabeling > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
 		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
 
 		void getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
@@ -156,7 +156,7 @@ namespace HCSearch
 		CutScheduleSuccessor(double cutParam);
 		~CutScheduleSuccessor();
 
-		virtual vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
 
 	protected:
 		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T);
@@ -195,6 +195,131 @@ namespace HCSearch
 
 	protected:
 		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+	};
+
+	/*!
+	 * @brief Stochastic schedule successor function.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to all possible classes.
+	 */
+	class StochasticScheduleSuccessor : public ISuccessorFunction
+	{
+	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
+		static const double DEFAULT_T_PARAM;
+		static const double DEFAULT_NODE_CLAMP_THRESHOLD;
+		static const double DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		static const double DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+
+		double cutParam; //!< temperature parameter
+		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
+
+		bool clampNodes;
+		bool clampEdges;
+
+		double nodeClampThreshold;
+		double edgeClampPositiveThreshold;
+		double edgeClampNegativeThreshold;
+
+	public:
+		StochasticScheduleSuccessor();
+		StochasticScheduleSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticScheduleSuccessor(bool cutEdgesIndependently, double cutParam, 
+			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
+		~StochasticScheduleSuccessor();
+
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
+
+	protected:
+		virtual MyGraphAlgorithms::SubgraphSet* cutEdges(ImgFeatures& X, ImgLabeling& YPred, double threshold, double T, int timeStep, int timeBound);
+		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs);
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
+		void getAllLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+		void getNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+		void getConfidencesNeighborLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+
+		static double computeKL(const VectorXd& p, const VectorXd& q);
+	};
+
+	/*!
+	 * @brief Stochastic schedule successor function using neighbor labels.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to a label of a neighboring node.
+	 */
+	class StochasticScheduleNeighborSuccessor : public StochasticScheduleSuccessor
+	{
+	public:
+		StochasticScheduleNeighborSuccessor();
+		StochasticScheduleNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticScheduleNeighborSuccessor(bool cutEdgesIndependently, double cutParam, 
+			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
+		~StochasticScheduleNeighborSuccessor();
+
+	protected:
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+	};
+
+	/*!
+	 * @brief Stochastic schedule successor function using confident labels and neighbor labels.
+	 * 
+	 * Stochastically cut edges to form subgraphs. 
+	 * For each subgraph, flip its label to a label of a confident or neighboring node.
+	 */
+	class StochasticScheduleConfidencesNeighborSuccessor : public StochasticScheduleSuccessor
+	{
+	public:
+		StochasticScheduleConfidencesNeighborSuccessor();
+		StochasticScheduleConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticScheduleConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, 
+			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
+		~StochasticScheduleConfidencesNeighborSuccessor();
+
+	protected:
+		virtual void getLabels(set<int>& candidateLabelsSet, MyGraphAlgorithms::ConnectedComponent* cc);
+	};
+
+	/*!
+	 * @brief Stochastic constrained successor function.
+	 * 
+	 * Stochastically cut edges to form subgraphs.
+	 * Also uses node and edge clamping for constraints.
+	 */
+	class StochasticConstrainedSuccessor : public ISuccessorFunction
+	{
+	protected:
+		static const double TOP_CONFIDENCES_PROPORTION;
+		static const double DEFAULT_T_PARAM;
+		static const double DEFAULT_NODE_CLAMP_THRESHOLD;
+		static const double DEFAULT_EDGE_CLAMP_POSITIVE_THRESHOLD;
+		static const double DEFAULT_EDGE_CLAMP_NEGATIVE_THRESHOLD;
+
+		double cutParam; //!< temperature parameter
+		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
+
+		bool clampNodes;
+		bool clampEdges;
+
+		double nodeClampThreshold;
+		double edgeClampPositiveThreshold;
+		double edgeClampNegativeThreshold;
+
+	public:
+		StochasticConstrainedSuccessor();
+		StochasticConstrainedSuccessor(bool cutEdgesIndependently, double cutParam, 
+			bool clampNodes, bool clampEdges, double nodeClampThreshold, double edgeClampPositiveThreshold, double edgeClampNegativeThreshold);
+		~StochasticConstrainedSuccessor();
+
+		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
+
+	protected:
+		virtual vector< ImgCandidate > createCandidates(ImgLabeling& YPred, MyGraphAlgorithms::SubgraphSet* subgraphs,
+			vector< bool > nodesClamped, map< MyPrimitives::Pair<int, int>, bool > edgesClamped, map< MyPrimitives::Pair<int, int>, bool > edgesCut);
+
+		AdjList_t transitiveClosurePositiveEdges(map< MyPrimitives::Pair<int, int>, bool > edgesClamped, 
+			map< MyPrimitives::Pair<int, int>, bool > edgesCut, int numNodes);
 	};
 }
 

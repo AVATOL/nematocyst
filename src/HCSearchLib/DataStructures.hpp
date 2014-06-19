@@ -18,7 +18,8 @@ namespace HCSearch
 
 	enum CompareSearchNodeType { HEURISTIC, COST };
 	enum SearchType { LL=0, HL, LC, HC, 
-		LEARN_H, LEARN_C, LEARN_C_ORACLE_H };
+		LEARN_H, LEARN_C, LEARN_C_ORACLE_H,
+		LEARN_PRUNE, DISCOVER_PAIRWISE };
 	enum DatasetType { TEST=0, TRAIN, VALIDATION };
 	enum StochasticCutMode { STATE, EDGES };
 
@@ -49,24 +50,35 @@ namespace HCSearch
 	typedef map< int, NeighborSet_t > AdjList_t;
 
 	/*!
+	 * @brief Anstract graph implementation to avoid redundancy.
+	 */
+	struct IGraph
+	{
+		/*!
+		 * Adjacency list of the graph.
+		 * Node -> set of neighbor nodes
+		 */
+		AdjList_t adjList;
+
+		/*!
+		 * Get the number of edges in the graph.
+		 */
+		int getNumEdges();
+	};
+
+	/*!
 	 * @brief Basic graph implementation with feature data at nodes.
 	 * 
 	 * This data structure is publicly accessible so you can perform 
 	 * direct reading and manipulations.
 	 */
-	struct FeatureGraph
+	struct FeatureGraph : public IGraph
 	{
 		/*!
 		 * Node data stores features at nodes.
 		 * Rows = nodes, cols = feature data
 		 */
 		MatrixXd nodesData;
-
-		/*!
-		 * Adjacency list of the graph.
-		 * Node -> set of neighbor nodes
-		 */
-		AdjList_t adjList;
 	};
 
 	/*!
@@ -75,18 +87,12 @@ namespace HCSearch
 	 * This data structure is publicly accessible so you can perform 
 	 * direct reading and manipulations.
 	 */
-	struct LabelGraph
+	struct LabelGraph : public IGraph
 	{
 		/*!
 		 * Nodes with labels.
 		 */
 		VectorXi nodesData;
-
-		/*!
-		 * Adjacency list of the graph.
-		 * Node -> set of neighbor nodes
-		 */
-		AdjList_t adjList;
 	};
 
 	/**************** Features and Labelings ****************/
@@ -126,8 +132,22 @@ namespace HCSearch
 		 */
 		MatrixXd nodeLocations;
 
+		/*!
+		 * Edge weights.
+		 * Indexed by (node 1, node 2)
+		 */
+		map< MyPrimitives::Pair<int, int>, double > edgeWeights;
+
+		/*!
+		 * Edge features.
+		 * Indexed by (node 1, node 2)
+		 */
+		map< MyPrimitives::Pair<int, int>, VectorXd > edgeFeatures;
+
 		bool segmentsAvailable;
 		bool nodeLocationsAvailable;
+		bool edgeWeightsAvailable;
+		bool edgeFeaturesAvailable;
 
 	public:
 		ImgFeatures();
@@ -144,6 +164,12 @@ namespace HCSearch
 		 * @return Returns the number of nodes
 		 */
 		int getNumNodes();
+
+		/*!
+		 * Function to get the number of edges.
+		 * @return Returns the number of edges
+		 */
+		int getNumEdges();
 
 		/*!
 		 * Convenience function to get a feature component at a node.
@@ -224,6 +250,12 @@ namespace HCSearch
 		int getNumNodes();
 
 		/*!
+		 * Function to get the number of edges.
+		 * @return Returns the number of edges
+		 */
+		int getNumEdges();
+
+		/*!
 		 * Convenience function to get a node's label.
 		 * @param[in] node Node index
 		 * @return Returns the label of the node
@@ -258,16 +290,41 @@ namespace HCSearch
 		 * @return Returns the set of top K confident labels for the node
 		 */
 		set<int> getTopConfidentLabels(int node, int K);
+
+		vector<int> getLabelsByConfidence(int node);
+
+		int getMostConfidentLabel(int node);
+
+		double getConfidence(int node, int label);
 	};
 
-	/**************** Rank Features ****************/
+	/*!
+	 * @brief Structured output labeling candidate: labeling and action.
+	 * 
+	 * This stores an ImgLabeling with a corresponding action, i.e. the set of nodes that changed.
+	 */
+	class ImgCandidate
+	{
+	public:
+		/*!
+		 * New labeling.
+		 */
+		ImgLabeling labeling;
+
+		/*!
+		 * Set of nodes that changed.
+		 */
+		set<int> action;
+	};
+
+	/**************** Classify/Rank Features ****************/
 
 	/*!
-	 * @brief Stores features for ranking.
+	 * @brief Stores features for ranking or classification.
 	 * 
 	 * This is nothing more than a wrapper around a VectorXd object.
 	 */
-	class RankFeatures
+	class GenericFeatures
 	{
 	public:
 		/*!
@@ -278,15 +335,17 @@ namespace HCSearch
 		/*!
 		 * Default constructor does nothing.
 		 */
-		RankFeatures();
+		GenericFeatures();
 
 		/*!
 		 * Constructor to initialize features data.
 		 */
-		RankFeatures(VectorXd features);
+		GenericFeatures(VectorXd features);
 		
-		~RankFeatures();
+		~GenericFeatures();
 	};
+
+	typedef GenericFeatures RankFeatures;
 
 	/**************** Rank Model ****************/
 
@@ -310,6 +369,13 @@ namespace HCSearch
 		 * @return Returns the ranking of the feature
 		 */
 		virtual double rank(RankFeatures features)=0;
+
+		/*!
+		 * Use the model to rank a list of features.
+		 * @param[in] featuresList List of features for ranking
+		 * @return Returns the list of ranking values of the features
+		 */
+		virtual vector<double> rank(vector<RankFeatures> featuresList)=0;
 
 		/*!
 		 * Get the ranker type.
@@ -396,6 +462,7 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
@@ -408,6 +475,11 @@ namespace HCSearch
 		 * Initialize learning.
 		 */
 		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training example.
+		 */
+		void addTrainingExample(RankFeatures betterFeature, RankFeatures worseFeature);
 
 		/*!
 		 * Add training examples.
@@ -499,6 +571,7 @@ namespace HCSearch
 		
 		virtual double rank(RankFeatures features);
 		virtual RankerType rankerType();
+		virtual vector<double> rank(vector<RankFeatures> featuresList);
 		virtual void load(string fileName);
 		virtual void save(string fileName);
 
@@ -511,6 +584,11 @@ namespace HCSearch
 		 * Initialize learning.
 		 */
 		void startTraining(string featuresFileName);
+
+		/*!
+		 * Add training example.
+		 */
+		void addTrainingExample(RankFeatures better, RankFeatures worse, double betterLoss, double worstLoss);
 
 		/*!
 		 * Add training examples.

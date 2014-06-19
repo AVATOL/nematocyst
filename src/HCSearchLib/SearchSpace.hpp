@@ -6,6 +6,7 @@
 #include "FeatureFunction.hpp"
 #include "InitialStateFunction.hpp"
 #include "SuccessorFunction.hpp"
+#include "PruneFunction.hpp"
 #include "LossFunction.hpp"
 
 using namespace Eigen;
@@ -52,6 +53,11 @@ namespace HCSearch
 		ISuccessorFunction* successorFunction;
 
 		/*!
+		 * Prune function.
+		 */
+		IPruneFunction* pruneFunction;
+
+		/*!
 		 * Loss function.
 		 */
 		ILossFunction* lossFunction;
@@ -72,7 +78,7 @@ namespace HCSearch
 		 */
 		SearchSpace(IFeatureFunction* heuristicFeatureFunction, IFeatureFunction* costFeatureFunction,
 			IInitialPredictionFunction* initialPredictionFunction, ISuccessorFunction* successorFunction,
-			ILossFunction* lossFunction);
+			IPruneFunction* pruneFunction, ILossFunction* lossFunction);
 
 		/*!
 		 * Note that the destructor will destroy the objects passed into the constructor!
@@ -96,6 +102,14 @@ namespace HCSearch
 		RankFeatures computeCostFeatures(ImgFeatures& X, ImgLabeling& Y);
 
 		/*!
+		 * @brief Compute prune features from image features and current labeling.
+		 * @param[in] X Structured image features
+		 * @param[in] Y Structured output labeling
+		 * @return Prune features for classification
+		 */
+		RankFeatures computePruneFeatures(ImgFeatures& X, ImgLabeling& Y, set<int> action);
+
+		/*!
 		 * @brief Get the initial labeling from image features.
 		 * @param[in] X Structured image features
 		 * @return Predicted structured output labeling
@@ -108,7 +122,15 @@ namespace HCSearch
 		 * @param[in] YPred Current structured output labeling
 		 * @return List of successors, which are structured output labelings
 		 */
-		vector< ImgLabeling > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred);
+		vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
+
+		/*!
+		 * @brief Generate a list of successors from a current labeling.
+		 * @param[in] X Structured image features
+		 * @param[in] YPred Current structured output labeling
+		 * @return List of successors, which are structured output labelings
+		 */
+		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& YPred, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 
 		/*!
 		 * @brief Compute the loss between a predicted labeling and its groundtruth labeling.
@@ -117,6 +139,10 @@ namespace HCSearch
 		 * @return Loss value
 		 */
 		double computeLoss(ImgLabeling& YPred, const ImgLabeling& YTruth);
+
+		IPruneFunction* getPruneFunction();
+		IInitialPredictionFunction* getInitialPredictionFunction();
+		ILossFunction* getLossFunction();
 	};
 
 	/*! @} */

@@ -16,12 +16,15 @@ namespace MyProgramOptions
 		// constants
 
 		enum SearchProcedureMode { GREEDY, BREADTH_BEAM, BEST_BEAM };
-		enum FeaturesMode { STANDARD, STANDARD_ALT, STANDARD_CONF, DENSE_CRF, UNARY, UNARY_CONF, STANDARD_PAIR_COUNTS, STANDARD_CONF_PAIR_COUNTS };
+		enum FeaturesMode { STANDARD, STANDARD_CONTEXT, STANDARD_ALT, STANDARD_CONF, DENSE_CRF, UNARY, UNARY_CONF, STANDARD_PAIR_COUNTS, STANDARD_CONF_PAIR_COUNTS, STANDARD_PRUNE };
 		enum InitialFunctionMode { LOG_REG };
 		enum SuccessorsMode { FLIPBIT, FLIPBIT_NEIGHBORS, FLIPBIT_CONFIDENCES_NEIGHBORS, 
 			STOCHASTIC, STOCHASTIC_NEIGHBORS, STOCHASTIC_CONFIDENCES_NEIGHBORS, 
-			CUT_SCHEDULE, CUT_SCHEDULE_NEIGHBORS, CUT_SCHEDULE_CONFIDENCES_NEIGHBORS };
+			CUT_SCHEDULE, CUT_SCHEDULE_NEIGHBORS, CUT_SCHEDULE_CONFIDENCES_NEIGHBORS,
+			STOCHASTIC_SCHEDULE, STOCHASTIC_SCHEDULE_NEIGHBORS, STOCHASTIC_SCHEDULE_CONFIDENCES_NEIGHBORS,
+			STOCHASTIC_CONSTRAINED };
 		enum LossMode { HAMMING, PIXEL_HAMMING };
+		enum PruneMode { NO_PRUNE, RANKER_PRUNE, ORACLE_PRUNE, SIMULATED_RANKER_PRUNE };
 
 		enum StochasticCutMode { STATE, EDGES };
 
@@ -33,6 +36,14 @@ namespace MyProgramOptions
 		string splitsTrainName;
 		string splitsValidName;
 		string splitsTestName;
+		string nodesFolderName;
+		string edgesFolderName;
+		string edgeFeaturesFolderName;
+
+		string logsFolderName;
+		string modelsFolderName;
+		string resultsFolderName;
+		string tempFolderName;
 
 		// time bound
 
@@ -49,6 +60,7 @@ namespace MyProgramOptions
 		SearchProcedureMode searchProcedureMode;
 		FeaturesMode heuristicFeaturesMode;
 		FeaturesMode costFeaturesMode;
+		FeaturesMode pruneFeaturesMode;
 		InitialFunctionMode initialFunctionMode;
 		SuccessorsMode successorsMode;
 		LossMode lossMode;
@@ -56,6 +68,8 @@ namespace MyProgramOptions
 		StochasticCutMode stochasticCutMode;
 		int beamSize;
 		double cutParam;
+
+		PruneMode pruneMode;
 
 		bool saveAnytimePredictions;
 		HCSearch::RankerType rankLearnerType;
@@ -65,6 +79,18 @@ namespace MyProgramOptions
 		bool verboseMode;
 		int uniqueIterId;
 		bool saveOutputMask;
+		double pruneRatio;
+		double badPruneRatio;
+
+		bool nodeClamp;
+		bool edgeClamp;
+		double nodeClampThreshold;
+		double edgeClampPositiveThreshold;
+		double edgeClampNegativeThreshold;
+
+		double lambda1;
+		double lambda2;
+		double lambda3;
 
 	public:
 		ProgramOptions();

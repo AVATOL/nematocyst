@@ -21,7 +21,7 @@ void demo(int timeBound)
 	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
 	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
-	HCSearch::SearchSpace* searchSpace = new  HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, lossFunc);
+	HCSearch::SearchSpace* searchSpace = new  HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, NULL, lossFunc);
 
 	// load search procedure
 	HCSearch::ISearchProcedure* searchProcedure = new HCSearch::GreedySearchProcedure();

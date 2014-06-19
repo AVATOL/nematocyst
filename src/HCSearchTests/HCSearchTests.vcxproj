@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MyGraphAlgorithmsTests.cpp" />
+    <ClCompile Include="MyPrimitivesTests.cpp" />
     <ClCompile Include="SearchSpaceTests.cpp" />
     <ClCompile Include="SettingsTests.cpp" />
     <ClCompile Include="stdafx.cpp">

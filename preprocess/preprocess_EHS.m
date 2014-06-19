@@ -1,5 +1,5 @@
-function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, validRange, testRange )
-%PREPROCESS_ALLDATA Preprocesses allData cell struct variable into a
+function [ allData ] = preprocess_EHS( allData, EHSPath, outputPath, trainRange, validRange, testRange )
+%PREPROCESS_EHS Preprocesses allData cell struct variable into a
 %data format for HCSearch to work. Features are already extracted in
 %allData.
 %
@@ -12,6 +12,7 @@ function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, vali
 %                   allData{i}.adj sxs logical
 %                   allData{i}.filename string (optional)
 %                   allData{i}.segLocations sx2 double (optional)
+%   EHSPath:    folder path to edge potentials (.mat files contain E, H, S)
 %   outputPath:	folder path to output preprocessed data
 %                       e.g. 'DataPreprocessed/SomeDataset'
 %   trainRange:	set range of training data
@@ -19,7 +20,12 @@ function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, vali
 %   testRange:	set range of test data
 
 %% argument checking
-narginchk(5, 5);
+narginchk(6, 6);
+
+outputPath = strrep(outputPath, '/', filesep);
+outputPath = strrep(outputPath, '\', filesep);
+EHSPath = strrep(EHSPath, '/', filesep);
+EHSPath = strrep(EHSPath, '\', filesep);
 
 %% parameters
 NUM_CODE_WORDS = 100;
@@ -30,13 +36,13 @@ VALID_LIST = 'Validation.txt';
 TEST_LIST = 'Test.txt';
 ALL_LIST = 'All.txt';
 
+% example: 'DataRaw/SB_features/iccv09_%d_node_edge.mat'
+NODE_EDGE_STRING = EHSPath;
+
 EXTERNAL_PATH = 'external';
 LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear'];
 
 %% create output folder
-outputPath = strrep(outputPath, '/', filesep);
-outputPath = strrep(outputPath, '\', filesep);
-
 if ~exist(outputPath, 'dir')
     mkdir(outputPath);
 end
@@ -92,6 +98,10 @@ trainEdgeFeatures = [];
 for i = 1:nFiles
     fprintf('Exporting example %d...\n', i-1);
     
+    %% load E, H, S
+    load(sprintf(NODE_EDGE_STRING, i));
+    E_symmetric = E + E';
+    
     filename = sprintf('%d', i-1);
     if isfield(allData{i}, 'filename');
         filename = allData{i}.filename;
@@ -119,9 +129,9 @@ for i = 1:nFiles
     metaFile = sprintf('%s.txt', filename);
     
     % write nodes
-    libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
+    libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(H));
     trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
-    trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
+    trainNodeFeatures = [trainNodeFeatures; H];
     
     % write node locations and sizes
     if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
@@ -136,23 +146,29 @@ for i = 1:nFiles
     dlmwrite([outputPath filesep 'nodelocations' filesep nodeLocationsFile], [nodeLocations nodeSizes], ' ');
     
     % write edges
-    [ai,aj,aval] = find(allData{i}.adj);
+    [ai,aj,aval] = find(E_symmetric);
     spAdj = [ai,aj,aval];
-    dlmwrite([outputPath filesep 'edges' filesep edgesFile], spAdj, ' ');
+    dlmwrite([outputPath '/edges/' edgesFile], spAdj, ' ');
     
     % write edge features
-    featDim = size(allData{i}.feat2, 2);
+    featDim = 4;
     edgeFeatures = zeros(length(ai), featDim);
     edgeLabels = zeros(length(ai), 1);
     for j = 1:length(ai)
-        e1 = allData{i}.feat2(ai(j), :);
-        e2 = allData{i}.feat2(aj(j), :);
-        edgeFeatures(j, :) = abs(e1 - e2);
-        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) == allData{i}.segLabels(aj(j), 1);
+        if E(ai(j), aj(j)) == 0
+            e1 = aj(j);
+            e2 = ai(j);
+        else
+            e1 = ai(j);
+            e2 = aj(j);
+        end
+        
+        edgeFeatures(j, :) = S{e1, e2};
+        edgeLabels(j, 1) = allData{i}.segLabels(e1, 1) == allData{i}.segLabels(e2, 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
     
-    libsvmwrite([outputPath filesep 'edgefeatures' filesep edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
+    libsvmwrite([outputPath '/edgefeatures/' edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
     trainEdgeLabels = [trainEdgeLabels; edgeLabels];
     trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
     

@@ -196,6 +196,9 @@ namespace HCSearch
 		// input directories
 
 		INPUT_SPLITS_FOLDER_NAME = "splits";
+		INPUT_NODES_FOLDER_NAME = "nodes";
+		INPUT_EDGES_FOLDER_NAME = "edges";
+		INPUT_EDGE_FEATURES_FOLDER_NAME = "edgefeatures";
 
 		INPUT_SPLITS_TRAIN_FILE_BASE = "Train.txt";
 		INPUT_SPLITS_VALIDATION_FILE_BASE = "Validation.txt";
@@ -203,9 +206,15 @@ namespace HCSearch
 
 		// output directories
 
+		OUTPUT_LOGS_FOLDER_NAME = "logs";
+		OUTPUT_MODELS_FOLDER_NAME = "models";
+		OUTPUT_RESULTS_FOLDER_NAME = "results";
+		OUTPUT_TEMP_FOLDER_NAME = "temp";
+
 		OUTPUT_HEURISTIC_FEATURES_FILE_BASE = "heuristic_features";
 		OUTPUT_COST_H_FEATURES_FILE_BASE = "cost_H_features";
 		OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE = "cost_oracleH_features";
+		OUTPUT_PRUNE_FEATURES_FILE_BASE = "prune_features";
 	}
 
 	Paths::~Paths()
@@ -217,12 +226,14 @@ namespace HCSearch
 		this->paths->INPUT_DIR = this->paths->BASE_PATH + dataDir + this->paths->DIR_SEP;
 
 		// data directories
-		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + "nodes" + this->paths->DIR_SEP;
+		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_NODES_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->INPUT_NODE_LOCATIONS_DIR = this->paths->INPUT_DIR + "nodelocations" + this->paths->DIR_SEP;
-		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + "edges" + this->paths->DIR_SEP;
+		this->paths->INPUT_EDGES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_EDGES_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->INPUT_EDGE_FEATURES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_EDGE_FEATURES_FOLDER_NAME + this->paths->DIR_SEP;
 		this->paths->INPUT_META_DIR = this->paths->INPUT_DIR + "meta" + this->paths->DIR_SEP;
 		this->paths->INPUT_SEGMENTS_DIR = this->paths->INPUT_DIR + "segments" + this->paths->DIR_SEP;
 		this->paths->INPUT_SPLITS_DIR = this->paths->INPUT_DIR + this->paths->INPUT_SPLITS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->INPUT_INITIAL_STATES_DIR = this->paths->INPUT_DIR + "initstate" + this->paths->DIR_SEP;
 
 		this->paths->INPUT_SPLITS_TRAIN_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_TRAIN_FILE_BASE;
 		this->paths->INPUT_SPLITS_VALIDATION_FILE = this->paths->INPUT_SPLITS_DIR + this->paths->INPUT_SPLITS_VALIDATION_FILE_BASE;
@@ -231,6 +242,8 @@ namespace HCSearch
 		this->paths->INPUT_METADATA_FILE = this->paths->INPUT_DIR + "metadata.txt";
 		this->paths->INPUT_CODEBOOK_FILE = this->paths->INPUT_DIR + "codebook.txt";
 		this->paths->INPUT_INITFUNC_TRAINING_FILE = this->paths->INPUT_DIR + "initfunc_training.txt";
+
+		this->paths->OUTPUT_INITFUNC_MODEL_FILE = this->paths->INPUT_DIR + "initfunc_model.txt";
 	}
 
 	void Settings::refreshExperimentDirectories(string experimentDir)
@@ -238,20 +251,22 @@ namespace HCSearch
 		this->paths->OUTPUT_DIR = this->paths->BASE_PATH + experimentDir + this->paths->DIR_SEP;
 
 		// experiment directories
-		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + "logs" + this->paths->DIR_SEP;
-		this->paths->OUTPUT_MODELS_DIR = this->paths->OUTPUT_DIR + "models" + this->paths->DIR_SEP;
-		this->paths->OUTPUT_RESULTS_DIR = this->paths->OUTPUT_DIR + "results" + this->paths->DIR_SEP;
-		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + "temp" + this->paths->DIR_SEP;
-
-		this->paths->OUTPUT_INITFUNC_MODEL_FILE = this->paths->OUTPUT_TEMP_DIR + "init_func_model.txt";
+		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_LOGS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->OUTPUT_MODELS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_MODELS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->OUTPUT_RESULTS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_RESULTS_FOLDER_NAME + this->paths->DIR_SEP;
+		this->paths->OUTPUT_TEMP_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_TEMP_FOLDER_NAME + this->paths->DIR_SEP;
 
 		this->paths->OUTPUT_HEURISTIC_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_heuristic.txt";
 		this->paths->OUTPUT_COST_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost.txt";
 		this->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_cost_oracleH.txt";
+		this->paths->OUTPUT_PRUNE_MODEL_FILE = this->paths->OUTPUT_MODELS_DIR + "model_prune.txt";
 
 		this->paths->OUTPUT_ARCHIVED_HEURISTIC_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_heuristic.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost.txt";
 		this->paths->OUTPUT_ARCHIVED_COST_ORACLE_H_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_cost_oracleH.txt";
+		this->paths->OUTPUT_ARCHIVED_PRUNE_FEATURES_FILE = this->paths->OUTPUT_MODELS_DIR + "features_prune.txt";
+
+		this->paths->OUTPUT_MUTEX_FILE = this->paths->OUTPUT_MODELS_DIR + "model_mutex.txt";
 	}
 
 	void Settings::refreshRankIDFiles(int rankID)
@@ -266,6 +281,7 @@ namespace HCSearch
 		this->paths->OUTPUT_HEURISTIC_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_H_FEATURES_FILE_BASE, rankID);
 		this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE, rankID);
+		this->paths->OUTPUT_PRUNE_FEATURES_FILE = updateRankIDHelper(this->paths->OUTPUT_TEMP_DIR, this->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE, rankID);
 	}
 
 	string Settings::updateRankIDHelper(string path, string fileName, int rank)
@@ -331,6 +347,7 @@ namespace HCSearch
 		/**************** Configuration Options ****************/
 
 		USE_DAGGER = false;
+		CHECK_FOR_DUPLICATES = false;
 
 		/**************** Experiment Settings ****************/
 

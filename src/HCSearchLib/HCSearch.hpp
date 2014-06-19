@@ -601,7 +601,7 @@ namespace HCSearch
 		 * @param[in] filename Path to edges file
 		 * @param[out] edges Adjacency list for graph edges of the image
 		 */
-		static void readEdgesFile(string filename, AdjList_t& edges);
+		static void readEdgesFile(string filename, AdjList_t& edges, map< MyPrimitives::Pair<int, int>, double >& edgeWeights);
 
 		/*!
 		 * Read a segments file for a particular image.
@@ -641,6 +641,8 @@ namespace HCSearch
 		 */
 		static IRankModel* loadModel(string fileName, RankerType rankerType);
 
+		static map<string, int> loadPairwiseConstraints(string fileName);
+
 		/*!
 		 * Save model to file.
 		 * @param[in] model Rank model to save
@@ -648,6 +650,8 @@ namespace HCSearch
 		 * @param[in] rankerType Type of ranking model
 		 */
 		static void saveModel(IRankModel* model, string fileName, RankerType rankerType);
+
+		static void savePairwiseConstraints(map<string, int>& pairwiseConstraints, string fileName);
 	};
 
 	/*! @} */
@@ -732,6 +736,27 @@ namespace HCSearch
 		static IRankModel* learnCWithOracleH(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
 			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
+
+		/*!
+		 * Learn prune function.
+		 * Given training data, validation data, time bound, search space and procedure, 
+		 * learn a prune model and return it.
+		 * @param[in] XTrain Vector of structured features for training
+		 * @param[in] YTrain Vector of structured labelings for training
+		 * @param[in] XValidation Vector of structured features for validation
+		 * @param[in] YValidation Vector of structured labelings for validation
+		 * @param[in] timeBound  Time bound for learning
+		 * @param[in] searchSpace Search space definition
+		 * @param[in] searchProcedure Search procedure
+		 * @param[in] rankerType Rank learner type
+		 * @param[in] numIter Number of iterations for each training image
+		 * @return Returns the learned prune model
+		 */
+		static IRankModel* learnP(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain, 
+			vector< ImgFeatures* >& XValidation, vector< ImgLabeling* >& YValidation, 
+			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
+
+		static map<string, int> discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain);
 
 	private:
 		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);

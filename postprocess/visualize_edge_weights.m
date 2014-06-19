@@ -1,24 +1,19 @@
-function [ inferImage ] = visualize_image( image, labels, label2color, segMat, cutMat )
-%VISUALIZE_IMAGE Visualize single result.
+function [ inferImage ] = visualize_edge_weights( image, labels, label2color, segMat, wAdjMat )
+%VISUALIZE_EDGE_WEIGHTS Visualize single result.
 %
 %   image:          image matrix
 %   labels:         node labels vector
 %   label2color:    mapping from label to color
 %   segMat:         segments matrix
-%   cutMat:         (optional) stochastic cuts matrix
+%   wAdjMat:        adjacency matrix with edge weights
 
-narginchk(4, 5);
-
-cutAvailable = 1;
-if nargin < 5
-    cutAvailable = 0;
-end
+narginchk(5, 5);
 
 %% alpha parameter controls blending of label color and original image
 alpha = 0.66;
 
 %% initialization
-inferImage = uint8(image);
+inferImage = image;
 [height, width, nChannels] = size(image);
 
 if nChannels == 1
@@ -37,39 +32,28 @@ for row = 1:height
         
         %% if boundary between segments, color as segment boundary
         
-        boundary = 0; % 0 nothing, 1 boundary, 2 cut
+        boundary = 0; % 0 nothing, 1 boundary
         if row ~= 1
             prevSegmentId = segMat(row-1, col);
             if prevSegmentId ~= segmentId
-                if ~cutAvailable
-                    boundary = 2;
-                elseif cutMat(prevSegmentId, segmentId) ~= 0
-                    boundary = 1;
-                else
-                    boundary = 2;
-                end
+                boundary = 1;
             end
         end
         if col ~= 1
             prevSegmentId = segMat(row, col-1);
             if prevSegmentId ~= segmentId
-                if ~cutAvailable
-                    boundary = 2;
-                elseif cutMat(prevSegmentId, segmentId) ~= 0
-                    boundary = 1;
-                else
-                    boundary = 2;
-                end
+                boundary = 1;
             end
         end
         
         %% color label, boundary or stochastic cut
         if boundary == 1
-            inferImage(row, col, :) = reshape([255 255 255], [1 1 3]);
-        elseif boundary == 2
-            inferImage(row, col, :) = reshape([0 0 0], [1 1 3]);
+            weight = wAdjMat(segmentId, prevSegmentId); % should be [0, 1]
+            color = uint8(weight * 255);
+            inferImage(row, col, :) = reshape([color color color], [1 1 3]);
         else
             inferImage(row, col, :) = (1-alpha)*inferImage(row, col, :) + reshape(uint8(alpha*color'), [1 1 3]);
+%             inferImage(row, col, :) = reshape([0 0 0], [1 1 3]);
         end
     end
 end

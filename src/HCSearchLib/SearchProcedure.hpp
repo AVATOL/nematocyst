@@ -68,21 +68,12 @@ namespace HCSearch
 		};
 	
 	protected:
-		class ISearchNode;
-		class LLSearchNode;
-		class HLSearchNode;
-		class LCSearchNode;
-		class HCSearchNode;
-		class LearnHSearchNode;
-		class LearnCSearchNode;
-		class LearnCOracleHSearchNode;
+		class SearchNode;
 		class CompareByHeuristic;
 		class CompareByCost;
 
-		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
-		typedef priority_queue<ISearchNode*, vector<ISearchNode*>, CompareByCost> SearchNodeCostPQ;
-
-		static const int PRUNE_MAX_NUM_CANDIDATES;
+		typedef priority_queue<SearchNode*, vector<SearchNode*>, CompareByHeuristic> SearchNodeHeuristicPQ;
+		typedef priority_queue<SearchNode*, vector<SearchNode*>, CompareByCost> SearchNodeCostPQ;
 
 	public:
 		virtual ~ISearchProcedure() {}
@@ -93,11 +84,18 @@ namespace HCSearch
 		 * Accepts features X and a model (and groudtruth Y if applicable) and performs search.
 		 */
 		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata)=0;
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+			IRankModel* pruneModel, SearchMetadata searchMetadata)=0;
 
 	protected:
+		/*!
+		 * @brief Create the root node of the search tree.
+		 */
+		SearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
+
 		void saveAnyTimePrediction(ImgLabeling YPred, int timeBound, SearchMetadata searchMetadata, SearchType searchType);
-		void trainHeuristicRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
+		void trainRanker(IRankModel* ranker, vector< RankFeatures > bestFeatures, vector< double > bestLosses, 
 			vector< RankFeatures > worstFeatures, vector< double > worstLosses);
 		void trainCostRanker(IRankModel* ranker, SearchNodeCostPQ& costSet);
 	};
@@ -110,26 +108,22 @@ namespace HCSearch
 	{
 	public:
 		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, SearchMetadata searchMetadata);
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+			IRankModel* pruneModel, SearchMetadata searchMetadata);
 
 	protected:
 		/*!
-		 * @brief Create the root node of the search tree.
-		 */
-		ISearchNode* createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
-			SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
-
-		/*!
 		 * @brief Stub for selecting a subset of the open set for processing.
 		 */
-		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)=0;
+		virtual vector< SearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet)=0;
 
 		/*!
 		 * @brief Stub for expanding the elements.
 		 * 
 		 * openSet may be modified. costSet is used for duplicate checking.
 		 */
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet)=0;
+		virtual SearchNodeHeuristicPQ expandElements(vector< SearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound)=0;
 
 		/*!
 		 * @brief Stub for choosing successors among the expanded.
@@ -145,7 +139,7 @@ namespace HCSearch
 		 * @brief Checks if the state is duplicate among the states in the priority queue.
 		 */
 		template <class T>
-		bool isDuplicate(ISearchNode* state, T& pq);
+		bool isDuplicate(SearchNode* state, T& pq);
 
 		/*!
 		 * @brief Empty priority queue and delete all elements.
@@ -179,8 +173,9 @@ namespace HCSearch
 		BreadthFirstBeamSearchProcedure(int beamSize);
 		~BreadthFirstBeamSearchProcedure();
 
-		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual vector< SearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
+		virtual SearchNodeHeuristicPQ expandElements(vector< SearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet,
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound);
 		virtual void chooseSuccessors(SearchType searchType, SearchNodeHeuristicPQ& candidateSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
 			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
 	};
@@ -197,8 +192,9 @@ namespace HCSearch
 		BestFirstBeamSearchProcedure(int beamSize);
 		~BestFirstBeamSearchProcedure();
 
-		virtual vector< ISearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
-		virtual SearchNodeHeuristicPQ expandElements(vector< ISearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet);
+		virtual vector< SearchNode* > selectSubsetOpenSet(SearchNodeHeuristicPQ& openSet);
+		virtual SearchNodeHeuristicPQ expandElements(vector< SearchNode* > subsetOpenSet, SearchNodeHeuristicPQ& openSet, SearchNodeCostPQ& costSet, 
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound);
 	};
 
 	/**************** Greedy Procedure ****************/
@@ -206,11 +202,42 @@ namespace HCSearch
 	/*!
 	 * @brief Greedy search procedure.
 	 */
-	class GreedySearchProcedure : public BreadthFirstBeamSearchProcedure
+	class GreedySearchProcedure : public ISearchProcedure
 	{
+	protected:
+		typedef vector< SearchNode* > SearchNodeList;
+
 	public:
 		GreedySearchProcedure();
 		~GreedySearchProcedure();
+
+		virtual ImgLabeling performSearch(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
+			int timeBound, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel, 
+			IRankModel* pruneModel, SearchMetadata searchMetadata);
+
+	protected:
+		/*!
+		 * @brief Stub for expanding the element. 
+		 * 
+		 * (costSet used for checking duplicates.)
+		 * 
+		 * @post bestHeuristicNode and bestCostNode updated with the best node, 
+		 */
+		SearchNodeList expandElements(SearchNode*& bestHeuristicNode, SearchNode*& bestCostNode, SearchNodeList& costSet, 
+			IRankModel* pruneModel, ImgLabeling* YTruth, SearchType searchType, int timeStep, int timeBound, int& numOutputs);
+
+		/*!
+		 * @brief Stub for choosing successors among the expanded.
+		 * 
+		 * Sorts the list of search nodes into best and worst sets
+		 */
+		void sortNodes(SearchType searchType, SearchNodeList& candidateSet, 
+			vector< RankFeatures >& bestSet, vector< double >& bestLosses, vector< RankFeatures >& worstSet, vector< double >& worstLosses);
+
+		/*!
+		 * @brief Checks if the state is duplicate among the states in the priority queue.
+		 */
+		bool isDuplicate(SearchNode* state, SearchNodeList& list);
 	};
 
 	/*! @} */
@@ -219,36 +246,46 @@ namespace HCSearch
 
 	/**************** Search Node ****************/
 
-	class ISearchProcedure::ISearchNode
+	class ISearchProcedure::SearchNode
 	{
 	protected:
-		/*!
-		 * Pointer to parent node
-		 */
-		ISearchNode* parent;
+		SearchNode* parent; //!< Pointer to parent node
+		SearchSpace* searchSpace; //!< Pointer to search space
+		SearchType searchType; //!< Search type
 
-		/*!
-		 * // Structured features of node
-		 */
-		ImgFeatures* X;
+		ImgFeatures* X; //!< Structured features of node
+		ImgLabeling YPred; //<! Structured labeling of node
+		ImgLabeling* YTruth; //!< Pointer to groundtruth labeling
 
-		/*!
-		 * Structured labeling of node
-		 */
-		ImgLabeling YPred;
+		RankFeatures heuristicFeatures; //!< Heuristic features
+		IRankModel* heuristicModel; //!< Heuristic model
+		double heuristic; //!< Heuristic value
 
-		/*!
-		 * Pointer to search space
-		 */
-		SearchSpace* searchSpace;
+		RankFeatures costFeatures; //!< Cost features
+		IRankModel* costModel; //!< Cost model
+		double cost; //!< Cost value
 
 	public:
-		virtual ~ISearchNode() {}
-		
+		SearchNode(); // do not use default constructor
+
+		/*!
+		 * Node initialization constructor.
+		 */
+		SearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, 
+			IRankModel* heuristicModel, IRankModel* costModel, SearchType searchType);
+
+		/*!
+		 * Node generation constructor.
+		 */
+		SearchNode(SearchNode* parent, ImgLabeling YPred);
+
 		/*!
 		 * Generate successor nodes.
 		 */
-		vector< ISearchNode* > generateSuccessorNodes();
+		vector< SearchNode* > generateSuccessorNodes(bool prune, int timeStep, int timeBound, ImgLabeling* YTruth);
+
+		vector< SearchNode* > generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
+			ImgLabeling* YTruth, int timeStep, int timeBound);
 
 		/*!
 		 * Get the heuristic features of the node. 
@@ -266,13 +303,13 @@ namespace HCSearch
 		 * Get the heuristic value. 
 		 * (From heuristic weights or loss function depending on search type.)
 		 */
-		virtual double getHeuristic()=0;
+		virtual double getHeuristic();
 
 		/*!
 		 * Get the cost value. 
 		 * (From cost weights or loss function depending on search type.)
 		 */
-		virtual double getCost()=0;
+		virtual double getCost();
 
 		/*!
 		 * Get the labeling of the node.
@@ -283,285 +320,10 @@ namespace HCSearch
 		/*!
 		 * Return type of search node.
 		 */
-		virtual SearchType getType()=0;
-	};
+		SearchType getType();
 
-	/**************** LL Search Node ****************/
-
-	class ISearchProcedure::LLSearchNode : public ISearchNode
-	{
-	protected:
-		/*!
-		 * Pointer to groundtruth labeling
-		 */
-		ImgLabeling* YTruth;
-
-		/*!
-		 * Loss value
-		 */
-		double loss;
-
-	public:
-		LLSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		LLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		LLSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-		virtual double getHeuristic();
-		virtual double getCost();
-	
-	protected:
-		virtual SearchType getType();
-	};
-
-	/**************** HL Search Node ****************/
-
-	class ISearchProcedure::HLSearchNode : public ISearchNode
-	{
-	protected:
-		/*!
-		 * Pointer to groundtruth labeling
-		 */
-		ImgLabeling* YTruth;
-
-		/*!
-		 * Heuristic features of node
-		 */
-		RankFeatures heuristicFeatures;
-
-		/*!
-		 * Heuristic model
-		 */
-		IRankModel* heuristicModel;
-
-		/*!
-		 * Heuristic value
-		 */
-		double heuristic;
-
-		/*!
-		 * Loss value
-		 */
-		double loss;
-
-	public:
-		HLSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		HLSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, IRankModel* heuristicModel);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		HLSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-		virtual RankFeatures getHeuristicFeatures();
-		virtual double getHeuristic();
-		virtual double getCost();
-
-	protected:
-		virtual SearchType getType();
-	};
-
-	/**************** LC Search Node ****************/
-
-	class ISearchProcedure::LCSearchNode : public ISearchNode
-	{
-	protected:
-		/*!
-		 * Pointer to groundtruth labeling
-		 */
-		ImgLabeling* YTruth;
-
-		/*!
-		 * Cost features features of node
-		 */
-		RankFeatures costFeatures;
-
-		/*!
-		 * Cost model
-		 */
-		IRankModel* costModel;
-
-		/*!
-		 * Cost value
-		 */
-		double cost;
-
-		/*!
-		 * Loss value
-		 */
-		double loss;
-
-	public:
-		LCSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		LCSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, IRankModel* costModel);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		LCSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-		virtual RankFeatures getCostFeatures();
-		virtual double getHeuristic();
-		virtual double getCost();
-
-	protected:
-		virtual SearchType getType();
-	};
-
-	/**************** HC Search Node ****************/
-
-	class ISearchProcedure::HCSearchNode : public ISearchNode
-	{
-	protected:
-		/*!
-		 * Heuristic features of node
-		 */
-		RankFeatures heuristicFeatures;
-
-		/*!
-		 * Cost features features of node
-		 */
-		RankFeatures costFeatures;
-		
-		/*!
-		 * Heuristic model
-		 */
-		IRankModel* heuristicModel;
-
-		/*!
-		 * Cost model
-		 */
-		IRankModel* costModel;
-
-		/*!
-		 * Heuristic value
-		 */
-		double heuristic;
-
-		/*!
-		 * Cost value
-		 */
-		double cost;
-
-	public:
-		HCSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		HCSearchNode(ImgFeatures* X, SearchSpace* searchSpace, IRankModel* heuristicModel, IRankModel* costModel);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		HCSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-		virtual RankFeatures getHeuristicFeatures();
-		virtual RankFeatures getCostFeatures();
-		virtual double getHeuristic();
-		virtual double getCost();
-
-	protected:
-		virtual SearchType getType();
-	};
-
-	/**************** Learn H Search Node ****************/
-
-	class ISearchProcedure::LearnHSearchNode : public LLSearchNode
-	{
-	protected:
-		/*!
-		 * Heuristic features of node
-		 */
-		RankFeatures heuristicFeatures;
-
-	public:
-		LearnHSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		LearnHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		LearnHSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-	protected:
-		virtual RankFeatures getHeuristicFeatures();
-		virtual SearchType getType();
-	};
-
-	/**************** Learn C Search Node ****************/
-
-	class ISearchProcedure::LearnCSearchNode : public HLSearchNode
-	{
-	protected:
-		/*!
-		 * Cost features features of node
-		 */
-		RankFeatures costFeatures;
-
-	public:
-		LearnCSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		LearnCSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace, IRankModel* heuristicModel);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		LearnCSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-	protected:
-		virtual RankFeatures getCostFeatures();
-		virtual SearchType getType();
-	};
-
-	/**************** Learn C Given Oracle H Search Node ****************/
-
-	class ISearchProcedure::LearnCOracleHSearchNode : public LLSearchNode
-	{
-	protected:
-		/*!
-		 * Cost features features of node
-		 */
-		RankFeatures costFeatures;
-
-	public:
-		LearnCOracleHSearchNode();
-
-		/*!
-		 * Constructor for initial state
-		 */
-		LearnCOracleHSearchNode(ImgFeatures* X, ImgLabeling* YTruth, SearchSpace* searchSpace);
-		
-		/*!
-		 * Constructor for non-initial state
-		 */
-		LearnCOracleHSearchNode(ISearchNode* parent, ImgLabeling YPred);
-
-	protected:
-		virtual RankFeatures getCostFeatures();
-		virtual SearchType getType();
+	private:
+		void constructorHelper();
 	};
 
 	/**************** Compare Search Node ****************/
@@ -569,19 +331,19 @@ namespace HCSearch
 	class ISearchProcedure::CompareByHeuristic
 	{
 	public:
-		bool operator() (ISearchNode*& lhs, ISearchNode*& rhs) const;
+		bool operator() (SearchNode*& lhs, SearchNode*& rhs) const;
 	};
 
 	class ISearchProcedure::CompareByCost
 	{
 	public:
-		bool operator() (ISearchNode*& lhs, ISearchNode*& rhs) const;
+		bool operator() (SearchNode*& lhs, SearchNode*& rhs) const;
 	};
 
 	/**************** Template definitions ****************/
 
 	template <class T>
-	bool IBasicSearchProcedure::isDuplicate(ISearchNode* state, T& pq)
+	bool IBasicSearchProcedure::isDuplicate(SearchNode* state, T& pq)
 	{
 		int size = pq.size();
 		bool isDuplicate = false;
@@ -590,7 +352,7 @@ namespace HCSearch
 
 		for (int i = 0; i < size; i++)
 		{
-			ISearchNode* current = pq.top();
+			SearchNode* current = pq.top();
 			pq.pop();
 
 			if (!isDuplicate && current->getY().graph.nodesData == state->getY().graph.nodesData)
@@ -612,7 +374,7 @@ namespace HCSearch
 	{
 		while (!queue.empty())
 		{
-			ISearchNode* state = queue.top();
+			SearchNode* state = queue.top();
 			queue.pop();
 			delete state;
 		}
