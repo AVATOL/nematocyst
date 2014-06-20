@@ -433,6 +433,12 @@ namespace HCSearch
 				getline(fh, line);
 				if (!line.empty())
 				{
+					if (lineIndex >= labels.size())
+					{
+						LOG(WARNING) << "line index exceeds number of nodes; ignoring the rest...";
+						break;
+					}
+
 					// parse line
 					istringstream iss(line);
 					string token;
@@ -455,7 +461,14 @@ namespace HCSearch
 							int featureIndex = atoi(sIndex.c_str()) - 1;
 							double value = atof(sValue.c_str());
 
-							features(lineIndex, featureIndex) = value;
+							if (featureIndex < 0 || featureIndex >= features.cols())
+							{
+								LOG(WARNING) << "feature index exceeds number of features; ignoring...";
+							}
+							else
+							{
+								features(lineIndex, featureIndex) = value;
+							}
 						}
 					}
 				}
@@ -483,6 +496,12 @@ namespace HCSearch
 				getline(fh, line);
 				if (!line.empty())
 				{
+					if (lineIndex >= nodeLocations.rows())
+					{
+						LOG(WARNING) << "line index exceeds number of nodes; ignoring the rest...";
+						break;
+					}
+
 					// parse line
 					istringstream iss(line);
 
