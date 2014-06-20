@@ -22,10 +22,8 @@ function [ allData ] = preprocess_EHS( allData, EHSPath, outputPath, trainRange,
 %% argument checking
 narginchk(6, 6);
 
-outputPath = strrep(outputPath, '/', filesep);
-outputPath = strrep(outputPath, '\', filesep);
-EHSPath = strrep(EHSPath, '/', filesep);
-EHSPath = strrep(EHSPath, '\', filesep);
+outputPath = normalize_file_sep(outputPath);
+EHSPath = normalize_file_sep(EHSPath);
 
 %% parameters
 NUM_CODE_WORDS = 100;
@@ -38,6 +36,9 @@ ALL_LIST = 'All.txt';
 
 % example: 'DataRaw/SB_features/iccv09_%d_node_edge.mat'
 NODE_EDGE_STRING = EHSPath;
+if strcmp(filesep, '\\') == 0
+    NODE_EDGE_STRING = strrep(NODE_EDGE_STRING, '\', '\\');
+end
 
 EXTERNAL_PATH = 'external';
 LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear'];
@@ -129,9 +130,9 @@ for i = 1:nFiles
     metaFile = sprintf('%s.txt', filename);
     
     % write nodes
-    libsvmwrite([outputPath '/nodes/' nodesFile], allData{i}.segLabels, sparse(H));
+    libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
     trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
-    trainNodeFeatures = [trainNodeFeatures; H];
+    trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
     
     % write node locations and sizes
     if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
@@ -148,7 +149,7 @@ for i = 1:nFiles
     % write edges
     [ai,aj,aval] = find(E_symmetric);
     spAdj = [ai,aj,aval];
-    dlmwrite([outputPath '/edges/' edgesFile], spAdj, ' ');
+    dlmwrite([outputPath filesep 'edges' filesep edgesFile], spAdj, ' ');
     
     % write edge features
     featDim = 4;
@@ -168,7 +169,7 @@ for i = 1:nFiles
     end
     edgeLabels(edgeLabels == 0) = -1;
     
-    libsvmwrite([outputPath '/edgefeatures/' edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
+    libsvmwrite([outputPath filesep 'edgefeatures' filesep edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
     trainEdgeLabels = [trainEdgeLabels; edgeLabels];
     trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
     
