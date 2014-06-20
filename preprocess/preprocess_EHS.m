@@ -129,17 +129,22 @@ for i = 1:nFiles
     groundtruthFile = sprintf('%s.txt', filename);
     metaFile = sprintf('%s.txt', filename);
     
+    %% read
+    nodeFeat = allData{i}.feat2;
+    nodeLabel = allData{i}.segLabels;
+    segments = allData{i}.segs2;
+    
     % write nodes
-    libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
-    trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
-    trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
+    libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], nodeLabel, sparse(nodeFeat));
+    trainNodeLabels = [trainNodeLabels; nodeLabel];
+    trainNodeFeatures = [trainNodeFeatures; nodeFeat];
     
     % write node locations and sizes
     if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
         nodeLocations = allData{i}.segLocations;
         nodeSizes = allData{i}.segSizes;
     else
-        [nodeLocations, nodeSizes] = pre_extract_node_locations(allData{i}.segs2, length(allData{i}.segLabels));
+        [nodeLocations, nodeSizes] = pre_extract_node_locations(segments, length(nodeLabel));
         allData{i}.segLocations = nodeLocations;
         allData{i}.segSizes = nodeSizes;
     end
@@ -165,7 +170,7 @@ for i = 1:nFiles
         end
         
         edgeFeatures(j, :) = S{e1, e2};
-        edgeLabels(j, 1) = allData{i}.segLabels(e1, 1) == allData{i}.segLabels(e2, 1);
+        edgeLabels(j, 1) = nodeLabel(e1, 1) == nodeLabel(e2, 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
     
@@ -174,23 +179,23 @@ for i = 1:nFiles
     trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
     
     % write segments
-    dlmwrite([outputPath filesep 'segments' filesep segmentsFile], allData{i}.segs2, ' ');
+    dlmwrite([outputPath filesep 'segments' filesep segmentsFile], segments, ' ');
     
     % write ground truth
     dlmwrite([outputPath filesep 'groundtruth' filesep groundtruthFile], allData{i}.labels, ' ');
     
-    classes = union(classes, allData{i}.segLabels);
+    classes = union(classes, nodeLabel);
     
     %% write meta file
     fid = fopen([outputPath filesep 'meta' filesep metaFile], 'w');
-    fprintf(fid, 'nodes=%d\n', size(allData{i}.feat2, 1));
-    fprintf(fid, 'features=%d\n', size(allData{i}.feat2, 2));
-    fprintf(fid, 'height=%d\n', size(allData{i}.segs2, 1));
-    fprintf(fid, 'width=%d', size(allData{i}.segs2, 2));
+    fprintf(fid, 'nodes=%d\n', size(nodeFeat, 1));
+    fprintf(fid, 'features=%d\n', size(nodeFeat, 2));
+    fprintf(fid, 'height=%d\n', size(segments, 1));
+    fprintf(fid, 'width=%d', size(segments, 2));
     fclose(fid);
     
     %% append to bow data
-    bowData = horzcat(bowData, allData{i}.feat2');
+    bowData = horzcat(bowData, nodeFeat');
 end
 
 fclose(train_fid);
