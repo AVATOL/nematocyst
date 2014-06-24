@@ -880,44 +880,88 @@ namespace HCSearch
 
 		MPI::Synchronize::masterWait(STARTMSG);
 
-		// merge step
-		if (Global::settings->RANK == 0)
-		{
-			mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES);
-		}
+		//// merge step
+		//if (Global::settings->RANK == 0)
+		//{
+		//	mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES);
+		//}
 #endif
 
+		//if (Global::settings->RANK == 0)
+		//{
+		//	clock_t tic = clock();
+
+		//	// just in case, delete cache file if present
+		//	if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+		//	{
+		//		// delete cache file
+		//		MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+		//	}
+
+		//	// call VW
+		//	stringstream ssLearn;
+
+		//	// load previous model if exists
+		//	if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
+		//	{
+		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+		//			<< " -i " << modelFileName << ".model"
+		//			<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+		//	}
+		//	else
+		//	{
+		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+		//			<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+		//	}
+		//	
+		//	MyFileSystem::Executable::executeRetries(ssLearn.str());
+
+		//	clock_t toc = clock();
+		//	LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		//}
+
 		if (Global::settings->RANK == 0)
 		{
-			clock_t tic = clock();
-
-			// just in case, delete cache file if present
-			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+			for (int processID = 0; processID < Global::settings->NUM_PROCESSES; processID++)
 			{
-				// delete cache file
-				MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
-			}
+				clock_t tic = clock();
 
-			// call VW
-			stringstream ssLearn;
+				string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, featuresFileBase, processID);
 
-			// load previous model if exists
-			if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
-			{
-				ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-					<< " -i " << modelFileName << ".model"
-					<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
-			}
-			else
-			{
-				ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-					<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
-			}
+				// just in case, delete cache file if present
+				if (MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE + ".cache"))
+				{
+					// delete cache file
+					MyFileSystem::FileSystem::deleteFile(FEATURES_FILE + ".cache");
+				}
+
+				// call VW
+				stringstream ssLearn;
+
+				// load previous model if exists
+				if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
+				{
+					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
+						<< " -i " << modelFileName << ".model"
+						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+				}
+				else
+				{
+					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
+						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+				}
 			
-			MyFileSystem::Executable::executeRetries(ssLearn.str());
+				MyFileSystem::Executable::executeRetries(ssLearn.str());
 
-			clock_t toc = clock();
-			LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+				clock_t toc = clock();
+				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+				// delete the feature file
+				ostringstream ossRemoveRankingFeatureCmd;
+				ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
+					<< " " << FEATURES_FILE;
+				MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
+			}
 		}
 
 #ifdef USE_MPI
