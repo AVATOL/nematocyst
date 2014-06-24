@@ -950,8 +950,8 @@ namespace HCSearch
 					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
 						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
 				}
-			
-				MyFileSystem::Executable::executeRetries(ssLearn.str());
+				
+				MyFileSystem::Executable::executeRetriesFatal(ssLearn.str());
 
 				clock_t toc = clock();
 				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
@@ -984,7 +984,10 @@ namespace HCSearch
 			load(modelFileName);
 
 			// delete cache file
-			MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+			{
+				MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+			}
 		}
 
 		LOG() << endl;
