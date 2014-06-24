@@ -98,7 +98,8 @@ namespace MyFileSystem
 
 		if (retcode != 0)
 		{
-			LOG(WARNING) << "after " << numRetries << " retries, executable cmd '" << cmd << "' still unable to succeed! Returned error code " << retcode << "!";
+			LOG(ERROR) << "after " << numRetries << " retries, executable cmd '" << cmd << "' still unable to succeed! Returned error code " << retcode << "!";
+			HCSearch::abort();
 		}
 
 		return retcode;
