@@ -961,6 +961,13 @@ namespace HCSearch
 				ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
 					<< " " << FEATURES_FILE;
 				MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
+
+				// delete the cache file
+				if (MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE + ".cache"))
+				{
+					// delete cache file
+					MyFileSystem::FileSystem::deleteFile(FEATURES_FILE + ".cache");
+				}
 			}
 		}
 
