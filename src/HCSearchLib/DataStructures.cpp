@@ -726,11 +726,13 @@ namespace HCSearch
 	{
 		this->initialized = false;
 		this->learningMode = false;
+		this->numLearn = 0;
 	}
 
 	VWRankModel::VWRankModel(string fileName)
 	{
 		load(fileName);
+		this->numLearn = 0;
 	}
 	
 	double VWRankModel::rank(RankFeatures features)
@@ -861,22 +863,23 @@ namespace HCSearch
 		string featuresFileBase;
 		if (searchType == LEARN_H)
 		{
-			STARTMSG = "MERGEHSTART";
-			ENDMSG = "MERGEHEND";
+			STARTMSG = "MERGEHSTART" + this->numLearn;
+			ENDMSG = "MERGEHEND" + this->numLearn;
 			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C)
 		{
-			STARTMSG = "MERGECSTART";
-			ENDMSG = "MERGECEND";
+			STARTMSG = "MERGECSTART" + this->numLearn;
+			ENDMSG = "MERGECEND" + this->numLearn;
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C_ORACLE_H)
 		{
-			STARTMSG = "MERGECOHSTART";
-			ENDMSG = "MERGECOHEND";
+			STARTMSG = "MERGECOHSTART" + this->numLearn;
+			ENDMSG = "MERGECOHEND" + this->numLearn;
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
+		this->numLearn++;
 
 		MPI::Synchronize::masterWait(STARTMSG);
 
