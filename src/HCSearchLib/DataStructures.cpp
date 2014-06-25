@@ -863,20 +863,32 @@ namespace HCSearch
 		string featuresFileBase;
 		if (searchType == LEARN_H)
 		{
-			STARTMSG = "MERGEHSTART" + this->numLearn;
-			ENDMSG = "MERGEHEND" + this->numLearn;
+			ostringstream sstart;
+			sstart << "MERGEHSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGEHEND" << this->numLearn;
+			ENDMSG = send.str();
 			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C)
 		{
-			STARTMSG = "MERGECSTART" + this->numLearn;
-			ENDMSG = "MERGECEND" + this->numLearn;
+			ostringstream sstart;
+			sstart << "MERGECSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGECEND" << this->numLearn;
+			ENDMSG = send.str();
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C_ORACLE_H)
 		{
-			STARTMSG = "MERGECOHSTART" + this->numLearn;
-			ENDMSG = "MERGECOHEND" + this->numLearn;
+			ostringstream sstart;
+			sstart << "MERGECOHSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGECOHEND" << this->numLearn;
+			ENDMSG = send.str();
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
 		this->numLearn++;
