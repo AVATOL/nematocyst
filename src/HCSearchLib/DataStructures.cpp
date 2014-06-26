@@ -1,6 +1,10 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#ifndef USE_WINDOWS
+#include <unistd.h>
+#endif
+
 #include "DataStructures.hpp"
 #include "Globals.hpp"
 #include "MyFileSystem.hpp"
@@ -970,6 +974,14 @@ namespace HCSearch
 
 				clock_t toc = clock();
 				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+#ifndef USE_WINDOWS
+				LOG() << "sleeping...";
+				clock_t tic1 = clock();
+				sleep(1000);
+				clock_t toc1 = clock();
+				LOG() << "done (" << (double)(toc1 - tic1)/CLOCKS_PER_SEC << "s)." << endl;
+#endif
 
 				// delete the feature file
 				ostringstream ossRemoveRankingFeatureCmd;
