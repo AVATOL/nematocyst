@@ -978,7 +978,7 @@ namespace HCSearch
 #ifndef USE_WINDOWS
 				LOG() << "sleeping...";
 				clock_t tic1 = clock();
-				sleep(1000);
+				sleep(2);
 				clock_t toc1 = clock();
 				LOG() << "done (" << (double)(toc1 - tic1)/CLOCKS_PER_SEC << "s)." << endl;
 #endif
