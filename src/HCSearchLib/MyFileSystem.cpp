@@ -1,3 +1,6 @@
+#ifndef USE_WINDOWS
+#include <unistd.h>
+#endif
 #include "MyFileSystem.hpp"
 #include "Globals.hpp"
 
@@ -117,6 +120,15 @@ namespace MyFileSystem
 		{
 			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! " 
 				<< "Retrying " << numRemainingTries << " more times...";
+			
+#ifndef USE_WINDOWS
+				LOG() << "sleeping before retrying...";
+				clock_t tic1 = clock();
+				sleep(100);
+				clock_t toc1 = clock();
+				LOG() << "done (" << (double)(toc1 - tic1)/CLOCKS_PER_SEC << "s)." << endl;
+#endif
+			
 			retcode = system(cmd.c_str());
 			numRemainingTries--;
 		}
