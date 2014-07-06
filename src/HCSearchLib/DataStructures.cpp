@@ -977,10 +977,8 @@ namespace HCSearch
 
 #ifndef USE_WINDOWS
 				LOG() << "sleeping...";
-				clock_t tic1 = clock();
-				sleep(50);
-				clock_t toc1 = clock();
-				LOG() << "done (" << (double)(toc1 - tic1)/CLOCKS_PER_SEC << "s)." << endl;
+				sleep(2);
+				LOG() << "done." << endl;
 #endif
 
 				// delete the feature file

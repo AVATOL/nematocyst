@@ -98,10 +98,8 @@ namespace MyFileSystem
 
 #ifndef USE_WINDOWS
 				LOG() << "sleeping before retrying...";
-				clock_t tic1 = clock();
-				sleep(100);
-				clock_t toc1 = clock();
-				LOG() << "done (" << (double)(toc1 - tic1)/CLOCKS_PER_SEC << "s)." << endl;
+				sleep(2);
+				LOG() << "done." << endl;
 #endif
 
 			retcode = system(cmd.c_str());
@@ -132,10 +130,8 @@ namespace MyFileSystem
 			
 #ifndef USE_WINDOWS
 				LOG() << "sleeping before retrying...";
-				clock_t tic1 = clock();
-				sleep(100);
-				clock_t toc1 = clock();
-				LOG() << "done (" << (double)(toc1 - tic1)/CLOCKS_PER_SEC << "s)." << endl;
+				sleep(2);
+				LOG() << "done." << endl;
 #endif
 			
 			retcode = system(cmd.c_str());
