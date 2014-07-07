@@ -211,10 +211,6 @@ writeRange(fid, 'backgroundclasses', []);
 writeRange(fid, 'ignoreclasses', []);
 fclose(fid);
 
-%% save copy of matlab variables
-fprintf('Saving variable allData to file...\n');
-save([outputPath filesep 'allData.mat'], 'allData');
-
 %% create initial classifier training file
 INITFUNC_TRAINING_FILE = 'initfunc_training.txt';
 libsvmwrite([outputPath filesep INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
@@ -241,6 +237,7 @@ if ispc
 elseif isunix
     unix(LIBLINEAR_TRAIN_CMD);
 end
+initStateModel = train(trainNodeLabels, sparse(trainNodeFeatures), '-s 7 -c 10');
 
 %% train initial prediction classifier on the edge training file just generated
 EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
@@ -291,12 +288,19 @@ for i = 1:nFiles
     elseif isunix
         unix(LIBLINEAR_PREDICT_CMD);
     end
+    
+    [initStateLabels, ~, ~] = predict(allData{i}.segLabels, sparse(allData{i}.feat2), initStateModel, '-b 1');
+    allData{i}.initState = initStateLabels;
 end
 
 %% generate codebook and write to file
 fprintf('generating codebook...\n');
 [centers, ~] = vl_kmeans(bowData, NUM_CODE_WORDS);
 dlmwrite([outputPath filesep 'codebook.txt'], centers');
+
+%% save copy of matlab variables
+fprintf('Saving variable allData to file...\n');
+save([outputPath filesep 'allData.mat'], 'allData');
 
 end
 
