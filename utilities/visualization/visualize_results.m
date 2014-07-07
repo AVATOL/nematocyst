@@ -130,7 +130,7 @@ for fold = foldRange
                 if cutFile.bytes == 0
                     %% visualize inference
                     if ~USE_NEMATOCYST
-                        inferImage = visualize_grid_image(image, labels, label2color, segMat, cutMat);
+                        inferImage = visualize_image(image, labels, label2color, segMat, cutMat);
                     else
                         visualize_grid_image(image, labels, label2color, segMat);
                     end
@@ -147,7 +147,7 @@ for fold = foldRange
 
                     %% visualize inference
                     if ~USE_NEMATOCYST
-                        inferImage = visualize_grid_image(image, labels, label2color, segMat, cutMat);
+                        inferImage = visualize_image(image, labels, label2color, segMat, cutMat);
                     else
                         visualize_grid_image(image, labels, label2color, segMat, cutMat);
                     end
