@@ -170,7 +170,7 @@ for i = 1:nFiles
         end
         
         edgeFeatures(j, :) = S{e1, e2};
-        edgeLabels(j, 1) = nodeLabel(e1, 1) == nodeLabel(e2, 1);
+        edgeLabels(j, 1) = nodeLabel(e1, 1) ~= nodeLabel(e2, 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
     
@@ -239,25 +239,6 @@ elseif isunix
 end
 initStateModel = train(trainNodeLabels, sparse(trainNodeFeatures), '-s 7 -c 10');
 
-%% train initial prediction classifier on the edge training file just generated
-EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
-fprintf('Training initial classifier model...\n');
-if ispc
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
-elseif isunix
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
-end
-
-LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-    outputPath filesep EDGECLASSIFIER_TRAINING_FILE ' ' ...
-    outputPath filesep EDGECLASSIFIER_MODEL_FILE];
-
-if ispc
-    dos(LIBLINEAR_TRAIN_CMD);
-elseif isunix
-    unix(LIBLINEAR_TRAIN_CMD);
-end
-
 %% generate the initial prediction files
 for i = 1:nFiles
     fprintf('Predicting example %d...\n', i-1);
@@ -301,6 +282,25 @@ dlmwrite([outputPath filesep 'codebook.txt'], centers');
 %% save copy of matlab variables
 fprintf('Saving variable allData to file...\n');
 save([outputPath filesep 'allData.mat'], 'allData');
+
+%% train initial prediction classifier on the edge training file just generated
+EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
+fprintf('Training initial classifier model...\n');
+if ispc
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
+elseif isunix
+    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
+end
+
+LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
+    outputPath filesep EDGECLASSIFIER_TRAINING_FILE ' ' ...
+    outputPath filesep EDGECLASSIFIER_MODEL_FILE];
+
+if ispc
+    dos(LIBLINEAR_TRAIN_CMD);
+elseif isunix
+    unix(LIBLINEAR_TRAIN_CMD);
+end
 
 end
 

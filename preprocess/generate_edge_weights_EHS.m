@@ -65,7 +65,7 @@ for i = trainRange
         end
         
         edgeFeatures(j, :) = S{e1, e2};
-        edgeLabels(j, 1) = nodeLabel(e1, 1) == nodeLabel(e2, 1);
+        edgeLabels(j, 1) = nodeLabel(e1, 1) ~= nodeLabel(e2, 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
 
@@ -109,7 +109,7 @@ for i = 1:nFiles
         end
         
         edgeFeatures(j, :) = S{e1, e2};
-        edgeLabels(j, 1) = nodeLabel(e1, 1) == nodeLabel(e2, 1);
+        edgeLabels(j, 1) = nodeLabel(e1, 1) ~= nodeLabel(e2, 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
     

@@ -43,7 +43,7 @@ for i = trainRange
         e1 = allData{i}.feat2(ai(j), :);
         e2 = allData{i}.feat2(aj(j), :);
         edgeFeatures(j, :) = abs(e1 - e2);
-        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) == allData{i}.segLabels(aj(j), 1);
+        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) ~= allData{i}.segLabels(aj(j), 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
 
@@ -74,7 +74,7 @@ for i = 1:nFiles
         e1 = allData{i}.feat2(ai(j), :);
         e2 = allData{i}.feat2(aj(j), :);
         edgeFeatures(j, :) = abs(e1 - e2);
-        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) == allData{i}.segLabels(aj(j), 1);
+        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) ~= allData{i}.segLabels(aj(j), 1);
     end
     edgeLabels(edgeLabels == 0) = -1;
     
