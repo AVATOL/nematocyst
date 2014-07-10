@@ -301,28 +301,44 @@ namespace HCSearch
 		vector<double> edgeWeights;
 
 		// iterate over all edges to store
-		for (map< int, set<int> >::iterator it = edges.begin();
-			it != edges.end(); ++it)
+		if (X.edgeWeightsAvailable)
 		{
-			int node1 = it->first;
-			set<int> neighbors = it->second;
-		
-			// loop over neighbors
-			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+			for (map< MyPrimitives::Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
 			{
-				int node2 = *it2;
-
-				// get features and labels
-				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
-				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
-
-				// compute weights already
-				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				// get weights
+				double weight = it->second;
 				edgeWeights.push_back(weight);
 
 				// add
-				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
-				edgeNodes.push_back(nodePair);
+				MyPrimitives::Pair<int, int> key = it->first;
+				edgeNodes.push_back(key);
+			}
+		}
+		else
+		{
+			for (map< int, set<int> >::iterator it = edges.begin();
+				it != edges.end(); ++it)
+			{
+				int node1 = it->first;
+				set<int> neighbors = it->second;
+		
+				// loop over neighbors
+				for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+				{
+					int node2 = *it2;
+
+					// get features and labels
+					VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+					VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+					// compute weights already
+					double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+					edgeWeights.push_back(weight);
+
+					// add
+					MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+					edgeNodes.push_back(nodePair);
+				}
 			}
 		}
 
