@@ -359,13 +359,15 @@ namespace HCSearch
 			else if (!cutEdgesIndependently)
 			{
 				// uniform state
-				decideToCut = edgeWeights[i] <= threshold;
+				//decideToCut = edgeWeights[i] <= threshold;
+				decideToCut =  threshold <= edgeWeights[i];
 			}
 			else
 			{
 				// bernoulli independent
 				double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
-				decideToCut = biasedCoin <= 1-edgeWeights[i];
+				//decideToCut = biasedCoin <= 1-edgeWeights[i];
+				decideToCut = biasedCoin <= edgeWeights[i];
 			}
 
 			if (!decideToCut)
