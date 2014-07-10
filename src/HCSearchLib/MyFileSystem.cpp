@@ -98,7 +98,10 @@ namespace MyFileSystem
 
 #ifndef USE_WINDOWS
 				LOG() << "sleeping before retrying...";
-				sleep(2);
+				if (numRemainingTries == 1)
+					sleep(60);
+				else
+					sleep(10);
 				LOG() << "done." << endl;
 #endif
 
@@ -130,7 +133,10 @@ namespace MyFileSystem
 			
 #ifndef USE_WINDOWS
 				LOG() << "sleeping before retrying...";
-				sleep(2);
+				if (numRemainingTries == 1)
+					sleep(60);
+				else
+					sleep(10);
 				LOG() << "done." << endl;
 #endif
 			
