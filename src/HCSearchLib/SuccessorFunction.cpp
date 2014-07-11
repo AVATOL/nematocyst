@@ -241,17 +241,30 @@ namespace HCSearch
 
 	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
+	const double StochasticSuccessor::DEFAULT_MAX_THRESHOLD = 1.0;
+	const double StochasticSuccessor::DEFAULT_MIN_THRESHOLD = 0.0;
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
 	}
 
 	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()
@@ -264,7 +277,12 @@ namespace HCSearch
 
 		// generate random threshold
 		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
-		LOG() << "Using threshold=" << threshold << endl;
+		threshold = threshold*(this->maxThreshold - this->minThreshold) + this->minThreshold;
+
+		if (!this->cutEdgesIndependently)
+			LOG() << "Cutting edges by state... Using threshold=" << threshold << endl;
+		else
+			LOG() << "Cutting edges independently..." << endl;
 
 		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
@@ -545,12 +563,24 @@ namespace HCSearch
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
 	}
 	
 	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
 	}
 
 	StochasticNeighborSuccessor::~StochasticNeighborSuccessor()
@@ -568,12 +598,24 @@ namespace HCSearch
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
 	}
 
 	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
 	}
 
 	StochasticConfidencesNeighborSuccessor::~StochasticConfidencesNeighborSuccessor()

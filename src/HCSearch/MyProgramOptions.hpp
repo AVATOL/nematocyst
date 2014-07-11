@@ -92,6 +92,9 @@ namespace MyProgramOptions
 		double lambda2;
 		double lambda3;
 
+		double maxCuttingThreshold;
+		double minCuttingThreshold;
+
 	public:
 		ProgramOptions();
 
