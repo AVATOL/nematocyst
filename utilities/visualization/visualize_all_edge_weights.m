@@ -26,6 +26,8 @@ if nargin < 5
     splitsName = 'splits/Test.txt';
 end
 
+VISUALIZE_THRESHOLDS = 0;
+
 %% constants
 ANNOTATIONS_EXTENSION = '.jpg';
 
@@ -87,9 +89,17 @@ parfor f = 1:length(testFiles)
     wAdjMat = [wAdjMat; zeros(nNodes-h, w)];
     
     %% visualize groundtruth
-    truthOutPath = sprintf('%s/%s.png', outputDir, fileName);
-    truthImage = visualize_edge_weights(image, truthLabels, label2color, segMat, wAdjMat);
-    imwrite(truthImage, truthOutPath);
+    if VISUALIZE_THRESOLDS
+        for threshold = [0:0.01:0.2 0.3:0.1:1]
+            truthOutPath = sprintf('%s/%s_thresh%1.2f.png', outputDir, fileName, threshold);
+            truthImage = visualize_edge_weights(image, truthLabels, label2color, segMat, wAdjMat, threshold);
+            imwrite(truthImage, truthOutPath);
+        end
+    else
+        truthOutPath = sprintf('%s/%s.png', outputDir, fileName);
+        truthImage = visualize_edge_weights(image, truthLabels, label2color, segMat, wAdjMat);
+        imwrite(truthImage, truthOutPath);
+    end
 end
 
 end

@@ -1,4 +1,4 @@
-function [ inferImage ] = visualize_edge_weights( image, labels, label2color, segMat, wAdjMat )
+function [ inferImage ] = visualize_edge_weights( image, labels, label2color, segMat, wAdjMat, threshold )
 %VISUALIZE_EDGE_WEIGHTS Visualize single result.
 %
 %   image:          image matrix
@@ -7,7 +7,13 @@ function [ inferImage ] = visualize_edge_weights( image, labels, label2color, se
 %   segMat:         segments matrix
 %   wAdjMat:        adjacency matrix with edge weights
 
-narginchk(5, 5);
+narginchk(5, 6);
+
+if nargin < 6
+    threshold = -1; % means no threshold
+end
+
+VISUALIZE_BOUNDARIES_ONLY = 1;
 
 %% alpha parameter controls blending of label color and original image
 alpha = 0.66;
@@ -31,8 +37,11 @@ for row = 1:height
         color = label2color(label);
         
         %% draw pixel assuming not a boundary
-%         inferImage(row, col, :) = reshape([0 0 128], [1 1 3]);
-        inferImage(row, col, :) = (1-alpha)*inferImage(row, col, :) + reshape(uint8(alpha*color'), [1 1 3]);
+        if VISUALIZE_BOUNDARIES_ONLY
+            inferImage(row, col, :) = reshape([0 0 128], [1 1 3]);
+        else
+            inferImage(row, col, :) = (1-alpha)*inferImage(row, col, :) + reshape(uint8(alpha*color'), [1 1 3]);
+        end
         
         %% if boundary between segments, color as segment boundary
         boundary = 0; % 0 nothing, 1 boundary
@@ -45,7 +54,15 @@ for row = 1:height
         
         if boundary == 1
             weight = wAdjMat(segmentId, prevSegmentId); % should be [0, 1]
-            color = uint8(weight * 255);
+            if threshold < 0 % threshold not available
+                color = uint8(weight * 255);
+            else
+                if threshold <= weight
+                    color = uint8(255);
+                else
+                    color = uint8(0);
+                end
+            end
             inferImage(row, col, :) = reshape([color color color], [1 1 3]);
         end
     end
@@ -67,7 +84,15 @@ for col = 1:width
         
         if boundary == 1
             weight = wAdjMat(segmentId, prevSegmentId); % should be [0, 1]
-            color = uint8(weight * 255);
+            if threshold < 0 % threshold not available
+                color = uint8(weight * 255);
+            else
+                if threshold <= weight
+                    color = uint8(255);
+                else
+                    color = uint8(0);
+                end
+            end
             inferImage(row, col, :) = reshape([color color color], [1 1 3]);
         end
     end
