@@ -36,7 +36,7 @@ for row = 1:height
         label = labels(segmentId);
         color = label2color(label);
         
-        %% draw pixel assuming not a boundary
+        %% draw pixel color based on label
         if VISUALIZE_BOUNDARIES_ONLY
             inferImage(row, col, :) = reshape([0 0 128], [1 1 3]);
         else
