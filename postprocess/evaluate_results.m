@@ -228,6 +228,8 @@ for s = searchTypes
     evaluate(searchType) = stat;
 end % search type
 
+save([resultsDir '/evaluate.mat'], 'evaluate');
+
 end
 
 function [classSet] = get_classes(fileNameSet, preprocessedDir)
