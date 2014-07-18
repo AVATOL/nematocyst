@@ -241,17 +241,30 @@ namespace HCSearch
 
 	const double StochasticSuccessor::TOP_CONFIDENCES_PROPORTION = 0.5;
 	const double StochasticSuccessor::DEFAULT_T_PARM = 0.5;
+	const double StochasticSuccessor::DEFAULT_MAX_THRESHOLD = 1.0;
+	const double StochasticSuccessor::DEFAULT_MIN_THRESHOLD = 0.0;
 
 	StochasticSuccessor::StochasticSuccessor()
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
 	}
 
 	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+	StochasticSuccessor::StochasticSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
 	}
 
 	StochasticSuccessor::~StochasticSuccessor()
@@ -264,7 +277,12 @@ namespace HCSearch
 
 		// generate random threshold
 		double threshold = Rand::unifDist(); // ~ Uniform(0, 1)
-		LOG() << "Using threshold=" << threshold << endl;
+		threshold = threshold*(this->maxThreshold - this->minThreshold) + this->minThreshold;
+
+		if (!this->cutEdgesIndependently)
+			LOG() << "Cutting edges by state... Using threshold=" << threshold << endl;
+		else
+			LOG() << "Cutting edges independently..." << endl;
 
 		// perform cut
 		MyGraphAlgorithms::SubgraphSet* subgraphs = cutEdges(X, YPred, threshold, this->cutParam);
@@ -301,28 +319,44 @@ namespace HCSearch
 		vector<double> edgeWeights;
 
 		// iterate over all edges to store
-		for (map< int, set<int> >::iterator it = edges.begin();
-			it != edges.end(); ++it)
+		if (X.edgeWeightsAvailable)
 		{
-			int node1 = it->first;
-			set<int> neighbors = it->second;
-		
-			// loop over neighbors
-			for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+			for (map< MyPrimitives::Pair<int, int>, double >::iterator it = X.edgeWeights.begin(); it != X.edgeWeights.end(); ++it)
 			{
-				int node2 = *it2;
-
-				// get features and labels
-				VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
-				VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
-
-				// compute weights already
-				double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+				// get weights
+				double weight = it->second;
 				edgeWeights.push_back(weight);
 
 				// add
-				MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
-				edgeNodes.push_back(nodePair);
+				MyPrimitives::Pair<int, int> key = it->first;
+				edgeNodes.push_back(key);
+			}
+		}
+		else
+		{
+			for (map< int, set<int> >::iterator it = edges.begin();
+				it != edges.end(); ++it)
+			{
+				int node1 = it->first;
+				set<int> neighbors = it->second;
+		
+				// loop over neighbors
+				for (set<int>::iterator it2 = neighbors.begin(); it2 != neighbors.end(); ++it2)
+				{
+					int node2 = *it2;
+
+					// get features and labels
+					VectorXd nodeFeatures1 = X.graph.nodesData.row(node1);
+					VectorXd nodeFeatures2 = X.graph.nodesData.row(node2);
+
+					// compute weights already
+					double weight = exp( -(computeKL(nodeFeatures1, nodeFeatures2) + computeKL(nodeFeatures2, nodeFeatures1))*T/2 );
+					edgeWeights.push_back(weight);
+
+					// add
+					MyPrimitives::Pair< int, int> nodePair = MyPrimitives::Pair< int, int >(node1, node2);
+					edgeNodes.push_back(nodePair);
+				}
 			}
 		}
 
@@ -343,13 +377,15 @@ namespace HCSearch
 			else if (!cutEdgesIndependently)
 			{
 				// uniform state
-				decideToCut = edgeWeights[i] <= threshold;
+				//decideToCut = edgeWeights[i] <= threshold;
+				decideToCut =  threshold <= edgeWeights[i];
 			}
 			else
 			{
 				// bernoulli independent
 				double biasedCoin = Rand::unifDist(); // ~ Uniform(0, 1)
-				decideToCut = biasedCoin <= 1-edgeWeights[i];
+				//decideToCut = biasedCoin <= 1-edgeWeights[i];
+				decideToCut = biasedCoin <= edgeWeights[i];
 			}
 
 			if (!decideToCut)
@@ -527,12 +563,24 @@ namespace HCSearch
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
 	}
 	
 	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+
+	StochasticNeighborSuccessor::StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
 	}
 
 	StochasticNeighborSuccessor::~StochasticNeighborSuccessor()
@@ -550,12 +598,24 @@ namespace HCSearch
 	{
 		this->cutParam = DEFAULT_T_PARM;
 		this->cutEdgesIndependently = true;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
 	}
 
 	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam)
 	{
 		this->cutParam = cutParam;
 		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = DEFAULT_MAX_THRESHOLD;
+		this->minThreshold = DEFAULT_MIN_THRESHOLD;
+	}
+
+	StochasticConfidencesNeighborSuccessor::StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold)
+	{
+		this->cutParam = cutParam;
+		this->cutEdgesIndependently = cutEdgesIndependently;
+		this->maxThreshold = maxThreshold;
+		this->minThreshold = minThreshold;
 	}
 
 	StochasticConfidencesNeighborSuccessor::~StochasticConfidencesNeighborSuccessor()

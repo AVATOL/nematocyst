@@ -47,12 +47,7 @@ namespace HCSearch
 				<< Global::settings->paths->OUTPUT_INITFUNC_FEATURES_FILE << " " + Global::settings->paths->OUTPUT_INITFUNC_MODEL_FILE 
 				<< " " << Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE;
 
-			int retcode = MyFileSystem::Executable::executeRetries(ssPredictInitFuncCmd.str());
-			if (retcode != 0)
-			{
-				LOG(ERROR) << "Initial prediction failed!";
-				abort();
-			}
+			int retcode = MyFileSystem::Executable::executeRetriesFatal(ssPredictInitFuncCmd.str());
 
 			initStatePath = Global::settings->paths->OUTPUT_INITFUNC_PREDICT_FILE;
 		}

@@ -68,6 +68,9 @@ namespace MyProgramOptions
 		lambda1 = 1.0;
 		lambda2 = 1.0;
 		lambda3 = 1.0;
+
+		maxCuttingThreshold = 1.0;
+		minCuttingThreshold = 0.0;
 	}
 
 	ProgramOptions ProgramOptions::parseArguments(int argc, char* argv[])
@@ -605,6 +608,30 @@ namespace MyProgramOptions
 					po.lambda3 = atof(argv[i+1]);
 				}
 			}
+			else if (strcmp(argv[i], "--max-cutting-threshold") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.maxCuttingThreshold = atof(argv[i+1]);
+					if (po.maxCuttingThreshold < 0 || po.maxCuttingThreshold > 1)
+					{
+						LOG(ERROR) << "Threshold needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
+			else if (strcmp(argv[i], "--min-cutting-threshold") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.minCuttingThreshold = atof(argv[i+1]);
+					if (po.minCuttingThreshold < 0 || po.minCuttingThreshold > 1)
+					{
+						LOG(ERROR) << "Threshold needs to be between 0 and 1";
+						HCSearch::abort();
+					}
+				}
+			}
 			else
 			{
 				string argvi = argv[i];
@@ -664,6 +691,8 @@ namespace MyProgramOptions
 		cerr << "\t--pfeatures arg\t\t" << ": standard|standard-context|standard-conf|unary|unary-conf|"
 			"standard-pair-counts|standard-conf-pair-counts|dense-crf|standard-prune" << endl;
 		cerr << "\t--logs-path arg\t" << ": logs folder name" << endl;
+		cerr << "\t--max-cutting-threshold arg\t" << ": maximum threshold for deciding to cut edges" << endl;
+		cerr << "\t--min-cutting-threshold arg\t" << ": minimum threshold for deciding to cut edges" << endl;
 		cerr << "\t--models-path arg\t" << ": models folder name" << endl;
 		cerr << "\t--node-clamp arg\t" << ": clamp nodes if true" << endl;
 		cerr << "\t--node-clamp-threshold arg\t" << ": node clamp threshold" << endl;

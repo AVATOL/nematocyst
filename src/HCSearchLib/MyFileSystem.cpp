@@ -1,3 +1,6 @@
+#ifndef USE_WINDOWS
+#include <unistd.h>
+#endif
 #include "MyFileSystem.hpp"
 #include "Globals.hpp"
 
@@ -92,6 +95,16 @@ namespace MyFileSystem
 		{
 			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! " 
 				<< "Retrying " << numRemainingTries << " more times...";
+
+#ifndef USE_WINDOWS
+				LOG() << "sleeping before retrying...";
+				if (numRemainingTries == 1)
+					sleep(60);
+				else
+					sleep(10);
+				LOG() << "done." << endl;
+#endif
+
 			retcode = system(cmd.c_str());
 			numRemainingTries--;
 		}
@@ -107,5 +120,42 @@ namespace MyFileSystem
 	int Executable::executeRetries(string cmd)
 	{
 		return executeRetries(cmd, DEFAULT_NUM_RETRIES);
+	}
+
+	int Executable::executeRetriesFatal(string cmd, int numRetries)
+	{
+		int retcode = system(cmd.c_str());
+		int numRemainingTries = numRetries;
+		while (retcode != 0 && numRemainingTries > 0)
+		{
+			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! " 
+				<< "Retrying " << numRemainingTries << " more times...";
+			
+#ifndef USE_WINDOWS
+				LOG() << "sleeping before retrying...";
+				if (numRemainingTries == 1)
+					sleep(60);
+				else
+					sleep(10);
+				LOG() << "done." << endl;
+#endif
+			
+			retcode = system(cmd.c_str());
+			numRemainingTries--;
+		}
+
+		if (retcode != 0)
+		{
+			LOG(ERROR) << "after " << numRetries << " retries, executable cmd '" << cmd << "' still unable to succeed! Returned error code " << retcode << "!";
+			LOG(ERROR) << "aborting since all attempts failed!";
+			HCSearch::abort();
+		}
+
+		return retcode;
+	}
+
+	int Executable::executeRetriesFatal(string cmd)
+	{
+		return executeRetriesFatal(cmd, DEFAULT_NUM_RETRIES);
 	}
 };

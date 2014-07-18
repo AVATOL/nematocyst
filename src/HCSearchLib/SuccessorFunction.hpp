@@ -82,12 +82,17 @@ namespace HCSearch
 	protected:
 		static const double TOP_CONFIDENCES_PROPORTION;
 		static const double DEFAULT_T_PARM;
+		static const double DEFAULT_MAX_THRESHOLD;
+		static const double DEFAULT_MIN_THRESHOLD;
 		double cutParam; //!< temperature parameter
 		bool cutEdgesIndependently; //!< cut independently if true, cut by state otherwise
+		double maxThreshold; //!< max threshold for edge cutting
+		double minThreshold; //!< min threshold for edge cutting
 
 	public:
 		StochasticSuccessor();
 		StochasticSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
 		~StochasticSuccessor();
 
 		virtual vector< ImgCandidate > generateSuccessors(ImgFeatures& X, ImgLabeling& YPred, int timeStep, int timeBound);
@@ -115,6 +120,7 @@ namespace HCSearch
 	public:
 		StochasticNeighborSuccessor();
 		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
 		~StochasticNeighborSuccessor();
 
 	protected:
@@ -132,6 +138,7 @@ namespace HCSearch
 	public:
 		StochasticConfidencesNeighborSuccessor();
 		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam);
+		StochasticConfidencesNeighborSuccessor(bool cutEdgesIndependently, double cutParam, double maxThreshold, double minThreshold);
 		~StochasticConfidencesNeighborSuccessor();
 
 	protected:

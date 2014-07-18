@@ -55,6 +55,16 @@ namespace MyFileSystem
 		// Call shell to execute command cmd
 		// Retry if necessary (default num retries)
 		static int executeRetries(string cmd);
+
+		// Call shell to execute command cmd
+		// Retry if necessary
+		// Aborts when all attempts fail
+		static int executeRetriesFatal(string cmd, int numRetries);
+
+		// Call shell to execute command cmd
+		// Retry if necessary (default num retries)
+		// Aborts when all attempts fail
+		static int executeRetriesFatal(string cmd);
 	};
 }
 

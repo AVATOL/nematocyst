@@ -249,19 +249,25 @@ HCSearch::SearchSpace* setupSearchSpace(MyProgramOptions::ProgramOptions po)
 		LOG() << "stochastic" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		successor = new HCSearch::StochasticSuccessor(cutEdgesIndependently, po.cutParam);
+		LOG() << "\tMax threshold for cutting: " << po.maxCuttingThreshold << endl;
+		LOG() << "\tMin threshold for cutting: " << po.minCuttingThreshold << endl;
+		successor = new HCSearch::StochasticSuccessor(cutEdgesIndependently, po.cutParam, po.maxCuttingThreshold, po.minCuttingThreshold);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_NEIGHBORS:
 		LOG() << "stochastic neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		LOG() << "\tMax threshold for cutting: " << po.maxCuttingThreshold << endl;
+		LOG() << "\tMin threshold for cutting: " << po.minCuttingThreshold << endl;
+		successor = new HCSearch::StochasticNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.maxCuttingThreshold, po.minCuttingThreshold);
 		break;
 	case MyProgramOptions::ProgramOptions::STOCHASTIC_CONFIDENCES_NEIGHBORS:
 		LOG() << "stochastic confidences neighbors" << endl;
 		LOG() << "\tCut edges independently: " << cutEdgesIndependently << endl;
 		LOG() << "\tTemperature parameter: " << po.cutParam << endl;
-		successor = new HCSearch::StochasticConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam);
+		LOG() << "\tMax threshold for cutting: " << po.maxCuttingThreshold << endl;
+		LOG() << "\tMin threshold for cutting: " << po.minCuttingThreshold << endl;
+		successor = new HCSearch::StochasticConfidencesNeighborSuccessor(cutEdgesIndependently, po.cutParam, po.maxCuttingThreshold, po.minCuttingThreshold);
 		break;
 	case MyProgramOptions::ProgramOptions::CUT_SCHEDULE:
 		LOG() << "cut schedule" << endl;

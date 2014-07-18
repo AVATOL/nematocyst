@@ -561,6 +561,8 @@ namespace HCSearch
 		 */
 		bool learningMode;
 
+		int numLearn;
+
 	public:
 		VWRankModel();
 

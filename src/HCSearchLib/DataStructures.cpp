@@ -1,6 +1,10 @@
 #include <vector>
 #include <fstream>
 #include <iostream>
+#ifndef USE_WINDOWS
+#include <unistd.h>
+#endif
+
 #include "DataStructures.hpp"
 #include "Globals.hpp"
 #include "MyFileSystem.hpp"
@@ -726,11 +730,13 @@ namespace HCSearch
 	{
 		this->initialized = false;
 		this->learningMode = false;
+		this->numLearn = 0;
 	}
 
 	VWRankModel::VWRankModel(string fileName)
 	{
 		load(fileName);
+		this->numLearn = 0;
 	}
 	
 	double VWRankModel::rank(RankFeatures features)
@@ -861,63 +867,133 @@ namespace HCSearch
 		string featuresFileBase;
 		if (searchType == LEARN_H)
 		{
-			STARTMSG = "MERGEHSTART";
-			ENDMSG = "MERGEHEND";
+			ostringstream sstart;
+			sstart << "MERGEHSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGEHEND" << this->numLearn;
+			ENDMSG = send.str();
 			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C)
 		{
-			STARTMSG = "MERGECSTART";
-			ENDMSG = "MERGECEND";
+			ostringstream sstart;
+			sstart << "MERGECSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGECEND" << this->numLearn;
+			ENDMSG = send.str();
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C_ORACLE_H)
 		{
-			STARTMSG = "MERGECOHSTART";
-			ENDMSG = "MERGECOHEND";
+			ostringstream sstart;
+			sstart << "MERGECOHSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGECOHEND" << this->numLearn;
+			ENDMSG = send.str();
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
+		this->numLearn++;
 
 		MPI::Synchronize::masterWait(STARTMSG);
 
-		// merge step
-		if (Global::settings->RANK == 0)
-		{
-			mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES);
-		}
+		//// merge step
+		//if (Global::settings->RANK == 0)
+		//{
+		//	mergeRankingFiles(featuresFileBase, Global::settings->NUM_PROCESSES);
+		//}
 #endif
 
+		//if (Global::settings->RANK == 0)
+		//{
+		//	clock_t tic = clock();
+
+		//	// just in case, delete cache file if present
+		//	if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+		//	{
+		//		// delete cache file
+		//		MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+		//	}
+
+		//	// call VW
+		//	stringstream ssLearn;
+
+		//	// load previous model if exists
+		//	if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
+		//	{
+		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+		//			<< " -i " << modelFileName << ".model"
+		//			<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+		//	}
+		//	else
+		//	{
+		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
+		//			<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+		//	}
+		//	
+		//	MyFileSystem::Executable::executeRetries(ssLearn.str());
+
+		//	clock_t toc = clock();
+		//	LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+		//}
+
 		if (Global::settings->RANK == 0)
 		{
-			clock_t tic = clock();
-
-			// just in case, delete cache file if present
-			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+			for (int processID = 0; processID < Global::settings->NUM_PROCESSES; processID++)
 			{
-				// delete cache file
-				MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
-			}
+				clock_t tic = clock();
 
-			// call VW
-			stringstream ssLearn;
+				string FEATURES_FILE = Global::settings->updateRankIDHelper(Global::settings->paths->OUTPUT_TEMP_DIR, featuresFileBase, processID);
 
-			// load previous model if exists
-			if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
-			{
-				ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-					<< " -i " << modelFileName << ".model"
-					<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
-			}
-			else
-			{
-				ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-					<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
-			}
-			
-			MyFileSystem::Executable::executeRetries(ssLearn.str());
+				// just in case, delete cache file if present
+				if (MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE + ".cache"))
+				{
+					// delete cache file
+					MyFileSystem::FileSystem::deleteFile(FEATURES_FILE + ".cache");
+				}
 
-			clock_t toc = clock();
-			LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+				// call VW
+				stringstream ssLearn;
+
+				// load previous model if exists
+				if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
+				{
+					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
+						<< " -i " << modelFileName << ".model"
+						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+				}
+				else
+				{
+					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
+						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+				}
+				
+				MyFileSystem::Executable::executeRetriesFatal(ssLearn.str());
+
+				clock_t toc = clock();
+				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
+
+#ifndef USE_WINDOWS
+				LOG() << "sleeping...";
+				sleep(2);
+				LOG() << "done." << endl;
+#endif
+
+				// delete the feature file
+				ostringstream ossRemoveRankingFeatureCmd;
+				ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
+					<< " " << FEATURES_FILE;
+				MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
+
+				// delete the cache file
+				if (MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE + ".cache"))
+				{
+					// delete cache file
+					MyFileSystem::FileSystem::deleteFile(FEATURES_FILE + ".cache");
+				}
+			}
 		}
 
 #ifdef USE_MPI
@@ -933,7 +1009,10 @@ namespace HCSearch
 			load(modelFileName);
 
 			// delete cache file
-			MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
+			{
+				MyFileSystem::FileSystem::deleteFile(this->rankingFileName + ".cache");
+			}
 		}
 
 		LOG() << endl;
