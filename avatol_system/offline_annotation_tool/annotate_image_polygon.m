@@ -19,56 +19,67 @@ cnt = 1;
 %% loop for multiple annotations in one image
 done = 0;
 while ~done
-    good = 0;
+%     good = 0;
+%     
+%     %% loop for annotation attempt
+%     while ~good
+%         figure('name', 'Polygon Annotation Tool');
+%         imshow(img);
+%         title(sprintf('Annotation Object %d', cnt));
+%         
+%         %% store coordinates for this object
+%         obj.xcoords = [];
+%         obj.ycoords = [];
+%         
+%         %% record coordinates and draw them
+%         button = 0;
+%         xprev = [];
+%         yprev = [];
+%         while button ~= 3 % while not a right click
+%             % get input
+%             [x,y,button] = ginput(1);
+%             
+%             % if not a right click
+%             if button ~= 3
+%                 %% draw markers
+%                 hold on;
+%                 
+%                 if ~isempty(xprev)
+%                     plot([xprev x], [yprev y], '-y+', 'LineWidth', 2);
+%                 else
+%                     plot(x,y,'y+');
+%                 end
+%                 
+%                 %% add to list
+%                 obj.xcoords = [obj.xcoords; x];
+%                 obj.ycoords = [obj.ycoords; y];
+%                 
+%                 %% update
+%                 xprev = x;
+%                 yprev = y;
+%             else
+%                 % connect first and last point (visually only)
+%                 if length(obj.xcoords) >= 1
+%                     plot([obj.xcoords(1) obj.xcoords(end)], ...
+%                             [obj.ycoords(1) obj.ycoords(end)], '-y+', 'LineWidth', 2);
+%                 end
+%             end
+%         end
+%         
+%         good = strcmp(questdlg('Accept annotation?'), 'Yes') == 1;
+%         if ~good
+%            close; 
+%         end
+%     end
     
-    %% loop for annotation attempt
-    while ~good
-        figure('name', 'Polygon Annotation Tool');
-        imshow(img);
-        title(sprintf('Annotation Object %d', cnt));
-        
-        %% store coordinates for this object
-        obj.xcoords = [];
-        obj.ycoords = [];
-        
-        %% record coordinates and draw them
-        button = 0;
-        xprev = [];
-        yprev = [];
-        while button ~= 3 % while not a right click
-            % get input
-            [x,y,button] = ginput(1);
-            
-            % if not a right click
-            if button ~= 3
-                %% draw markers
-                hold on;
-                
-                if ~isempty(xprev)
-                    plot([xprev x], [yprev y], '-y+', 'LineWidth', 2);
-                else
-                    plot(x,y,'y+');
-                end
-                
-                %% add to list
-                obj.xcoords = [obj.xcoords; x];
-                obj.ycoords = [obj.ycoords; y];
-                
-                %% update
-                xprev = x;
-                yprev = y;
-            else
-                % connect first and last point (visually only)
-                if length(obj.xcoords) >= 1
-                    plot([obj.xcoords(1) obj.xcoords(end)], ...
-                            [obj.ycoords(1) obj.ycoords(end)], '-y+', 'LineWidth', 2);
-                end
-            end
-        end
-        
-        good = strcmp(questdlg('Accept annotation?'), 'Yes') == 1;
-        if ~good
-           close; 
+    %% interactive annotation session
+    obj.xcoords = [];
+    obj.ycoords = [];
+    while 1
+        [~, obj.xcoords, obj.ycoords] = roipoly(img);
+        close;
+        if length(obj.xcoords) > 2
+            break;
         end
     end
     
