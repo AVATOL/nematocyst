@@ -77,9 +77,15 @@ while ~done
     obj.ycoords = [];
     while 1
         [~, obj.xcoords, obj.ycoords] = roipoly(img);
-        close;
         if length(obj.xcoords) > 2
+            close;
             break;
+        else
+            if strcmp(questdlg('Retry annotation? (Click No to exit.)'), 'Yes') ~= 1
+                close;
+                error('Exiting annotation tool prematurely...');
+            end
+            close;
         end
     end
     
