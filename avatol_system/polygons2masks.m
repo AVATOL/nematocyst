@@ -17,7 +17,6 @@ narginchk(2, 2);
 WHITE = 255;
 
 [height, width, ~] = size(img);
-[X, Y] = meshgrid(1:width, 1:height);
 
 %% for each polygon, get pixels inside of polygon
 outMask = zeros(height, width);
@@ -26,7 +25,7 @@ for i = 1:length(objects)
         error('Object %d must contain at least 3 points for a polygon!', i);
     end
     
-    mask = inpolygon(X, Y, objects{i}.xcoords, objects{i}.ycoords);
+    mask = poly2mask(objects{i}.xcoords, objects{i}.ycoords, height, width);
     outMask = outMask | mask;
 end
 
