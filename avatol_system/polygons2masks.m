@@ -22,6 +22,10 @@ WHITE = 255;
 %% for each polygon, get pixels inside of polygon
 outMask = zeros(height, width);
 for i = 1:length(objects)
+    if length(objects{i}.xcoords) < 3
+        error('Object %d must contain at least 3 points for a polygon!', i);
+    end
+    
     mask = inpolygon(X, Y, objects{i}.xcoords, objects{i}.ycoords);
     outMask = outMask | mask;
 end
