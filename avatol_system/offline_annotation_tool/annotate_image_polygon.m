@@ -9,25 +9,29 @@ function [ objects ] = annotate_image_polygon( img )
 %                   .charID:    character ID
 %                   .charState: character state
 
+%% argument checking
+narginchk(1, 1);
+
+%% initialize
 objects = cell(1, 1);
 cnt = 1;
 
+%% loop for multiple annotations in one image
 done = 0;
-% loop for multiple annotations in one image
 while ~done
     good = 0;
     
-    % loop for annotation attempt
+    %% loop for annotation attempt
     while ~good
         figure('name', 'Polygon Annotation Tool');
         imshow(img);
         title(sprintf('Annotation Object %d', cnt));
         
-        % store coordinates for this object
+        %% store coordinates for this object
         obj.xcoords = [];
         obj.ycoords = [];
         
-        % record coordinates and draw them
+        %% record coordinates and draw them
         button = 0;
         xprev = [];
         yprev = [];
@@ -37,7 +41,7 @@ while ~done
             
             % if not a right click
             if button ~= 3
-                % draw markers
+                %% draw markers
                 hold on;
                 
                 if ~isempty(xprev)
@@ -46,11 +50,11 @@ while ~done
                     plot(x,y,'y+');
                 end
                 
-                % add to list
+                %% add to list
                 obj.xcoords = [obj.xcoords; x];
                 obj.ycoords = [obj.ycoords; y];
                 
-                % update
+                %% update
                 xprev = x;
                 yprev = y;
             else
@@ -68,17 +72,17 @@ while ~done
         end
     end
     
-    % get character ID/state of annotation
+    %% get character ID/state of annotation
     temp = inputdlg('Enter character ID:');
     obj.charID = temp{1};
     temp = inputdlg('Enter character state:');
     obj.charState = temp{1};
     
-    % add to objects data structure
+    %% add to objects data structure
     objects{cnt} = obj;
     cnt = cnt + 1;
     
-    % add another?
+    %% add another?
     done = strcmp(questdlg('Add another annotation for this image?'), 'No') == 1;
     
     close;
