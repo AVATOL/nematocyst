@@ -353,6 +353,7 @@ namespace HCSearch
 
 		USE_DAGGER = false;
 		CHECK_FOR_DUPLICATES = false;
+		USE_EDGE_WEIGHTS = false;
 
 		/**************** Experiment Settings ****************/
 

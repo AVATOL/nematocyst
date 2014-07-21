@@ -58,6 +58,7 @@ namespace MyProgramOptions
 		saveOutputMask = false;
 		pruneRatio = 0.5;
 		badPruneRatio = 1.0;
+		useEdgeWeights = false;
 
 		nodeClamp = false;
 		edgeClamp = false;
@@ -632,6 +633,15 @@ namespace MyProgramOptions
 					}
 				}
 			}
+			if (strcmp(argv[i], "--use-edge-weights") == 0)
+			{
+				po.useEdgeWeights = true;
+				if (i + 1 != argc)
+				{
+					if (strcmp(argv[i+1], "false") == 0)
+						po.useEdgeWeights = false;
+				}
+			}
 			else
 			{
 				string argvi = argv[i];
@@ -717,6 +727,7 @@ namespace MyProgramOptions
 			<< "cut-schedule|cut-schedule-neighbors|cut-schedule-confidences-neighbors"
 			<< "stochastic-schedule|stochastic-schedule-neighbors|stochastic-schedule-confidences-neighbors|stochastic-constrained" << endl;
 		cerr << "\t--temp-path arg\t" << ": temp folder name" << endl;
+		cerr << "\t--use-edge-weights arg\t\t" << ": use edge weights if true (must provide --edges-path)" << endl;
 		cerr << "\t--unique-iter arg\t\t" << ": unique iteration ID (num-test-iters needs to be 1)" << endl;
 		cerr << "\t--verbose arg\t\t\t" << ": turn on verbose output if true" << endl;
 		cerr << endl;
