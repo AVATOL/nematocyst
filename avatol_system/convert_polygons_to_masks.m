@@ -1,19 +1,20 @@
-function convert_polygons_to_masks( imagesPath, annotationsPath, charID, outputPath )
+function convert_polygons_to_masks( basePath, trainingList, charID, outputPath )
 %CONVERT_POLYGONS_TO_MASKS 
 %
-%   imagesPath:         path to images
-%   annotationsPath:    path to annotations
-%   charID:             character ID string
-%   outputPath:         path to save masks
+%   trainingList    :   cell of structs where a struct denotes 
+%                       a training instance and each struct has
+%                           .pathToMedia: path to image
+%                           .charState: character state
+%                           .pathToAnnotation: path to annotation
+%                           .taxonID: taxon ID
+%   charID          :   character ID string
+%   outputPath      :   path to save masks
 
 %% argument checking
 narginchk(4, 4);
 
 %% constants
-ANNOTATION_EXTENSION = '.txt';
 MASK_EXTENSION = '.png';
-% valid image extensions to check - specify each beginning with .
-VALID_IMAGE_EXTENSIONS = lower({'.jpg'; '.png'});
 
 %% create output directory if doesn't exist
 if ~exist(outputPath, 'dir')
@@ -21,33 +22,17 @@ if ~exist(outputPath, 'dir')
 end
 
 %% process images folder
-fileListingArray = dir(imagesPath);
-for i= 1:length(fileListingArray)
-    fileStruct = fileListingArray(i);
-    
-    %% skip folders and files with invalid extensions
-    if fileStruct.isdir
-        continue;
-    else
-        [~,imageFileName,imageExt] = fileparts(fileStruct.name);
-        if sum(ismember(VALID_IMAGE_EXTENSIONS, lower(imageExt))) == 0
-            continue;
-        end
-    end
-    
-    %% check if annotation file exists
-    annotationFileName = [imageFileName '_' charID];
-    annotationFilePath = [annotationsPath filesep annotationFileName ANNOTATION_EXTENSION];
-    if ~exist(annotationFilePath, 'file')
-        continue;
-    end
+for i = 1:length(trainingList)
+    imagesPath = [basePath filesep trainingList{i}.pathToMedia];
+    annotationPath = [basePath filesep trainingList{i}.pathToAnnotation];
+    [~, annotationFileName, ~] = fileparts(annotationPath);
     
     %% read polygon coordinates data
-    fprintf('Processing mask from %s...\n', annotationFileName);
-    objects = read_annotation_file(annotationFilePath, charID);
+    fprintf('Processing mask %d...\n', i);
+    objects = read_annotation_file(annotationPath, charID);
     
     %% convert to mask
-    img = imread([imagesPath filesep imageFileName imageExt]);
+    img = imread(imagesPath);
     imgMask = polygons2masks(img, objects);
     
     %% save mask to file
