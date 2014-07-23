@@ -1,11 +1,15 @@
-function annotate_images( imagesPath, outputPath )
-%ANNOTATE_IMAGES Lightweight polyon annotation tool for characters.
+function annotate_images( imagesPath, outputPath, annotateType )
+%ANNOTATE_IMAGES Lightweight annotation tool for characters.
 %
 %   imagesPath:     path to images
 %   outputPath:     path to save annotations
 
 %% argument checking
-narginchk(2, 2);
+narginchk(2, 3);
+
+if nargin < 3
+    annotateType = 'polygon';
+end
 
 %% other settings
 % valid image extensions to check - specify each beginning with .
@@ -46,15 +50,24 @@ for i= 1:length(fileListingArray)
     %% begin user interactive annotation session
     imgPath = [imagesPath filesep fileStruct.name];
     img = imread(imgPath);
-    objects = annotate_image_polygon(img);
+    if strcmpi(annotateType, 'box') == 1
+        img = imresize(img, 0.5);
+        objects = annotate_image_box(img);
+    else
+        objects = annotate_image_polygon(img);
+    end
     
     %% save annotation data to file
-    save_annotation(objects, [outputPath filesep fileName '.txt']);
+    if strcmpi(annotateType, 'box') == 1
+        save_annotation_box(objects, [outputPath filesep fileName '.txt']);
+    else
+        save_annotation_polygon(objects, [outputPath filesep fileName '.txt']);
+    end
 end
 
 end
 
-function save_annotation(objects, filename)
+function save_annotation_polygon(objects, filename)
 % saves annotation objects to file
 % format: x1,y1;...;xn,yn:charID:charState
 
@@ -68,6 +81,25 @@ for i = 1:length(objects)
       string = strcat(string, sprintf(';%.f,%.f', obj.xcoords(j), obj.ycoords(j))); 
    end
    string = sprintf('%s:%s:%s', string, obj.charID, obj.charState);
+   
+   fprintf(fid, '%s\n', string);
+end
+
+fclose(fid);
+
+end
+
+function save_annotation_box(objects, filename)
+% saves annotation objects to file
+% format: x1,y1;...;xn,yn:charID:charState
+
+fid = fopen(filename, 'w');
+
+for i = 1:length(objects)
+   obj = objects{i};
+   
+   string = sprintf('%.f,%.f', obj.x, obj.y); 
+   string = sprintf('%s:%s', string, obj.windowSize);
    
    fprintf(fid, '%s\n', string);
 end
