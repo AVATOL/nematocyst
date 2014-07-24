@@ -30,6 +30,8 @@ VALID_LIST = 'Validation.txt';
 TEST_LIST = 'Test.txt';
 ALL_LIST = 'All.txt';
 
+DUMMY_VALUE = 1;
+
 EXTERNAL_PATH = 'external';
 LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear'];
 
@@ -91,6 +93,8 @@ trainEdgeFeatures = [];
 for i = 1:nFiles
     fprintf('Exporting example %d...\n', i-1);
     
+    isTrainingImage = isfield(allData{i}, 'segLabels');
+    
     filename = sprintf('%d', i-1);
     if isfield(allData{i}, 'filename');
         filename = allData{i}.filename;
@@ -118,16 +122,22 @@ for i = 1:nFiles
     metaFile = sprintf('%s.txt', filename);
     
     % write nodes
-    libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
-    trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
-    trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
+    if isTrainingImage
+        libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], allData{i}.segLabels, sparse(allData{i}.feat2));
+    else
+        libsvmwrite([outputPath filesep 'nodes' filesep nodesFile], DUMMY_VALUE*ones(size(allData{i}.feat2, 1), 1), sparse(allData{i}.feat2));
+    end
+    if isTrainingImage
+        trainNodeLabels = [trainNodeLabels; allData{i}.segLabels];
+        trainNodeFeatures = [trainNodeFeatures; allData{i}.feat2];
+    end
     
     % write node locations and sizes
     if isfield(allData{i}, 'segLocations') && isfield(allData{i}, 'segSizes');
         nodeLocations = allData{i}.segLocations;
         nodeSizes = allData{i}.segSizes;
     else
-        [nodeLocations, nodeSizes] = pre_extract_node_locations(allData{i}.segs2, length(allData{i}.segLabels));
+        [nodeLocations, nodeSizes] = pre_extract_node_locations(allData{i}.segs2, size(allData{i}.feat2, 1));
         allData{i}.segLocations = nodeLocations;
         allData{i}.segSizes = nodeSizes;
     end
@@ -147,21 +157,31 @@ for i = 1:nFiles
         e1 = allData{i}.feat2(ai(j), :);
         e2 = allData{i}.feat2(aj(j), :);
         edgeFeatures(j, :) = abs(e1 - e2);
-        edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) ~= allData{i}.segLabels(aj(j), 1);
+        if isTrainingImage
+            edgeLabels(j, 1) = allData{i}.segLabels(ai(j), 1) ~= allData{i}.segLabels(aj(j), 1);
+        else
+            edgeLabels(j, 1) = DUMMY_VALUE;
+        end
     end
     edgeLabels(edgeLabels == 0) = -1;
     
     libsvmwrite([outputPath filesep 'edgefeatures' filesep edgeFeaturesFile], edgeLabels, sparse(edgeFeatures));
-    trainEdgeLabels = [trainEdgeLabels; edgeLabels];
-    trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
+    if isTrainingImage
+        trainEdgeLabels = [trainEdgeLabels; edgeLabels];
+        trainEdgeFeatures = [trainEdgeFeatures; edgeFeatures];
+    end
     
     % write segments
     dlmwrite([outputPath filesep 'segments' filesep segmentsFile], allData{i}.segs2, ' ');
     
     % write ground truth
-    dlmwrite([outputPath filesep 'groundtruth' filesep groundtruthFile], allData{i}.labels, ' ');
+    if isTrainingImage
+        dlmwrite([outputPath filesep 'groundtruth' filesep groundtruthFile], allData{i}.labels, ' ');
+    end
     
-    classes = union(classes, allData{i}.segLabels);
+    if isTrainingImage
+        classes = union(classes, allData{i}.segLabels);
+    end
     
     %% write meta file
     fid = fopen([outputPath filesep 'meta' filesep metaFile], 'w');
@@ -247,7 +267,7 @@ for i = 1:nFiles
         unix(LIBLINEAR_PREDICT_CMD);
     end
     
-    [initStateLabels, ~, ~] = predict(allData{i}.segLabels, sparse(allData{i}.feat2), initStateModel, '-b 1');
+    [initStateLabels, ~, ~] = predict(DUMMY_VALUE*ones(size(allData{i}.feat2, 1), 1), sparse(allData{i}.feat2), initStateModel, '-b 1');
     allData{i}.initState = initStateLabels;
 end
 
