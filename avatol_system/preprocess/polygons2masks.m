@@ -14,7 +14,7 @@ function outMask = polygons2masks( img, objects )
 narginchk(2, 2);
 
 %% constants
-WHITE = 255;
+FOREGROUND_COLOR = 255;
 
 [height, width, ~] = size(img);
 
@@ -22,7 +22,7 @@ WHITE = 255;
 outMask = zeros(height, width);
 for i = 1:length(objects)
     if length(objects{i}.xcoords) < 3
-        error('Object %d must contain at least 3 points for a polygon!', i);
+        error('Object %d must contain at least 3 collinear points for a polygon!', i);
     end
     
     mask = poly2mask(objects{i}.xcoords, objects{i}.ycoords, height, width);
@@ -30,6 +30,6 @@ for i = 1:length(objects)
 end
 
 %% final output mask
-outMask = WHITE*uint8(outMask);
+outMask = FOREGROUND_COLOR*uint8(outMask);
 
 end
