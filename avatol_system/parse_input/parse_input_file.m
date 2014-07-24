@@ -39,6 +39,7 @@ for i = 1:length(linesCell)
    parsed = textscan(lineString, '%s', 'delimiter', DATA_DELIMITER);
    parsed = parsed{1};
    
+   object = struct;
    if strcmp(parsed{1}, TRAINING_DATA_STRING) == 1
        object.pathToMedia = parsed{2};
        object.charState = parsed{3};
