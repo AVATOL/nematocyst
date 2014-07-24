@@ -1,4 +1,4 @@
-function [ allData ] = preprocess_avatol( basePath, trainingList, charID, color2label, outputPath )
+function [ allData ] = preprocess_avatol( basePath, trainingList, scoringList, charID, color2label, outputPath )
 %PREPROCESS_AVATOL Preprocesses training examples from the AVATOL system 
 %into a data format for HCSearch to work. Performs feature extraction. 
 %This implementation creates a regular grid of HOG/SIFT patches on
@@ -13,6 +13,10 @@ function [ allData ] = preprocess_avatol( basePath, trainingList, charID, color2
 %                   	.charState: character state
 %                   	.pathToAnnotation: path to annotation
 %                   	.taxonID: taxon ID
+%   scoringList     :   cell of structs where a struct denotes 
+%                       a test/scoring instance and each struct has
+%                           .pathToMedia: path to image
+%                           .taxonID: taxon ID
 %   charID:         character ID string
 %   color2label:    mapping from groundtruth colors to label (use containers.Map)
 %	outputPath:     folder path to output preprocessed data
@@ -21,28 +25,41 @@ function [ allData ] = preprocess_avatol( basePath, trainingList, charID, color2
 %	allData:        data structure containing all preprocessed data
 
 %% argument checking
-narginchk(5, 5);
+narginchk(6, 6);
 
 %% parameters - tune if necessary
 PATCH_SIZE = 32; % size of patches
 DESCRIPTOR = 1; % 0 = HOG, 1 = SIFT
 
 %% process images/groundtruth folder
-nImages = length(trainingList);
+nTrainingImages = length(trainingList);
+nTestImages = length(scoringList);
+nImages = nTrainingImages + nTestImages;
 allData = cell(1, nImages);
 cnt = 1;
 for i = 1:nImages
-    imagesPath = normalize_file_sep([basePath filesep trainingList{i}.pathToMedia]);
-    annotationPath = normalize_file_sep([basePath filesep trainingList{i}.pathToAnnotation]);
+    if i <= nTrainingImages
+        dataStruct = trainingList{i};
+        train = 1;
+        fprintf('Processing training image %d...\n', i);
+    else
+        dataStruct = scoringList{i-nTrainingImages};
+        train = 0;
+        fprintf('Processing test image %d...\n', i-nTrainingImages);
+    end
     
     %% get paths
-    fprintf('Processing image %i...\n', i);
-    
+    imagesPath = normalize_file_sep([basePath filesep dataStruct.pathToMedia]);
     if ~exist(imagesPath, 'file')
         error(['image "' imagesPath '" does not exist']);
     end
-    if ~exist(annotationPath, 'file')
-        error(['annotations "' annotationPath '" does not exist']);
+    
+    if train
+        annotationPath = normalize_file_sep([basePath filesep dataStruct.pathToAnnotation]);
+        
+        if ~exist(annotationPath, 'file')
+            error(['annotations "' annotationPath '" does not exist']);
+        end
     end
     
     %% get image
@@ -61,33 +78,39 @@ for i = 1:nImages
     end
     [nodesHeight, nodesWidth, ~] = size(featureMatrix);
     
-    %% get groundtruth - read polygon data and get mask
-    objects = read_annotation_file(annotationPath, charID);
-    labels = polygons2masks(img, objects);
-    [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);
-    
-    %% extract labels
-    [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, color2label);
+    if train
+        %% get groundtruth - read polygon data and get mask
+        objects = read_annotation_file(annotationPath, charID);
+        labels = polygons2masks(img, objects);
+        [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);
+
+        %% extract labels
+        [truthMatrix, labels] = pre_ground_truth(labels, PATCH_SIZE, color2label);
+    end
     
     %% get segments and locations
     [segments, segLocations, segSizes] = getSegments(PATCH_SIZE, height, width);
     
     %% add to data structure
     allData{cnt}.img = img;
-    allData{cnt}.labels = labels;
+    if train
+        allData{cnt}.labels = labels;
+    end
     allData{cnt}.segs2 = segments;
     allData{cnt}.feat2 = reshape(permute(featureMatrix, [2 1 3]), nodesWidth*nodesHeight, []);
-    allData{cnt}.segLabels = reshape(permute(truthMatrix, [2 1]), nodesWidth*nodesHeight, []);
+    if train
+        allData{cnt}.segLabels = reshape(permute(truthMatrix, [2 1]), nodesWidth*nodesHeight, []);
+    end
     allData{cnt}.adj = getAdjacencyMatrix(nodesHeight, nodesWidth);
     allData{cnt}.segLocations = segLocations;
     allData{cnt}.segSizes = segSizes;
-    allData{cnt}.avatol = trainingList{i};
+    allData{cnt}.avatol = dataStruct;
     
     cnt = cnt+1;
 end
 
 %% hand over to allData preprocessing
-allData = preprocess_alldata(allData, outputPath, 1:nImages, [], []);
+allData = preprocess_alldata(allData, outputPath, 1:nTrainingImages, [], nTrainingImages+1:nImages);
 
 end
 
