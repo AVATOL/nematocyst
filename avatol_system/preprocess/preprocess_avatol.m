@@ -32,6 +32,7 @@ PATCH_SIZE = 32; % size of patches
 DESCRIPTOR = 1; % 0 = HOG, 1 = SIFT
 
 %% process images/groundtruth folder
+fprintf('Extracting features...\n');
 nTrainingImages = length(trainingList);
 nTestImages = length(scoringList);
 nImages = nTrainingImages + nTestImages;
@@ -110,6 +111,7 @@ for i = 1:nImages
 end
 
 %% hand over to allData preprocessing
+fprintf('Exporting features...\n');
 allData = preprocess_alldata(allData, outputPath, 1:nTrainingImages, [], nTrainingImages+1:nImages);
 
 end
