@@ -917,17 +917,25 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 
 	LOG() << endl;
 
-	LOG() << "=== Program Options ===" << endl;
-	LOG() << "Rank learner: " << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
-	LOG() << "Num training iterations: " << po.numTrainIterations << endl;
-	LOG() << "Num testing iterations: " << po.numTestIterations << endl;
-	if (po.numTestIterations == 1)
+	if (!po.demoMode)
 	{
-		LOG() << "\tUnique iteration ID: " << po.uniqueIterId << endl;
+		LOG() << "=== Program Options ===" << endl;
+		LOG() << "Rank learner: " << HCSearch::RankerTypeStrings[po.rankLearnerType] << endl;
+		LOG() << "Num training iterations: " << po.numTrainIterations << endl;
+		LOG() << "Num testing iterations: " << po.numTestIterations << endl;
+		if (po.numTestIterations == 1)
+		{
+			LOG() << "\tUnique iteration ID: " << po.uniqueIterId << endl;
+		}
+		LOG() << "Save anytime predictions: " << po.saveAnytimePredictions << endl;
+		LOG() << "Save features files: " << po.saveFeaturesFiles << endl;
+		LOG() << "Save output label masks: " << po.saveOutputMask << endl;
 	}
-	LOG() << "Save anytime predictions: " << po.saveAnytimePredictions << endl;
-	LOG() << "Save features files: " << po.saveFeaturesFiles << endl;
-	LOG() << "Save output label masks: " << po.saveOutputMask << endl;
+	else
+	{
+		LOG() << "=== USING DEMO MODE ===" << endl;
+	}
+
 	LOG() << endl;
 
 	if (po.verboseMode)
@@ -940,6 +948,7 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 		LOG() << "LIBLINEAR_DIR: " << HCSearch::Global::settings->paths->LIBLINEAR_DIR  << endl;
 		LOG() << "LIBSVM_DIR: " << HCSearch::Global::settings->paths->LIBSVM_DIR  << endl;
 		LOG() << "SVMRANK_DIR: " << HCSearch::Global::settings->paths->SVMRANK_DIR  << endl;
+		LOG() << "VW_DIR: " << HCSearch::Global::settings->paths->VOWPALWABBIT_DIR  << endl;
 
 		LOG() << endl;
 
