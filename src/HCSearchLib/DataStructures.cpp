@@ -861,10 +861,27 @@ namespace HCSearch
 		this->rankingFile->close();
 		delete this->rankingFile;
 
+		// close ranking file
+		this->rankingFile->close();
+		delete this->rankingFile;
+
+		string featuresFileBase;
+		if (searchType == LEARN_H)
+		{
+			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C)
+		{
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_C_ORACLE_H)
+		{
+			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+		}
+
 #ifdef USE_MPI
 		string STARTMSG;
 		string ENDMSG;
-		string featuresFileBase;
 		if (searchType == LEARN_H)
 		{
 			ostringstream sstart;
@@ -873,7 +890,6 @@ namespace HCSearch
 			ostringstream send;
 			send << "MERGEHEND" << this->numLearn;
 			ENDMSG = send.str();
-			featuresFileBase = Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C)
 		{
@@ -883,7 +899,6 @@ namespace HCSearch
 			ostringstream send;
 			send << "MERGECEND" << this->numLearn;
 			ENDMSG = send.str();
-			featuresFileBase = Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE_BASE;
 		}
 		else if (searchType == LEARN_C_ORACLE_H)
 		{
@@ -893,7 +908,6 @@ namespace HCSearch
 			ostringstream send;
 			send << "MERGECOHEND" << this->numLearn;
 			ENDMSG = send.str();
-			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
 		this->numLearn++;
 

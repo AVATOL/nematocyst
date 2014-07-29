@@ -21,26 +21,30 @@ void demo(int timeBound)
 	HCSearch::IInitialPredictionFunction* logRegInitPredFunc = new HCSearch::LogRegInit();
 	HCSearch::ISuccessorFunction* stochasticSuccessor = new HCSearch::StochasticSuccessor();
 	HCSearch::ILossFunction* lossFunc = new HCSearch::HammingLoss();
-	HCSearch::SearchSpace* searchSpace = new  HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, NULL, lossFunc);
+	HCSearch::IPruneFunction* pruneFunc = new HCSearch::NoPrune();
+	HCSearch::SearchSpace* searchSpace = new  HCSearch::SearchSpace(heuristicFeatFunc, costFeatFunc, logRegInitPredFunc, stochasticSuccessor, pruneFunc, lossFunc);
 
 	// load search procedure
 	HCSearch::ISearchProcedure* searchProcedure = new HCSearch::GreedySearchProcedure();
 
+	// set rank learner algorithm
+	HCSearch::RankerType ranker = HCSearch::VW_RANK;
+
 	// train H
 	HCSearch::IRankModel* heuristicModel = HCSearch::Learning::learnH(XTrain, YTrain, XValidation, YValidation, 
-	timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
+	timeBound, searchSpace, searchProcedure, ranker, 1);
 
 	// train C
 	HCSearch::IRankModel* costModel = HCSearch::Learning::learnC(XTrain, YTrain, XValidation, YValidation, 
-	heuristicModel, timeBound, searchSpace, searchProcedure, HCSearch::SVM_RANK, 1);
+	heuristicModel, timeBound, searchSpace, searchProcedure, ranker, 1);
 
 	// run HC search inference on the first test example for demo
 	HCSearch::ISearchProcedure::SearchMetadata searchMetadata; // no meta data needed for this demo
 	HCSearch::Inference::runHCSearch(XTest[0], timeBound, searchSpace, searchProcedure, heuristicModel, costModel, searchMetadata);
 
 	// save models for later use
-	HCSearch::Model::saveModel(heuristicModel, "path/to/heuristic/model.txt", HCSearch::SVM_RANK);
-	HCSearch::Model::saveModel(costModel, "path/to/cost/model.txt", HCSearch::SVM_RANK);
+	HCSearch::Model::saveModel(heuristicModel, "path/to/heuristic/model.txt", ranker);
+	HCSearch::Model::saveModel(costModel, "path/to/cost/model.txt", ranker);
 
 	// clean up
 	delete searchSpace;
