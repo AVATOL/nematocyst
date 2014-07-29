@@ -191,7 +191,12 @@ namespace HCSearch
 		LIBLINEAR_DIR = EXTERNAL_DIR + "liblinear" + DIR_SEP;
 		LIBSVM_DIR = EXTERNAL_DIR + "libsvm" + DIR_SEP;
 		SVMRANK_DIR = EXTERNAL_DIR + "svm_rank" + DIR_SEP;
+#ifdef USE_WINDOWS
+		//TODO: work on all architectures
+		VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP + "x64" + DIR_SEP + "Release" + DIR_SEP;
+#else
 		VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP;
+#endif
 
 		// input directories
 
