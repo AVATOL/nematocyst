@@ -633,7 +633,7 @@ namespace MyProgramOptions
 					}
 				}
 			}
-			if (strcmp(argv[i], "--use-edge-weights") == 0)
+			else if (strcmp(argv[i], "--use-edge-weights") == 0)
 			{
 				po.useEdgeWeights = true;
 				if (i + 1 != argc)
