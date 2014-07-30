@@ -1,12 +1,22 @@
-function [ variances ] = score_basal_texture( allDataInstance, iter )
-%SCORE_BASAL_TEXTURE Summary of this function goes here
-%   Detailed explanation goes here
+function [ charState ] = score_basal_texture( allDataInstance )
+%SCORE_BASAL_TEXTURE Score basal tubule morphology
+%
+%   allDataInstance:    image and labeling data
+%   charState:          character state
+%                           0 = homogeneous
+%                           1 = heterogeneous
 
-% constants
+%% constants
 BACKGROUND_LABEL = -1;
 FOREGROUND_LABEL = 1; % 1 = basal, 2 = capsule
 
-OUTPUT_FOLDER_NAME = 'basal_test';
+CHAR_STATE_HOMOGENEOUS = 0;
+CHAR_STATE_HETEROGENEOUS = 1;
+
+%% settings
+HETEROGENEOUS_THRESHOLD = 0; % 0 = if one mode is sufficient
+
+% OUTPUT_FOLDER_NAME = 'basal_test';
 PATCH_SIZE = 32; % size of patches
 
 % don't do anything if image doesn't contain the foreground label
@@ -15,40 +25,40 @@ if sum(double(allDataInstance.segLabels) == FOREGROUND_LABEL) == 0
     return;
 end
 
-if ~exist(['Data/' OUTPUT_FOLDER_NAME], 'dir')
-    mkdir(['Data/' OUTPUT_FOLDER_NAME]);
-end
+% if ~exist(['Data/' OUTPUT_FOLDER_NAME], 'dir')
+%     mkdir(['Data/' OUTPUT_FOLDER_NAME]);
+% end
 
-% only necessary for visualization
-label2color = containers.Map({-1, 0, 1, 2, 3}, {[64 64 64], [0 0 0], [0 255 0], [0 0 255], [255 0 0]});
+% % only necessary for visualization
+% label2color = containers.Map({-1, 0, 1, 2, 3}, {[64 64 64], [0 0 0], [0 255 0], [0 0 255], [255 0 0]});
 
 % only get capsule
 segLabels = allDataInstance.segLabels;
 segLabels(segLabels ~= FOREGROUND_LABEL) = BACKGROUND_LABEL;
 
 %% visualize
-figure;
-visualize_grid_image(allDataInstance.img, segLabels, label2color, allDataInstance.segs2);
-print(gcf, '-dpng', sprintf('Data/%s/image_%d.png', OUTPUT_FOLDER_NAME, iter));
-pause(0.1);
+% figure;
+% visualize_grid_image(allDataInstance.img, segLabels, label2color, allDataInstance.segs2);
+% print(gcf, '-dpng', sprintf('Data/%s/image_%d.png', OUTPUT_FOLDER_NAME, iter));
+% pause(0.1);
 
 %% convert image into binary mask for regionprops - to get orientation
 labels = infer_pixels(segLabels, allDataInstance.segs2);
 labels(labels == BACKGROUND_LABEL) = 0;
 labels(labels == FOREGROUND_LABEL) = 1;
 
-figure;
-imshow(labels);
-print(gcf, '-dpng', sprintf('Data/%s/mask_%d.png', OUTPUT_FOLDER_NAME, iter));
-pause(0.01);
+% figure;
+% imshow(labels);
+% print(gcf, '-dpng', sprintf('Data/%s/mask_%d.png', OUTPUT_FOLDER_NAME, iter));
+% pause(0.01);
 
 %% get skeleton
-skeleton = bwmorph(labels, 'thin', Inf);
+% skeleton = bwmorph(labels, 'thin', Inf);
 
-figure;
-imshow(skeleton);
-print(gcf, '-dpng', sprintf('Data/%s/thin_%d.png', OUTPUT_FOLDER_NAME, iter));
-pause(0.01);
+% figure;
+% imshow(skeleton);
+% print(gcf, '-dpng', sprintf('Data/%s/thin_%d.png', OUTPUT_FOLDER_NAME, iter));
+% pause(0.01);
 
 %% get cc
 cc = bwconncomp(labels);
@@ -120,8 +130,6 @@ for ind = 1:nPatches-1
         part2var = cov(part2Patches);
         
         % calculate difference
-%         part1var = part1var .* eye(size(part1var, 1));
-%         part2var = part2var .* eye(size(part2var, 1));
         variances(ind) = norm(sparse(part1var - part2var), 'fro')/(norm(sparse(part1var), 'fro')*norm(sparse(part2var), 'fro'));
     end
 end
@@ -129,27 +137,33 @@ end
 %% find the modes
 segments = watershed(variances);
 modeLocations = segments == 0;
-modes = modeLocations .* variances;
-modes(isnan(modes)) = 0;
-modes(modes == 0) = Inf;
+% modes = modeLocations .* variances;
+% modes(isnan(modes)) = 0;
+% modes(modes == 0) = Inf;
 
 %% plot
-figure;
-plot(1:nPatches-1, variances, 'x-');
-hold on;
-plot(1:nPatches-1, modes, 'ro', 'MarkerSize', 15, 'LineWidth', 2);
-if useHorizontalScan == 1
-    xlabel('x-coordinate Patch Position Threshold');
-else
-    xlabel('y-coordinate Patch Position Threshold');
-end
-ylabel('Normalized Difference of Covariances of Two Regions');
-title('Determination of 1/2-Kind Basal Tubule');
-grid on;
-print(gcf, '-dpng', sprintf('Data/%s/plot_%d.png', OUTPUT_FOLDER_NAME, iter));
-pause(0.1);
+% figure;
+% plot(1:nPatches-1, variances, 'x-');
+% hold on;
+% plot(1:nPatches-1, modes, 'ro', 'MarkerSize', 15, 'LineWidth', 2);
+% if useHorizontalScan == 1
+%     xlabel('x-coordinate Patch Position Threshold');
+% else
+%     xlabel('y-coordinate Patch Position Threshold');
+% end
+% ylabel('Normalized Difference of Covariances of Two Regions');
+% title('Determination of 1/2-Kind Basal Tubule');
+% grid on;
+% print(gcf, '-dpng', sprintf('Data/%s/plot_%d.png', OUTPUT_FOLDER_NAME, iter));
+% pause(0.1);
+% 
+% close all;
 
-close all;
+%% score character
+charState = CHAR_STATE_HOMOGENEOUS;
+if sum(double(modeLocations)) > HETEROGENEOUS_THRESHOLD
+    charState = CHAR_STATE_HETEROGENEOUS;
+end
 
 end
 
