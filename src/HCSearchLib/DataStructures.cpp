@@ -861,10 +861,6 @@ namespace HCSearch
 		this->rankingFile->close();
 		delete this->rankingFile;
 
-		// close ranking file
-		this->rankingFile->close();
-		delete this->rankingFile;
-
 		string featuresFileBase;
 		if (searchType == LEARN_H)
 		{
