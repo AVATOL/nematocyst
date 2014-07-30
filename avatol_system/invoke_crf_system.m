@@ -91,7 +91,7 @@ writelog(log_fid, 'Running detection post-process...\n');
 
 % postprocess
 allData = postprocess_avatol(allData, sprintf('%s/results', options.DETECTION_RESULTS_PATH), ...
-    sprintf('%s/splits/Test.txt', options.PREPROCESSED_PATH), options.HCSEARCH_TIMEBOUND);
+    options.HCSEARCH_TIMEBOUND);
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n', telapsed));
