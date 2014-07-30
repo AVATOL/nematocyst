@@ -24,6 +24,12 @@ end
 if ~isfield(options, 'PREPROCESSED_PATH')
     options.PREPROCESSED_PATH = [options.TEMP_PATH filesep 'predata'];
 end
+if ~isfield(options, 'DETECTION_RESULTS_PATH')
+    options.DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
+end
+if ~isfield(options, 'HCSEARCH_TIMEBOUND')
+    options.HCSEARCH_TIMEBOUND = 2;
+end
 
 %% ========== begin
 if ~exist(options.TEMP_PATH, 'dir')
@@ -64,20 +70,37 @@ writelog(log_fid, sprintf('Finished preprocessing input data. (%.1fs)\n\n', tela
 tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
 
-% if ispc
-%     [status, result] = dos(''); % TODO
-% else
-%     [status, result] = unix(''); % TODO
-% end
+cmdline = sprintf('HCSearch %s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors --num-test-iters 1', ...
+    options.PREPROCESSED_PATH, options.DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
+if ispc
+    fprintf('Detected PC. Running HC-Search...\n');
+    [status, result] = dos(cmdline);
+else
+    fprintf('Detected Unix. Running HC-Search...\n');
+    [status, result] = unix(cmdline);
+end
+fprintf('status=\n\n%d\n\n', status);
+fprintf('result=\n\n%s\n\n', result);
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running character detection. (%.1fs)\n\n', telapsed));
 
 %% ========== postprocess data for character scoring
 tstart = tic;
+writelog(log_fid, 'Running detection post-process...\n');
+
+% postprocess
+allData = postprocess_avatol(allData, sprintf('%s/results', options.DETECTION_RESULTS_PATH), ...
+    sprintf('%s/splits/Test.txt', options.PREPROCESSED_PATH), options.HCSEARCH_TIMEBOUND);
+
+telapsed = toc(tstart);
+writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n', telapsed));
+
+%% ========== character scoring
+tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
 
-% postprocess TODO
+% character scoring TODO
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running character scoring. (%.1fs)\n\n', telapsed));
