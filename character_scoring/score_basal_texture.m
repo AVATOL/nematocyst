@@ -20,7 +20,7 @@ HETEROGENEOUS_THRESHOLD = 0; % 0 = if one mode is sufficient
 PATCH_SIZE = 32; % size of patches
 
 % don't do anything if image doesn't contain the foreground label
-if sum(double(allDataInstance.segLabels) == FOREGROUND_LABEL) == 0
+if sum(double(allDataInstance.inferLabels) == FOREGROUND_LABEL) == 0
     fprintf('skipping...\n');
     return;
 end
@@ -33,7 +33,7 @@ end
 % label2color = containers.Map({-1, 0, 1, 2, 3}, {[64 64 64], [0 0 0], [0 255 0], [0 0 255], [255 0 0]});
 
 % only get capsule
-segLabels = allDataInstance.segLabels;
+segLabels = allDataInstance.inferLabels;
 segLabels(segLabels ~= FOREGROUND_LABEL) = BACKGROUND_LABEL;
 
 %% visualize
@@ -80,7 +80,7 @@ fprintf('using horizontal scan=%d\n', useHorizontalScan);
 nPatchRows = height / PATCH_SIZE;
 nPatchCols = width / PATCH_SIZE;
 
-gridLabels = reshape(allDataInstance.segLabels, [nPatchCols, nPatchRows])';
+gridLabels = reshape(allDataInstance.inferLabels, [nPatchCols, nPatchRows])';
 nFeatures = size(allDataInstance.feat2, 2);
 gridFeatures = reshape(allDataInstance.feat2, [nPatchCols, nPatchRows, nFeatures]);
 gridFeatures = permute(gridFeatures, [2 1 3]);
