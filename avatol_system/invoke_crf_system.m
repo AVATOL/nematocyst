@@ -28,7 +28,7 @@ if ~isfield(options, 'DETECTION_RESULTS_PATH')
     options.DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
 end
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
-    options.HCSEARCH_TIMEBOUND = 2;
+    options.HCSEARCH_TIMEBOUND = 1; %TODO
 end
 
 %% ========== begin
@@ -45,7 +45,7 @@ writelog(log_fid, sprintf('Begin AVATOL system at %s.\n\n', datestr(now)));
 writelog(log_fid, 'Parsing input file...\n');
 
 % get character ID from file name
-[~, inFileName, ~] = fileparts(inputPath);
+[basePath, inFileName, ~] = fileparts(inputPath);
 charID = get_char_id_from_file_name(inFileName);
 
 % get list of training and test instances
@@ -61,7 +61,7 @@ writelog(log_fid, 'Preprocessing input data...\n');
 
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
-allData = preprocess_avatol('sample-ignore', trainingList, scoringList, ...
+allData = preprocess_avatol(basePath, trainingList, scoringList, ...
     charID, color2label, options.PREPROCESSED_PATH);
 
 telapsed = toc(tstart);
@@ -104,13 +104,16 @@ writelog(log_fid, 'Running character scoring...\n');
 cnt = 1;
 for i = scoringRange
     % perform character scoring
-    scoringList{cnt}.charState = score_basal_texture( allData{i} );
+    charState = score_basal_texture(allData{i});
+    scoringList{cnt}.charState = charState;
     
     % save detection polygon
-    %TODO: generate polygon
-    
     [~, temp, ~] = fileparts(scoringList{cnt}.pathToMedia);
-    scoringList{cnt}.pathToDetection = sprintf('detection_results/%s_%s.txt', temp, charID);
+    pathToDetection = sprintf('%s/detection_results/%s_%s.txt', basePath, temp, charID);
+    convert_detection_to_annotation(pathToDetection, allData{i}, charID, charState);
+    
+    % save scores
+    scoringList{cnt}.pathToDetection = pathToDetection;
     
     cnt = cnt + 1;
 end
