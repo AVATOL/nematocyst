@@ -28,7 +28,7 @@ if ~isfield(options, 'DETECTION_RESULTS_PATH')
     options.DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
 end
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
-    options.HCSEARCH_TIMEBOUND = 2;
+    options.HCSEARCH_TIMEBOUND = 1; %TODO
 end
 
 %% ========== begin
@@ -62,7 +62,7 @@ writelog(log_fid, 'Preprocessing input data...\n');
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
 allData = preprocess_avatol(basePath, trainingList, scoringList, ...
-    charID, color2label, options.PREPROCESSED_PATH); % TODO
+    charID, color2label, options.PREPROCESSED_PATH);
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished preprocessing input data. (%.1fs)\n\n', telapsed));
