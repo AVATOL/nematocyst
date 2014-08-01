@@ -45,11 +45,12 @@ writelog(log_fid, sprintf('Begin AVATOL system at %s.\n\n', datestr(now)));
 writelog(log_fid, 'Parsing input file...\n');
 
 % get character ID from file name
-[inPath, inFileName, inExt] = fileparts(inputPath);
+[~, inFileName, ~] = fileparts(inputPath);
 charID = get_char_id_from_file_name(inFileName);
 
 % get list of training and test instances
 [trainingList, scoringList] = parse_input_file(inputPath);
+scoringRange = 1+length(trainingList):length(trainingList)+length(scoringList);
 
 telapsed = toc(tglobalstart);
 writelog(log_fid, sprintf('Finished parsing input file. (%.1fs)\n\n', telapsed));
@@ -100,7 +101,19 @@ writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n'
 tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
 
-% character scoring TODO
+cnt = 1;
+for i = scoringRange
+    % perform character scoring
+    scoringList{cnt}.charState = score_basal_texture( allData{i} );
+    
+    % save detection polygon
+    %TODO: generate polygon
+    
+    [~, temp, ~] = fileparts(scoringList{cnt}.pathToMedia);
+    scoringList{cnt}.pathToDetection = sprintf('detection_results/%s_%s.txt', temp, charID);
+    
+    cnt = cnt + 1;
+end
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running character scoring. (%.1fs)\n\n', telapsed));
@@ -109,8 +122,8 @@ writelog(log_fid, sprintf('Finished running character scoring. (%.1fs)\n\n', tel
 tstart = tic;
 writelog(log_fid, 'Saving scores...\n');
 
-% save scores TODO
-[outPath, outFileName, outExt] = fileparts(outputPath);
+% save scores
+write_scores(outputPath, trainingList, scoringList, {});
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished saving scores. (%.1fs)\n', telapsed));
