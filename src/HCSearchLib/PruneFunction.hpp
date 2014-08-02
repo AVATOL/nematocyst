@@ -1,6 +1,7 @@
 #ifndef PRUNEFUNCTION_HPP
 #define PRUNEFUNCTION_HPP
 
+#include <queue>
 #include "FeatureFunction.hpp"
 #include "DataStructures.hpp"
 #include "MyGraphAlgorithms.hpp"
@@ -55,7 +56,14 @@ namespace HCSearch
 		bool operator() (RankPruneNode& lhs, RankPruneNode& rhs) const;
 	};
 
+	class CompareRankPruneNodesInvert
+	{
+	public:
+		bool operator() (RankPruneNode& lhs, RankPruneNode& rhs) const;
+	};
+
 	typedef priority_queue<RankPruneNode, vector<RankPruneNode>, CompareRankPruneNodes> RankNodePQ;
+	typedef priority_queue<RankPruneNode, vector<RankPruneNode>, CompareRankPruneNodesInvert> RankNodePQInvert;
 
 	/*!
 	 * @brief Pruning function using ranker for ranking good/bad actions.
@@ -124,6 +132,35 @@ namespace HCSearch
 		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth);
 
 		ILossFunction* getLossFunction();
+	};
+
+	/*!
+	 * Wrapper for RankNodePQ to compute top nodes
+	 */
+	class RankNodeKPQ
+	{
+		RankNodePQInvert pq;
+		double minimum;
+		int K;
+
+	public:
+		RankNodeKPQ(int K)
+		{
+			this->pq = RankNodePQInvert();
+			this->K = K;
+		}
+
+		~RankNodeKPQ() {}
+
+		void push(RankPruneNode e);
+
+		vector<RankPruneNode> pop_all();
+
+		bool empty();
+
+		bool full();
+
+		int size();
 	};
 }
 

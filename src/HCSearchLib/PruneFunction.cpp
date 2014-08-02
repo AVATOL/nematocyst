@@ -80,9 +80,10 @@ namespace HCSearch
 		vector<double> ranks = this->ranker->rank(featuresList);
 
 		// sort by rank
-		RankNodePQ rankPQ;
 		const int numOriginalCandidates = YCandidates.size();
 		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
+
+		RankNodeKPQ rankPQ(numNewCandidates);
 		for (int i = 0; i < numOriginalCandidates; i++)
 		{
 			RankPruneNode rankNode;
@@ -92,13 +93,11 @@ namespace HCSearch
 		}
 
 		// remove bad candidates (keep good candidates)
-		for (int i = 0; i < numNewCandidates; i++)
+		vector<RankPruneNode> topK = rankPQ.pop_all();
+		const int topKSize = topK.size();
+		for (int i = 0; i < topKSize; i++)
 		{
-			if (rankPQ.empty())
-				break;
-
-			RankPruneNode rankNode = rankPQ.top();
-			rankPQ.pop();
+			RankPruneNode rankNode = topK[i];
 			YPrunedCandidates.push_back(rankNode.YCandidate);
 		}
 
@@ -121,6 +120,11 @@ namespace HCSearch
 	bool CompareRankPruneNodes::operator() (RankPruneNode& lhs, RankPruneNode& rhs) const
 	{
 		return lhs.rank > rhs.rank;
+	}
+
+	bool CompareRankPruneNodesInvert::operator() (RankPruneNode& lhs, RankPruneNode& rhs) const
+	{
+		return lhs.rank < rhs.rank;
 	}
 
 	/**************** Simulated Ranker Prune ****************/
@@ -334,5 +338,54 @@ namespace HCSearch
 	ILossFunction* OraclePrune::getLossFunction()
 	{
 		return this->lossFunction;
+	}
+
+	/**************** RankNodeKPQ ****************/
+
+	void RankNodeKPQ::push(RankPruneNode e)
+	{
+		if (empty())
+		{
+			this->minimum = e.rank;
+			pq.push(e);
+		}
+		else if (size() < this->K)
+		{
+			this->minimum = min(e.rank, minimum);
+			pq.push(e);
+		}
+		else if (e.rank <= minimum && size() >= this->K)
+		{
+			this->minimum = e.rank;
+			pq.pop();
+			pq.push(e);
+		}
+	}
+
+	vector<RankPruneNode> RankNodeKPQ::pop_all()
+	{
+		vector<RankPruneNode> list;
+		while (!pq.empty())
+		{
+			list.push_back(pq.top());
+			pq.pop();
+		}
+
+		return list;
+	}
+
+	bool RankNodeKPQ::empty()
+	{
+		return size() == 0;
+	}
+
+	bool RankNodeKPQ::full()
+	{
+		return size() == this->K;
+	}
+
+	int RankNodeKPQ::size()
+	{
+		return pq.size();
 	}
 }
