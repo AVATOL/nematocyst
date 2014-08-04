@@ -11,7 +11,7 @@ for i = 1:length(objects)
    for j = 2:length(obj.xcoords)
       string = strcat(string, sprintf(';%.f,%.f', obj.xcoords(j), obj.ycoords(j))); 
    end
-   string = sprintf('%s:%s:%s', string, obj.charID, obj.charState);
+   string = sprintf('%s:%s:%s:%s:%s', string, obj.charID, obj.charName, obj.charState, obj.charStateName);
    
    fprintf(fid, '%s\n', string);
 end

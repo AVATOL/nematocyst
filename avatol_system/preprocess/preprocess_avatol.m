@@ -1,4 +1,4 @@
-function [ allData ] = preprocess_avatol( basePath, trainingList, scoringList, charID, color2label, outputPath )
+function [ allData, charStateNames ] = preprocess_avatol( basePath, trainingList, scoringList, charID, charStateNames, color2label, outputPath )
 %PREPROCESS_AVATOL Preprocesses training examples from the AVATOL system 
 %into a data format for HCSearch to work. Performs feature extraction. 
 %This implementation creates a regular grid of HOG/SIFT patches on
@@ -18,6 +18,7 @@ function [ allData ] = preprocess_avatol( basePath, trainingList, scoringList, c
 %                           .pathToMedia: path to image
 %                           .taxonID: taxon ID
 %   charID:         character ID string
+%   charStateNames: map: char state ID -> char state name
 %   color2label:    mapping from groundtruth colors to label (use containers.Map)
 %	outputPath:     folder path to output preprocessed data
 %                   e.g. 'DataPreprocessed/SomeDataset'
@@ -25,7 +26,7 @@ function [ allData ] = preprocess_avatol( basePath, trainingList, scoringList, c
 %	allData:        data structure containing all preprocessed data
 
 %% argument checking
-narginchk(6, 6);
+narginchk(7, 7);
 
 %% parameters - tune if necessary
 PATCH_SIZE = 32; % size of patches
@@ -82,6 +83,7 @@ for i = 1:nImages
     if train
         %% get groundtruth - read polygon data and get mask
         objects = read_annotation_file(annotationPath, charID);
+        charStateNames = update_char_state_names(charStateNames, objects);
         labels = polygons2masks(img, objects);
         [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);
 
@@ -173,6 +175,21 @@ for row = 0:height-2
         ind2 = ind1+width;
         adjMatrix(ind1+1, ind2+1) = 1;
         adjMatrix(ind2+1, ind1+1) = 1;
+    end
+end
+
+end
+
+function charStateNames = update_char_state_names(charStateNames, objects)
+% add char state -> char state name pair if not already in map
+
+for i = 1:length(objects)
+    obj = objects{i};
+
+    charState = obj.charState;
+
+    if ~isKey(charStateNames, charState)
+        charStateNames(charState) = obj.charStateName;
     end
 end
 

@@ -10,8 +10,8 @@ function [ charState ] = score_basal_texture( allDataInstance )
 BACKGROUND_LABEL = -1;
 FOREGROUND_LABEL = 1; % 1 = basal, 2 = capsule
 
-CHAR_STATE_HOMOGENEOUS = 0;
-CHAR_STATE_HETEROGENEOUS = 1;
+CHAR_STATE_HOMOGENEOUS = '0';
+CHAR_STATE_HETEROGENEOUS = '1';
 
 %% settings
 HETEROGENEOUS_THRESHOLD = 0; % 0 = if one mode is sufficient
