@@ -977,41 +977,120 @@ namespace HCSearch
 	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
 		ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
+		const double pruneFraction = 0.5; //TODO
+		
+		// setup
 		vector< SearchNode* > successors;
 
+		// compute loss and features of current state to compare with the successors
 		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
-		RankFeatures prevPruneFeatures = this->searchSpace->computePruneFeatures(*this->X, *YTruth, set<int>());
 
-		// generate successors
+		// generate all successors before pruning
 		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
 
-		// collect training examples
+		// set up pruning priority queue
+		const int numOriginalCandidates = YPredSet.size();
+		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
+
+		RankNodeKPQ rankPQ(numNewCandidates);
+		vector<RankPruneNode> goodSet;
+
+		// label actions as good or bad, then push to pruning priority queue
+		bool goodExists = false;
+		RankPruneNode bestGoodCandidate;
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
 		{
 			ImgCandidate YCandidate = *it;
 			ImgLabeling YCandPred = YCandidate.labeling;
-			
-			// collect training examples
-			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
-			set<int> action = YCandidate.action;
-			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
 
+			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+
+			RankPruneNode labeledCand;
+			labeledCand.YCandidate = YCandidate;
+			labeledCand.rank = candLoss;//TODO: need to use current weights
+			labeledCand.good = candLoss <= prevLoss;
+
+			// put in good set if good, and keep track of best good candidate
+			if (labeledCand.good)
+			{
+				goodSet.push_back(labeledCand);
+				if (!goodExists) // first good candidate found
+				{
+					goodExists = true;
+					bestGoodCandidate = labeledCand;
+				}
+				else if (labeledCand.rank <= bestGoodCandidate.rank)
+				{
+					bestGoodCandidate = labeledCand;
+				}
+			}
+
+			// prune
+			rankPQ.push(labeledCand);
+		}
+
+		// check if any good candidates left in pruning set, and also find best action
+		vector<RankPruneNode> topK = rankPQ.pop_all();
+		const int topKSize = topK.size();
+		bool foundGood = false;
+		for (int i = 0; i < topKSize; i++)
+		{
+			RankPruneNode rankNode = topK[i];
+			ImgLabeling YCandPred = rankNode.YCandidate.labeling;
+
+			if (rankNode.good)
+			{
+				foundGood = true;
+				break;
+			}
+		}
+
+		// if didn't find anything good, then update weights
+		if (!foundGood)
+		{
+			// compute good features and losses
+			vector<RankFeatures> goodFeatures;
+			vector<double> goodLosses;
+			for (vector<RankPruneNode>::iterator it = goodSet.begin(); it != goodSet.end(); ++it)
+			{
+				RankPruneNode node = *it;
+				ImgLabeling YCandPred = node.YCandidate.labeling;
+				set<int> action = node.YCandidate.action;
+
+				RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+				double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+
+				goodFeatures.push_back(pruneFeatures);
+				goodLosses.push_back(candLoss);
+			}
+
+			// compute bad features and losses
+			vector<RankFeatures> badFeatures;
+			vector<double> badLosses;
+			for (vector<RankPruneNode>::iterator it = topK.begin(); it != topK.end(); ++it)
+			{
+				RankPruneNode node = *it;
+				ImgLabeling YCandPred = node.YCandidate.labeling;
+				set<int> action = node.YCandidate.action;
+
+				RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+				double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+
+				badFeatures.push_back(pruneFeatures);
+				badLosses.push_back(candLoss);
+			}
+
+			// training
 			if (learningModel->rankerType() == SVM_RANK)
 			{
 				SVMRankModel* svmModel = dynamic_cast<SVMRankModel*>(learningModel);
-				if (candLoss <= prevLoss)
-					svmModel->addTrainingExample(pruneFeatures, prevPruneFeatures);
-				else
-					svmModel->addTrainingExample(prevPruneFeatures, pruneFeatures);
+				svmModel->addTrainingExamples(goodFeatures, badFeatures);
 
 			}
 			else if (learningModel->rankerType() == VW_RANK)
 			{
 				VWRankModel* vwModel = dynamic_cast<VWRankModel*>(learningModel);
-				if (candLoss <= prevLoss)
-					vwModel->addTrainingExample(pruneFeatures, prevPruneFeatures, candLoss, prevLoss);
-				else
-					vwModel->addTrainingExample(prevPruneFeatures, pruneFeatures, prevLoss, candLoss);
+				vwModel->addTrainingExamples(goodFeatures, badFeatures, goodLosses, badLosses);
 
 			}
 			else
@@ -1019,11 +1098,17 @@ namespace HCSearch
 				LOG(ERROR) << "unknown ranker for prune training positive example";
 				abort();
 			}
+		}
 
-			// generate examples
-			SearchNode* successor = new SearchNode(this, YCandPred);
+		// get the best scoring action and continue
+		// otherwise stop search (no successor)
+		if (goodExists)
+		{
+			ImgLabeling bestCandidate = bestGoodCandidate.YCandidate.labeling;
+			SearchNode* successor = new SearchNode(this, bestCandidate);
 			successors.push_back(successor);
 		}
+
 		return successors;
 	}
 
