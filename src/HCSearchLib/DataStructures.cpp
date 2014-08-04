@@ -301,26 +301,34 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "svm ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "svm ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "svm ranker not initialized for ranking";
+			//abort();
 		}
 
-		return vectorDot(getWeights(), features.data);
+		if (!this->initialized)
+			return 0;
+		else
+			return vectorDot(getWeights(), features.data);
 	}
 
 	vector<double> SVMRankModel::rank(vector<RankFeatures> featuresList)
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "svm ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "svm ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "svm ranker not initialized for ranking";
+			//abort();
 		}
 
 		int numExamples = featuresList.size();
 		vector<double> ranks;
 		for (int i = 0; i < numExamples; i++)
 		{
-			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+			if (!this->initialized)
+				ranks.push_back(0);
+			else
+				ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
 		}
 		return ranks;
 	}
@@ -743,26 +751,34 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "VW ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "VW ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "VW ranker not initialized for ranking";
+			//abort();
 		}
 
-		return vectorDot(getWeights(), features.data);
+		if (!this->initialized)
+			return 0;
+		else
+			return vectorDot(getWeights(), features.data);
 	}
 
 	vector<double> VWRankModel::rank(vector<RankFeatures> featuresList)
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "VW ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "VW ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "VW ranker not initialized for ranking";
+			//abort();
 		}
 
 		int numExamples = featuresList.size();
 		vector<double> ranks;
 		for (int i = 0; i < numExamples; i++)
 		{
-			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+			if (!this->initialized)
+				ranks.push_back(0);
+			else
+				ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
 		}
 		return ranks;
 	}
