@@ -15,7 +15,7 @@ end
 % path to dataset directory, which is the root of media/ and annotations/
 if ~isfield(options, 'DATASET_PATH')
     [basePath, ~, ~] = fileparts(inputPath);
-    options.DATASET_PATH = basePath;
+    options.DATASET_PATH = normalize_file_sep(basePath);
 end
 % path to write temporary files during processing
 if ~isfield(options, 'TEMP_PATH')
@@ -23,16 +23,20 @@ if ~isfield(options, 'TEMP_PATH')
 end
 % path to write log file for debugging and diagnostics
 if ~isfield(options, 'LOG_FILE')
-    options.LOG_FILE = [options.TEMP_PATH filesep 'log.txt'];
+    options.LOG_FILE = normalize_file_sep([options.TEMP_PATH filesep 'log.txt']);
 end
 % path to the preprocessed data directory computed after
 % the preprocessing step and used for HC-Search
 if ~isfield(options, 'PREPROCESSED_PATH')
-    options.PREPROCESSED_PATH = [options.TEMP_PATH filesep 'predata'];
+    options.PREPROCESSED_PATH = normalize_file_sep([options.TEMP_PATH filesep 'predata']);
 end
-% path to the results data directory after HC-Search runs
-if ~isfield(options, 'HC_DETECTION_RESULTS_PATH')
-    options.HC_DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
+% path to the intermediate results after running HC-Search
+if ~isfield(options, 'HC_INTERMEDIATE_DETECTION_RESULTS_PATH')
+    options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH = normalize_file_sep([options.TEMP_PATH filesep 'results']);
+end
+% folder to save detection results
+if ~isfield(options, 'DETECTION_RESULTS_FOLDER')
+    options.DETECTION_RESULTS_FOLDER = 'detection_results';
 end
 % time bound parameter for HC-Search
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
@@ -81,7 +85,7 @@ tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
 
 cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors', ...
-    options.PREPROCESSED_PATH, options.HC_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
+    options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
     [status, result] = dos(['hcsearch ' cmdlineArgs]);
@@ -100,7 +104,7 @@ tstart = tic;
 writelog(log_fid, 'Running detection post-process...\n');
 
 % postprocess
-allData = postprocess_avatol(allData, sprintf('%s/results', options.HC_DETECTION_RESULTS_PATH), ...
+allData = postprocess_avatol(allData, sprintf('%s/results', options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH), ...
     options.HCSEARCH_TIMEBOUND);
 
 telapsed = toc(tstart);
@@ -109,6 +113,10 @@ writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n'
 %% ========== character scoring
 tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
+
+if ~exist([options.DATASET_PATH filesep options.DETECTION_RESULTS_FOLDER], 'dir')
+    mkdir([options.DATASET_PATH filesep options.DETECTION_RESULTS_FOLDER]);
+end
 
 cnt = 1;
 for i = scoringRange
