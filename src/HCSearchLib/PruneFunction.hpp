@@ -28,6 +28,8 @@ namespace HCSearch
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)=0;
 
 		IFeatureFunction* getFeatureFunction();
+
+		virtual double getPruneFraction()=0;
 	};
 
 	/**************** Prune Functions ****************/
@@ -42,6 +44,8 @@ namespace HCSearch
 		~NoPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+		
+		virtual double getPruneFraction();
 	};
 
 	struct RankPruneNode
@@ -85,6 +89,8 @@ namespace HCSearch
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 		
+		virtual double getPruneFraction();
+
 		IRankModel* getRanker();
 		void setRanker(IRankModel* ranker);
 	};
@@ -106,6 +112,8 @@ namespace HCSearch
 		~SimulatedRankerPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+
+		virtual double getPruneFraction();
 	};
 
 	/*!
@@ -129,6 +137,8 @@ namespace HCSearch
 		~OraclePrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+
+		virtual double getPruneFraction();
 
 		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth);
 

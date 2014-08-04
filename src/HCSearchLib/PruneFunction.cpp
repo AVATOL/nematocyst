@@ -26,6 +26,11 @@ namespace HCSearch
 		return YCandidates;
 	}
 
+	double NoPrune::getPruneFraction()
+	{
+		return 0.0;
+	}
+
 	/**************** Ranker Prune ****************/
 
 	const double RankerPrune::DEFAULT_PRUNE_FRACTION = 0.5;
@@ -105,6 +110,11 @@ namespace HCSearch
 		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
 
 		return YPrunedCandidates;
+	}
+
+	double RankerPrune::getPruneFraction()
+	{
+		return this->pruneFraction;
 	}
 
 	IRankModel* RankerPrune::getRanker()
@@ -224,6 +234,11 @@ namespace HCSearch
 		return YPrunedCandidates;
 	}
 
+	double SimulatedRankerPrune::getPruneFraction()
+	{
+		return this->pruneFraction;
+	}
+
 	/**************** Oracle Prune ****************/
 
 	const double OraclePrune::DEFAULT_PRUNE_FRACTION = 1.0;
@@ -333,6 +348,12 @@ namespace HCSearch
 		vector<ImgCandidate> pruned = pruneSuccessors(X, Y, YCandidates, YTruth, this->lossFunction);
 		this->YTruth = NULL;
 		return pruned;
+	}
+
+	double OraclePrune::getPruneFraction()
+	{
+		LOG(DEBUG) << "calling get prune fraction on oracle pruning";
+		return 1.0;
 	}
 
 	ILossFunction* OraclePrune::getLossFunction()
