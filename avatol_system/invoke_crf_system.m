@@ -28,7 +28,7 @@ if ~isfield(options, 'DETECTION_RESULTS_PATH')
     options.DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
 end
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
-    options.HCSEARCH_TIMEBOUND = 1; %TODO
+    options.HCSEARCH_TIMEBOUND = 1; % default results in IID classifier
 end
 
 %% ========== begin
