@@ -88,10 +88,10 @@ cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --succe
     options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
-    [status, result] = dos(['hcsearch ' cmdlineArgs]);
+    [status, result] = dos(['HCSearch ' cmdlineArgs]);
 else
     fprintf('Detected Unix. Running HC-Search...\n');
-    [status, result] = unix(['./hcsearch ' cmdlineArgs]);
+    [status, result] = unix(['./HCSearch ' cmdlineArgs]);
 end
 fprintf('status=\n\n%d\n\n', status);
 fprintf('result=\n\n%s\n\n', result);
