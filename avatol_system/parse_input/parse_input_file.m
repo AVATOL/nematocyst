@@ -42,7 +42,7 @@ for i = 1:length(linesCell)
    object = struct;
    if strcmp(parsed{1}, TRAINING_DATA_STRING) == 1
        object.pathToMedia = parsed{2};
-       object.charState = str2num(parsed{3});
+       object.charState = parsed{3};
        object.pathToAnnotation = parsed{4};
        object.taxonID = parsed{5};
        

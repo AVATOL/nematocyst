@@ -1,4 +1,4 @@
-function convert_detection_to_annotation( pathToDetection, allDataInstance, charID, charState )
+function convert_detection_to_annotation( pathToDetection, allDataInstance, charID, charName, charState, charStateName )
 %CONVERT_DETECTION_TO_ANNOTATION Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -17,7 +17,9 @@ for i = 1:length(objList)
     objects{i}.xcoords = obj(:, 2);
     objects{i}.ycoords = obj(:, 1);
     objects{i}.charID = charID;
+    objects{i}.charName = charName;
     objects{i}.charState = num2str(charState);
+    objects{i}.charStateName = charStateName;
 end
 
 save_annotation_polygon(objects, pathToDetection);

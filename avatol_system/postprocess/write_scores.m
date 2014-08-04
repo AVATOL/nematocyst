@@ -20,12 +20,12 @@ fid = fopen(outputPath, 'w');
 
 for i = 1:length(trainingList)
     data = trainingList{i};
-    fprintf(fid, 'training_data:%s:%d:%s\n', data.pathToMedia, data.charState, data.pathToAnnotation);
+    fprintf(fid, 'training_data:%s:%s:%s\n', data.pathToMedia, data.charState, data.pathToAnnotation);
 end
 
 for i = 1:length(scoringList)
     data = scoringList{i};
-    fprintf(fid, 'image_scored:%s:%d:%s\n', data.pathToMedia, data.charState, data.pathToDetection);
+    fprintf(fid, 'image_scored:%s:%s:%s\n', data.pathToMedia, data.charState, data.pathToDetection);
 end
 
 for i = 1:length(nonScoringList)
