@@ -945,6 +945,9 @@ namespace HCSearch
 			{
 				LOG() << "Prune learning: (iter " << iter << ") beginning search on " << XTrain[i]->getFileName() << " (example " << i << ")..." << endl;
 
+				if (rankerType == VW_RANK)
+					restartLearning(learningModel, LEARN_PRUNE);
+
 				HCSearch::ISearchProcedure::SearchMetadata meta;
 				meta.saveAnytimePredictions = false;
 				meta.setType = HCSearch::TRAIN;
@@ -953,11 +956,15 @@ namespace HCSearch
 
 				// run search
 				searchProcedure->performSearch(LEARN_PRUNE, *XTrain[i], YTrain[i], timeBound, searchSpace, NULL, NULL, learningModel, meta);
+
+				if (rankerType == VW_RANK)
+					finishLearning(learningModel, LEARN_PRUNE);
 			}
 		}
 		
 		// Merge and learn step
-		finishLearning(learningModel, LEARN_PRUNE);
+		if (rankerType != VW_RANK)
+			finishLearning(learningModel, LEARN_PRUNE);
 
 		clock_t toc = clock();
 		LOG() << "total learnP time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl << endl;
