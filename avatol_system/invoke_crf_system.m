@@ -12,21 +12,29 @@ narginchk(2, 3);
 if nargin < 3
     options = struct;
 end
+% path to dataset directory, which is the root of media/ and annotations/
 if ~isfield(options, 'DATASET_PATH')
-    options.DATASET_PATH = '';
+    [basePath, ~, ~] = fileparts(inputPath);
+    options.DATASET_PATH = basePath;
 end
+% path to write temporary files during processing
 if ~isfield(options, 'TEMP_PATH')
     options.TEMP_PATH = 'temp-ignore';
 end
+% path to write log file for debugging and diagnostics
 if ~isfield(options, 'LOG_FILE')
     options.LOG_FILE = [options.TEMP_PATH filesep 'log.txt'];
 end
+% path to the preprocessed data directory computed after
+% the preprocessing step and used for HC-Search
 if ~isfield(options, 'PREPROCESSED_PATH')
     options.PREPROCESSED_PATH = [options.TEMP_PATH filesep 'predata'];
 end
+% path to the results data directory after HC-Search runs
 if ~isfield(options, 'DETECTION_RESULTS_PATH')
     options.DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
 end
+% time bound parameter for HC-Search
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
     options.HCSEARCH_TIMEBOUND = 1; % default results in IID classifier
 end
@@ -45,7 +53,7 @@ writelog(log_fid, sprintf('Begin AVATOL system at %s.\n\n', datestr(now)));
 writelog(log_fid, 'Parsing input file...\n');
 
 % get character ID from file name
-[basePath, inFileName, ~] = fileparts(inputPath);
+[~, inFileName, ~] = fileparts(inputPath);
 charID = get_char_id_from_file_name(inFileName);
 
 % get list of training and test instances
@@ -61,7 +69,7 @@ writelog(log_fid, 'Preprocessing input data...\n');
 
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
-allData = preprocess_avatol(basePath, trainingList, scoringList, ...
+allData = preprocess_avatol(options.DATASET_PATH, trainingList, scoringList, ...
     charID, color2label, options.PREPROCESSED_PATH);
 
 telapsed = toc(tstart);
@@ -109,7 +117,7 @@ for i = scoringRange
     
     % save detection polygon
     [~, temp, ~] = fileparts(scoringList{cnt}.pathToMedia);
-    pathToDetection = sprintf('%s/detection_results/%s_%s.txt', basePath, temp, charID);
+    pathToDetection = sprintf('%s/detection_results/%s_%s.txt', options.DATASET_PATH, temp, charID);
     convert_detection_to_annotation(pathToDetection, allData{i}, charID, charState);
     
     % save scores
