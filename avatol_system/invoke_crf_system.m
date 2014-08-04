@@ -71,14 +71,14 @@ writelog(log_fid, sprintf('Finished preprocessing input data. (%.1fs)\n\n', tela
 tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
 
-cmdline = sprintf('HCSearch %s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors --num-test-iters 1', ...
+cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors', ...
     options.PREPROCESSED_PATH, options.DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
-    [status, result] = dos(cmdline);
+    [status, result] = dos(['hcsearch ' cmdlineArgs]);
 else
     fprintf('Detected Unix. Running HC-Search...\n');
-    [status, result] = unix(cmdline);
+    [status, result] = unix(['./hcsearch ' cmdlineArgs]);
 end
 fprintf('status=\n\n%d\n\n', status);
 fprintf('result=\n\n%s\n\n', result);
