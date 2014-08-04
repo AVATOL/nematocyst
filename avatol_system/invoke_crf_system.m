@@ -31,8 +31,8 @@ if ~isfield(options, 'PREPROCESSED_PATH')
     options.PREPROCESSED_PATH = [options.TEMP_PATH filesep 'predata'];
 end
 % path to the results data directory after HC-Search runs
-if ~isfield(options, 'DETECTION_RESULTS_PATH')
-    options.DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
+if ~isfield(options, 'HC_DETECTION_RESULTS_PATH')
+    options.HC_DETECTION_RESULTS_PATH = [options.TEMP_PATH filesep 'results'];
 end
 % time bound parameter for HC-Search
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
@@ -54,7 +54,8 @@ writelog(log_fid, 'Parsing input file...\n');
 
 % get character ID from file name
 [~, inFileName, ~] = fileparts(inputPath);
-charID = get_char_id_from_file_name(inFileName);
+[charID, charName] = get_char_id_from_file_name(inFileName);
+charStateNames = containers.Map('KeyType', 'char', 'ValueType', 'any');
 
 % get list of training and test instances
 [trainingList, scoringList] = parse_input_file(inputPath);
@@ -69,8 +70,8 @@ writelog(log_fid, 'Preprocessing input data...\n');
 
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
-allData = preprocess_avatol(options.DATASET_PATH, trainingList, scoringList, ...
-    charID, color2label, options.PREPROCESSED_PATH);
+[allData, charStateNames] = preprocess_avatol(options.DATASET_PATH, trainingList, scoringList, ...
+    charID, charStateNames, color2label, options.PREPROCESSED_PATH);
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished preprocessing input data. (%.1fs)\n\n', telapsed));
@@ -80,7 +81,7 @@ tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
 
 cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors', ...
-    options.PREPROCESSED_PATH, options.DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
+    options.PREPROCESSED_PATH, options.HC_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
     [status, result] = dos(['hcsearch ' cmdlineArgs]);
@@ -99,7 +100,7 @@ tstart = tic;
 writelog(log_fid, 'Running detection post-process...\n');
 
 % postprocess
-allData = postprocess_avatol(allData, sprintf('%s/results', options.DETECTION_RESULTS_PATH), ...
+allData = postprocess_avatol(allData, sprintf('%s/results', options.HC_DETECTION_RESULTS_PATH), ...
     options.HCSEARCH_TIMEBOUND);
 
 telapsed = toc(tstart);
@@ -118,7 +119,7 @@ for i = scoringRange
     % save detection polygon
     [~, temp, ~] = fileparts(scoringList{cnt}.pathToMedia);
     pathToDetection = sprintf('%s/detection_results/%s_%s.txt', options.DATASET_PATH, temp, charID);
-    convert_detection_to_annotation(pathToDetection, allData{i}, charID, charState);
+    convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
     
     % save scores
     scoringList{cnt}.pathToDetection = pathToDetection;
@@ -148,11 +149,13 @@ fclose(log_fid);
 
 end
 
-function charID = get_char_id_from_file_name(inFileName)
+function [charID, charName] = get_char_id_from_file_name(inFileName)
 
 FILE_PREFIX = 'sorted_input_data_';
 
 charID = inFileName(length(FILE_PREFIX)+1:end);
 charID(strfind(charID, '_'):end) = [];
+
+charName = inFileName(length([FILE_PREFIX charID '_'])+1:end);
 
 end

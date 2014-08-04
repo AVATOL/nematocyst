@@ -1,6 +1,6 @@
 function objects = read_annotation_file(annotationFilePath, charID)
 % parses annotation objects from file
-% format: x1,y1;...;xn,yn:charID:charState
+% format: x1,y1:charID:charName:charStateID:charStateName
 
 %% constants
 DATA_DELIMITER = ':';
@@ -23,7 +23,9 @@ for i = 1:length(linesCell)
    parsed = parsed{1};
    polygonString = parsed{1};
    charIDString = parsed{2};
-   charStateString = parsed{3};
+   charNameString = parsed{3};
+   charStateString = parsed{4};
+   charStateNameString = parsed{5};
    
    if strcmp(charIDString, charID) ~= 1
        continue;
@@ -51,7 +53,9 @@ for i = 1:length(linesCell)
    object.xcoords = xcoords;
    object.ycoords = ycoords;
    object.charID = charIDString;
+   object.charName = charNameString;
    object.charState = charStateString;
+   object.charStateName = charStateNameString;
    
    %% add to objects list
    objects{cnt} = object;
