@@ -47,6 +47,7 @@ namespace HCSearch
 	struct RankPruneNode
 	{
 		double rank;
+		bool good;
 		ImgCandidate YCandidate;
 	};
 
