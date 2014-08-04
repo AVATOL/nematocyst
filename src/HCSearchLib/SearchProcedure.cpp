@@ -977,7 +977,7 @@ namespace HCSearch
 	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
 		ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
-		const double pruneFraction = 0.5; //TODO
+		const double pruneFraction = this->searchSpace->getPruneFunction()->getPruneFraction();
 		
 		// setup
 		vector< SearchNode* > successors;
