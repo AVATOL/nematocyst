@@ -146,7 +146,7 @@ sudo apt-get install libtool automake libboost-program-options1.49-dev build-ess
 ```
 
 If you are using Windows, you do not need to build anything. Just make sure the following binaries are working:
-- `$ROOT$/external/vowpal_wabbit/vw.exe`
+- `$ROOT$/external/vw.exe`
 - `$ROOT$/external/liblinear/windows/predict.exe`
 - `$ROOT$/external/liblinear/windows/train.exe`
 
