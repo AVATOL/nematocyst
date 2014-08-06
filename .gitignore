@@ -13,25 +13,20 @@
 *.a
 
 # Microsoft Visual Studio files
-**/Debug/*
-**/Release/*
-**/ipch/*
+**/Debug/
+**/Release/
+**/ipch/
 *.sdf
 *.opensdf
 *.suo
 *.vcxproj.user
 
 # Directories
-external/*
-doc/*
-Data*/*
-data*/*
-Results*/*
-results*/*
-*-ignore/*
-**/gcc*/*
-
-# exceptions
-!/HCSearch.exe
-!/external/vw.exe
-!/external/LICENSE
+external/
+doc/
+Data*/
+data*/
+Results*/
+results*/
+*-ignore/
+**/gcc*/
