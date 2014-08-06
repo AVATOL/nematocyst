@@ -34,3 +34,4 @@
 # nematocyst exceptions
 !/HCSearch.exe
 !/external/vw.exe
+!/external/LICENSE
