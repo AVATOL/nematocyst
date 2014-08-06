@@ -26,6 +26,10 @@ trainingList = {};
 scoringList = {};
 
 %% get contents of file
+if ~exist(inputPath, 'file')
+    error('Input file "%s" does not exist!', inputPath);
+end
+
 fid = fopen(inputPath, 'r');
 contents = textscan(fid, '%s');
 fclose(fid);
