@@ -334,6 +334,8 @@ namespace HCSearch
 		}
 		else
 		{
+			LOG() << "Computing edge weights from nodes..." << endl;
+
 			for (map< int, set<int> >::iterator it = edges.begin();
 				it != edges.end(); ++it)
 			{

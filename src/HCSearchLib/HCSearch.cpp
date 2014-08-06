@@ -336,7 +336,7 @@ namespace HCSearch
 			X->segments = segments;
 			X->nodeLocationsAvailable = true;
 			X->nodeLocations = nodeLocations;
-			X->edgeWeightsAvailable = true;
+			X->edgeWeightsAvailable = Global::settings->USE_EDGE_WEIGHTS;
 			X->edgeWeights = edgeWeights;
 
 			// construct ImgLabeling

@@ -81,6 +81,7 @@ namespace MyProgramOptions
 		bool saveOutputMask;
 		double pruneRatio;
 		double badPruneRatio;
+		bool useEdgeWeights;
 
 		bool nodeClamp;
 		bool edgeClamp;
