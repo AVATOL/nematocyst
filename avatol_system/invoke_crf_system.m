@@ -125,12 +125,14 @@ for i = scoringRange
     scoringList{cnt}.charState = charState;
     
     % save detection polygon
-    [~, temp, ~] = fileparts(scoringList{cnt}.pathToMedia);
-    pathToDetection = sprintf('%s/detection_results/%s_%s.txt', options.DATASET_PATH, temp, charID);
+    mediaID = get_media_id_from_path_to_media(scoringList{cnt}.pathToMedia);
+    detectionFile = sprintf('%s_%s.txt', charID, mediaID);
+    pathToDetection = sprintf('%s/detection_results/%s', options.DATASET_PATH, detectionFile);
     convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
     
     % save scores
-    scoringList{cnt}.pathToDetection = pathToDetection;
+    shortenPathToDetection = sprintf('detection_results/%s', detectionFile);
+    scoringList{cnt}.pathToDetection = shortenPathToDetection;
     
     cnt = cnt + 1;
 end
@@ -165,5 +167,13 @@ charID = inFileName(length(FILE_PREFIX)+1:end);
 charID(strfind(charID, '_'):end) = [];
 
 charName = inFileName(length([FILE_PREFIX charID '_'])+1:end);
+
+end
+
+function mediaID = get_media_id_from_path_to_media(pathToMedia)
+
+[~, parsed, ~] = fileparts(pathToMedia);
+parsed = textscan(parsed, '%s', 'delimiter', '_');
+mediaID = parsed{1}{1};
 
 end
