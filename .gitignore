@@ -22,16 +22,16 @@
 *.vcxproj.user
 
 # Directories
-/external/*
-/doc/*
-/Data*/*
-/data*/*
-/Results*/*
-/results*/*
-/*-ignore/*
+external/*
+doc/*
+Data*/*
+data*/*
+Results*/*
+results*/*
+*-ignore/*
 **/gcc*/*
 
-# nematocyst exceptions
+# exceptions
 !/HCSearch.exe
 !/external/vw.exe
 !/external/LICENSE
