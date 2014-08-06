@@ -130,7 +130,8 @@ for i = scoringRange
     convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
     
     % save scores
-    scoringList{cnt}.pathToDetection = pathToDetection;
+    shortenPathToDetection = sprintf('detection_results/%s_%s.txt', temp, charID);
+    scoringList{cnt}.pathToDetection = shortenPathToDetection;
     
     cnt = cnt + 1;
 end
