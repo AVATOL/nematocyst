@@ -40,6 +40,8 @@ int main(int argc, char* argv[])
 	HCSearch::Global::settings->paths->OUTPUT_RESULTS_FOLDER_NAME = po.resultsFolderName;
 	HCSearch::Global::settings->paths->OUTPUT_TEMP_FOLDER_NAME = po.tempFolderName;
 
+	HCSearch::Global::settings->USE_EDGE_WEIGHTS = po.useEdgeWeights;
+
 	HCSearch::Setup::configure(po.inputDir, po.outputDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);
