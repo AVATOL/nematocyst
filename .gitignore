@@ -13,20 +13,26 @@
 *.a
 
 # Microsoft Visual Studio files
-**/Debug/
-**/Release/
-**/ipch/
+**/Debug/*
+**/Release/*
+**/ipch/*
 *.sdf
 *.opensdf
 *.suo
 *.vcxproj.user
 
 # Directories
-external/
-doc/
-Data*/
-data*/
-Results*/
-results*/
-*-ignore/
-**/gcc*/
+external/*
+doc/*
+Data*/*
+data*/*
+Results*/*
+results*/*
+*-ignore/*
+**/gcc*/*
+
+# nematocyst exceptions
+!HCSearch.exe
+!external/vowpal_wabbit
+external/vowpal_wabbit/*
+!external/vowpal_wabbit/vw.exe
