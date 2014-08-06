@@ -235,6 +235,11 @@ namespace HCSearch
 		 */
 		bool CHECK_FOR_DUPLICATES;
 
+		/*!
+		 * @brief Use edge weights from external file.
+		 */
+		bool USE_EDGE_WEIGHTS;
+
 		/**************** Experiment Settings ****************/
 
 		/*!
