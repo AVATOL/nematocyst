@@ -22,17 +22,15 @@
 *.vcxproj.user
 
 # Directories
-external/*
-doc/*
-Data*/*
-data*/*
-Results*/*
-results*/*
-*-ignore/*
+/external/*
+/doc/*
+/Data*/*
+/data*/*
+/Results*/*
+/results*/*
+/*-ignore/*
 **/gcc*/*
 
 # nematocyst exceptions
-!HCSearch.exe
-!external/vowpal_wabbit
-external/vowpal_wabbit/*
-!external/vowpal_wabbit/vw.exe
+!/HCSearch.exe
+!/external/vw.exe
