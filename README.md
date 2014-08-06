@@ -21,12 +21,12 @@ Please see the Installation Instructions section before proceeding.
 
 The following should be the directory structure of the data set for input into the system:
 
-- SOME_DATASET_FOLDER/
-	- media/
-		- <mediaID>_<stuff>.jpg
-	- annotations/
-		- <mediaID>_<charID>.txt
-	- sorted_input_data_<charID>_<charName>.txt
+- `SOME_DATASET_FOLDER/`
+	- `media/`
+		- `<mediaID>_<stuff>.jpg`
+	- `annotations/`
+		- `<mediaID>_<charID>.txt`
+	- `sorted_input_data_<charID>_<charName>.txt`
 
 The directory `annotations` contains annotations of this format:
 
@@ -48,19 +48,19 @@ image_to_score:media/<name_of_mediafile>:taxonID
 
 The system will output the folowing files:
 
-- SOME_DATASET_FOLDER/
-	- detection_results
-		- <mediaID>_<charID>.txt
-	- sorted_output_data_<charID>_<charName>.txt
+- `SOME_DATASET_FOLDER/`
+	- `detection_results`
+		- `<mediaID>_<charID>.txt`
+	- `sorted_output_data_<charID>_<charName>.txt`
 
 The directory `detection_results` contains the detected characters, in the same format as the annotation files.
 
 The `sorted_output_data_<charID>_<charName>.txt` file contains the character scores and any images not scored. It follows this format:
 
 ```
-training_data:media/<name_of_mediafile> :char_state:annotation/<name_of_annotation_file> 
+training_data:media/<name_of_mediafile>:char_state:annotation/<name_of_annotation_file>
 ...
-image_scored:media/<name_of_mediafile> :char_state:detection_results/<name_of_annotation_file> 
+image_scored:media/<name_of_mediafile>:char_state:detection_results/<name_of_annotation_file>
 ...
 image_not_scored:media/<name_of_mediafile>
 ...
@@ -81,10 +81,17 @@ For setting advanced parameters, pass a third parameter `options` to `invoke_crf
 ## Installation Instructions
 
 High level installation instructions:
+
 1. Download dependencies: Eigen, LIBLINEAR, LIBSVM, VLFeat, Vowpal Wabbit
 2. Build the dependencies if using Linux, otherwise use the Windows binaries
 3. Build HC-Search if using Linux, otherwise use the provided Windows binary
 4. Set up include paths in MATLAB using matlab_crf_install.m
+
+Linux Bonus: If you are running Linux, you can automate steps 1, 2 and 3 by running the following:
+
+```
+./master_install_linux.sh
+```
 
 ### 1) Download Dependencies
 
