@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# download dependencies
+./download_linux_dependencies.sh
+
 # install dependencies
 ./install_linux_dependencies.sh
 
