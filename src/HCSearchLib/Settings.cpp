@@ -194,7 +194,8 @@ namespace HCSearch
 #ifdef USE_WINDOWS
 		//VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP + "x86" + DIR_SEP + "Release" + DIR_SEP;
 		//VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP + "x64" + DIR_SEP + "Release" + DIR_SEP;
-		VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP;
+		//VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP;
+		VOWPALWABBIT_DIR = EXTERNAL_DIR; // external/vw.exe provided
 #else
 		VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP;
 #endif
