@@ -371,12 +371,13 @@ namespace HCSearch
 			int node2 = nodePair.second;
 
 			bool decideToCut;
-			if (YPred.getLabel(node1) != YPred.getLabel(node2))
-			{
-				// different node labels: always cut
-				decideToCut = true;
-			}
-			else if (!cutEdgesIndependently)
+			//if (YPred.getLabel(node1) != YPred.getLabel(node2))
+			//{
+			//	// different node labels: always cut
+			//	decideToCut = true;
+			//}
+			//else if (!cutEdgesIndependently)
+			if (!cutEdgesIndependently)
 			{
 				// uniform state
 				//decideToCut = edgeWeights[i] <= threshold;
