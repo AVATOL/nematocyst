@@ -8,6 +8,10 @@ POINTS_DELIMITER = ';';
 COORDINATES_DELIMITER = ',';
 
 %% get file contents
+if ~exist(annotationFilePath, 'file')
+    error('Annotation file "%s" does not exist!', annotationFilePath);
+end
+
 fid = fopen(annotationFilePath, 'r');
 contents = textscan(fid, '%s');
 fclose(fid);
