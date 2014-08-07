@@ -25,7 +25,7 @@ The following should be the directory structure of the data set for input into t
 	- `media/`
 		- `<mediaID>_<stuff>.jpg`
 	- `annotations/`
-		- `<mediaID>_<charID>.txt`
+		- `<charID>_<mediaID>.txt`
 	- `sorted_input_data_<charID>_<charName>.txt`
 
 The directory `annotations` contains annotations of this format:
@@ -49,8 +49,8 @@ image_to_score:media/<name_of_mediafile>:taxonID
 The system will output the folowing files:
 
 - `SOME_DATASET_FOLDER/`
-	- `detection_results`
-		- `<mediaID>_<charID>.txt`
+	- `detection_results/`
+		- `<charID>_<mediaID>.txt`
 	- `sorted_output_data_<charID>_<charName>.txt`
 
 The directory `detection_results` contains the detected characters, in the same format as the annotation files.
@@ -79,6 +79,8 @@ This command executes the pipeline: 1) feature extraction, 2) training for detec
 For setting advanced parameters, pass a third parameter `options` to `invoke_crf_system()`.
 
 ## Installation Instructions
+
+Currently supports Windows and Linux. Mac has not been tested yet.
 
 High level installation instructions:
 
@@ -154,10 +156,16 @@ If you are using Windows, you do not need to build anything. Just make sure the 
 
 If you are using Linux, simply run `make` to build the HC-Search module.
 
-If you are using Windows, you do not need to build it. Just make sure the included `$ROOT$/HCSearch.exe` binary is working.
+If you are using Windows, you do not need to build it. Just make sure the included binary `$ROOT$/HCSearch.exe` is working.
 
 If you do want to build it for Windows, you will need Visual Studio 2012. Open `$ROOT$/src/HCSearch.sln` and build the solution.
 
+Note: the default settings will try to compile with MPI (Message Passing Interface for parallel processing) using Microsoft's HPC Pack. If you do not want to build with MPI, open up the properties of each project in the solution and remove the `USE_MPI` preprocessor flag.
+
+Note: the included binary `$ROOT$/HCSearch.exe` was built without MPI functionality. To enable MPI functionality, you will need to compile yourself.
+
 ### 4) MATLAB Include Paths
 
-Finally, open MATLAB and run `matlab_crf_install`. This will set up the include paths and install additional necessary MATLAB functionality.
+Finally, open MATLAB and cd to the `$ROOT` directory. Run the script `matlab_crf_install`. This will set up the include paths and install additional necessary MATLAB functionality.
+
+If you haven't run `mex -setup` before, the script will prompt you to select which compiler to use.
