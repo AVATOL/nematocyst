@@ -426,6 +426,9 @@ namespace HCSearch
 
 		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
 
+		// shuffle
+		std::random_shuffle(subgraphset.begin(), subgraphset.end());
+
 		// successors set
 		vector< ImgCandidate > successors;
 
@@ -436,6 +439,9 @@ namespace HCSearch
 		{
 			Subgraph* sub = *it;
 			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// shuffle
+			std::random_shuffle(ccset.begin(), ccset.end());
 
 			// loop over each connected component
 			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
