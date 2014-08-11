@@ -435,18 +435,22 @@ namespace HCSearch
 		// loop over each sub graph
 		int cumSumLabels = 0;
 		int numSumLabels = 0;
-		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		//for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		if (!subgraphset.empty()) //EXPERIMENTAL: only choose one random subgraph
 		{
-			Subgraph* sub = *it;
+			//Subgraph* sub = *it;
+			Subgraph* sub = subgraphset[0]; //EXPERIMENTAL: only choose one random subgraph
 			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
 
 			// shuffle
 			std::random_shuffle(ccset.begin(), ccset.end());
 
 			// loop over each connected component
-			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			//for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			if (!ccset.empty()) //EXPERIMENTAL: only choose one random connected component
 			{
-				ConnectedComponent* cc = *it2;
+				//ConnectedComponent* cc = *it2;
+				ConnectedComponent* cc = ccset[0]; //EXPERIMENTAL: only choose one random connected component
 
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
