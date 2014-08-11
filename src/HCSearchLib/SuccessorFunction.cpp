@@ -446,11 +446,11 @@ namespace HCSearch
 			std::random_shuffle(ccset.begin(), ccset.end());
 
 			// loop over each connected component
-			//for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
-			if (!ccset.empty()) //EXPERIMENTAL: only choose one random connected component
+			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			//if (!ccset.empty()) //EXPERIMENTAL: only choose one random connected component
 			{
-				//ConnectedComponent* cc = *it2;
-				ConnectedComponent* cc = ccset[0]; //EXPERIMENTAL: only choose one random connected component
+				ConnectedComponent* cc = *it2;
+				//ConnectedComponent* cc = ccset[0]; //EXPERIMENTAL: only choose one random connected component
 
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
