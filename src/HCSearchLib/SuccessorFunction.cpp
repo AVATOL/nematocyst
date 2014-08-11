@@ -428,6 +428,7 @@ namespace HCSearch
 
 		// shuffle
 		std::random_shuffle(subgraphset.begin(), subgraphset.end());
+		LOG() << "num subgraphs=" << subgraphset.size() << endl;
 
 		// successors set
 		vector< ImgCandidate > successors;
@@ -435,6 +436,8 @@ namespace HCSearch
 		// loop over each sub graph
 		int cumSumLabels = 0;
 		int numSumLabels = 0;
+		int cumSumCC = 0;
+		int numSumCC = 0;
 		//for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
 		if (!subgraphset.empty()) //EXPERIMENTAL: only choose one random subgraph
 		{
@@ -444,6 +447,8 @@ namespace HCSearch
 
 			// shuffle
 			std::random_shuffle(ccset.begin(), ccset.end());
+			cumSumCC += ccset.size();
+			numSumCC++;
 
 			// loop over each connected component
 			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
@@ -495,6 +500,8 @@ namespace HCSearch
 				}
 			}
 		}
+
+		LOG() << "average num cc=" << (1.0*cumSumCC/numSumCC) << endl;
 
 		if (numSumLabels > 0)
 			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
