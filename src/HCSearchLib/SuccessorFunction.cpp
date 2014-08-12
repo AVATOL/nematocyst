@@ -438,11 +438,11 @@ namespace HCSearch
 		int numSumLabels = 0;
 		int cumSumCC = 0;
 		int numSumCC = 0;
-		//for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
-		if (!subgraphset.empty()) //EXPERIMENTAL: only choose one random subgraph
+		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		//if (!subgraphset.empty()) //EXPERIMENTAL: only choose one random subgraph
 		{
-			//Subgraph* sub = *it;
-			Subgraph* sub = subgraphset[0]; //EXPERIMENTAL: only choose one random subgraph
+			Subgraph* sub = *it;
+			//Subgraph* sub = subgraphset[0]; //EXPERIMENTAL: only choose one random subgraph
 			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
 
 			// shuffle
