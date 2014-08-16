@@ -1148,6 +1148,7 @@ namespace HCSearch
 
 		// label actions as good or bad, then push to pruning priority queue
 		bool goodExists = false;
+		bool allZeros = false;
 		RankPruneNode bestGoodCandidate;
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
 		{
@@ -1176,6 +1177,7 @@ namespace HCSearch
 			labeledCand.YCandidate = YCandidate;
 			labeledCand.rank = candRank;
 			labeledCand.good = candLoss <= prevLoss;
+			allZeros = allZeros || candRank == 0;
 
 			// put in good set if good, and keep track of best good candidate
 			if (labeledCand.good)
@@ -1213,7 +1215,7 @@ namespace HCSearch
 		}
 
 		// if didn't find anything good, then update weights
-		if (!foundGood)
+		if (allZeros || !foundGood)
 		{
 			LOG() << "updating pruning weights..." << endl;
 
@@ -1239,6 +1241,9 @@ namespace HCSearch
 			for (vector<RankPruneNode>::iterator it = topK.begin(); it != topK.end(); ++it)
 			{
 				RankPruneNode node = *it;
+				if (node.good)
+					continue;
+
 				ImgLabeling YCandPred = node.YCandidate.labeling;
 				set<int> action = node.YCandidate.action;
 
