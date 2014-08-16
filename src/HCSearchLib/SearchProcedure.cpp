@@ -1199,6 +1199,8 @@ namespace HCSearch
 		// if didn't find anything good, then update weights
 		if (!foundGood)
 		{
+			LOG() << "updating pruning weights..." << endl;
+
 			// compute good features and losses
 			vector<RankFeatures> goodFeatures;
 			vector<double> goodLosses;
@@ -1249,6 +1251,10 @@ namespace HCSearch
 				LOG(ERROR) << "unknown ranker for prune training positive example";
 				abort();
 			}
+		}
+		else
+		{
+			LOG() << "don't need to update pruning weights..." << endl;
 		}
 
 		// get the best scoring action and continue
