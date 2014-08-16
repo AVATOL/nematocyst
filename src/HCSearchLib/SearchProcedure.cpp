@@ -1156,6 +1156,11 @@ namespace HCSearch
 
 			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
 
+			// get features
+			set<int> action = YCandidate.action;
+			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+
+			// form object for rank pruning
 			RankPruneNode labeledCand;
 			labeledCand.YCandidate = YCandidate;
 			labeledCand.rank = candLoss;//TODO: need to use current weights
