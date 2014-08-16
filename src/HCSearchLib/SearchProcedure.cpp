@@ -1156,14 +1156,16 @@ namespace HCSearch
 
 			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
 
-			// get features
+			// get rank
 			set<int> action = YCandidate.action;
 			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+			RankerPrune* pruneRanker = dynamic_cast<RankerPrune*>(this->searchSpace->getPruneFunction());
+			double candRank = pruneRanker->getRanker()->rank(pruneFeatures);
 
 			// form object for rank pruning
 			RankPruneNode labeledCand;
 			labeledCand.YCandidate = YCandidate;
-			labeledCand.rank = candLoss;//TODO: need to use current weights
+			labeledCand.rank = candRank;
 			labeledCand.good = candLoss <= prevLoss;
 
 			// put in good set if good, and keep track of best good candidate
