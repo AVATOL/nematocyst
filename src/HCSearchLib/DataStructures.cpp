@@ -999,6 +999,12 @@ namespace HCSearch
 					MyFileSystem::FileSystem::deleteFile(FEATURES_FILE + ".cache");
 				}
 
+				// warnings
+				if (!MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE))
+				{
+					LOG(WARNING) << "features file does not exist for vw, which shouldn't happen! process=" << processID;
+				}
+
 				// call VW
 				stringstream ssLearn;
 
@@ -1016,6 +1022,12 @@ namespace HCSearch
 				}
 				
 				MyFileSystem::Executable::executeRetriesFatal(ssLearn.str());
+
+				// warnings
+				if (!MyFileSystem::FileSystem::checkFileExists(modelFileName))
+				{
+					LOG(WARNING) << "model file does not exist after running vw! process=" << processID;
+				}
 
 				clock_t toc = clock();
 				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
@@ -1047,6 +1059,12 @@ namespace HCSearch
 
 		// no longer learning
 		this->learningMode = false;
+
+		// warnings
+		if (!MyFileSystem::FileSystem::checkFileExists(modelFileName))
+		{
+			LOG(WARNING) << "model file does not exist after training!";
+		}
 
 		// load new weights
 		load(modelFileName);
