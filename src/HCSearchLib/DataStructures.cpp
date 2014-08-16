@@ -450,6 +450,12 @@ namespace HCSearch
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
+		else if (searchType == LEARN_PRUNE)
+		{
+			STARTMSG = "MERGEPSTART";
+			ENDMSG = "MERGEPEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE;
+		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
 
@@ -890,6 +896,10 @@ namespace HCSearch
 		{
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
+		if (searchType == LEARN_PRUNE)
+		{
+			featuresFileBase = Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE;
+		}
 
 #ifdef USE_MPI
 		string STARTMSG;
@@ -919,6 +929,15 @@ namespace HCSearch
 			STARTMSG = sstart.str();
 			ostringstream send;
 			send << "MERGECOHEND" << this->numLearn;
+			ENDMSG = send.str();
+		}
+		else if (searchType == LEARN_PRUNE)
+		{
+			ostringstream sstart;
+			sstart << "MERGEPSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGEPEND" << this->numLearn;
 			ENDMSG = send.str();
 		}
 		this->numLearn++;
