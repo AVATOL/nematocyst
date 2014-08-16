@@ -33,6 +33,16 @@ namespace HCSearch
 		static void saveCandidateLosses(vector<double>& losses, string fileName);
 	};
 
+	class Training
+	{
+	public:
+		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
+
+		static void restartLearning(IRankModel* learningModel, SearchType searchType);
+
+		static void finishLearning(IRankModel* learningModel, SearchType searchType);
+	};
+
 	/*!
 	 * @defgroup SearchProcedure Search Procedure
 	 * @brief Provides an interface for setting up a search procedure.
