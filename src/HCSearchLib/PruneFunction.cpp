@@ -396,7 +396,7 @@ namespace HCSearch
 
 	bool RankNodeKPQ::full()
 	{
-		return size() == this->K;
+		return size() >= this->K;
 	}
 
 	int RankNodeKPQ::size()

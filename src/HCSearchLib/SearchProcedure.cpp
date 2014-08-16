@@ -1210,6 +1210,7 @@ namespace HCSearch
 		vector<RankPruneNode> topK = rankPQ.pop_all();
 		const int topKSize = topK.size();
 		bool foundGood = false;
+		LOG() << "set size after pruning=" << topKSize << endl;
 		for (int i = 0; i < topKSize; i++)
 		{
 			RankPruneNode rankNode = topK[i];
