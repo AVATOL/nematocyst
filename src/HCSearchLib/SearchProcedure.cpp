@@ -776,6 +776,12 @@ namespace HCSearch
 				{
 					Training::finishLearning(learningModel, searchType);
 					Training::restartLearning(learningModel, searchType);
+					if (searchType == LEARN_PRUNE)
+					{
+						HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+						HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+						pruneCast->setRanker(pruneModel);
+					}
 				}
 			}
 
