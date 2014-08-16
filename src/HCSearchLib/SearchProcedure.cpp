@@ -256,6 +256,9 @@ namespace HCSearch
 			case LEARN_C_ORACLE_H:
 				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
 				break;
+			case LEARN_PRUNE:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
 			default:
 				LOG(ERROR) << "searchType constant is invalid.";
 		}
