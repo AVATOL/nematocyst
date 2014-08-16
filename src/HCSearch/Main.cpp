@@ -596,6 +596,11 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
 					timeBound, searchSpace, searchProcedure, HCSearch::VW_RANK, po.numTrainIterations);
 				
+				// set the prune function
+				HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+				HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+				pruneCast->setRanker(pruneModel);
+
 				if (HCSearch::Global::settings->RANK == 0)
 				{
 					pruneModel->save(pruneModelPath);
