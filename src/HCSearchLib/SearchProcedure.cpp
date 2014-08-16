@@ -1224,6 +1224,8 @@ namespace HCSearch
 		if (allZeros || !foundGood)
 		{
 			LOG() << "updating pruning weights..." << endl;
+			if (allZeros)
+				LOG() << "weights were all zeros before" << endl;
 
 			// compute good features and losses
 			vector<RankFeatures> goodFeatures;
