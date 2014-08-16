@@ -1048,11 +1048,12 @@ namespace HCSearch
 		// no longer learning
 		this->learningMode = false;
 
-		// load weights into model and initialize
+		// load new weights
+		load(modelFileName);
+
+		// delete cache file
 		if (Global::settings->RANK == 0)
 		{
-			load(modelFileName);
-
 			// delete cache file
 			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
 			{
