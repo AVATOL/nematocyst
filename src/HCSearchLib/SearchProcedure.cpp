@@ -1160,7 +1160,16 @@ namespace HCSearch
 			set<int> action = YCandidate.action;
 			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
 			RankerPrune* pruneRanker = dynamic_cast<RankerPrune*>(this->searchSpace->getPruneFunction());
-			double candRank = pruneRanker->getRanker()->rank(pruneFeatures);
+			if (pruneRanker == NULL)
+			{
+				LOG(ERROR) << "prune ranker is not set!";
+			}
+			IRankModel* pruneRankerModel = pruneRanker->getRanker();
+			if (pruneRankerModel == NULL)
+			{
+				LOG(ERROR) << "prune ranker model is not set!";
+			}
+			double candRank = pruneRankerModel->rank(pruneFeatures);
 
 			// form object for rank pruning
 			RankPruneNode labeledCand;
