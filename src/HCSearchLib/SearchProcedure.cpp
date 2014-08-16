@@ -1148,6 +1148,8 @@ namespace HCSearch
 		// set up pruning priority queue
 		const int numOriginalCandidates = YPredSet.size();
 		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
+		LOG() << "num original cand=" << numOriginalCandidates << endl;
+		LOG() << "num new cand=" << numNewCandidates << endl;
 
 		RankNodeKPQ rankPQ(numNewCandidates);
 		vector<RankPruneNode> goodSet;
