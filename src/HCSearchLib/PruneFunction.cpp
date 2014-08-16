@@ -365,22 +365,16 @@ namespace HCSearch
 
 	void RankNodeKPQ::push(RankPruneNode e)
 	{
-		if (empty())
+		if (!full())
 		{
-			this->minimum = e.rank;
 			pq.push(e);
 		}
-		else if (size() < this->K)
+		else if (full() && e.rank <= maximum)
 		{
-			this->minimum = min(e.rank, minimum);
-			pq.push(e);
-		}
-		else if (e.rank <= minimum && size() >= this->K)
-		{
-			this->minimum = e.rank;
 			pq.pop();
 			pq.push(e);
 		}
+		this->maximum = pq.top().rank;
 	}
 
 	vector<RankPruneNode> RankNodeKPQ::pop_all()

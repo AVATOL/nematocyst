@@ -151,7 +151,7 @@ namespace HCSearch
 	class RankNodeKPQ
 	{
 		RankNodePQInvert pq;
-		double minimum;
+		double maximum;
 		int K;
 
 	public:
