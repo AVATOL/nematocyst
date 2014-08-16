@@ -477,14 +477,30 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 		}
 
-		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
+		if (po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 		{
 			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
 			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
 			if (pruneCast->getRanker() == NULL)
 			{
-				HCSearch::IRankModel* pruneModel = HCSearch::Model::loadModel(pruneModelPath, HCSearch::VW_RANK);
-				pruneCast->setRanker(pruneModel);
+				if (po.rankLearnerType == HCSearch::VW_RANK)
+				{
+					HCSearch::IRankModel* pruneModel;
+					if (MyFileSystem::FileSystem::checkFileExists(pruneModelPath))
+					{
+						pruneModel = HCSearch::Model::loadModel(pruneModelPath, HCSearch::VW_RANK);
+					}
+					else
+					{
+						pruneModel = new HCSearch::VWRankModel();
+					}
+					pruneCast->setRanker(pruneModel);
+				}
+				else
+				{
+					LOG(ERROR) << "only VW supported for prune ranker model" << endl;
+					HCSearch::abort();
+				}
 			}
 		}
 
