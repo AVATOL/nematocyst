@@ -1219,7 +1219,8 @@ namespace HCSearch
 			if (rankNode.good)
 			{
 				foundGood = true;
-				break;
+				if (!allZeros)
+					break;
 			}
 		}
 
