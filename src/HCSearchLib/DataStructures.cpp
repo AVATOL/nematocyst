@@ -1002,9 +1002,9 @@ namespace HCSearch
 				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
 #ifndef USE_WINDOWS
-				LOG() << "sleeping...";
-				sleep(2);
-				LOG() << "done." << endl;
+				//LOG() << "sleeping...";
+				//sleep(2);
+				//LOG() << "done." << endl;
 #endif
 
 				// delete the feature file
