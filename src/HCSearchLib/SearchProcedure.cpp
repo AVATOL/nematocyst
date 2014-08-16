@@ -1118,8 +1118,10 @@ namespace HCSearch
 		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
 
 		// prune successors
+		LOG() << "pruning successors..." << endl;
 		if (prune)
 			YPredSet = this->searchSpace->pruneSuccessors(*this->X, this->YPred, YPredSet, YTruth, this->searchSpace->getLossFunction());
+		LOG() << "successors pruned." << endl;
 
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
 		{
