@@ -1090,6 +1090,12 @@ namespace HCSearch
 				this->cost = loss;
 				break;
 			}
+			case LEARN_PRUNE:
+			{
+				this->heuristic = loss;
+				this->cost = loss;
+				break;
+			}
 			default:
 				LOG(ERROR) << "searchType constant is invalid.";
 		}
