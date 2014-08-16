@@ -82,12 +82,14 @@ namespace HCSearch
 		}
 
 		// run ranker
+		LOG() << "running pruning ranker..." << endl;
 		vector<double> ranks = this->ranker->rank(featuresList);
 
 		// sort by rank
 		const int numOriginalCandidates = YCandidates.size();
 		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
 
+		LOG() << "adding to running queue..." << endl;
 		RankNodeKPQ rankPQ(numNewCandidates);
 		for (int i = 0; i < numOriginalCandidates; i++)
 		{
@@ -98,6 +100,7 @@ namespace HCSearch
 		}
 
 		// remove bad candidates (keep good candidates)
+		LOG() << "extracting from pruning ranker..." << endl;
 		vector<RankPruneNode> topK = rankPQ.pop_all();
 		const int topKSize = topK.size();
 		for (int i = 0; i < topKSize; i++)
