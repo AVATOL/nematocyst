@@ -1304,6 +1304,59 @@ namespace HCSearch
 		return successors;
 	}
 
+	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearningOldVersion(IRankModel* learningModel, 
+		ImgLabeling* YTruth, int timeStep, int timeBound)
+	{
+		vector< SearchNode* > successors;
+
+		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
+		RankFeatures prevPruneFeatures = this->searchSpace->computePruneFeatures(*this->X, *YTruth, set<int>());
+
+		// generate successors
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+
+		// collect training examples
+		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+		{
+			ImgCandidate YCandidate = *it;
+			ImgLabeling YCandPred = YCandidate.labeling;
+			
+			// collect training examples
+			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+			set<int> action = YCandidate.action;
+			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+
+			if (learningModel->rankerType() == SVM_RANK)
+			{
+				SVMRankModel* svmModel = dynamic_cast<SVMRankModel*>(learningModel);
+				if (candLoss <= prevLoss)
+					svmModel->addTrainingExample(pruneFeatures, prevPruneFeatures);
+				else
+					svmModel->addTrainingExample(prevPruneFeatures, pruneFeatures);
+
+			}
+			else if (learningModel->rankerType() == VW_RANK)
+			{
+				VWRankModel* vwModel = dynamic_cast<VWRankModel*>(learningModel);
+				if (candLoss <= prevLoss)
+					vwModel->addTrainingExample(pruneFeatures, prevPruneFeatures, candLoss, prevLoss);
+				else
+					vwModel->addTrainingExample(prevPruneFeatures, pruneFeatures, prevLoss, candLoss);
+
+			}
+			else
+			{
+				LOG(ERROR) << "unknown ranker for prune training positive example";
+				abort();
+			}
+
+			// generate examples
+			SearchNode* successor = new SearchNode(this, YCandPred);
+			successors.push_back(successor);
+		}
+		return successors;
+	}
+
 	RankFeatures ISearchProcedure::SearchNode::getHeuristicFeatures()
 	{
 		if (getType() == LL || getType() == LC || getType() == LEARN_C_ORACLE_H)
