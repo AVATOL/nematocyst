@@ -130,6 +130,100 @@ namespace HCSearch
 		this->ranker = ranker;
 	}
 
+	/**************** (Old) Ranker Prune ****************/
+
+	const double OldRankerPrune::DEFAULT_PRUNE_FRACTION = 0.5;
+
+	OldRankerPrune::OldRankerPrune()
+	{
+		this->pruneFraction = DEFAULT_PRUNE_FRACTION;
+		this->featureFunction = NULL;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::OldRankerPrune(double pruneFraction)
+	{
+		this->pruneFraction = pruneFraction;
+		this->featureFunction = NULL;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::OldRankerPrune(IFeatureFunction* featureFunction)
+	{
+		this->pruneFraction = DEFAULT_PRUNE_FRACTION;
+		this->featureFunction = featureFunction;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::OldRankerPrune(double pruneFraction, IFeatureFunction* featureFunction)
+	{
+		this->pruneFraction = pruneFraction;
+		this->featureFunction = featureFunction;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::~OldRankerPrune()
+	{
+	}
+	
+	vector< ImgCandidate > OldRankerPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
+	{
+		vector< ImgCandidate > YPrunedCandidates;
+
+		// get pruning features of candidates
+		vector<RankFeatures> featuresList;
+		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
+		{
+			ImgCandidate YCand = *it;
+			set<int> action = YCand.action;
+			RankFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling, action);
+			featuresList.push_back(features);
+		}
+
+		// run ranker
+		vector<double> ranks = this->ranker->rank(featuresList);
+
+		// sort by rank
+		RankNodePQ rankPQ;
+		const int numOriginalCandidates = YCandidates.size();
+		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
+		for (int i = 0; i < numOriginalCandidates; i++)
+		{
+			RankPruneNode rankNode;
+			rankNode.rank = ranks[i];
+			rankNode.YCandidate = YCandidates[i];
+			rankPQ.push(rankNode);
+		}
+
+		// remove bad candidates (keep good candidates)
+		for (int i = 0; i < numNewCandidates; i++)
+		{
+			if (rankPQ.empty())
+				break;
+
+			RankPruneNode rankNode = rankPQ.top();
+			rankPQ.pop();
+			YPrunedCandidates.push_back(rankNode.YCandidate);
+		}
+
+		LOG() << "num of successors before pruning=" << numOriginalCandidates << endl;
+		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
+
+		return YPrunedCandidates;
+	}
+
+	IRankModel* OldRankerPrune::getRanker()
+	{
+		return this->ranker;
+	}
+
+	void OldRankerPrune::setRanker(IRankModel* ranker)
+	{
+		this->ranker = ranker;
+	}
+
+	/**************** Compare Rank Prune Nodes ****************/
+
 	bool CompareRankPruneNodes::operator() (RankPruneNode& lhs, RankPruneNode& rhs) const
 	{
 		return lhs.rank > rhs.rank;

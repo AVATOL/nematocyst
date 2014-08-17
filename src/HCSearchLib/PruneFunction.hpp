@@ -96,6 +96,29 @@ namespace HCSearch
 	};
 
 	/*!
+	 * @brief Pruning function using ranker for ranking good/bad actions (old version).
+	 */
+	class OldRankerPrune : public IPruneFunction
+	{
+		static const double DEFAULT_PRUNE_FRACTION;
+
+		IRankModel* ranker;
+		double pruneFraction; //!< 0 = no pruning, 1 = prune everything
+
+	public:
+		OldRankerPrune();
+		OldRankerPrune(double pruneFraction);
+		OldRankerPrune(IFeatureFunction* featureFunction);
+		OldRankerPrune(double pruneFraction, IFeatureFunction* featureFunction);
+		~OldRankerPrune();
+		
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+		
+		IRankModel* getRanker();
+		void setRanker(IRankModel* ranker);
+	};
+
+	/*!
 	 * @brief Pruning function using ranker for ranking good/bad actions.
 	 */
 	class SimulatedRankerPrune : public IPruneFunction
