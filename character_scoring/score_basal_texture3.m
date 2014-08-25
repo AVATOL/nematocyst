@@ -15,6 +15,7 @@ CHAR_STATE_HETEROGENEOUS = '1';
 
 %% settings
 HETEROGENEOUS_THRESHOLD = 0; % 0 = if one mode is sufficient
+TWO_TEST_ALPHA_THRESHOLD = 0.1;
 
 % OUTPUT_FOLDER_NAME = 'basal_test';
 PATCH_SIZE = 32; % size of patches
@@ -93,6 +94,7 @@ end
 
 testStates = zeros(nPatches-1, 1);
 testThreshs = zeros(nPatches-1, 1);
+validRegion = zeros(nPatches-1, 1);
 for ind = 1:nPatches-1
     %% grab the two halves
     if useHorizontalScan == 1
@@ -120,6 +122,8 @@ for ind = 1:nPatches-1
         continue;
     end
     
+    validRegion(ind) = 1;
+    
     %% get the patch features
     part1Patches = [];
     for i = 1:length(x1)
@@ -139,18 +143,21 @@ for ind = 1:nPatches-1
     end
     
     %% use kernel 2-sample test
-    alpha = 0.01;
     params.sig = -1;
-    params.shuff = 10;
-    params.bootForce = 1;
-    [testState, thresh, params] = mmdTestBoot(part1Patches, part2Patches, alpha, params);
+    [testState, thresh, params] = mmdTestGamma(part1Patches, part2Patches, TWO_TEST_ALPHA_THRESHOLD, params);
     
     testStates(ind) = testState;
     testThreshs(ind) = thresh;
 end
 
+testStates(validRegion == 0) = [];
+testThreshs(validRegion == 0) = [];
+
 %% score character TODO
 charState = CHAR_STATE_HOMOGENEOUS;
+if sum(double(testStates < testThreshs)) > HETEROGENEOUS_THRESHOLD
+    charState = CHAR_STATE_HETEROGENEOUS;
+end
 
 end
 
