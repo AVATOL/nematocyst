@@ -13,9 +13,9 @@ FOREGROUND_LABEL = 1; % 1 = basal, 2 = capsule
 CHAR_STATE_HOMOGENEOUS = '0';
 CHAR_STATE_HETEROGENEOUS = '1';
 
-%% settings
-HETEROGENEOUS_THRESHOLD = 0; % 0 = if one mode is sufficient
-TWO_TEST_ALPHA_THRESHOLD = 0.1;
+%% settings - play with these
+HETEROGENEOUS_THRESHOLD = 0.7;
+TWO_TEST_ALPHA_THRESHOLD = 0.01;
 
 % OUTPUT_FOLDER_NAME = 'basal_test';
 PATCH_SIZE = 32; % size of patches
@@ -153,9 +153,11 @@ end
 testStates(validRegion == 0) = [];
 testThreshs(validRegion == 0) = [];
 
-%% score character TODO
+%% score character
 charState = CHAR_STATE_HOMOGENEOUS;
-if sum(double(testStates < testThreshs)) > HETEROGENEOUS_THRESHOLD
+percentHetero = sum(double(testStates > testThreshs)) / numel(testThreshs);
+fprintf('percent heterogeneous=%f\n\n', percentHetero);
+if percentHetero > HETEROGENEOUS_THRESHOLD
     charState = CHAR_STATE_HETEROGENEOUS;
 end
 
