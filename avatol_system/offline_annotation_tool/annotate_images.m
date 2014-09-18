@@ -52,7 +52,8 @@ for i= 1:length(fileListingArray)
     img = imread(imgPath);
     if strcmpi(annotateType, 'box') == 1
         img = imresize(img, 0.5);
-        objects = annotate_image_box(img);
+        windowSize = 64;
+        objects = annotate_image_box(img, windowSize);
     else
         objects = annotate_image_polygon(img);
     end
