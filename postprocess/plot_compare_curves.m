@@ -1,4 +1,4 @@
-function plot_compare_curves( evaluate, labels, searchTypeIndices, plotTitle, MODE )
+function plot_compare_curves( evaluate, labels, searchTypeIndices, plotTitle, MODE, configFlag )
 %PLOT_COMPARE_CURVES Compare anytime curve plots.
 %   
 %   evaluate:           cells contain a map that contains evaluation structures
@@ -6,9 +6,13 @@ function plot_compare_curves( evaluate, labels, searchTypeIndices, plotTitle, MO
 %   searchTypeIndices:  indices for search type
 %   plotTitle:          title of plot
 %   MODE:               0 = binary evaluation, 1 = macro measures, 2 = micro measures
+%   configFlag:         flag for configuration options
 
-narginchk(3, 5);
+narginchk(3, 6);
 
+if nargin < 6
+    configFlag = 1; % 1 = Stanford, 2 = Nematocysts
+end
 %% mode 0 = binary, 1 = macro, 2 = micro
 if nargin < 5
     MODE = 1;
@@ -18,14 +22,16 @@ SHOW_PREC = 1;
 SHOW_REC = 1;
 SHOW_F1 = 1;
 SHOW_ACC = 1;
+if configFlag == 2
+    SHOW_ACC = 0;
+end
 
 %% search types
-searchTypesCollection = cell(1, 5);
+searchTypesCollection = cell(1, 4);
 searchTypesCollection{1} = 'hc';
 searchTypesCollection{2} = 'hl';
 searchTypesCollection{3} = 'lc';
 searchTypesCollection{4} = 'll';
-searchTypesCollection{5} = 'rl';
 
 if nargin < 4
     plotTitle = 'Untitled';
@@ -40,8 +46,10 @@ avgRecMat = zeros(length(timeRange), length(evaluate));
 stdRecMat = zeros(length(timeRange), length(evaluate));
 avgF1Mat = zeros(length(timeRange), length(evaluate));
 stdF1Mat = zeros(length(timeRange), length(evaluate));
-avgHammingMat = zeros(length(timeRange), length(evaluate));
-stdHammingMat = zeros(length(timeRange), length(evaluate));
+if configFlag ~= 2
+    avgHammingMat = zeros(length(timeRange), length(evaluate));
+    stdHammingMat = zeros(length(timeRange), length(evaluate));
+end
 
 legendLabels = cell(length(evaluate), 1);
 for i = 1:length(evaluate)
@@ -72,8 +80,10 @@ for i = 1:length(evaluate)
         stdF1Mat(:, i) = evaluateType.stdmicrof1';
     end
     
-    avgHammingMat(:, i) = evaluateType.avghamming';
-    stdHammingMat(:, i) = evaluateType.stdhamming';
+    if configFlag ~= 2
+        avgHammingMat(:, i) = evaluateType.avghamming';
+        stdHammingMat(:, i) = evaluateType.stdhamming';
+    end
     
     legendLabels{i} = sprintf('%s', labels{i});
 end

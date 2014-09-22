@@ -1,11 +1,15 @@
-function plot_anytime_curves( evaluate, MODE )
+function plot_anytime_curves( evaluate, MODE, configFlag )
 %PLOT_ANYTIME_CURVES Plot anytime curves.
 %   
 %   evaluate:   map containing evaluation structures
 %   MODE:       0 = binary evaluation, 1 = macro measures, 2 = micro measures
+%   configFlag: flag for configuration options
 
-narginchk(1, 2);
+narginchk(1, 3);
 
+if nargin < 3
+    configFlag = 1; % 1 = Stanford, 2 = Nematocysts
+end
 %% mode 0 = binary, 1 = macro, 2 = micro
 if nargin < 2
     MODE = 1;
@@ -15,14 +19,16 @@ SHOW_PREC = 1;
 SHOW_REC = 1;
 SHOW_F1 = 1;
 SHOW_ACC = 1;
+if configFlag == 2
+    SHOW_ACC = 0;
+end
 
 %% search types
-searchTypesCollection = cell(1, 5);
+searchTypesCollection = cell(1, 4);
 searchTypesCollection{1} = 'hc';
 searchTypesCollection{2} = 'hl';
 searchTypesCollection{3} = 'lc';
 searchTypesCollection{4} = 'll';
-searchTypesCollection{5} = 'rl';
 
 searchTypesAvailable = [];
 for s = 1:length(searchTypesCollection)
@@ -42,8 +48,10 @@ avgRecMat = zeros(length(timeRange), length(searchTypesAvailable));
 stdRecMat = zeros(length(timeRange), length(searchTypesAvailable));
 avgF1Mat = zeros(length(timeRange), length(searchTypesAvailable));
 stdF1Mat = zeros(length(timeRange), length(searchTypesAvailable));
-avgHammingMat = zeros(length(timeRange), length(searchTypesAvailable));
-stdHammingMat = zeros(length(timeRange), length(searchTypesAvailable));
+if configFlag ~= 2
+    avgHammingMat = zeros(length(timeRange), length(searchTypesAvailable));
+    stdHammingMat = zeros(length(timeRange), length(searchTypesAvailable));
+end
 
 legendLabels = cell(length(searchTypesAvailable), 1);
 for i = 1:length(searchTypesAvailable)
@@ -73,8 +81,10 @@ for i = 1:length(searchTypesAvailable)
         stdF1Mat(:, i) = evaluateType.stdmicrof1';
     end
     
-    avgHammingMat(:, i) = evaluateType.avghamming';
-    stdHammingMat(:, i) = evaluateType.stdhamming';
+    if configFlag ~= 2
+        avgHammingMat(:, i) = evaluateType.avghamming';
+        stdHammingMat(:, i) = evaluateType.stdhamming';
+    end
     
     legendLabels{i} = sprintf('%s', upper(searchTypesCollection{searchTypesAvailable(i)}));
 end
