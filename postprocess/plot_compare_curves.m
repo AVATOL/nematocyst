@@ -18,11 +18,15 @@ if nargin < 5
     MODE = 1;
 end
 
-SHOW_PREC = 1;
-SHOW_REC = 1;
-SHOW_F1 = 1;
-SHOW_ACC = 1;
-if configFlag == 2
+if configFlag == 1
+    SHOW_PREC = 0;
+    SHOW_REC = 0;
+    SHOW_F1 = 0;
+    SHOW_ACC = 1;
+elseif configFlag == 2
+    SHOW_PREC = 1;
+    SHOW_REC = 1;
+    SHOW_F1 = 1;
     SHOW_ACC = 0;
 end
 
