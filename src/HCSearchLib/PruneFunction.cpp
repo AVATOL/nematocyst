@@ -26,6 +26,11 @@ namespace HCSearch
 		return YCandidates;
 	}
 
+	double NoPrune::getPruneFraction()
+	{
+		return 0.0;
+	}
+
 	/**************** Ranker Prune ****************/
 
 	const double RankerPrune::DEFAULT_PRUNE_FRACTION = 0.5;
@@ -77,6 +82,105 @@ namespace HCSearch
 		}
 
 		// run ranker
+		LOG() << "running pruning ranker..." << endl;
+		vector<double> ranks = this->ranker->rank(featuresList);
+
+		// sort by rank
+		const int numOriginalCandidates = YCandidates.size();
+		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
+
+		LOG() << "adding to running queue..." << endl;
+		RankNodeKPQ rankPQ(numNewCandidates);
+		for (int i = 0; i < numOriginalCandidates; i++)
+		{
+			RankPruneNode rankNode;
+			rankNode.rank = ranks[i];
+			rankNode.YCandidate = YCandidates[i];
+			rankPQ.push(rankNode);
+		}
+
+		// remove bad candidates (keep good candidates)
+		LOG() << "extracting from pruning ranker..." << endl;
+		vector<RankPruneNode> topK = rankPQ.pop_all();
+		const int topKSize = topK.size();
+		for (int i = 0; i < topKSize; i++)
+		{
+			RankPruneNode rankNode = topK[i];
+			YPrunedCandidates.push_back(rankNode.YCandidate);
+		}
+
+		LOG() << "num of successors before pruning=" << numOriginalCandidates << endl;
+		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
+
+		return YPrunedCandidates;
+	}
+
+	double RankerPrune::getPruneFraction()
+	{
+		return this->pruneFraction;
+	}
+
+	IRankModel* RankerPrune::getRanker()
+	{
+		return this->ranker;
+	}
+
+	void RankerPrune::setRanker(IRankModel* ranker)
+	{
+		this->ranker = ranker;
+	}
+
+	/**************** (Old) Ranker Prune ****************/
+
+	const double OldRankerPrune::DEFAULT_PRUNE_FRACTION = 0.5;
+
+	OldRankerPrune::OldRankerPrune()
+	{
+		this->pruneFraction = DEFAULT_PRUNE_FRACTION;
+		this->featureFunction = NULL;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::OldRankerPrune(double pruneFraction)
+	{
+		this->pruneFraction = pruneFraction;
+		this->featureFunction = NULL;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::OldRankerPrune(IFeatureFunction* featureFunction)
+	{
+		this->pruneFraction = DEFAULT_PRUNE_FRACTION;
+		this->featureFunction = featureFunction;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::OldRankerPrune(double pruneFraction, IFeatureFunction* featureFunction)
+	{
+		this->pruneFraction = pruneFraction;
+		this->featureFunction = featureFunction;
+		this->ranker = NULL;
+	}
+
+	OldRankerPrune::~OldRankerPrune()
+	{
+	}
+	
+	vector< ImgCandidate > OldRankerPrune::pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)
+	{
+		vector< ImgCandidate > YPrunedCandidates;
+
+		// get pruning features of candidates
+		vector<RankFeatures> featuresList;
+		for (vector<ImgCandidate>::iterator it = YCandidates.begin(); it != YCandidates.end(); ++it)
+		{
+			ImgCandidate YCand = *it;
+			set<int> action = YCand.action;
+			RankFeatures features = this->featureFunction->computeFeatures(X, YCand.labeling, action);
+			featuresList.push_back(features);
+		}
+
+		// run ranker
 		vector<double> ranks = this->ranker->rank(featuresList);
 
 		// sort by rank
@@ -108,19 +212,26 @@ namespace HCSearch
 		return YPrunedCandidates;
 	}
 
-	IRankModel* RankerPrune::getRanker()
+	IRankModel* OldRankerPrune::getRanker()
 	{
 		return this->ranker;
 	}
 
-	void RankerPrune::setRanker(IRankModel* ranker)
+	void OldRankerPrune::setRanker(IRankModel* ranker)
 	{
 		this->ranker = ranker;
 	}
 
+	/**************** Compare Rank Prune Nodes ****************/
+
 	bool CompareRankPruneNodes::operator() (RankPruneNode& lhs, RankPruneNode& rhs) const
 	{
 		return lhs.rank > rhs.rank;
+	}
+
+	bool CompareRankPruneNodesInvert::operator() (RankPruneNode& lhs, RankPruneNode& rhs) const
+	{
+		return lhs.rank < rhs.rank;
 	}
 
 	/**************** Simulated Ranker Prune ****************/
@@ -218,6 +329,11 @@ namespace HCSearch
 		LOG() << "\tnum of successors after pruning=" << YPrunedCandidates.size() << endl;
 
 		return YPrunedCandidates;
+	}
+
+	double SimulatedRankerPrune::getPruneFraction()
+	{
+		return this->pruneFraction;
 	}
 
 	/**************** Oracle Prune ****************/
@@ -331,8 +447,57 @@ namespace HCSearch
 		return pruned;
 	}
 
+	double OraclePrune::getPruneFraction()
+	{
+		LOG(DEBUG) << "calling get prune fraction on oracle pruning";
+		return 1.0;
+	}
+
 	ILossFunction* OraclePrune::getLossFunction()
 	{
 		return this->lossFunction;
+	}
+
+	/**************** RankNodeKPQ ****************/
+
+	void RankNodeKPQ::push(RankPruneNode e)
+	{
+		if (!full())
+		{
+			pq.push(e);
+		}
+		else if (full() && e.rank <= maximum)
+		{
+			pq.pop();
+			pq.push(e);
+		}
+		this->maximum = pq.top().rank;
+	}
+
+	vector<RankPruneNode> RankNodeKPQ::pop_all()
+	{
+		vector<RankPruneNode> list;
+		while (!pq.empty())
+		{
+			list.push_back(pq.top());
+			pq.pop();
+		}
+
+		return list;
+	}
+
+	bool RankNodeKPQ::empty()
+	{
+		return size() == 0;
+	}
+
+	bool RankNodeKPQ::full()
+	{
+		return size() >= this->K;
+	}
+
+	int RankNodeKPQ::size()
+	{
+		return pq.size();
 	}
 }

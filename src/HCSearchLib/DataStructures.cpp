@@ -301,26 +301,34 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "svm ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "svm ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "svm ranker not initialized for ranking";
+			//abort();
 		}
 
-		return vectorDot(getWeights(), features.data);
+		if (!this->initialized)
+			return 0;
+		else
+			return vectorDot(getWeights(), features.data);
 	}
 
 	vector<double> SVMRankModel::rank(vector<RankFeatures> featuresList)
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "svm ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "svm ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "svm ranker not initialized for ranking";
+			//abort();
 		}
 
 		int numExamples = featuresList.size();
 		vector<double> ranks;
 		for (int i = 0; i < numExamples; i++)
 		{
-			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+			if (!this->initialized)
+				ranks.push_back(0);
+			else
+				ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
 		}
 		return ranks;
 	}
@@ -441,6 +449,12 @@ namespace HCSearch
 			STARTMSG = "MERGECOHSTART";
 			ENDMSG = "MERGECOHEND";
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
+		}
+		else if (searchType == LEARN_PRUNE)
+		{
+			STARTMSG = "MERGEPSTART";
+			ENDMSG = "MERGEPEND";
+			featuresFileBase = Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE;
 		}
 
 		MPI::Synchronize::masterWait(STARTMSG);
@@ -743,26 +757,34 @@ namespace HCSearch
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "VW ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "VW ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "VW ranker not initialized for ranking";
+			//abort();
 		}
 
-		return vectorDot(getWeights(), features.data);
+		if (!this->initialized)
+			return 0;
+		else
+			return vectorDot(getWeights(), features.data);
 	}
 
 	vector<double> VWRankModel::rank(vector<RankFeatures> featuresList)
 	{
 		if (!this->initialized)
 		{
-			LOG(ERROR) << "VW ranker not initialized for ranking";
-			abort();
+			LOG(WARNING) << "VW ranker not initialized for ranking but returning 0 anyway";
+			//LOG(ERROR) << "VW ranker not initialized for ranking";
+			//abort();
 		}
 
 		int numExamples = featuresList.size();
 		vector<double> ranks;
 		for (int i = 0; i < numExamples; i++)
 		{
-			ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
+			if (!this->initialized)
+				ranks.push_back(0);
+			else
+				ranks.push_back(vectorDot(getWeights(), featuresList[i].data));
 		}
 		return ranks;
 	}
@@ -874,6 +896,10 @@ namespace HCSearch
 		{
 			featuresFileBase = Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE_BASE;
 		}
+		if (searchType == LEARN_PRUNE)
+		{
+			featuresFileBase = Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE_BASE;
+		}
 
 #ifdef USE_MPI
 		string STARTMSG;
@@ -903,6 +929,15 @@ namespace HCSearch
 			STARTMSG = sstart.str();
 			ostringstream send;
 			send << "MERGECOHEND" << this->numLearn;
+			ENDMSG = send.str();
+		}
+		else if (searchType == LEARN_PRUNE)
+		{
+			ostringstream sstart;
+			sstart << "MERGEPSTART" << this->numLearn;
+			STARTMSG = sstart.str();
+			ostringstream send;
+			send << "MERGEPEND" << this->numLearn;
 			ENDMSG = send.str();
 		}
 		this->numLearn++;
@@ -964,6 +999,12 @@ namespace HCSearch
 					MyFileSystem::FileSystem::deleteFile(FEATURES_FILE + ".cache");
 				}
 
+				// warnings
+				if (!MyFileSystem::FileSystem::checkFileExists(FEATURES_FILE))
+				{
+					LOG(WARNING) << "features file does not exist for vw, which shouldn't happen! process=" << processID;
+				}
+
 				// call VW
 				stringstream ssLearn;
 
@@ -982,13 +1023,19 @@ namespace HCSearch
 				
 				MyFileSystem::Executable::executeRetriesFatal(ssLearn.str());
 
+				// warnings
+				if (!MyFileSystem::FileSystem::checkFileExists(modelFileName))
+				{
+					LOG(WARNING) << "model file does not exist after running vw! process=" << processID;
+				}
+
 				clock_t toc = clock();
 				LOG() << "total VW-Rank training time: " << (double)(toc - tic)/CLOCKS_PER_SEC << endl;
 
 #ifndef USE_WINDOWS
-				LOG() << "sleeping...";
-				sleep(2);
-				LOG() << "done." << endl;
+				//LOG() << "sleeping...";
+				//sleep(2);
+				//LOG() << "done." << endl;
 #endif
 
 				// delete the feature file
@@ -1013,11 +1060,18 @@ namespace HCSearch
 		// no longer learning
 		this->learningMode = false;
 
-		// load weights into model and initialize
+		// warnings
+		if (!MyFileSystem::FileSystem::checkFileExists(modelFileName))
+		{
+			LOG(WARNING) << "model file does not exist after training!";
+		}
+
+		// load new weights
+		load(modelFileName);
+
+		// delete cache file
 		if (Global::settings->RANK == 0)
 		{
-			load(modelFileName);
-
 			// delete cache file
 			if (MyFileSystem::FileSystem::checkFileExists(this->rankingFileName + ".cache"))
 			{

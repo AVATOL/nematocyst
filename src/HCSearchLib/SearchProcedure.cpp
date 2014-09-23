@@ -115,6 +115,118 @@ namespace HCSearch
 		}
 	}
 
+	/**************** Training ****************/
+
+	IRankModel* Training::initializeLearning(RankerType rankerType, SearchType searchType)
+	{
+		// Setup model for learning
+		IRankModel* learningModel = NULL;
+		
+		if (rankerType == SVM_RANK)
+		{
+			learningModel = new SVMRankModel();
+		}
+		else if (rankerType == VW_RANK)
+		{
+			learningModel = new VWRankModel();
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
+
+		restartLearning(learningModel, searchType);
+
+		return learningModel;
+	}
+
+	void Training::restartLearning(IRankModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_HEURISTIC_FEATURES_FILE);
+			else if (searchType == LEARN_C)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_H_FEATURES_FILE);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_FEATURES_FILE);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->startTraining(Global::settings->paths->OUTPUT_PRUNE_FEATURES_FILE);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
+	}
+
+	void Training::finishLearning(IRankModel* learningModel, SearchType searchType)
+	{
+		if (learningModel->rankerType() == SVM_RANK)
+		{
+			SVMRankModel* svmRankModel = dynamic_cast<SVMRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_ORACLE_H)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_PRUNE)
+				svmRankModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE, searchType);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else if (learningModel->rankerType() == VW_RANK)
+		{
+			VWRankModel* vwRankModel = dynamic_cast<VWRankModel*>(learningModel);
+			if (searchType == LEARN_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_HEURISTIC_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_C_ORACLE_H)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_COST_ORACLE_H_MODEL_FILE, searchType);
+			else if (searchType == LEARN_PRUNE)
+				vwRankModel->finishTraining(Global::settings->paths->OUTPUT_PRUNE_MODEL_FILE, searchType);
+			else
+			{
+				LOG(ERROR) << "unknown search type!";
+				abort();
+			}
+		}
+		else
+		{
+			LOG(ERROR) << "unsupported rank learner.";
+			abort();
+		}
+	}
+
 	/**************** Search Procedure ****************/
 
 	ISearchProcedure::SearchNode* ISearchProcedure::createRootNode(SearchType searchType, ImgFeatures& X, ImgLabeling* YTruth, 
@@ -142,6 +254,9 @@ namespace HCSearch
 				root = new SearchNode(&X, YTruth, searchSpace, heuristicModel, NULL, searchType);
 				break;
 			case LEARN_C_ORACLE_H:
+				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
+				break;
+			case LEARN_PRUNE:
 				root = new SearchNode(&X, YTruth, searchSpace, NULL, NULL, searchType);
 				break;
 			default:
@@ -602,6 +717,25 @@ namespace HCSearch
 
 		int numOutputs = 1;
 
+		// ranker
+		HCSearch::RankerType rankerType;
+		IRankModel* learningModel = NULL;
+		if (searchType == LEARN_H)
+		{
+			rankerType = heuristicModel->rankerType();
+			learningModel = heuristicModel;
+		}
+		else if (searchType == LEARN_C || searchType == LEARN_C_ORACLE_H)
+		{
+			rankerType = costModel->rankerType();
+			learningModel = costModel;
+		}
+		else if (searchType == LEARN_PRUNE)
+		{
+			rankerType = pruneModel->rankerType();
+			learningModel = pruneModel;
+		}
+
 		// while the open set is not empty and the time step is less than the time bound,
 		// perform search...
 		int timeStep = 0;
@@ -633,6 +767,23 @@ namespace HCSearch
 
 			clock_t tocInside = clock();
 			LOG() << "search step " << timeStep << " total time: " << (double)(tocInside - ticInside)/CLOCKS_PER_SEC << endl;
+
+			/***** train if applicable *****/
+
+			if (searchType == LEARN_H || searchType == LEARN_PRUNE)
+			{
+				if (rankerType == VW_RANK)
+				{
+					Training::finishLearning(learningModel, searchType);
+					Training::restartLearning(learningModel, searchType);
+					if (searchType == LEARN_PRUNE)
+					{
+						HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+						HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+						pruneCast->setRanker(pruneModel);
+					}
+				}
+			}
 
 			/***** increment time step *****/
 			timeStep++;
@@ -948,6 +1099,12 @@ namespace HCSearch
 				this->cost = loss;
 				break;
 			}
+			case LEARN_PRUNE:
+			{
+				this->heuristic = loss;
+				this->cost = loss;
+				break;
+			}
 			default:
 				LOG(ERROR) << "searchType constant is invalid.";
 		}
@@ -961,8 +1118,10 @@ namespace HCSearch
 		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
 
 		// prune successors
+		LOG() << "pruning successors..." << endl;
 		if (prune)
 			YPredSet = this->searchSpace->pruneSuccessors(*this->X, this->YPred, YPredSet, YTruth, this->searchSpace->getLossFunction());
+		LOG() << "successors pruned." << endl;
 
 		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
 		{
@@ -975,6 +1134,177 @@ namespace HCSearch
 	}
 
 	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearning(IRankModel* learningModel, 
+		ImgLabeling* YTruth, int timeStep, int timeBound)
+	{
+		const double pruneFraction = this->searchSpace->getPruneFunction()->getPruneFraction();
+		
+		// setup
+		vector< SearchNode* > successors;
+
+		// compute loss and features of current state to compare with the successors
+		double prevLoss = this->searchSpace->computeLoss(this->YPred, *YTruth);
+
+		// generate all successors before pruning
+		vector< ImgCandidate > YPredSet = this->searchSpace->generateSuccessors(*this->X, this->YPred, timeStep, timeBound);
+
+		// set up pruning priority queue
+		const int numOriginalCandidates = YPredSet.size();
+		const int numNewCandidates = static_cast<int>((1-pruneFraction)*numOriginalCandidates);
+		LOG() << "num original cand=" << numOriginalCandidates << endl;
+		LOG() << "num new cand=" << numNewCandidates << endl;
+
+		RankNodeKPQ rankPQ(numNewCandidates);
+		vector<RankPruneNode> goodSet;
+
+		// label actions as good or bad, then push to pruning priority queue
+		bool goodExists = false;
+		bool allZeros = false;
+		RankPruneNode bestGoodCandidate;
+		for (vector< ImgCandidate >::iterator it = YPredSet.begin(); it != YPredSet.end(); it++)
+		{
+			ImgCandidate YCandidate = *it;
+			ImgLabeling YCandPred = YCandidate.labeling;
+
+			double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+
+			// get rank
+			set<int> action = YCandidate.action;
+			RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+			RankerPrune* pruneRanker = dynamic_cast<RankerPrune*>(this->searchSpace->getPruneFunction());
+			if (pruneRanker == NULL)
+			{
+				LOG(ERROR) << "prune ranker is not set!";
+			}
+			IRankModel* pruneRankerModel = pruneRanker->getRanker();
+			if (pruneRankerModel == NULL)
+			{
+				LOG(ERROR) << "prune ranker model is not set!";
+			}
+			double candRank = pruneRankerModel->rank(pruneFeatures);
+
+			// form object for rank pruning
+			RankPruneNode labeledCand;
+			labeledCand.YCandidate = YCandidate;
+			labeledCand.rank = candRank;
+			labeledCand.good = candLoss <= prevLoss;
+			allZeros = allZeros || candRank == 0;
+
+			// put in good set if good, and keep track of best good candidate
+			if (labeledCand.good)
+			{
+				goodSet.push_back(labeledCand);
+				if (!goodExists) // first good candidate found
+				{
+					goodExists = true;
+					bestGoodCandidate = labeledCand;
+				}
+				else if (labeledCand.rank <= bestGoodCandidate.rank)
+				{
+					bestGoodCandidate = labeledCand;
+				}
+			}
+
+			// prune
+			rankPQ.push(labeledCand);
+		}
+
+		// check if any good candidates left in pruning set, and also find best action
+		vector<RankPruneNode> topK = rankPQ.pop_all();
+		const int topKSize = topK.size();
+		bool foundGood = false;
+		LOG() << "set size after pruning=" << topKSize << endl;
+		for (int i = 0; i < topKSize; i++)
+		{
+			RankPruneNode rankNode = topK[i];
+			ImgLabeling YCandPred = rankNode.YCandidate.labeling;
+
+			if (rankNode.good)
+			{
+				foundGood = true;
+				if (!allZeros)
+					break;
+			}
+		}
+
+		// if didn't find anything good, then update weights
+		if (allZeros || !foundGood)
+		{
+			LOG() << "updating pruning weights..." << endl;
+			if (allZeros)
+				LOG() << "weights were all zeros before" << endl;
+
+			// compute good features and losses
+			vector<RankFeatures> goodFeatures;
+			vector<double> goodLosses;
+			for (vector<RankPruneNode>::iterator it = goodSet.begin(); it != goodSet.end(); ++it)
+			{
+				RankPruneNode node = *it;
+				ImgLabeling YCandPred = node.YCandidate.labeling;
+				set<int> action = node.YCandidate.action;
+
+				RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+				double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+
+				goodFeatures.push_back(pruneFeatures);
+				goodLosses.push_back(candLoss);
+			}
+
+			// compute bad features and losses
+			vector<RankFeatures> badFeatures;
+			vector<double> badLosses;
+			for (vector<RankPruneNode>::iterator it = topK.begin(); it != topK.end(); ++it)
+			{
+				RankPruneNode node = *it;
+				if (node.good)
+					continue;
+
+				ImgLabeling YCandPred = node.YCandidate.labeling;
+				set<int> action = node.YCandidate.action;
+
+				RankFeatures pruneFeatures = this->searchSpace->computePruneFeatures(*this->X, YCandPred, action);
+				double candLoss = this->searchSpace->computeLoss(YCandPred, *YTruth);
+
+				badFeatures.push_back(pruneFeatures);
+				badLosses.push_back(candLoss);
+			}
+
+			// training
+			if (learningModel->rankerType() == SVM_RANK)
+			{
+				SVMRankModel* svmModel = dynamic_cast<SVMRankModel*>(learningModel);
+				svmModel->addTrainingExamples(goodFeatures, badFeatures);
+
+			}
+			else if (learningModel->rankerType() == VW_RANK)
+			{
+				VWRankModel* vwModel = dynamic_cast<VWRankModel*>(learningModel);
+				vwModel->addTrainingExamples(goodFeatures, badFeatures, goodLosses, badLosses);
+
+			}
+			else
+			{
+				LOG(ERROR) << "unknown ranker for prune training positive example";
+				abort();
+			}
+		}
+		else
+		{
+			LOG() << "don't need to update pruning weights..." << endl;
+		}
+
+		// get the best scoring action and continue
+		// otherwise stop search (no successor)
+		if (goodExists)
+		{
+			ImgLabeling bestCandidate = bestGoodCandidate.YCandidate.labeling;
+			SearchNode* successor = new SearchNode(this, bestCandidate);
+			successors.push_back(successor);
+		}
+
+		return successors;
+	}
+
+	vector< ISearchProcedure::SearchNode* > ISearchProcedure::SearchNode::generateSuccessorNodesForPruneLearningOldVersion(IRankModel* learningModel, 
 		ImgLabeling* YTruth, int timeStep, int timeBound)
 	{
 		vector< SearchNode* > successors;

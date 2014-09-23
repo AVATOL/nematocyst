@@ -757,13 +757,6 @@ namespace HCSearch
 			int timeBound, SearchSpace* searchSpace, ISearchProcedure* searchProcedure, RankerType rankerType, int numIter);
 
 		static map<string, int> discoverPairwiseClassConstraints(vector< ImgFeatures* >& XTrain, vector< ImgLabeling* >& YTrain);
-
-	private:
-		static IRankModel* initializeLearning(RankerType rankerType, SearchType searchType);
-
-		static void restartLearning(IRankModel* learningModel, SearchType searchType);
-
-		static void finishLearning(IRankModel* learningModel, SearchType searchType);
     };
 
 	/*! @} */

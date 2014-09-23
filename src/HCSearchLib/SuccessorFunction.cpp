@@ -371,12 +371,13 @@ namespace HCSearch
 			int node2 = nodePair.second;
 
 			bool decideToCut;
-			if (YPred.getLabel(node1) != YPred.getLabel(node2))
-			{
-				// different node labels: always cut
-				decideToCut = true;
-			}
-			else if (!cutEdgesIndependently)
+			//if (YPred.getLabel(node1) != YPred.getLabel(node2))
+			//{
+			//	// different node labels: always cut
+			//	decideToCut = true;
+			//}
+			//else if (!cutEdgesIndependently)
+			if (!cutEdgesIndependently)
 			{
 				// uniform state
 				//decideToCut = edgeWeights[i] <= threshold;
@@ -425,21 +426,36 @@ namespace HCSearch
 
 		vector< Subgraph* > subgraphset = subgraphs->getSubgraphs();
 
+		// shuffle
+		std::random_shuffle(subgraphset.begin(), subgraphset.end());
+		LOG() << "num subgraphs=" << subgraphset.size() << endl;
+
 		// successors set
 		vector< ImgCandidate > successors;
 
 		// loop over each sub graph
 		int cumSumLabels = 0;
 		int numSumLabels = 0;
+		int cumSumCC = 0;
+		int numSumCC = 0;
 		for (vector< Subgraph* >::iterator it = subgraphset.begin(); it != subgraphset.end(); ++it)
+		//if (!subgraphset.empty()) //EXPERIMENTAL: only choose one random subgraph
 		{
 			Subgraph* sub = *it;
+			//Subgraph* sub = subgraphset[0]; //EXPERIMENTAL: only choose one random subgraph
 			vector< ConnectedComponent* > ccset = sub->getConnectedComponents();
+
+			// shuffle
+			std::random_shuffle(ccset.begin(), ccset.end());
+			cumSumCC += ccset.size();
+			numSumCC++;
 
 			// loop over each connected component
 			for (vector< ConnectedComponent* >::iterator it2 = ccset.begin(); it2 != ccset.end(); ++it2)
+			//if (!ccset.empty()) //EXPERIMENTAL: only choose one random connected component
 			{
 				ConnectedComponent* cc = *it2;
+				//ConnectedComponent* cc = ccset[0]; //EXPERIMENTAL: only choose one random connected component
 
 				set<int> candidateLabelsSet;
 				int nodeLabel = cc->getLabel();
@@ -484,6 +500,8 @@ namespace HCSearch
 				}
 			}
 		}
+
+		LOG() << "average num cc=" << (1.0*cumSumCC/numSumCC) << endl;
 
 		if (numSumLabels > 0)
 			LOG() << "average num labels=" << (1.0*cumSumLabels/numSumLabels) << endl;
