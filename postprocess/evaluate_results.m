@@ -1,4 +1,4 @@
-function [ evaluate ] = evaluate_results( preprocessedDir, resultsDir, timeRange, foldRange, searchTypes, splitsName )
+function [ evaluate ] = evaluate_results( preprocessedDir, resultsDir, timeRange, foldRange, searchTypes, splitsName, configFlag )
 %EVALUATE_RESULTS Evaluate results in preparation for plotting anytime
 %curves.
 %
@@ -10,9 +10,13 @@ function [ evaluate ] = evaluate_results( preprocessedDir, resultsDir, timeRange
 %   foldRange:          range of folds
 %   searchTypes:        list of search types 1 = HC, 2 = HL, 3 = LC, 4 = LL
 %   splitsName:         (optional) alternate name to splits folder and file
+%   configFlag:         flag for configuration options
 
-narginchk(4, 6);
+narginchk(4, 7);
 
+if nargin < 7
+    configFlag = 1; % 1 = Stanford, 2 = Nematocysts
+end
 if nargin < 6
     splitsName = 'splits/Test.txt';
 end
@@ -37,10 +41,15 @@ testFiles = list{1,1};
 
 %% get all classes
 classes = get_classes_from_metafile(preprocessedDir);
-BINARY_FOREGROUND_CLASS_INDEX = 8;  % [-1, 1] means index 2 is foreground
-                                    % 8 means foreground class in Stanford
-IGNORE_CLASSES = 0;     % [] means nothing to ignore
-                        % Stanford uses 0 for ignore
+if configFlag == 1
+    IGNORE_CLASSES = 0;                 % Stanford uses 0 for ignore
+    BINARY_FOREGROUND_CLASS_INDEX = 8;  % 8 means foreground class in Stanford
+elseif configFlag == 2
+    IGNORE_CLASSES = [];                % [] means nothing to ignore
+    BINARY_FOREGROUND_CLASS_INDEX = 2;  % [-1, 1] means index 2 is foreground
+else
+    error('unknown config');
+end
 
 %% prepare output data structure
 evaluate = containers.Map;
@@ -75,9 +84,11 @@ for s = searchTypes
     stat.binary_rec = zeros(length(foldRange), length(timeRange));
     stat.binary_f1 = zeros(length(foldRange), length(timeRange));
     
-    stat.numcorrect = zeros(length(foldRange), length(timeRange));
-    stat.totals = zeros(length(foldRange), length(timeRange));
-    stat.hamming = zeros(length(foldRange), length(timeRange));
+    if configFlag ~= 2
+        stat.numcorrect = zeros(length(foldRange), length(timeRange));
+        stat.totals = zeros(length(foldRange), length(timeRange));
+        stat.hamming = zeros(length(foldRange), length(timeRange));
+    end
     
     stat.avgmacroprec = zeros(1, length(timeRange));
     stat.avgmacrorec = zeros(1, length(timeRange));
@@ -100,8 +111,10 @@ for s = searchTypes
     stat.binary_stdrec = zeros(1, length(timeRange));
     stat.binary_stdf1 = zeros(1, length(timeRange));
     
-    stat.avghamming = zeros(1, length(timeRange));
-    stat.stdhamming = zeros(1, length(timeRange));
+    if configFlag ~= 2
+        stat.avghamming = zeros(1, length(timeRange));
+        stat.stdhamming = zeros(1, length(timeRange));
+    end
     
     %% for each fold
     for fd = 1:length(foldRange)
@@ -142,7 +155,9 @@ for s = searchTypes
                 [inferLabels, ~] = libsvmread(nodesPath);
                 
                 %% read inference on pixel level
-                inferPixels = infer_pixels(inferLabels, segments);
+                if configFlag ~= 2
+                    inferPixels = infer_pixels(inferLabels, segments);
+                end
                 
                 %% calculations...
                 for c = 1:length(classes)
@@ -156,8 +171,10 @@ for s = searchTypes
                     stat.fn(fd, t, c) = stat.fn(fd, t, c) + fn;
                 end % classes
                 
-                stat.numcorrect(fd, t) = stat.numcorrect(fd, t) + sum(sum(double(inferPixels == fullTruth)));
-                stat.totals(fd, t) = stat.totals(fd, t) + numel(fullTruth);
+                if configFlag ~= 2
+                    stat.numcorrect(fd, t) = stat.numcorrect(fd, t) + sum(sum(double(inferPixels == fullTruth)));
+                    stat.totals(fd, t) = stat.totals(fd, t) + numel(fullTruth);
+                end
                 
                 prev = nodesPath;
             end % time range
@@ -165,7 +182,9 @@ for s = searchTypes
     end % fold
 
     %% calculate hamming
-    stat.hamming = stat.numcorrect/stat.totals(fd, t);
+    if configFlag ~= 2
+        stat.hamming = stat.numcorrect/stat.totals(fd, t);
+    end
     
     %% calculate non-macro/micro measures
     stat.prec = stat.tp ./ (stat.tp + stat.fp);
@@ -221,8 +240,10 @@ for s = searchTypes
     stat.binary_stdrec = std(stat.binary_rec, 0, 1);
     stat.binary_stdf1 = std(stat.binary_f1, 0, 1);
     
-    stat.avghamming = mean(stat.hamming, 1);
-    stat.stdhamming = std(stat.hamming, 0, 1);
+    if configFlag ~= 2
+        stat.avghamming = mean(stat.hamming, 1);
+        stat.stdhamming = std(stat.hamming, 0, 1);
+    end
     
     %% add
     evaluate(searchType) = stat;

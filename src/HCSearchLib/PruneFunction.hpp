@@ -1,6 +1,7 @@
 #ifndef PRUNEFUNCTION_HPP
 #define PRUNEFUNCTION_HPP
 
+#include <queue>
 #include "FeatureFunction.hpp"
 #include "DataStructures.hpp"
 #include "MyGraphAlgorithms.hpp"
@@ -27,6 +28,8 @@ namespace HCSearch
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc)=0;
 
 		IFeatureFunction* getFeatureFunction();
+
+		virtual double getPruneFraction()=0;
 	};
 
 	/**************** Prune Functions ****************/
@@ -41,11 +44,14 @@ namespace HCSearch
 		~NoPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+		
+		virtual double getPruneFraction();
 	};
 
 	struct RankPruneNode
 	{
 		double rank;
+		bool good;
 		ImgCandidate YCandidate;
 	};
 
@@ -55,7 +61,14 @@ namespace HCSearch
 		bool operator() (RankPruneNode& lhs, RankPruneNode& rhs) const;
 	};
 
+	class CompareRankPruneNodesInvert
+	{
+	public:
+		bool operator() (RankPruneNode& lhs, RankPruneNode& rhs) const;
+	};
+
 	typedef priority_queue<RankPruneNode, vector<RankPruneNode>, CompareRankPruneNodes> RankNodePQ;
+	typedef priority_queue<RankPruneNode, vector<RankPruneNode>, CompareRankPruneNodesInvert> RankNodePQInvert;
 
 	/*!
 	 * @brief Pruning function using ranker for ranking good/bad actions.
@@ -73,6 +86,31 @@ namespace HCSearch
 		RankerPrune(IFeatureFunction* featureFunction);
 		RankerPrune(double pruneFraction, IFeatureFunction* featureFunction);
 		~RankerPrune();
+		
+		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+		
+		virtual double getPruneFraction();
+
+		IRankModel* getRanker();
+		void setRanker(IRankModel* ranker);
+	};
+
+	/*!
+	 * @brief Pruning function using ranker for ranking good/bad actions (old version).
+	 */
+	class OldRankerPrune : public IPruneFunction
+	{
+		static const double DEFAULT_PRUNE_FRACTION;
+
+		IRankModel* ranker;
+		double pruneFraction; //!< 0 = no pruning, 1 = prune everything
+
+	public:
+		OldRankerPrune();
+		OldRankerPrune(double pruneFraction);
+		OldRankerPrune(IFeatureFunction* featureFunction);
+		OldRankerPrune(double pruneFraction, IFeatureFunction* featureFunction);
+		~OldRankerPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 		
@@ -97,6 +135,8 @@ namespace HCSearch
 		~SimulatedRankerPrune();
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
+
+		virtual double getPruneFraction();
 	};
 
 	/*!
@@ -121,9 +161,40 @@ namespace HCSearch
 		
 		virtual vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth, ILossFunction* lossFunc);
 
+		virtual double getPruneFraction();
+
 		vector< ImgCandidate > pruneSuccessors(ImgFeatures& X, ImgLabeling& Y, vector< ImgCandidate >& YCandidates, ImgLabeling* YTruth);
 
 		ILossFunction* getLossFunction();
+	};
+
+	/*!
+	 * Wrapper for RankNodePQ to compute top nodes
+	 */
+	class RankNodeKPQ
+	{
+		RankNodePQInvert pq;
+		double maximum;
+		int K;
+
+	public:
+		RankNodeKPQ(int K)
+		{
+			this->pq = RankNodePQInvert();
+			this->K = K;
+		}
+
+		~RankNodeKPQ() {}
+
+		void push(RankPruneNode e);
+
+		vector<RankPruneNode> pop_all();
+
+		bool empty();
+
+		bool full();
+
+		int size();
 	};
 }
 
