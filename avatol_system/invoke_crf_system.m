@@ -127,11 +127,11 @@ for i = scoringRange
     % save detection polygon
     mediaID = get_media_id_from_path_to_media(scoringList{cnt}.pathToMedia);
     detectionFile = sprintf('%s_%s.txt', charID, mediaID);
-    pathToDetection = sprintf('%s/detection_results/%s', options.DATASET_PATH, detectionFile);
+    pathToDetection = [options.DATASET_PATH '/' options.DETECTION_RESULTS_FOLDER '/' detectionFile];
     convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
     
     % save scores
-    shortenPathToDetection = sprintf('detection_results/%s', detectionFile);
+    shortenPathToDetection = [options.DETECTION_RESULTS_FOLDER '/' detectionFile];
     scoringList{cnt}.pathToDetection = shortenPathToDetection;
     
     cnt = cnt + 1;
