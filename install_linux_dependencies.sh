@@ -6,6 +6,7 @@
 
 ### LINUX DEPENDENCIES REQUIRED FOR VOWPAL WABBIT BUILD ###
 #sudo apt-get install libtool automake libboost-program-options1.49-dev build-essential libatlas-base-dev zlib1g-dev
+#sudo apt-get install libcr-dev mpich2 mpich2-doc
 
 #### AUTOMATIC INSTALL/MAKE ###
 

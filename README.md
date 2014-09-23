@@ -160,12 +160,30 @@ If you are using Windows, you do not need to build it. Just make sure the includ
 
 If you do want to build it for Windows, you will need Visual Studio 2012. Open `$ROOT$/src/HCSearch.sln` and build the solution.
 
-Note: the default settings will try to compile with MPI (Message Passing Interface for parallel processing) using Microsoft's HPC Pack. If you do not want to build with MPI, open up the properties of each project in the solution and remove the `USE_MPI` preprocessor flag.
+Note: The included binary `$ROOT$/HCSearch.exe` was built _without_ MPI functionality. The included binary `$ROOT$/HCSearchMPI.exe` was built _with_ MPI functionality. 
 
-Note: the included binary `$ROOT$/HCSearch.exe` was built without MPI functionality. To enable MPI functionality, you will need to compile yourself.
+#### Using MPI
+
+Using MPI can improve performance by running some tasks in parallel, but this feature is optional and is only intended for advanced users. It is also mainly intended for computing clusters rather than personal computers.
+
+For Windows, if you plan to use MPI, you do not need to build the HC-Search module. Just make sure the included binary `$ROOT$/HCSearchMPI.exe` is working.
+
+If the executable complains about a missing DLL related to MPI or you would like to build the HC-Search module from scratch using MPI, you will need to install MPI on your machine. You can download the installer here: http://www.microsoft.com/en-us/download/details.aspx?id=41634
+
+Note: The default build settings will try to compile with MPI (Message Passing Interface for parallel processing) using Microsoft's HPC Pack. If you do not want to build with MPI, open up the properties of each project in the solution and remove the `USE_MPI` preprocessor flag.
+
+For Linux, you will need to install MPI to build from source. You can run the following command:
+
+```
+sudo apt-get install libcr-dev mpich2 mpich2-doc
+```
+
+Then run `make mpi` instead of `make`.
 
 ### 4) MATLAB Include Paths
 
-Finally, open MATLAB and cd to the `$ROOT` directory. Run the script `matlab_crf_install`. This will set up the include paths and install additional necessary MATLAB functionality.
+Finally, open MATLAB and cd to the `$ROOT` directory. For first time installation, run the script 'matlab_crf_install'. This will set up the include paths and install additional necessary MATLAB functionality.
 
-If you haven't run `mex -setup` before, the script will prompt you to select which compiler to use.
+Whenever you launch MATLAB to run something, you must set up the include paths properly. To do so, simply run the script 'matlab_crf_setup_include_paths'.
+
+Note: If you haven't run `mex -setup` before, the script will prompt you to select which compiler to use.
