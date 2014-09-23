@@ -42,6 +42,15 @@ end
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
     options.HCSEARCH_TIMEBOUND = 1; % default results in IID classifier
 end
+% use MPI or not
+if ~isfield(options, 'USE_MPI')
+    options.USE_MPI = 0; % default 0 does not not use MPI; 1 if use MPI
+end
+% use MPI or not
+if ~isfield(options, 'MPI_NUM_PROCESSORS')
+    options.MPI_NUM_PROCESSORS = 2; % default is 2 processors
+    % must make sure your computer can handle this number of processes
+end
 
 %% ========== begin
 if ~exist(options.TEMP_PATH, 'dir')
@@ -86,12 +95,22 @@ writelog(log_fid, 'Running character detection...\n');
 
 cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors', ...
     options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
+
+MPIString = sprintf('mpiexec -n %d ', options.MPI_NUM_PROCESSORS); 
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
-    [status, result] = dos(['HCSearch ' cmdlineArgs]);
+    if options.USE_MPI
+        [status, result] = dos([MPIString 'HCSearchMPI ' cmdlineArgs]);
+    else
+        [status, result] = dos(['HCSearch ' cmdlineArgs]);
+    end
 else
     fprintf('Detected Unix. Running HC-Search...\n');
-    [status, result] = unix(['./HCSearch ' cmdlineArgs]);
+    if options.USE_MPI
+        [status, result] = unix([MPIString './HCSearchMPI ' cmdlineArgs]);
+    else
+        [status, result] = unix(['./HCSearch ' cmdlineArgs]);
+    end
 end
 fprintf('status=\n\n%d\n\n', status);
 fprintf('result=\n\n%s\n\n', result);
