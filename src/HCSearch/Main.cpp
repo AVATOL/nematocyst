@@ -477,14 +477,29 @@ void run(MyProgramOptions::ProgramOptions po)
 			}
 		}
 
-		if (mode != HCSearch::LEARN_PRUNE && po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
+		if (po.pruneMode == MyProgramOptions::ProgramOptions::RANKER_PRUNE)
 		{
 			HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
 			HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
-			if (pruneCast->getRanker() == NULL)
+			if (po.rankLearnerType == HCSearch::VW_RANK)
 			{
-				HCSearch::IRankModel* pruneModel = HCSearch::Model::loadModel(pruneModelPath, HCSearch::VW_RANK);
+				HCSearch::IRankModel* pruneModel;
+				if (MyFileSystem::FileSystem::checkFileExists(pruneModelPath))
+				{
+					pruneModel = HCSearch::Model::loadModel(pruneModelPath, HCSearch::VW_RANK);
+					LOG() << endl << "Loaded pruning model." << endl << endl;
+				}
+				else
+				{
+					pruneModel = new HCSearch::VWRankModel();
+					LOG() << endl << "Creating empty pruning model." << endl << endl;
+				}
 				pruneCast->setRanker(pruneModel);
+			}
+			else
+			{
+				LOG(ERROR) << "only VW supported for prune ranker model" << endl;
+				HCSearch::abort();
 			}
 		}
 
@@ -580,6 +595,11 @@ void run(MyProgramOptions::ProgramOptions po)
 				HCSearch::IRankModel* pruneModel = HCSearch::Learning::learnP(XTrain, YTrain, XValidation, YValidation, 
 					timeBound, searchSpace, searchProcedure, HCSearch::VW_RANK, po.numTrainIterations);
 				
+				// set the prune function
+				HCSearch::IPruneFunction* pruneFunc = searchSpace->getPruneFunction();
+				HCSearch::RankerPrune* pruneCast = dynamic_cast<HCSearch::RankerPrune*>(pruneFunc);
+				pruneCast->setRanker(pruneModel);
+
 				if (HCSearch::Global::settings->RANK == 0)
 				{
 					pruneModel->save(pruneModelPath);
