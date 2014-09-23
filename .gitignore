@@ -32,6 +32,6 @@ results*/*
 **/gcc*/*
 
 # exceptions
-!/HCSearch.exe
+!/HCSearch*.exe
 !/external/vw.exe
 !/external/LICENSE
