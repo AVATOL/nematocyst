@@ -106,16 +106,16 @@ MPIString = sprintf('mpiexec -n %d ', options.MPI_NUM_PROCESSORS);
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
     if options.USE_MPI
-        [status, result] = dos([MPIString options.BASE_PATH filesep 'HCSearchMPI ' cmdlineArgs]);
+        [status, result] = dos([MPIString options.BASE_PATH 'HCSearchMPI ' cmdlineArgs]);
     else
-        [status, result] = dos([options.BASE_PATH filesep 'HCSearch ' cmdlineArgs]);
+        [status, result] = dos([options.BASE_PATH 'HCSearch ' cmdlineArgs]);
     end
 else
     fprintf('Detected Unix. Running HC-Search...\n');
     if options.USE_MPI
-        [status, result] = unix([MPIString options.BASE_PATH filesep 'HCSearchMPI ' cmdlineArgs]);
+        [status, result] = unix([MPIString options.BASE_PATH 'HCSearchMPI ' cmdlineArgs]);
     else
-        [status, result] = unix([options.BASE_PATH filesep 'HCSearch ' cmdlineArgs]);
+        [status, result] = unix([options.BASE_PATH 'HCSearch ' cmdlineArgs]);
     end
 end
 fprintf('status=\n\n%d\n\n', status);
