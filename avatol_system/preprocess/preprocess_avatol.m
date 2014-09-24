@@ -1,4 +1,4 @@
-function [ allData, charStateNames ] = preprocess_avatol( basePath, trainingList, scoringList, charID, charStateNames, color2label, outputPath )
+function [ allData, charStateNames ] = preprocess_avatol( datasetPath, basePath, trainingList, scoringList, charID, charStateNames, color2label, outputPath )
 %PREPROCESS_AVATOL Preprocesses training examples from the AVATOL system 
 %into a data format for HCSearch to work. Performs feature extraction. 
 %This implementation creates a regular grid of HOG/SIFT patches on
@@ -6,7 +6,8 @@ function [ allData, charStateNames ] = preprocess_avatol( basePath, trainingList
 %
 %One can change the features (e.g. add color) by editing this file.
 %
-%   basePath:       base path to dataset
+%   datasetPath:    path to dataset
+%   basePath:       base path
 %   trainingList:   cell of structs where a struct denotes 
 %                   a training instance and each struct has
 %                   	.pathToMedia: path to image
@@ -26,7 +27,7 @@ function [ allData, charStateNames ] = preprocess_avatol( basePath, trainingList
 %	allData:        data structure containing all preprocessed data
 
 %% argument checking
-narginchk(7, 7);
+narginchk(8, 8);
 
 %% parameters - tune if necessary
 PATCH_SIZE = 32; % size of patches
@@ -51,13 +52,13 @@ for i = 1:nImages
     end
     
     %% get paths
-    imagesPath = normalize_file_sep([basePath filesep dataStruct.pathToMedia]);
+    imagesPath = normalize_file_sep([datasetPath filesep dataStruct.pathToMedia]);
     if ~exist(imagesPath, 'file')
         error(['image "' imagesPath '" does not exist']);
     end
     
     if train
-        annotationPath = normalize_file_sep([basePath filesep dataStruct.pathToAnnotation]);
+        annotationPath = normalize_file_sep([datasetPath filesep dataStruct.pathToAnnotation]);
         
         if ~exist(annotationPath, 'file')
             error(['annotations "' annotationPath '" does not exist']);
@@ -114,7 +115,7 @@ end
 
 %% hand over to allData preprocessing
 fprintf('Exporting features...\n');
-allData = preprocess_alldata(allData, outputPath, 1:nTrainingImages, [], nTrainingImages+1:nImages);
+allData = preprocess_alldata(allData, outputPath, 1:nTrainingImages, [], nTrainingImages+1:nImages, basePath);
 
 end
 
