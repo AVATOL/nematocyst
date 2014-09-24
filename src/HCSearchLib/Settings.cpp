@@ -229,7 +229,10 @@ namespace HCSearch
 	void Settings::refreshExternalDirectories(string basePath)
 	{
 		// basic directories
-		this->paths->BASE_PATH = basePath; // must end in DIR_SEP if not empty
+		if (basePath.compare("") == 0)
+			this->paths->BASE_PATH = basePath;
+		else
+			this->paths->BASE_PATH = basePath + this->paths->DIR_SEP;
 		this->paths->EXTERNAL_DIR = this->paths->BASE_PATH + "external" + this->paths->DIR_SEP;
 
 		// external directories
@@ -242,11 +245,42 @@ namespace HCSearch
 #else
 		this->paths->VOWPALWABBIT_DIR = this->paths->EXTERNAL_DIR + "vowpal_wabbit" + this->paths->DIR_SEP + "vowpalwabbit" + this->paths->DIR_SEP;
 #endif
+
+		// commands
+#ifdef USE_WINDOWS
+		this->cmds->SYSTEM_COPY_CMD = "copy";
+		this->cmds->SYSTEM_MKDIR_CMD = "mkdir";
+		this->cmds->SYSTEM_RM_CMD = "del";
+
+		this->cmds->LIBLINEAR_PREDICT_CMD = this->paths->LIBLINEAR_DIR + "windows" + this->paths->DIR_SEP + "predict";
+		this->cmds->LIBLINEAR_TRAIN_CMD = this->paths->LIBLINEAR_DIR + "windows" + this->paths->DIR_SEP + "train";
+	
+		this->cmds->LIBSVM_PREDICT_CMD = this->paths->LIBSVM_DIR + "windows" + this->paths->DIR_SEP + "svm-predict";
+		this->cmds->LIBSVM_TRAIN_CMD = this->paths->LIBSVM_DIR + "windows" + this->paths->DIR_SEP + "svm-train";
+
+		this->cmds->VOWPALWABBIT_TRAIN_CMD = this->paths->VOWPALWABBIT_DIR + "vw";
+
+		this->cmds->SVMRANK_LEARN_CMD = this->paths->SVMRANK_DIR + "svm_rank_learn";
+#else
+		this->cmds->SYSTEM_COPY_CMD = "cp";
+		this->cmds->SYSTEM_MKDIR_CMD = "mkdir -p";
+		this->cmds->SYSTEM_RM_CMD = "rm -f";
+
+		this->cmds->LIBLINEAR_PREDICT_CMD = this->paths->LIBLINEAR_DIR + "predict";
+		this->cmds->LIBLINEAR_TRAIN_CMD = this->paths->LIBLINEAR_DIR + "train";
+	
+		this->cmds->LIBSVM_PREDICT_CMD = this->paths->LIBSVM_DIR + "svm-predict";
+		this->cmds->LIBSVM_TRAIN_CMD = this->paths->LIBSVM_DIR + "svm-train";
+
+		this->cmds->VOWPALWABBIT_TRAIN_CMD = this->paths->VOWPALWABBIT_DIR + "vw";
+
+		this->cmds->SVMRANK_LEARN_CMD = this->paths->SVMRANK_DIR + "svm_rank_learn";
+#endif
 	}
 
 	void Settings::refreshDataDirectories(string dataDir)
 	{
-		this->paths->INPUT_DIR = this->paths->BASE_PATH + dataDir + this->paths->DIR_SEP;
+		this->paths->INPUT_DIR = dataDir + this->paths->DIR_SEP;
 
 		// data directories
 		this->paths->INPUT_NODES_DIR = this->paths->INPUT_DIR + this->paths->INPUT_NODES_FOLDER_NAME + this->paths->DIR_SEP;
@@ -271,7 +305,7 @@ namespace HCSearch
 
 	void Settings::refreshExperimentDirectories(string experimentDir)
 	{
-		this->paths->OUTPUT_DIR = this->paths->BASE_PATH + experimentDir + this->paths->DIR_SEP;
+		this->paths->OUTPUT_DIR = experimentDir + this->paths->DIR_SEP;
 
 		// experiment directories
 		this->paths->OUTPUT_LOGS_DIR = this->paths->OUTPUT_DIR + this->paths->OUTPUT_LOGS_FOLDER_NAME + this->paths->DIR_SEP;
