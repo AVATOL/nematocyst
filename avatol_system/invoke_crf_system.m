@@ -13,8 +13,9 @@ if nargin < 3
     options = struct;
 end
 % path to the base directory, which contains the HCSearch executable file
+% if not '', then must end in filesep
 if ~isfield(options, 'BASE_PATH')
-    options.BASE_PATH = '../';
+    options.BASE_PATH = ['..' filesep];
 end
 % path to dataset directory, which is the root of media/ and annotations/
 if ~isfield(options, 'DATASET_PATH')
