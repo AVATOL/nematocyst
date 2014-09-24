@@ -15,13 +15,14 @@ end
 % path to the base directory, which contains the HCSearch executable file
 % if not '', then must end in filesep
 if ~isfield(options, 'BASE_PATH')
-    options.BASE_PATH = ['..' filesep];
+    options.BASE_PATH = '';
+%     options.BASE_PATH = ['..' filesep];
 end
 % path to dataset directory, which is the root of media/ and annotations/
 if ~isfield(options, 'DATASET_PATH')
-%     [inputBasePath, ~, ~] = fileparts(inputPath);
-%     options.DATASET_PATH = normalize_file_sep(inputBasePath);
-    options.DATASET_PATH = pwd;
+    [inputBasePath, ~, ~] = fileparts(inputPath);
+    options.DATASET_PATH = normalize_file_sep(inputBasePath);
+%     options.DATASET_PATH = pwd;
 end
 % path to write temporary files during processing
 if ~isfield(options, 'TEMP_PATH')
