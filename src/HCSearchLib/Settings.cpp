@@ -192,8 +192,6 @@ namespace HCSearch
 		LIBSVM_DIR = EXTERNAL_DIR + "libsvm" + DIR_SEP;
 		SVMRANK_DIR = EXTERNAL_DIR + "svm_rank" + DIR_SEP;
 #ifdef USE_WINDOWS
-		//VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP + "x86" + DIR_SEP + "Release" + DIR_SEP;
-		//VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP + "vowpalwabbit" + DIR_SEP + "x64" + DIR_SEP + "Release" + DIR_SEP;
 		//VOWPALWABBIT_DIR = EXTERNAL_DIR + "vowpal_wabbit" + DIR_SEP;
 		VOWPALWABBIT_DIR = EXTERNAL_DIR; // external/vw.exe provided
 #else
@@ -226,6 +224,24 @@ namespace HCSearch
 
 	Paths::~Paths()
 	{
+	}
+
+	void Settings::refreshExternalDirectories(string basePath)
+	{
+		// basic directories
+		this->paths->BASE_PATH = basePath; // must end in DIR_SEP if not empty
+		this->paths->EXTERNAL_DIR = this->paths->BASE_PATH + "external" + this->paths->DIR_SEP;
+
+		// external directories
+		this->paths->LIBLINEAR_DIR = this->paths->EXTERNAL_DIR + "liblinear" + this->paths->DIR_SEP;
+		this->paths->LIBSVM_DIR = this->paths->EXTERNAL_DIR + "libsvm" + this->paths->DIR_SEP;
+		this->paths->SVMRANK_DIR = this->paths->EXTERNAL_DIR + "svm_rank" + this->paths->DIR_SEP;
+#ifdef USE_WINDOWS
+		//this->paths->VOWPALWABBIT_DIR = this->paths->EXTERNAL_DIR + "vowpal_wabbit" + this->paths->DIR_SEP;
+		this->paths->VOWPALWABBIT_DIR = this->paths->EXTERNAL_DIR; // external/vw.exe provided
+#else
+		this->paths->VOWPALWABBIT_DIR = this->paths->EXTERNAL_DIR + "vowpal_wabbit" + this->paths->DIR_SEP + "vowpalwabbit" + this->paths->DIR_SEP;
+#endif
 	}
 
 	void Settings::refreshDataDirectories(string dataDir)
@@ -383,8 +399,9 @@ namespace HCSearch
 		delete stats;
 	}
 
-	void Settings::refresh(string dataDir, string experimentDir)
+	void Settings::refresh(string dataDir, string experimentDir, string basePath)
 	{
+		refreshExternalDirectories(basePath);
 		refreshDataDirectories(dataDir);
 		refreshExperimentDirectories(experimentDir);
 		refreshRankIDFiles(this->RANK);

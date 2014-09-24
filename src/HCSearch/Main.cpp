@@ -43,7 +43,7 @@ int main(int argc, char* argv[])
 
 	HCSearch::Global::settings->USE_EDGE_WEIGHTS = po.useEdgeWeights;
 
-	HCSearch::Setup::configure(po.inputDir, po.outputDir);
+	HCSearch::Setup::configure(po.inputDir, po.outputDir, po.baseDir);
 	if (po.verboseMode)
 		Logger::setLogLevel(DEBUG);
 
@@ -965,6 +965,7 @@ void printInfo(MyProgramOptions::ProgramOptions po)
 	{
 		LOG() << "=== Paths ===" << endl;
 
+		LOG() << "BASE_DIR: " << HCSearch::Global::settings->paths->BASE_PATH << endl;
 		LOG() << "EXTERNAL_DIR: " << HCSearch::Global::settings->paths->EXTERNAL_DIR << endl;
 		LOG() << "INPUT_DIR: " << HCSearch::Global::settings->paths->INPUT_DIR  << endl;
 		LOG() << "OUTPUT_DIR: " << HCSearch::Global::settings->paths->OUTPUT_DIR  << endl;
