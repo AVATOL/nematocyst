@@ -300,13 +300,14 @@ namespace HCSearch
 		/*!
 		 * Refresh settings directories based on the data, output folder and rank.
 		 */
-		void refresh(string dataDir, string experimentDir);
+		void refresh(string dataDir, string experimentDir, string basePath);
 
 		string updateRankIDHelper(string path, string fileName, int rank);
 	private:
 		void refreshDataDirectories(string dataDir);
 		void refreshExperimentDirectories(string experimentDir);
 		void refreshRankIDFiles(int rankID);
+		void refreshExternalDirectories(string basePath);
 	};
 }
 

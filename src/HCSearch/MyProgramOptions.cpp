@@ -8,6 +8,7 @@ namespace MyProgramOptions
 	{
 		// input and output directories
 
+		baseDir = "";
 		inputDir = "";
 		outputDir = "";
 		splitsFolderName = "splits";
@@ -109,6 +110,13 @@ namespace MyProgramOptions
 			else if (strcmp(argv[i], "--demo") == 0)
 			{
 				po.demoMode = true;
+			}
+			else if (strcmp(argv[i], "--base-path") == 0)
+			{
+				if (i + 1 != argc)
+				{
+					po.baseDir = argv[i+1];
+				}
 			}
 			else if (strcmp(argv[i], "--splits-path") == 0)
 			{
@@ -686,6 +694,7 @@ namespace MyProgramOptions
 
 		cerr << "Advanced options:" << endl;
 		cerr << "\t--anytime arg\t\t\t" << ": turn on saving anytime predictions if true" << endl;
+		cerr << "\t--base-path arg\t\t\t" << ": path to this program (default is pwd)" << endl;
 		cerr << "\t--beam-size arg\t\t\t" << ": beam size for beam search" << endl;
 		cerr << "\t--cut-mode arg\t\t\t" << ": edges|state (cut edges by edges independently or by state)" << endl;
 		cerr << "\t--cut-param arg\t\t\t" << ": temperature parameter for stochastic cuts" << endl;

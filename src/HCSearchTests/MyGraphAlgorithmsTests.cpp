@@ -78,7 +78,7 @@ namespace Testing
 		TEST_METHOD_INITIALIZE(SubgraphSetInit)
 		{
 			Settings* settings = new Settings();
-			settings->refresh("input", "output");
+			settings->refresh("input", "output", "");
 			Global::settings = settings;
 
 			this->Y = setupImgLabelingHelper();	
