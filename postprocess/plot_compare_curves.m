@@ -41,8 +41,16 @@ if nargin < 4
     plotTitle = 'Untitled';
 end
 
+% get minimum time range if time ranges are different
 temp = evaluate{1};
 timeRange = temp(searchTypesCollection{searchTypeIndices(1)}).timeRange;
+for i = 2:length(evaluate)
+    temp = evaluate{i};
+    timeRangeTemp = temp(searchTypesCollection{searchTypeIndices(1)}).timeRange;
+    if length(timeRangeTemp) < length(timeRange)
+        timeRange = timeRangeTemp;
+    end
+end
 
 avgPrecMat = zeros(length(timeRange), length(evaluate));
 stdPrecMat = zeros(length(timeRange), length(evaluate));
@@ -62,31 +70,31 @@ for i = 1:length(evaluate)
     evaluateType = evaluateInstance(searchType);
     
     if MODE == 0
-        avgPrecMat(:, i) = evaluateType.binary_avgprec';
-        stdPrecMat(:, i) = evaluateType.binary_stdprec';
-        avgRecMat(:, i) = evaluateType.binary_avgrec';
-        stdRecMat(:, i) = evaluateType.binary_stdrec';
-        avgF1Mat(:, i) = evaluateType.binary_avgf1';
-        stdF1Mat(:, i) = evaluateType.binary_stdf1';
+        avgPrecMat(:, i) = evaluateType.binary_avgprec(timeRange+1)';
+        stdPrecMat(:, i) = evaluateType.binary_stdprec(timeRange+1)';
+        avgRecMat(:, i) = evaluateType.binary_avgrec(timeRange+1)';
+        stdRecMat(:, i) = evaluateType.binary_stdrec(timeRange+1)';
+        avgF1Mat(:, i) = evaluateType.binary_avgf1(timeRange+1)';
+        stdF1Mat(:, i) = evaluateType.binary_stdf1(timeRange+1)';
     elseif MODE == 1
-        avgPrecMat(:, i) = evaluateType.avgmacroprec';
-        stdPrecMat(:, i) = evaluateType.stdmacroprec';
-        avgRecMat(:, i) = evaluateType.avgmacrorec';
-        stdRecMat(:, i) = evaluateType.stdmacrorec';
-        avgF1Mat(:, i) = evaluateType.avgmacrof1';
-        stdF1Mat(:, i) = evaluateType.stdmacrof1';
+        avgPrecMat(:, i) = evaluateType.avgmacroprec(timeRange+1)';
+        stdPrecMat(:, i) = evaluateType.stdmacroprec(timeRange+1)';
+        avgRecMat(:, i) = evaluateType.avgmacrorec(timeRange+1)';
+        stdRecMat(:, i) = evaluateType.stdmacrorec(timeRange+1)';
+        avgF1Mat(:, i) = evaluateType.avgmacrof1(timeRange+1)';
+        stdF1Mat(:, i) = evaluateType.stdmacrof1(timeRange+1)';
     elseif MODE == 2
-        avgPrecMat(:, i) = evaluateType.avgmicroprec';
-        stdPrecMat(:, i) = evaluateType.stdmicroprec';
-        avgRecMat(:, i) = evaluateType.avgmicrorec';
-        stdRecMat(:, i) = evaluateType.stdmicrorec';
-        avgF1Mat(:, i) = evaluateType.avgmicrof1';
-        stdF1Mat(:, i) = evaluateType.stdmicrof1';
+        avgPrecMat(:, i) = evaluateType.avgmicroprec(timeRange+1)';
+        stdPrecMat(:, i) = evaluateType.stdmicroprec(timeRange+1)';
+        avgRecMat(:, i) = evaluateType.avgmicrorec(timeRange+1)';
+        stdRecMat(:, i) = evaluateType.stdmicrorec(timeRange+1)';
+        avgF1Mat(:, i) = evaluateType.avgmicrof1(timeRange+1)';
+        stdF1Mat(:, i) = evaluateType.stdmicrof1(timeRange+1)';
     end
     
     if configFlag ~= 2
-        avgHammingMat(:, i) = evaluateType.avghamming';
-        stdHammingMat(:, i) = evaluateType.stdhamming';
+        avgHammingMat(:, i) = evaluateType.avghamming(timeRange+1)';
+        stdHammingMat(:, i) = evaluateType.stdhamming(timeRange+1)';
     end
     
     legendLabels{i} = sprintf('%s', labels{i});

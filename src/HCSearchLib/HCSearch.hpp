@@ -486,7 +486,7 @@ namespace HCSearch
 		 * Must be called sometime after Setup::initialize() 
 		 * and sometime before calling any HCSearch-related functions.
 		 */
-		static void configure(string datasetPath, string outputPath);
+		static void configure(string datasetPath, string outputPath, string basePath);
 
 		/*!
 		 * Must be called right before exiting program! 
