@@ -27,6 +27,7 @@ int main(int argc, char* argv[])
 	}
 
 	// configure settings
+	HCSearch::Global::settings->paths->BASE_PATH = po.baseDir;
 	HCSearch::Global::settings->paths->INPUT_SPLITS_FOLDER_NAME = po.splitsFolderName;
 	HCSearch::Global::settings->paths->INPUT_SPLITS_TRAIN_FILE_BASE = po.splitsTrainName;
 	HCSearch::Global::settings->paths->INPUT_SPLITS_VALIDATION_FILE_BASE = po.splitsValidName;
