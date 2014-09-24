@@ -12,10 +12,16 @@ narginchk(2, 3);
 if nargin < 3
     options = struct;
 end
+% path to the base directory, which contains the HCSearch executable file
+% if not '', then must end in filesep
+if ~isfield(options, 'BASE_PATH')
+    options.BASE_PATH = ['..' filesep];
+end
 % path to dataset directory, which is the root of media/ and annotations/
 if ~isfield(options, 'DATASET_PATH')
-    [basePath, ~, ~] = fileparts(inputPath);
-    options.DATASET_PATH = normalize_file_sep(basePath);
+%     [inputBasePath, ~, ~] = fileparts(inputPath);
+%     options.DATASET_PATH = normalize_file_sep(inputBasePath);
+    options.DATASET_PATH = pwd;
 end
 % path to write temporary files during processing
 if ~isfield(options, 'TEMP_PATH')
@@ -32,7 +38,7 @@ if ~isfield(options, 'PREPROCESSED_PATH')
 end
 % path to the intermediate results after running HC-Search
 if ~isfield(options, 'HC_INTERMEDIATE_DETECTION_RESULTS_PATH')
-    options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH = normalize_file_sep([options.TEMP_PATH filesep 'results']);
+    options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH = normalize_file_sep([options.TEMP_PATH filesep 'hc_results']);
 end
 % folder to save detection results
 if ~isfield(options, 'DETECTION_RESULTS_FOLDER')
@@ -83,7 +89,7 @@ writelog(log_fid, 'Preprocessing input data...\n');
 
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
-[allData, charStateNames] = preprocess_avatol(options.DATASET_PATH, trainingList, scoringList, ...
+[allData, charStateNames] = preprocess_avatol(options.DATASET_PATH, options.BASE_PATH, trainingList, scoringList, ...
     charID, charStateNames, color2label, options.PREPROCESSED_PATH);
 
 telapsed = toc(tstart);
@@ -93,23 +99,23 @@ writelog(log_fid, sprintf('Finished preprocessing input data. (%.1fs)\n\n', tela
 tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
 
-cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors', ...
-    options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND);
+cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors --base-path %s', ...
+    options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND, options.BASE_PATH);
 
 MPIString = sprintf('mpiexec -n %d ', options.MPI_NUM_PROCESSORS); 
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
     if options.USE_MPI
-        [status, result] = dos([MPIString 'HCSearchMPI ' cmdlineArgs]);
+        [status, result] = dos([MPIString options.BASE_PATH 'HCSearchMPI ' cmdlineArgs]);
     else
-        [status, result] = dos(['HCSearch ' cmdlineArgs]);
+        [status, result] = dos([options.BASE_PATH 'HCSearch ' cmdlineArgs]);
     end
 else
     fprintf('Detected Unix. Running HC-Search...\n');
     if options.USE_MPI
-        [status, result] = unix([MPIString './HCSearchMPI ' cmdlineArgs]);
+        [status, result] = unix([MPIString options.BASE_PATH 'HCSearchMPI ' cmdlineArgs]);
     else
-        [status, result] = unix(['./HCSearch ' cmdlineArgs]);
+        [status, result] = unix([options.BASE_PATH 'HCSearch ' cmdlineArgs]);
     end
 end
 fprintf('status=\n\n%d\n\n', status);
