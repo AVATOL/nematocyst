@@ -16,7 +16,7 @@ namespace Testing
 		TEST_METHOD(ConfigureTest)
 		{
 			Settings* settings = new Settings();
-			settings->refresh("input", "output");
+			settings->refresh("input", "output", "");
 
 			Assert::AreEqual(0, settings->paths->OUTPUT_DIR.compare("output\\"));
 			Assert::AreEqual(0, settings->paths->INPUT_DIR.compare("input\\"));
