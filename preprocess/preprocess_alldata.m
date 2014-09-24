@@ -1,4 +1,4 @@
-function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, validRange, testRange )
+function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, validRange, testRange, BASE_PATH )
 %PREPROCESS_ALLDATA Preprocesses allData cell struct variable into a
 %data format for HCSearch to work. Features are already extracted in
 %allData.
@@ -19,7 +19,7 @@ function [ allData ] = preprocess_alldata( allData, outputPath, trainRange, vali
 %   testRange:	set range of test data
 
 %% argument checking
-narginchk(5, 5);
+narginchk(5, 6);
 
 %% parameters
 NUM_CODE_WORDS = 100;
@@ -32,8 +32,12 @@ ALL_LIST = 'All.txt';
 
 DUMMY_VALUE = 1;
 
+if nargin < 6
+    BASE_PATH = '';
+end
+
 EXTERNAL_PATH = 'external';
-LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear'];
+LIBLINEAR_PATH = [BASE_PATH EXTERNAL_PATH filesep 'liblinear'];
 
 %% create output folder
 outputPath = normalize_file_sep(outputPath);
