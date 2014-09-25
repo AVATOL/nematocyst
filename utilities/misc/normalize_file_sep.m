@@ -1,8 +1,16 @@
-function [ outputPath ] = normalize_file_sep( outputPath )
+function [ outputPath ] = normalize_file_sep( outputPath, fileSeparator )
 %NORMALIZE_FILE_SEP Replace file separator in string with system's
+%   if second argument is included, force replacement with that separator
 
-outputPath = strrep(outputPath, '/', filesep);
-outputPath = strrep(outputPath, '\', filesep);
-
+if nargin < 2
+    outputPath = fullfile(outputPath);
+else
+    if fileSeparator ~= '/' && fileSeparator ~= '\'
+        error('second argument is not a valid file separator. needs to be / or \');
+    end
+    
+    outputPath = strrep(outputPath, '/', fileSeparator);
+    outputPath = strrep(outputPath, '\', fileSeparator); 
 end
 
+end
