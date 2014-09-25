@@ -47,8 +47,10 @@ for i = 1:length(linesCell)
    if strcmp(parsed{1}, TRAINING_DATA_STRING) == 1
        object.pathToMedia = fullfile(parsed{2});
        object.charState = parsed{3};
-       object.pathToAnnotation = fullfile(parsed{4});
-       object.taxonID = parsed{5};
+       object.charStateName = parsed{4};
+       object.pathToAnnotation = fullfile(parsed{5});
+       object.taxonID = parsed{6};
+       object.lineNumber = parsed{7};
        
        trainingList{trainCnt} = object;
        trainCnt = trainCnt+1;

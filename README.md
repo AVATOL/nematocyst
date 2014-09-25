@@ -38,7 +38,7 @@ x1,y1;...;xn,yn:charID:charName:charStateID:charStateName
 The `sorted_input_data_<charID>_<charName>.txt` file specifies what is used for training or scoring. It follows this format:
 
 ```
-training_data:media/<name_of_mediafile>:char_state:<pathname_of_annotation_file>:taxonID:<line_number>
+training_data:media/<name_of_mediafile>:char_state_id:char_state_text:<pathname_of_annotation_file>:taxonID:<line_number>
 ...
 image_to_score:media/<name_of_mediafile>:taxonID
 ...
