@@ -13,7 +13,7 @@ if ~exist(annotationFilePath, 'file')
 end
 
 fid = fopen(annotationFilePath, 'r');
-contents = textscan(fid, '%s');
+contents = textscan(fid, '%s', 'delimiter', '\n');
 fclose(fid);
 
 linesCell = contents{1};
@@ -21,6 +21,10 @@ objects = [];
 cnt = 1;
 for i = 1:length(linesCell)
    lineString = linesCell{i};
+   
+   if isequal(lineString, '')
+       continue;
+   end
    
    %% parse line
    parsed = textscan(lineString, '%s', 'delimiter', DATA_DELIMITER);

@@ -17,7 +17,7 @@ function [ trainingList, scoringList ] = parse_input_file( inputPath )
 narginchk(1, 1);
 
 %% constants
-DATA_DELIMITER = ':';
+DATA_DELIMITER = '|';
 TRAINING_DATA_STRING = 'training_data';
 IMAGE_TO_SCORE_STRING = 'image_to_score';
 
