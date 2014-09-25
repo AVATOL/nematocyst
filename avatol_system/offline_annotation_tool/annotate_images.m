@@ -60,9 +60,9 @@ for i= 1:length(fileListingArray)
     
     %% save annotation data to file
     if strcmpi(annotateType, 'box') == 1
-        save_annotation_box(objects, [outputPath filesep fileName '.txt']);
+        save_annotation_box(objects, fullfile(outputPath, [fileName '.txt']));
     else
-        save_annotation_polygon(objects, [outputPath filesep fileName '.txt']);
+        save_annotation_polygon(objects, fullfile(outputPath, [fileName '.txt']));
     end
 end
 
