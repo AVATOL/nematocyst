@@ -58,7 +58,8 @@ for i = 1:nImages
     end
     
     if train
-        annotationPath = fullfile(datasetPath, dataStruct.pathToAnnotation);
+%         annotationPath = fullfile(datasetPath, dataStruct.pathToAnnotation);
+        annotationPath = dataStruct.pathToAnnotation;
         
         if ~exist(annotationPath, 'file')
             error(['annotations "' annotationPath '" does not exist']);
