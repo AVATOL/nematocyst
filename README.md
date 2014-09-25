@@ -38,9 +38,9 @@ x1,y1;...;xn,yn:charID:charName:charStateID:charStateName
 The `sorted_input_data_<charID>_<charName>.txt` file specifies what is used for training or scoring. It follows this format:
 
 ```
-training_data:media/<name_of_mediafile>:char_state_id:char_state_text:<pathname_of_annotation_file>:taxonID:<line_number>
+training_data|media/<name_of_mediafile>|char_state_id|char_state_text|<pathname_of_annotation_file>|taxonID|<line_number>
 ...
-image_to_score:media/<name_of_mediafile>:taxonID
+image_to_score|media/<name_of_mediafile>|taxonID
 ...
 ```
 
@@ -58,11 +58,11 @@ The directory `detection_results` contains the detected characters, in the same 
 The `sorted_output_data_<charID>_<charName>.txt` file contains the character scores and any images not scored. It follows this format:
 
 ```
-training_data:media/<name_of_mediafile>:char_state:annotation/<name_of_annotation_file>
+training_data|media/<name_of_mediafile>|char_state|annotation/<name_of_annotation_file>
 ...
-image_scored:media/<name_of_mediafile>:char_state:detection_results/<name_of_annotation_file>
+image_scored|media/<name_of_mediafile>|char_state|detection_results/<name_of_annotation_file>
 ...
-image_not_scored:media/<name_of_mediafile>
+image_not_scored|media/<name_of_mediafile>
 ...
 ```
 
