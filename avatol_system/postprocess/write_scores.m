@@ -27,7 +27,7 @@ for i = 1:length(trainingList)
 %     fprintf(fid, 'training_data|%s|%s|%s\n', data.pathToMedia, data.charState, data.pathToAnnotation);
     fprintf(fid, 'training_data%s%s', DATA_DELIMITER, data.pathToMedia);
     fprintf(fid, '%s%s', DATA_DELIMITER, data.charState);
-    fprintf(fid, '%s%s\n', DATA_DLIMITER, data.pathToAnnotation);
+    fprintf(fid, '%s%s\n', DATA_DELIMITER, data.pathToAnnotation);
 end
 
 for i = 1:length(scoringList)
