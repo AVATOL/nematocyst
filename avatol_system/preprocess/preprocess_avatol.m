@@ -52,14 +52,21 @@ for i = 1:nImages
     end
     
     %% get paths
-    imagesPath = fullfile(datasetPath, dataStruct.pathToMedia);
+    if is_absolute_path(dataStruct.pathToMedia)
+        imagesPath = dataStruct.pathToMedia;
+    else
+        imagesPath = fullfile(datasetPath, dataStruct.pathToMedia);
+    end
     if ~exist(imagesPath, 'file')
         error(['image "' imagesPath '" does not exist']);
     end
     
     if train
-%         annotationPath = fullfile(datasetPath, dataStruct.pathToAnnotation);
-        annotationPath = dataStruct.pathToAnnotation;
+        if is_absolute_path(dataStruct.pathToAnnotation)
+            annotationPath = dataStruct.pathToAnnotation;
+        else
+            annotationPath = fullfile(datasetPath, dataStruct.pathToAnnotation);
+        end
         
         if ~exist(annotationPath, 'file')
             error(['annotations "' annotationPath '" does not exist']);
