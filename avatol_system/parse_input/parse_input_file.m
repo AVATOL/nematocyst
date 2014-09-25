@@ -45,16 +45,16 @@ for i = 1:length(linesCell)
    
    object = struct;
    if strcmp(parsed{1}, TRAINING_DATA_STRING) == 1
-       object.pathToMedia = parsed{2};
+       object.pathToMedia = fullfile(parsed{2});
        object.charState = parsed{3};
-       object.pathToAnnotation = parsed{4};
+       object.pathToAnnotation = fullfile(parsed{4});
        object.taxonID = parsed{5};
        
        trainingList{trainCnt} = object;
        trainCnt = trainCnt+1;
        
    elseif strcmp(parsed{1}, IMAGE_TO_SCORE_STRING) == 1
-       object.pathToMedia = parsed{2};
+       object.pathToMedia = fullfile(parsed{2});
        object.taxonID = parsed{3};
        
        scoringList{scoreCnt} = object;

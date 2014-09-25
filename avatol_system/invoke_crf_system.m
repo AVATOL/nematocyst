@@ -8,6 +8,10 @@ function invoke_crf_system( inputPath, outputPath, options )
 %% ========== argument checking
 narginchk(2, 3);
 
+% argument cleanup
+inputPath = fullfile(inputPath);
+outputPath = fullfile(outputPath);
+
 %% ========== default optional arguments
 if nargin < 3
     options = struct;
@@ -18,33 +22,40 @@ if ~isfield(options, 'BASE_PATH')
     options.BASE_PATH = '';
 %     options.BASE_PATH = ['..' filesep];
 end
+options.BASE_PATH = fullfile(options.BASE_PATH);
 % path to dataset directory, which is the root of media/ and annotations/
 if ~isfield(options, 'DATASET_PATH')
     [inputBasePath, ~, ~] = fileparts(inputPath);
-    options.DATASET_PATH = normalize_file_sep(inputBasePath);
+    options.DATASET_PATH = fullfile(inputBasePath);
 %     options.DATASET_PATH = pwd;
 end
+options.DATASET_PATH = fullfile(options.DATASET_PATH);
 % path to write temporary files during processing
 if ~isfield(options, 'TEMP_PATH')
     options.TEMP_PATH = 'temp-ignore';
 end
+options.TEMP_PATH = fullfile(options.TEMP_PATH);
 % path to write log file for debugging and diagnostics
 if ~isfield(options, 'LOG_FILE')
-    options.LOG_FILE = normalize_file_sep([options.TEMP_PATH filesep 'log.txt']);
+    options.LOG_FILE = fullfile(options.TEMP_PATH, 'log.txt');
 end
+options.LOG_FILE = fullfile(options.LOG_FILE);
 % path to the preprocessed data directory computed after
 % the preprocessing step and used for HC-Search
 if ~isfield(options, 'PREPROCESSED_PATH')
-    options.PREPROCESSED_PATH = normalize_file_sep([options.TEMP_PATH filesep 'predata']);
+    options.PREPROCESSED_PATH = fullfile(options.TEMP_PATH, 'predata');
 end
+options.PREPROCESSED_PATH = fullfile(options.PREPROCESSED_PATH);
 % path to the intermediate results after running HC-Search
 if ~isfield(options, 'HC_INTERMEDIATE_DETECTION_RESULTS_PATH')
-    options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH = normalize_file_sep([options.TEMP_PATH filesep 'hc_results']);
+    options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH = fullfile(options.TEMP_PATH, 'hc_results');
 end
+options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH = fullfile(options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH);
 % folder to save detection results
 if ~isfield(options, 'DETECTION_RESULTS_FOLDER')
     options.DETECTION_RESULTS_FOLDER = 'detection_results';
 end
+options.DETECTION_RESULTS_FOLDER = fullfile(options.DETECTION_RESULTS_FOLDER);
 % time bound parameter for HC-Search
 if ~isfield(options, 'HCSEARCH_TIMEBOUND')
     options.HCSEARCH_TIMEBOUND = 1; % default results in IID classifier
@@ -107,16 +118,16 @@ MPIString = sprintf('mpiexec -n %d ', options.MPI_NUM_PROCESSORS);
 if ispc
     fprintf('Detected PC. Running HC-Search...\n');
     if options.USE_MPI
-        [status, result] = dos([MPIString options.BASE_PATH 'HCSearchMPI ' cmdlineArgs]);
+        [status, result] = dos([MPIString fullfile(options.BASE_PATH, 'HCSearchMPI') ' ' cmdlineArgs]);
     else
-        [status, result] = dos([options.BASE_PATH 'HCSearch ' cmdlineArgs]);
+        [status, result] = dos([fullfile(options.BASE_PATH, 'HCSearch') ' ' cmdlineArgs]);
     end
 else
     fprintf('Detected Unix. Running HC-Search...\n');
     if options.USE_MPI
-        [status, result] = unix([MPIString options.BASE_PATH 'HCSearchMPI ' cmdlineArgs]);
+        [status, result] = unix([MPIString fullfile(options.BASE_PATH, 'HCSearchMPI') ' ' cmdlineArgs]);
     else
-        [status, result] = unix([options.BASE_PATH 'HCSearch ' cmdlineArgs]);
+        [status, result] = unix([fullfile(options.BASE_PATH, 'HCSearch') ' ' cmdlineArgs]);
     end
 end
 fprintf('status=\n\n%d\n\n', status);
@@ -130,7 +141,7 @@ tstart = tic;
 writelog(log_fid, 'Running detection post-process...\n');
 
 % postprocess
-allData = postprocess_avatol(allData, sprintf('%s/results', options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH), ...
+allData = postprocess_avatol(allData, fullfile(options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, 'results'), ...
     options.HCSEARCH_TIMEBOUND);
 
 telapsed = toc(tstart);
@@ -140,8 +151,8 @@ writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n'
 tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
 
-if ~exist([options.DATASET_PATH filesep options.DETECTION_RESULTS_FOLDER], 'dir')
-    mkdir([options.DATASET_PATH filesep options.DETECTION_RESULTS_FOLDER]);
+if ~exist(fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER), 'dir')
+    mkdir(fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER));
 end
 
 cnt = 1;
@@ -153,11 +164,11 @@ for i = scoringRange
     % save detection polygon
     mediaID = get_media_id_from_path_to_media(scoringList{cnt}.pathToMedia);
     detectionFile = sprintf('%s_%s.txt', charID, mediaID);
-    pathToDetection = [options.DATASET_PATH '/' options.DETECTION_RESULTS_FOLDER '/' detectionFile];
+    pathToDetection = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER, detectionFile);
     convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
     
     % save scores
-    shortenPathToDetection = [options.DETECTION_RESULTS_FOLDER '/' detectionFile];
+    shortenPathToDetection = fullfile(options.DETECTION_RESULTS_FOLDER, detectionFile);
     scoringList{cnt}.pathToDetection = shortenPathToDetection;
     
     cnt = cnt + 1;

@@ -52,13 +52,13 @@ for i = 1:nImages
     end
     
     %% get paths
-    imagesPath = normalize_file_sep([datasetPath filesep dataStruct.pathToMedia]);
+    imagesPath = fullfile(datasetPath, dataStruct.pathToMedia);
     if ~exist(imagesPath, 'file')
         error(['image "' imagesPath '" does not exist']);
     end
     
     if train
-        annotationPath = normalize_file_sep([datasetPath filesep dataStruct.pathToAnnotation]);
+        annotationPath = fullfile(datasetPath, dataStruct.pathToAnnotation);
         
         if ~exist(annotationPath, 'file')
             error(['annotations "' annotationPath '" does not exist']);

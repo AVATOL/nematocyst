@@ -13,7 +13,7 @@ for i = 1:length(allData)
     end
     
     %% read from file
-    segLabels = dlmread([resultsDir filesep sprintf('final_nodes_hc_test_time%d_fold%d_%s.txt', timeBound, 0, allDataInstance.filename)]);
+    segLabels = dlmread(fullfile(resultsDir, sprintf('final_nodes_hc_test_time%d_fold%d_%s.txt', timeBound, 0, allDataInstance.filename)));
     
     %% assign to allData structure
     allData{i}.inferLabels = segLabels;
