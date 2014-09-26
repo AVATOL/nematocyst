@@ -7,7 +7,7 @@
 FORCE_COMPILE = 0;
 
 %% NO NEED TO EDIT ANYTHING BELOW
-%% EDIT SETTINGS IN matlab_crf_settings.m
+%% EDIT SETTINGS IN matlab_crf_setup_include_paths.m
 
 INITIAL_INSTALL = 1;
 matlab_crf_setup_include_paths;
