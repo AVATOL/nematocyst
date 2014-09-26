@@ -249,7 +249,7 @@ for s = searchTypes
     evaluate(searchType) = stat;
 end % search type
 
-save([resultsDir '/evaluate.mat'], 'evaluate');
+save([resultsDir '/evaluate.mat'], 'evaluate', '-v7.3');
 
 end
 

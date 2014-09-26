@@ -281,7 +281,7 @@ dlmwrite([outputPath filesep 'codebook.txt'], centers');
 
 %% save copy of matlab variables
 fprintf('Saving variable allData to file...\n');
-save([outputPath filesep 'allData.mat'], 'allData');
+save([outputPath filesep 'allData.mat'], 'allData', '-v7.3');
 
 %% train initial prediction classifier on the edge training file just generated
 EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
