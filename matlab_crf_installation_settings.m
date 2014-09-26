@@ -12,10 +12,12 @@ INSTALL_LIBSVM = 1;
 
 %% paths to libraries
 EXTERNAL_FOLDER = 'external';
-EXTERNAL_PATH = [scripts_path filesep EXTERNAL_FOLDER];
-VLFEAT_PATH = [EXTERNAL_PATH filesep 'vlfeat'];
-LIBLINEAR_PATH = [EXTERNAL_PATH filesep 'liblinear' filesep 'matlab'];
-LIBSVM_PATH = [EXTERNAL_PATH filesep 'libsvm' filesep 'matlab'];
+EXTERNAL_PATH = fullfile(scripts_path, EXTERNAL_FOLDER);
+VLFEAT_PATH = fullfile(EXTERNAL_PATH, 'vlfeat');
+LIBLINEAR_PATH = fullfile(EXTERNAL_PATH, 'liblinear', 'matlab');
+LIBSVM_PATH = fullfile(EXTERNAL_PATH, 'libsvm', 'matlab');
+LIBLINEAR_PATH_WINDOWS = fullfile(EXTERNAL_PATH, 'liblinear', 'windows');
+LIBSVM_PATH_WINDOWS = fullfile(EXTERNAL_PATH, 'libsvm', 'windows');
 
 %% set include paths for MATLAB
 INCLUDE_FOLDERS = {'avatol_system'; 'character_scoring'; ...
@@ -41,8 +43,8 @@ end
 
 %% install liblinear
 if INSTALL_LIBLINEAR
-    if INITIAL_INSTALL
-        fprintf('Installing LIBLINEAR...');
+    if FORCE_COMPILE || (INITIAL_INSTALL && ~ispc)
+        fprintf('Compiling LIBLINEAR...');
         cd(LIBLINEAR_PATH);
         make;
         cd(current_dir);
@@ -50,13 +52,16 @@ if INSTALL_LIBLINEAR
     end
     fprintf('Adding LIBLINEAR to include path...');
     addpath(LIBLINEAR_PATH);
+    if ispc
+       addpath(LIBLINEAR_PATH_WINDOWS); 
+    end
     fprintf('done.\n');
 end
 
 %% install libsvm
 if INSTALL_LIBSVM
-    if INITIAL_INSTALL
-        fprintf('Installing LIBSVM...');
+    if FORCE_COMPILE || (INITIAL_INSTALL && ~ispc)
+        fprintf('Compiling LIBSVM...');
         cd(LIBSVM_PATH);
         make;
         cd(current_dir);
@@ -64,6 +69,9 @@ if INSTALL_LIBSVM
     end
     fprintf('Adding LIBSVM to include path...');
     addpath(LIBSVM_PATH);
+    if ispc
+        addpath(LIBSVM_PATH_WINDOWS);
+    end
     fprintf('done.\n');
 end
 

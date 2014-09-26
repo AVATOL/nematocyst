@@ -186,4 +186,4 @@ Finally, open MATLAB and cd to the `$ROOT` directory. For first time installatio
 
 Whenever you launch MATLAB to run something, you must set up the include paths properly. To do so, simply run the script 'matlab_crf_setup_include_paths'.
 
-Note: If you haven't run `mex -setup` before, the script will prompt you to select which compiler to use.
+Note: On Linux, if you haven't run `mex -setup` before, the script will prompt you to select which compiler to use.
