@@ -173,31 +173,47 @@ if ~exist(detectionPath, 'dir')
     mkdir(detectionPath);
 end
 
-cnt = 1;
+scoringCnt = 1;
+newScoringList = {};
+nonScoringCnt = 1;
+nonScoringList = {};
+OFFSET = length(trainingList);
 for i = scoringRange
     ttstart = tic;
     fprintf('Scoring image %d...\n', i);
     
     % perform character scoring
-    charState = score_basal_texture(allData{i});
-    scoringList{cnt}.charState = charState;
+    [charState, scoringSuccess] = score_basal_texture(allData{i});
     
-    % save detection polygon
-    fprintf('\tSaving detection polygon...\n');
-    mediaID = get_media_id_from_path_to_media(scoringList{cnt}.pathToMedia);
-    detectionFile = sprintf('%s_%s.txt', charID, mediaID);
-    pathToDetection = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER, detectionFile);
-    convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
-    
-    % save scores
-    fprintf('\tSaving scores...\n');
-    shortenPathToDetection = fullfile(options.DETECTION_RESULTS_FOLDER, detectionFile);
-    scoringList{cnt}.pathToDetection = shortenPathToDetection;
-    
-    cnt = cnt + 1;
-    
-    ttelapsed = toc(ttstart);
-    fprintf('\tDone scoring image %i. (%.1fs)\n', i, ttelapsed);
+    if scoringSuccess
+        newScoringList{scoringCnt} = scoringList{i - OFFSET};
+        newScoringList{scoringCnt}.charState = charState;
+
+        % save detection polygon
+        fprintf('\tSaving detection polygon...\n');
+        mediaID = get_media_id_from_path_to_media(newScoringList{scoringCnt}.pathToMedia);
+        detectionFile = sprintf('%s_%s.txt', charID, mediaID);
+        pathToDetection = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER, detectionFile);
+        convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
+
+        % save scores
+        fprintf('\tSaving scores...\n');
+        shortenPathToDetection = fullfile(options.DETECTION_RESULTS_FOLDER, detectionFile);
+        newScoringList{scoringCnt}.pathToDetection = shortenPathToDetection;
+        
+        scoringCnt = scoringCnt + 1;
+        
+        ttelapsed = toc(ttstart);
+        fprintf('\tDone scoring image %i. (%.1fs)\n', i, ttelapsed);
+    else
+        nonScoringList{nonScoringCnt} = struct;
+        nonScoringList{nonScoringCnt}.pathToMedia = scoringList{i - OFFSET}.pathToMedia;
+        
+        nonScoringCnt = nonScoringCnt + 1;
+        
+        ttelapsed = toc(ttstart);
+        fprintf('\tCould not score image %i. (%.1fs)\n', i, ttelapsed);
+    end
 end
 
 telapsed = toc(tstart);
@@ -211,7 +227,7 @@ tstart = tic;
 writelog(log_fid, 'Saving scores...\n');
 
 % save scores
-write_scores(outputPath, trainingList, scoringList, {});
+write_scores(outputPath, trainingList, newScoringList, nonScoringList);
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished saving scores. (%.1fs)\n', telapsed));
