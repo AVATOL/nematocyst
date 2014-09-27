@@ -95,6 +95,9 @@ scoringRange = 1+length(trainingList):length(trainingList)+length(scoringList);
 telapsed = toc(tglobalstart);
 writelog(log_fid, sprintf('Finished parsing input file. (%.1fs)\n\n', telapsed));
 
+ttelapsed = toc(tglobalstart);
+writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
+
 %% ========== preprocess data for HC-Search
 tstart = tic;
 writelog(log_fid, 'Preprocessing input data...\n');
@@ -106,6 +109,9 @@ color2label = containers.Map({0, 255}, {-1, 1});
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished preprocessing input data. (%.1fs)\n\n', telapsed));
+
+ttelapsed = toc(tglobalstart);
+writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 
 %% ========== call HC-Search
 tstart = tic;
@@ -136,6 +142,9 @@ fprintf('result=\n\n%s\n\n', result);
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running character detection. (%.1fs)\n\n', telapsed));
 
+ttelapsed = toc(tglobalstart);
+writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
+
 %% ========== postprocess data for character scoring
 tstart = tic;
 writelog(log_fid, 'Running detection post-process...\n');
@@ -146,6 +155,9 @@ allData = postprocess_avatol(allData, fullfile(options.HC_INTERMEDIATE_DETECTION
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n', telapsed));
+
+ttelapsed = toc(tglobalstart);
+writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 
 %% ========== character scoring
 tstart = tic;
@@ -191,6 +203,9 @@ end
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished running character scoring. (%.1fs)\n\n', telapsed));
 
+ttelapsed = toc(tglobalstart);
+writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
+
 %% ========== save scores
 tstart = tic;
 writelog(log_fid, 'Saving scores...\n');
@@ -200,6 +215,9 @@ write_scores(outputPath, trainingList, scoringList, {});
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished saving scores. (%.1fs)\n', telapsed));
+
+ttelapsed = toc(tglobalstart);
+writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 
 %% ========== done
 telapsed = toc(tglobalstart);
