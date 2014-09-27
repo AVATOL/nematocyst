@@ -11,6 +11,8 @@ for i = 1:length(allData)
     fprintf('Postprocessing image %d/%d...', i, length(allData));
     allDataInstance = allData{i};
     if isfield(allDataInstance, 'segLabels')
+        telapsed = toc(tstart);
+        fprintf('no need to process. (%.1fs)\n', telapsed);
         continue;
     end
     
@@ -22,7 +24,7 @@ for i = 1:length(allData)
     allData{i}.inferImg = infer_pixels(segLabels, allDataInstance.segs2);
     
     telapsed = toc(tstart);
-    fprintf('done. (%.1fs)', telapsed);
+    fprintf('done. (%.1fs)\n', telapsed);
 end
 
 end
