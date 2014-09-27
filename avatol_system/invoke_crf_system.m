@@ -151,27 +151,41 @@ writelog(log_fid, sprintf('Finished running detection post-process. (%.1fs)\n\n'
 tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
 
-if ~exist(fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER), 'dir')
-    mkdir(fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER));
+if is_absolute_path(options.DETECTION_RESULTS_FOLDER)
+    detectionPath = options.DETECTION_RESULTS_FOLDER;
+else
+    detectionPath = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER);
+end
+if ~exist(detectionPath, 'dir')
+    fprintf('Creating detection folder: %s\n', detectionPath);
+    mkdir(detectionPath);
 end
 
 cnt = 1;
 for i = scoringRange
+    ttstart = tic;
+    fprintf('Scoring image %d...\n', i);
+    
     % perform character scoring
     charState = score_basal_texture(allData{i});
     scoringList{cnt}.charState = charState;
     
     % save detection polygon
+    fprintf('\tSaving detection polygon...\n');
     mediaID = get_media_id_from_path_to_media(scoringList{cnt}.pathToMedia);
     detectionFile = sprintf('%s_%s.txt', charID, mediaID);
     pathToDetection = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER, detectionFile);
     convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
     
     % save scores
+    fprintf('\tSaving scores...\n');
     shortenPathToDetection = fullfile(options.DETECTION_RESULTS_FOLDER, detectionFile);
     scoringList{cnt}.pathToDetection = shortenPathToDetection;
     
     cnt = cnt + 1;
+    
+    ttelapsed = toc(ttstart);
+    fprintf('\tDone scoring image %i. (%.1fs)\n', i, ttelapsed);
 end
 
 telapsed = toc(tstart);

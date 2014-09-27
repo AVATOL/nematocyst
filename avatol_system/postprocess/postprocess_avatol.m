@@ -7,8 +7,12 @@ function [ allData ] = postprocess_avatol( allData, resultsDir, timeBound )
 
 %% read from HC-Search results
 for i = 1:length(allData)
+    tstart = tic;
+    fprintf('Postprocessing image %d/%d...', i, length(allData));
     allDataInstance = allData{i};
     if isfield(allDataInstance, 'segLabels')
+        telapsed = toc(tstart);
+        fprintf('no need to process. (%.1fs)\n', telapsed);
         continue;
     end
     
@@ -18,6 +22,9 @@ for i = 1:length(allData)
     %% assign to allData structure
     allData{i}.inferLabels = segLabels;
     allData{i}.inferImg = infer_pixels(segLabels, allDataInstance.segs2);
+    
+    telapsed = toc(tstart);
+    fprintf('done. (%.1fs)\n', telapsed);
 end
 
 end
