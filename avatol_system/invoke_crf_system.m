@@ -82,6 +82,7 @@ writelog(log_fid, sprintf('Begin AVATOL system at %s.\n\n', datestr(now)));
 
 %% ========== parse arguments of input file
 writelog(log_fid, 'Parsing input file...\n');
+update_progress_indicator('Parsing input file', options);
 
 % get character ID from file name
 [~, inFileName, ~] = fileparts(inputPath);
@@ -101,6 +102,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== preprocess data for HC-Search
 tstart = tic;
 writelog(log_fid, 'Preprocessing input data...\n');
+update_progress_indicator('Preprocessing input data', options);
 
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
@@ -116,6 +118,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== call HC-Search
 tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
+update_progress_indicator('Running character detection', options);
 
 cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors --base-path %s', ...
     options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND, options.BASE_PATH);
@@ -148,6 +151,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== postprocess data for character scoring
 tstart = tic;
 writelog(log_fid, 'Running detection post-process...\n');
+update_progress_indicator('Running detection post-process', options);
 
 % postprocess
 allData = postprocess_avatol(allData, fullfile(options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, 'results'), ...
@@ -162,6 +166,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== character scoring
 tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
+update_progress_indicator('Running character scoring', options);
 
 if is_absolute_path(options.DETECTION_RESULTS_FOLDER)
     detectionPath = options.DETECTION_RESULTS_FOLDER;
@@ -173,31 +178,47 @@ if ~exist(detectionPath, 'dir')
     mkdir(detectionPath);
 end
 
-cnt = 1;
+scoringCnt = 1;
+newScoringList = {};
+nonScoringCnt = 1;
+nonScoringList = {};
+OFFSET = length(trainingList);
 for i = scoringRange
     ttstart = tic;
     fprintf('Scoring image %d...\n', i);
     
     % perform character scoring
-    charState = score_basal_texture(allData{i});
-    scoringList{cnt}.charState = charState;
+    [charState, scoringSuccess] = score_basal_texture(allData{i});
     
-    % save detection polygon
-    fprintf('\tSaving detection polygon...\n');
-    mediaID = get_media_id_from_path_to_media(scoringList{cnt}.pathToMedia);
-    detectionFile = sprintf('%s_%s.txt', charID, mediaID);
-    pathToDetection = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER, detectionFile);
-    convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
-    
-    % save scores
-    fprintf('\tSaving scores...\n');
-    shortenPathToDetection = fullfile(options.DETECTION_RESULTS_FOLDER, detectionFile);
-    scoringList{cnt}.pathToDetection = shortenPathToDetection;
-    
-    cnt = cnt + 1;
-    
-    ttelapsed = toc(ttstart);
-    fprintf('\tDone scoring image %i. (%.1fs)\n', i, ttelapsed);
+    if scoringSuccess
+        newScoringList{scoringCnt} = scoringList{i - OFFSET};
+        newScoringList{scoringCnt}.charState = charState;
+
+        % save detection polygon
+        fprintf('\tSaving detection polygon...\n');
+        mediaID = get_media_id_from_path_to_media(newScoringList{scoringCnt}.pathToMedia);
+        detectionFile = sprintf('%s_%s.txt', charID, mediaID);
+        pathToDetection = fullfile(options.DATASET_PATH, options.DETECTION_RESULTS_FOLDER, detectionFile);
+        convert_detection_to_annotation(pathToDetection, allData{i}, charID, charName, charState, charStateNames(charState));
+
+        % save scores
+        fprintf('\tSaving scores...\n');
+        shortenPathToDetection = fullfile(options.DETECTION_RESULTS_FOLDER, detectionFile);
+        newScoringList{scoringCnt}.pathToDetection = shortenPathToDetection;
+        
+        scoringCnt = scoringCnt + 1;
+        
+        ttelapsed = toc(ttstart);
+        fprintf('\tDone scoring image %i. (%.1fs)\n', i, ttelapsed);
+    else
+        nonScoringList{nonScoringCnt} = struct;
+        nonScoringList{nonScoringCnt}.pathToMedia = scoringList{i - OFFSET}.pathToMedia;
+        
+        nonScoringCnt = nonScoringCnt + 1;
+        
+        ttelapsed = toc(ttstart);
+        fprintf('\tCould not score image %i. (%.1fs)\n', i, ttelapsed);
+    end
 end
 
 telapsed = toc(tstart);
@@ -209,9 +230,10 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== save scores
 tstart = tic;
 writelog(log_fid, 'Saving scores...\n');
+update_progress_indicator('Saving scores', options);
 
 % save scores
-write_scores(outputPath, trainingList, scoringList, {});
+write_scores(outputPath, trainingList, newScoringList, nonScoringList);
 
 telapsed = toc(tstart);
 writelog(log_fid, sprintf('Finished saving scores. (%.1fs)\n', telapsed));
@@ -244,5 +266,13 @@ function mediaID = get_media_id_from_path_to_media(pathToMedia)
 [~, parsed, ~] = fileparts(pathToMedia);
 parsed = textscan(parsed, '%s', 'delimiter', '_');
 mediaID = parsed{1}{1};
+
+end
+
+function update_progress_indicator(message, options)
+
+if isfield(options, 'PROGRESS_INDICATOR')
+    options.PROGRESS_INDICATOR.setStatus(message);
+end
 
 end

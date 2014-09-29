@@ -1,10 +1,13 @@
-function [ charState ] = score_basal_texture( allDataInstance )
+function [ charState, success ] = score_basal_texture( allDataInstance )
 %SCORE_BASAL_TEXTURE Score basal tubule morphology
 %
 %   allDataInstance:    image and labeling data
 %   charState:          character state
 %                           0 = homogeneous
 %                           1 = heterogeneous
+
+charState = -1; % some invalid label
+success = 1;
 
 %% constants
 BACKGROUND_LABEL = -1;
@@ -21,7 +24,8 @@ PATCH_SIZE = 32; % size of patches
 
 % don't do anything if image doesn't contain the foreground label
 if sum(double(allDataInstance.inferLabels) == FOREGROUND_LABEL) == 0
-    fprintf('skipping...\n');
+    fprintf('Instance does not contain foreground label for scoring. Skipping...\n');
+    success = 0;
     return;
 end
 
