@@ -82,6 +82,7 @@ writelog(log_fid, sprintf('Begin AVATOL system at %s.\n\n', datestr(now)));
 
 %% ========== parse arguments of input file
 writelog(log_fid, 'Parsing input file...\n');
+update_progress_indicator('Parsing input file', options);
 
 % get character ID from file name
 [~, inFileName, ~] = fileparts(inputPath);
@@ -101,6 +102,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== preprocess data for HC-Search
 tstart = tic;
 writelog(log_fid, 'Preprocessing input data...\n');
+update_progress_indicator('Preprocessing input data', options);
 
 % extract features, preprocess into data for HC-Search
 color2label = containers.Map({0, 255}, {-1, 1});
@@ -116,6 +118,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== call HC-Search
 tstart = tic;
 writelog(log_fid, 'Running character detection...\n');
+update_progress_indicator('Running character detection', options);
 
 cmdlineArgs = sprintf('%s %s %d --learn --infer --prune none --ranker vw --successor flipbit-neighbors --base-path %s', ...
     options.PREPROCESSED_PATH, options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, options.HCSEARCH_TIMEBOUND, options.BASE_PATH);
@@ -148,6 +151,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== postprocess data for character scoring
 tstart = tic;
 writelog(log_fid, 'Running detection post-process...\n');
+update_progress_indicator('Running detection post-process', options);
 
 % postprocess
 allData = postprocess_avatol(allData, fullfile(options.HC_INTERMEDIATE_DETECTION_RESULTS_PATH, 'results'), ...
@@ -162,6 +166,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== character scoring
 tstart = tic;
 writelog(log_fid, 'Running character scoring...\n');
+update_progress_indicator('Running character scoring', options);
 
 if is_absolute_path(options.DETECTION_RESULTS_FOLDER)
     detectionPath = options.DETECTION_RESULTS_FOLDER;
@@ -225,6 +230,7 @@ writelog(log_fid, sprintf('Total time elapsed so far: %.1fs\n\n', ttelapsed));
 %% ========== save scores
 tstart = tic;
 writelog(log_fid, 'Saving scores...\n');
+update_progress_indicator('Saving scores', options);
 
 % save scores
 write_scores(outputPath, trainingList, newScoringList, nonScoringList);
@@ -260,5 +266,13 @@ function mediaID = get_media_id_from_path_to_media(pathToMedia)
 [~, parsed, ~] = fileparts(pathToMedia);
 parsed = textscan(parsed, '%s', 'delimiter', '_');
 mediaID = parsed{1}{1};
+
+end
+
+function update_progress_indicator(message, options)
+
+if isfield(options, 'PROGRESS_INDICATOR')
+    options.PROGRESS_INDICATOR.setStatus(message);
+end
 
 end
