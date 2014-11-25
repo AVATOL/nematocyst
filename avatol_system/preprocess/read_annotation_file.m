@@ -1,4 +1,4 @@
-function objects = read_annotation_file(annotationFilePath, charID)
+function objects = read_annotation_file(annotationFilePath, imgHeight, imgWidth, charID)
 % parses annotation objects from file
 % format: x1,y1:charID:charName:charStateID:charStateName
 
@@ -53,8 +53,11 @@ for i = 1:length(linesCell)
            [yToken, remainString] = strtok(remainString, POINTS_DELIMITER);
        end
        
-       xcoords = [xcoords; str2num(xToken)];
-       ycoords = [ycoords; str2num(yToken)];
+       xPercent = str2num(xToken);
+       yPercent = str2num(yToken);
+       
+       xcoords = [xcoords; floor(0.01 * xPercent * imgWidth)];
+       ycoords = [ycoords; floor(0.01 * yPercent * imgHeight)];
    end
    
    %% form object containing coordinates

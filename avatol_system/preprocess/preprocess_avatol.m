@@ -53,12 +53,12 @@ for i = 1:nImages
     
     %% get paths
     if is_absolute_path(dataStruct.pathToMedia)
-        imagesPath = dataStruct.pathToMedia;
+        imagePath = dataStruct.pathToMedia;
     else
-        imagesPath = fullfile(datasetPath, dataStruct.pathToMedia);
+        imagePath = fullfile(datasetPath, dataStruct.pathToMedia);
     end
-    if ~exist(imagesPath, 'file')
-        error(['image "' imagesPath '" does not exist']);
+    if ~exist(imagePath, 'file')
+        error(['image "' imagePath '" does not exist']);
     end
     
     if train
@@ -74,7 +74,7 @@ for i = 1:nImages
     end
     
     %% get image
-    img = imread(imagesPath);
+    img = imread(imagePath);
     if ndims(img) == 3
         img = rgb2gray(img);
     end
@@ -91,7 +91,7 @@ for i = 1:nImages
     
     if train
         %% get groundtruth - read polygon data and get mask
-        objects = read_annotation_file(annotationPath, charID);
+        objects = read_annotation_file(annotationPath, height, width, charID);
         charStateNames = update_char_state_names(charStateNames, objects);
         labels = polygons2masks(img, objects);
         [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);

@@ -14,8 +14,11 @@ objects = cell(length(objList), 1);
 for i = 1:length(objList)
     obj = objList{i};
     
-    objects{i}.xcoords = obj(:, 2);
-    objects{i}.ycoords = obj(:, 1);
+    xcoord = obj(:, 2);
+    ycoord = obj(:, 1);
+    
+    objects{i}.xcoords = floor(100.0 * xcoord / size(labels, 2));
+    objects{i}.ycoords = floor(100.0 * ycoord / size(labels, 1));
     objects{i}.charID = charID;
     objects{i}.charName = charName;
     objects{i}.charState = num2str(charState);
