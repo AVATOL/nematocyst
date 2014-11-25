@@ -188,11 +188,13 @@ for i = scoringRange
     fprintf('Scoring image %d...\n', i);
     
     % perform character scoring
-    [charState, scoringSuccess] = score_basal_texture(allData{i});
+    [charState, scoringSuccess, scoreConfidence] = score_basal_texture(allData{i});
     
     if scoringSuccess
         newScoringList{scoringCnt} = scoringList{i - OFFSET};
         newScoringList{scoringCnt}.charState = charState;
+        newScoringList{scoringCnt}.charStateName = charStateNames(charState);
+        newScoringList{scoringCnt}.scoreConfidence = scoreConfidence;
 
         % save detection polygon
         fprintf('\tSaving detection polygon...\n');
@@ -211,8 +213,7 @@ for i = scoringRange
         ttelapsed = toc(ttstart);
         fprintf('\tDone scoring image %i. (%.1fs)\n', i, ttelapsed);
     else
-        nonScoringList{nonScoringCnt} = struct;
-        nonScoringList{nonScoringCnt}.pathToMedia = scoringList{i - OFFSET}.pathToMedia;
+        nonScoringList{nonScoringCnt} = scoringList{i - OFFSET};
         
         nonScoringCnt = nonScoringCnt + 1;
         

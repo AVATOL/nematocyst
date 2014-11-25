@@ -24,24 +24,35 @@ fid = fopen(outputPath, 'w');
 
 for i = 1:length(trainingList)
     data = trainingList{i};
-%     fprintf(fid, 'training_data|%s|%s|%s\n', data.pathToMedia, data.charState, data.pathToAnnotation);
-    fprintf(fid, 'training_data%s%s', DATA_DELIMITER, data.pathToMedia);
+    fprintf(fid, 'training_data');
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.pathToMedia);
     fprintf(fid, '%s%s', DATA_DELIMITER, data.charState);
-    fprintf(fid, '%s%s\n', DATA_DELIMITER, data.pathToAnnotation);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.charStateName);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.pathToAnnotation);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.taxonID);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.lineNumber);
+    fprintf(fid, '\n');
 end
 
 for i = 1:length(scoringList)
     data = scoringList{i};
-%     fprintf(fid, 'image_scored|%s|%s|%s\n', data.pathToMedia, data.charState, data.pathToDetection);
-    fprintf(fid, 'image_scored%s%s', DATA_DELIMITER, data.pathToMedia);
+    fprintf(fid, 'image_scored');
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.pathToMedia);
     fprintf(fid, '%s%s', DATA_DELIMITER, data.charState);
-    fprintf(fid, '%s%s\n', DATA_DELIMITER, data.pathToDetection);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.charStateName);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.pathToDetection);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.taxonID);
+    fprintf(fid, '%s%s', DATA_DELIMITER, '1'); %TODO line number
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.scoreConfidence);
+    fprintf(fid, '\n');
 end
 
 for i = 1:length(nonScoringList)
     data = nonScoringList{i};
-%     fprintf(fid, 'image_not_scored|%s\n', data.pathToMedia);
-    fprintf(fid, 'image_not_scored%s%s\n', DATA_DELIMITER, data.pathToMedia);
+    fprintf(fid, 'image_not_scored');
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.pathToMedia);
+    fprintf(fid, '%s%s', DATA_DELIMITER, data.taxonID);
+    fprintf('\n');
 end
 
 fclose(fid);

@@ -1,4 +1,4 @@
-function [ charState, success ] = score_basal_texture( allDataInstance )
+function [ charState, success, scoreConfidence ] = score_basal_texture( allDataInstance )
 %SCORE_BASAL_TEXTURE Score basal tubule morphology
 %
 %   allDataInstance:    image and labeling data
@@ -168,6 +168,9 @@ charState = CHAR_STATE_HOMOGENEOUS;
 if sum(double(modeLocations)) > HETEROGENEOUS_THRESHOLD
     charState = CHAR_STATE_HETEROGENEOUS;
 end
+
+%% scoring confidence TODO
+scoreConfidence = 0.5;
 
 end
 
