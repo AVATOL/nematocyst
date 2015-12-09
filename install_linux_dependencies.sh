@@ -8,6 +8,9 @@
 #sudo apt-get install libtool automake libboost-program-options1.49-dev build-essential libatlas-base-dev zlib1g-dev
 #sudo apt-get install libcr-dev mpich2 mpich2-doc
 
+### MAC DEPENDENCIES REQUIRED FOR VOWPAL WABBIT BUILD ###
+#brew install autoconf automake libtool boost
+
 #### AUTOMATIC INSTALL/MAKE ###
 
 # LIBLINEAR
@@ -22,6 +25,5 @@ cd -
 
 # VOWPAL WABBIT
 cd external/vowpal_wabbit
-./autogen.sh
-make
+./autogen.sh && make
 cd -
