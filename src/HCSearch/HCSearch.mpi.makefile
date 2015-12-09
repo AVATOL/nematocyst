@@ -11,8 +11,8 @@ Debug_Library_Path=-L"../gccDebug"
 Release_Library_Path=-L"../gccRelease" 
 
 # Additional libraries...
-Debug_Libraries=-Wl,--start-group -lHCSearchLib  -Wl,--end-group
-Release_Libraries=-Wl,--start-group -lHCSearchLib  -Wl,--end-group
+Debug_Libraries=-lHCSearchLib
+Release_Libraries=-lHCSearchLib
 
 # Preprocessor definitions...
 Debug_Preprocessor_Definitions=-D GCC_BUILD -D _DEBUG -D _CONSOLE -D USE_MPI 
