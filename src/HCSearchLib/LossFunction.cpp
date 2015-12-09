@@ -45,10 +45,12 @@ namespace HCSearch
 		for (int i = 0; i < diff.size(); i++)
 		{
 			if (diff(i))
+			{
 				if (YTruth.nodeWeightsAvailable)
 					loss += YTruth.nodeWeights(i);
 				else
 					loss += 1.0/diff.size();
+			}
 		}
 		return loss;
 	}
