@@ -10,14 +10,14 @@ mkdir -p external
 ### DOWNLOAD AND UNZIP/UNTAR ###
 
 # LIBLINEAR
-wget http://www.csie.ntu.edu.tw/~cjlin/cgi-bin/liblinear.cgi?+http://www.csie.ntu.edu.tw/~cjlin/liblinear+zip -O external/liblinear.zip
+wget https://github.com/cjlin1/liblinear/archive/v210.zip -O external/liblinear.zip
 unzip external/liblinear.zip -d external
-mv external/liblinear-1.94 external/liblinear
+mv external/liblinear-210 external/liblinear
 
 # LIBSVM
-wget http://www.csie.ntu.edu.tw/~cjlin/cgi-bin/libsvm.cgi?+http://www.csie.ntu.edu.tw/~cjlin/libsvm+zip  -O external/libsvm.zip
+wget https://github.com/cjlin1/libsvm/archive/v320.zip -O external/libsvm.zip
 unzip external/libsvm.zip -d external
-mv external/libsvm-3.18 external/libsvm
+mv external/libsvm-320 external/libsvm
 
 # EIGEN
 wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.gz -O external/eigen.tar.gz
