@@ -205,6 +205,10 @@ fclose(test_fid);
 fclose(all_fid);
 
 %% write metadata file
+if isempty(trainRange)
+    classes = [-1, 1];
+end
+
 fid = fopen([outputPath filesep 'metadata.txt'], 'w');
 fprintf(fid, 'num=%d\n', nFiles);
 writeRange(fid, 'classes', classes);
@@ -214,31 +218,60 @@ fclose(fid);
 
 %% create initial classifier training file
 INITFUNC_TRAINING_FILE = 'initfunc_training.txt';
-libsvmwrite([outputPath filesep INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
+if ~isempty(trainRange)
+    libsvmwrite([outputPath filesep INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
+    if isunix
+        fprintf('trimming initfunc file...\n');
+        initfunc = [outputPath filesep INITFUNC_TRAINING_FILE];
+        initfunc2 = [outputPath filesep 'initfunc_training2.txt'];
+        unix(sprintf('head -n 10000 %s > %s', initfunc, initfunc2));
+        unix(sprintf('rm -f %s', initfunc));
+        unix(sprintf('mv %s %s', initfunc2, initfunc));
+    end
+else
+    fprintf('No provided training images. Not generating initial classifier training file.\n');
+end
 
 %% create edge classifier training file
 EDGECLASSIFIER_TRAINING_FILE = 'edgeclassifier_training.txt';
-libsvmwrite([outputPath filesep EDGECLASSIFIER_TRAINING_FILE], trainEdgeLabels, sparse(trainEdgeFeatures));
+if ~isempty(trainRange)
+    libsvmwrite([outputPath filesep EDGECLASSIFIER_TRAINING_FILE], trainEdgeLabels, sparse(trainEdgeFeatures));
+    if isunix
+        fprintf('trimming edgeclassifier file...\n');
+        initfunc = [outputPath filesep EDGECLASSIFIER_TRAINING_FILE];
+        initfunc2 = [outputPath filesep 'edgeclassifier_training2.txt'];
+        unix(sprintf('head -n 10000 %s > %s', initfunc, initfunc2));
+        unix(sprintf('rm -f %s', initfunc));
+        unix(sprintf('mv %s %s', initfunc2, initfunc));
+    end
+else
+    fprintf('No provided training images. Not generating edge classifier training file.\n');
+end
 
 %% train initial prediction classifier on the training file just generated
 INITFUNC_MODEL_FILE = 'initfunc_model.txt';
-fprintf('Training initial classifier model...\n');
-if ispc
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
-elseif isunix
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
-end
+if ~isempty(trainRange)
+    fprintf('Training initial classifier model...\n');
+    if ispc
+        LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
+    elseif isunix
+        LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
+    end
 
-LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-    outputPath filesep INITFUNC_TRAINING_FILE ' ' ...
-    outputPath filesep INITFUNC_MODEL_FILE];
+    LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 100 ' ...
+        '"' outputPath filesep INITFUNC_TRAINING_FILE '"' ' ' ...
+        '"' outputPath filesep INITFUNC_MODEL_FILE '"'];
 
-if ispc
-    dos(LIBLINEAR_TRAIN_CMD);
-elseif isunix
-    unix(LIBLINEAR_TRAIN_CMD);
+    if ispc
+        dos(LIBLINEAR_TRAIN_CMD);
+    elseif isunix
+        unix(LIBLINEAR_TRAIN_CMD);
+    end
+else
+    fprintf('No provided training images. Not training initfunc classifier.\n');
+    [trainNodeLabels, trainNodeFeatures] = libsvmread([outputPath filesep INITFUNC_TRAINING_FILE]);
 end
-initStateModel = train(trainNodeLabels, sparse(trainNodeFeatures), '-s 7 -c 10');
+initStateModel = train(trainNodeLabels, sparse(trainNodeFeatures), '-s 7 -c 100');
 
 %% generate the initial prediction files
 for i = 1:nFiles
@@ -261,9 +294,9 @@ for i = 1:nFiles
     end
     
     LIBLINEAR_PREDICT_CMD = [LIBLINEAR_PREDICT ' -b 1 ' ...
-        outputPath filesep 'nodes' filesep nodesFile ' ' ...
-        outputPath filesep INITFUNC_MODEL_FILE ' ' ...
-        outputPath filesep 'initstate' filesep initPredFile];
+        '"' outputPath filesep 'nodes' filesep nodesFile '"' ' ' ...
+        '"' outputPath filesep INITFUNC_MODEL_FILE '"' ' ' ...
+        '"' outputPath filesep 'initstate' filesep initPredFile '"'];
     
     if ispc
         dos(LIBLINEAR_PREDICT_CMD);
@@ -276,9 +309,13 @@ for i = 1:nFiles
 end
 
 %% generate codebook and write to file
-fprintf('generating codebook...\n');
-[centers, ~] = vl_kmeans(bowData, NUM_CODE_WORDS);
-dlmwrite([outputPath filesep 'codebook.txt'], centers');
+if ~isempty(trainRange)
+    fprintf('generating codebook...\n');
+    [centers, ~] = vl_kmeans(bowData, NUM_CODE_WORDS);
+    dlmwrite([outputPath filesep 'codebook.txt'], centers');
+else
+    fprintf('No provided training images. Not generating codebook.\n');
+end
 
 %% save copy of matlab variables
 fprintf('Saving variable allData to file...\n');
@@ -286,21 +323,25 @@ save([outputPath filesep 'allData.mat'], 'allData', '-v7.3');
 
 %% train initial prediction classifier on the edge training file just generated
 EDGECLASSIFIER_MODEL_FILE = 'edgeclassifier_model.txt';
-fprintf('Training initial classifier model...\n');
-if ispc
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
-elseif isunix
-    LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
-end
+if ~isempty(trainRange)
+    fprintf('Training initial classifier model...\n');
+    if ispc
+        LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'windows' filesep 'train'];
+    elseif isunix
+        LIBLINEAR_TRAIN = [LIBLINEAR_PATH filesep 'train'];
+    end
 
-LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 10 ' ...
-    outputPath filesep EDGECLASSIFIER_TRAINING_FILE ' ' ...
-    outputPath filesep EDGECLASSIFIER_MODEL_FILE];
+    LIBLINEAR_TRAIN_CMD = [LIBLINEAR_TRAIN ' -s 7 -c 100 ' ...
+        '"' outputPath filesep EDGECLASSIFIER_TRAINING_FILE '"' ' ' ...
+        '"' outputPath filesep EDGECLASSIFIER_MODEL_FILE '"'];
 
-if ispc
-    dos(LIBLINEAR_TRAIN_CMD);
-elseif isunix
-    unix(LIBLINEAR_TRAIN_CMD);
+    if ispc
+        dos(LIBLINEAR_TRAIN_CMD);
+    elseif isunix
+        unix(LIBLINEAR_TRAIN_CMD);
+    end
+else
+    fprintf('No provided training images. Not training edge classifier.\n');
 end
 
 end

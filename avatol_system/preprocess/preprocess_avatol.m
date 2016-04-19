@@ -91,9 +91,10 @@ for i = 1:nImages
     
     if train
         %% get groundtruth - read polygon data and get mask
-        objects = read_annotation_file(annotationPath, charID);
-        charStateNames = update_char_state_names(charStateNames, objects);
-        labels = polygons2masks(img, objects);
+%         objects = read_annotation_file(annotationPath, charID);
+%         charStateNames = update_char_state_names(charStateNames, objects);
+        labels = imread(annotationPath); % added
+%         labels = polygons2masks(img, objects);
         [labels, ~, ~] = resize_image(labels, PATCH_SIZE, PATCH_SIZE);
 
         %% extract labels
