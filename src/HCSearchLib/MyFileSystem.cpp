@@ -42,7 +42,7 @@ namespace MyFileSystem
 
 	int FileSystem::createFolder(string dir)
 	{
-		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " " + dir);
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_MKDIR_CMD + " \"" + dir + "\"");
 	}
 
 	int FileSystem::copyFile(string src, string dest)
@@ -53,12 +53,12 @@ namespace MyFileSystem
 			return 0;
 		}
 
-		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " " + src + " " + dest);
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_COPY_CMD + " \"" + src + "\" \"" + dest + "\"");
 	}
 
 	int FileSystem::deleteFile(string path)
 	{
-		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_RM_CMD + " " + path);
+		return Executable::execute(HCSearch::Global::settings->cmds->SYSTEM_RM_CMD + " \"" + path + "\"");
 	}
 
 	bool FileSystem::checkFileExists(string path)
@@ -93,7 +93,7 @@ namespace MyFileSystem
 		int numRemainingTries = numRetries;
 		while (retcode != 0 && numRemainingTries > 0)
 		{
-			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! " 
+			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! "
 				<< "Retrying " << numRemainingTries << " more times...";
 
 #ifndef USE_WINDOWS
@@ -128,9 +128,9 @@ namespace MyFileSystem
 		int numRemainingTries = numRetries;
 		while (retcode != 0 && numRemainingTries > 0)
 		{
-			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! " 
+			LOG(WARNING) << "executable cmd '" << cmd << "' returned error code " << retcode << "! "
 				<< "Retrying " << numRemainingTries << " more times...";
-			
+
 #ifndef USE_WINDOWS
 				LOG() << "sleeping before retrying...";
 				if (numRemainingTries == 1)
@@ -139,7 +139,7 @@ namespace MyFileSystem
 					sleep(10);
 				LOG() << "done." << endl;
 #endif
-			
+
 			retcode = system(cmd.c_str());
 			numRemainingTries--;
 		}
