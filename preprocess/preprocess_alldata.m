@@ -220,13 +220,14 @@ fclose(fid);
 INITFUNC_TRAINING_FILE = 'initfunc_training.txt';
 if ~isempty(trainRange)
     libsvmwrite([outputPath filesep INITFUNC_TRAINING_FILE], trainNodeLabels, sparse(trainNodeFeatures));
-    if isunix
-        fprintf('trimming initfunc file...\n');
-        initfunc = [outputPath filesep INITFUNC_TRAINING_FILE];
-        initfunc2 = [outputPath filesep 'initfunc_training2.txt'];
-        unix(sprintf('head -n 10000 %s > %s', initfunc, initfunc2));
-        unix(sprintf('rm -f %s', initfunc));
-        unix(sprintf('mv %s %s', initfunc2, initfunc));
+    
+    fprintf('trimming initfunc file...\n');
+    initfunc = [outputPath filesep INITFUNC_TRAINING_FILE];
+    CMD = sprintf('python "%s" "%s" 10000', fullfile(BASE_PATH, 'shuffle.py'), initfunc);
+    if ispc
+        dos(CMD);
+    elseif isunix
+        unix(CMD);
     end
 else
     fprintf('No provided training images. Not generating initial classifier training file.\n');
@@ -236,13 +237,14 @@ end
 EDGECLASSIFIER_TRAINING_FILE = 'edgeclassifier_training.txt';
 if ~isempty(trainRange)
     libsvmwrite([outputPath filesep EDGECLASSIFIER_TRAINING_FILE], trainEdgeLabels, sparse(trainEdgeFeatures));
-    if isunix
-        fprintf('trimming edgeclassifier file...\n');
-        initfunc = [outputPath filesep EDGECLASSIFIER_TRAINING_FILE];
-        initfunc2 = [outputPath filesep 'edgeclassifier_training2.txt'];
-        unix(sprintf('head -n 10000 %s > %s', initfunc, initfunc2));
-        unix(sprintf('rm -f %s', initfunc));
-        unix(sprintf('mv %s %s', initfunc2, initfunc));
+
+    fprintf('trimming edgeclassifier file...\n');
+    initfunc = [outputPath filesep EDGECLASSIFIER_TRAINING_FILE];
+    CMD = sprintf('python "%s" "%s" 10000', fullfile(BASE_PATH, 'shuffle.py'), initfunc);
+    if ispc
+        dos(CMD);
+    elseif isunix
+        unix(CMD);
     end
 else
     fprintf('No provided training images. Not generating edge classifier training file.\n');
