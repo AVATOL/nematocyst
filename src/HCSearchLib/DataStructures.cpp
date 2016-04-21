@@ -296,7 +296,7 @@ namespace HCSearch
 	{
 		load(fileName);
 	}
-	
+
 	double SVMRankModel::rank(RankFeatures features)
 	{
 		if (!this->initialized)
@@ -355,7 +355,7 @@ namespace HCSearch
 	{
 		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
 	}
-	
+
 	VectorXd SVMRankModel::getWeights()
 	{
 		if (!this->initialized)
@@ -479,8 +479,8 @@ namespace HCSearch
 
 			// call SVM-Rank
 			stringstream ssLearn;
-			ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " " 
-				<< this->rankingFileName << " " << modelFileName;
+			ssLearn << Global::settings->cmds->SVMRANK_LEARN_CMD << " -c " << C << " \""
+				<< this->rankingFileName << "\" \"" << modelFileName << "\"";
 			MyFileSystem::Executable::executeRetries(ssLearn.str());
 
 			clock_t toc = clock();
@@ -718,8 +718,8 @@ namespace HCSearch
 
 					// delete the slave feature file
 					ostringstream ossRemoveRankingFeatureCmd;
-					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
-						<< " " << FEATURES_FILE;
+					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD
+						<< " \"" << FEATURES_FILE << "\"";
 					MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
 				}
 				else
@@ -752,7 +752,7 @@ namespace HCSearch
 		load(fileName);
 		this->numLearn = 0;
 	}
-	
+
 	double VWRankModel::rank(RankFeatures features)
 	{
 		if (!this->initialized)
@@ -811,7 +811,7 @@ namespace HCSearch
 	{
 		MyFileSystem::FileSystem::copyFile(this->modelFileName, fileName);
 	}
-	
+
 	VectorXd VWRankModel::getWeights()
 	{
 		if (!this->initialized)
@@ -968,16 +968,16 @@ namespace HCSearch
 		//	// load previous model if exists
 		//	if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
 		//	{
-		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-		//			<< " -i " << modelFileName << ".model"
-		//			<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " \"" << this->rankingFileName << "\""
+		//			<< " -i \"" << modelFileName << ".model\""
+		//			<< " --passes 100 -c --noconstant --save_resume -f \"" << modelFileName << ".model\" --readable_model \"" << modelFileName << "\"";
 		//	}
 		//	else
 		//	{
-		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << this->rankingFileName 
-		//			<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+		//		ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " \"" << this->rankingFileName << "\""
+		//			<< " --passes 100 -c --noconstant --save_resume -f \"" << modelFileName << ".model\" --readable_model \"" << modelFileName << "\"";
 		//	}
-		//	
+		//
 		//	MyFileSystem::Executable::executeRetries(ssLearn.str());
 
 		//	clock_t toc = clock();
@@ -1011,16 +1011,16 @@ namespace HCSearch
 				// load previous model if exists
 				if (MyFileSystem::FileSystem::checkFileExists(modelFileName + ".model"))
 				{
-					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
-						<< " -i " << modelFileName << ".model"
-						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " \"" << FEATURES_FILE << "\""
+						<< " -i \"" << modelFileName << ".model\""
+						<< " --passes 100 -c --noconstant --save_resume -f \"" << modelFileName << ".model\" --readable_model \"" << modelFileName << "\"";
 				}
 				else
 				{
-					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " " << FEATURES_FILE
-						<< " --passes 100 -c --noconstant --save_resume -f " << modelFileName << ".model --readable_model " << modelFileName;
+					ssLearn << Global::settings->cmds->VOWPALWABBIT_TRAIN_CMD << " \"" << FEATURES_FILE << "\""
+						<< " --passes 100 -c --noconstant --save_resume -f \"" << modelFileName << ".model\" --readable_model \"" << modelFileName << "\"";
 				}
-				
+
 				MyFileSystem::Executable::executeRetriesFatal(ssLearn.str());
 
 				// warnings
@@ -1040,8 +1040,8 @@ namespace HCSearch
 
 				// delete the feature file
 				ostringstream ossRemoveRankingFeatureCmd;
-				ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
-					<< " " << FEATURES_FILE;
+				ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD
+					<< " \"" << FEATURES_FILE << "\"";
 				MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
 
 				// delete the cache file
@@ -1266,8 +1266,8 @@ namespace HCSearch
 
 					// delete the slave feature file
 					ostringstream ossRemoveRankingFeatureCmd;
-					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD 
-						<< " " << FEATURES_FILE;
+					ossRemoveRankingFeatureCmd << Global::settings->cmds->SYSTEM_RM_CMD
+						<< " \"" << FEATURES_FILE << "\"";
 					MyFileSystem::Executable::execute(ossRemoveRankingFeatureCmd.str());
 				}
 				else
