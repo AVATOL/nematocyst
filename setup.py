@@ -188,7 +188,8 @@ def main():
     compile_matlab_mex(matlab_path)
 
     # make HC-Search
-    execute_command(['make'], 'make HC-Search')
+    if not is_pc():
+        execute_command(['make'], 'make HC-Search')
 
 if __name__ == '__main__':
     main()
