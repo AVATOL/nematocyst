@@ -14,12 +14,16 @@ import traceback
 # paths to MATLAB
 MAC_MATLAB_PATH = "/Applications/MATLAB_R2015b.app/bin/matlab"
 WIN_MATLAB_PATH = "C:\\Program Files\\MATLAB\\R2015b\\bin\\matlab.exe"
+LINUX_MATLAB_PATH = "/usr/local/apps/bin/matlab"
 
 def is_mac():
     return platform.system() == 'Darwin'
 
 def is_pc():
     return platform.system() == 'Windows'
+
+def is_linux():
+    return platform.system() == 'Linux'
 
 def download_file(url, output):
     print "Downloading {} to {}...".format(url, output)
@@ -86,7 +90,7 @@ def download_dependencies():
     move_file("external/vowpal_wabbit-7.7", "external/vowpal_wabbit")
 
 def install_dependencies():
-    if is_mac():
+    if is_mac() or is_linux():
         # LIBLINEAR
         cd('external/liblinear')
         execute_command(['make'], 'make liblinear')
@@ -108,7 +112,7 @@ def compile_matlab_mex(matlab_path):
     cd('external/liblinear/matlab')
     func = "try;{0};catch exception;disp(getReport(exception));exit(1);end;exit".format('make')
     application = []
-    if is_mac():
+    if is_mac() or is_linux():
         application = [
             matlab_path,
             "-nodisplay",
@@ -131,7 +135,7 @@ def compile_matlab_mex(matlab_path):
     cd('external/libsvm/matlab')
     func = "try;{0};catch exception;disp(getReport(exception));exit(1);end;exit".format('make')
     application = []
-    if is_mac():
+    if is_mac() or is_linux():
         application = [
             matlab_path,
             "-nodisplay",
@@ -161,9 +165,8 @@ def main():
         matlab_path = MAC_MATLAB_PATH
     elif is_pc():
         matlab_path = WIN_MATLAB_PATH
-    elif platform.system() == 'Linux':
-        print "Linux unsupported at this time."
-        exit(1)
+    elif is_linux():
+        matlab_path = LINUX_MATLAB_PATH
     else:
         print "Unrecognized OS/Platform: {0}".format(platform.system())
         exit(1)
