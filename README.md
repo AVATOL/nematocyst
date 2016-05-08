@@ -1,109 +1,51 @@
 nematocyst
 =============
 
-Character Recognition on Nematocysts
+High-Clutter Character Segmentation on Nematocysts
 
 ## Introduction
 
-This software was developed for learning to recognize basal tubule, distal tubule and capsule characters of nematocysts. However, it is intended to work for any (in theory) images of biological specimens that can be cast into a scene labeling framework with simple enough characters for scoring.
+This software was developed for learning to recognize basal tubule, distal tubule and capsule characters of nematocysts. However, it is intended to work for any (in theory) images of biological specimens that can be cast into a scene labeling framework with simple enough characters for scoring. Currently the software only supports segmenting out the characters from images and not scoring the characters.
 
-The user provides images and annotations of nematocysts for the system to learn how to detect and score characters. Once the system is done training, the user can provide new images for the software to detect and score the characters.
+The user provides images and annotations of nematocysts for the system to learn how to detect/segment characters. Once the system is done training, the user can provide new images for the software to detect/segment the characters.
 
-The system follows this pipeline: 1) feature extraction, 2) training for detection/scoring, 3) character detection, 4) character scoring. Character detection is performed through a framework called HC-Search. HC-Search is a structured prediction framework for computer vision. It was found more effective over traditional conditional random field (CRF) approaches for cluttered biological images.
+The system follows this pipeline: 1) feature extraction, 2) training for detection/scoring, 3) character detection/segmentation. Character detection is performed through a framework called HC-Search. HC-Search is a structured prediction framework for computer vision. It was found more effective over traditional conditional random field (CRF) approaches for cluttered biological images.
 
-## How to Use the Software
+## How to Use Software
 
-### Installation
+This system was built to interface with the avatol\_cv software. Please consult the documentation for the avatol\_cv project.
 
-Please see the Installation Instructions section before proceeding.
+While it is meant to run as a module through the avatol\_cv software, it could also be run as a stand-alone module. However, this is not recommended. Here are some rough steps if you are interested:
 
-### Input
+1. Preprocess: `preprocess_avatol()` (MATLAB)
+2. Segmentation: `$ROOT$/HCSearch`
+3. Postprocess: `postprocess_avatol()` (MATLAB)
 
-The following should be the directory structure of the data set for input into the system:
-
-- `SOME_DATASET_FOLDER/`
-	- `media/`
-		- `<mediaID>_<stuff>.jpg`
-	- `annotations/`
-		- `<charID>_<mediaID>.txt`
-	- `sorted_input_data_<charID>_<charName>.txt`
-
-The directory `annotations` contains annotations of this format:
-
-```
-x1,y1;...;xn,yn:charID:charName:charStateID:charStateName
-...
-```
-
-The `sorted_input_data_<charID>_<charName>.txt` file specifies what is used for training or scoring. It follows this format:
-
-```
-training_data|media/<name_of_mediafile>|char_state_id|char_state_text|<pathname_of_annotation_file>|taxonID|<line_number>
-...
-image_to_score|media/<name_of_mediafile>|taxonID
-...
-```
-
-### Output
-
-The system will output the folowing files:
-
-- `SOME_DATASET_FOLDER/`
-	- `detection_results/`
-		- `<charID>_<mediaID>.txt`
-	- `sorted_output_data_<charID>_<charName>.txt`
-
-The directory `detection_results` contains the detected characters, in the same format as the annotation files.
-
-The `sorted_output_data_<charID>_<charName>.txt` file contains the character scores and any images not scored. It follows this format:
-
-```
-training_data|media/<name_of_mediafile>|char_state|annotation/<name_of_annotation_file>
-...
-image_scored|media/<name_of_mediafile>|char_state|detection_results/<name_of_annotation_file>
-...
-image_not_scored|media/<name_of_mediafile>
-...
-```
-
-### Running
-
-Simply run the following command with the appropriate paths and names:
-
-```
-invoke_crf_system('path/to/sorted_input_data_<charID>_<charName>.txt', 'path/to/sorted_output_data_<charID>_<charName>.txt');
-```
-
-This command executes the pipeline: 1) feature extraction, 2) training for detection/scoring, 3) character detection, 4) character scoring.
-
-For setting advanced parameters, pass a third parameter `options` to `invoke_crf_system()`.
+(Let `$ROOT$` denote the root directory containing `src` and this README.)
 
 ## Installation Instructions
 
-Currently supports Windows and Linux. Mac has not been tested yet.
+Currently supports Windows and Mac. Linux is unsupported but installation should still work on Linux.
 
-High level installation instructions:
+### One-Step Install (Recommended)
+
+You can automate the entire installation process by running the following (Python 2.7 is required):
+
+```
+python $ROOT$/setup.py
+```
+
+This should work on Windows and Mac at least.
+
+### Manual Installation
+
+If you prefer to manually install, here are some rough instructions. The one-step script above essentially does the following:
 
 1. Download dependencies: Eigen, LIBLINEAR, LIBSVM, VLFeat, Vowpal Wabbit
-2. Build the dependencies if using Linux, otherwise use the Windows binaries
-3. Build HC-Search if using Linux, otherwise use the provided Windows binary
-4. Set up include paths in MATLAB using matlab_crf_install.m
+2. Build the dependencies if using Mac/Linux, otherwise use the Windows binaries
+3. Build HC-Search if using Mac/Linux, otherwise use the provided Windows binary
 
-Linux Bonus: If you are running Linux, you can automate steps 1, 2 and 3 by running the following:
-
-```
-./master_install_linux.sh
-```
-
-### 1) Download Dependencies
-
-If you are using Linux, simply run the following script to download everything automatically:
-
-```
-./download_linux_dependencies.sh
-```
-
-Otherwise if you are using Windows or would like to manually download the files, following these instructions:
+#### 1) Download Dependencies
 
 Let `$ROOT$` denote the root directory containing `src` and this README. Dependencies must be installed in the `$ROOT$/external/` directory.
 
@@ -128,33 +70,45 @@ Let `$ROOT$` denote the root directory containing `src` and this README. Depende
 	2. Unpack to `$ROOT$/external/vlfeat`
 		- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vlfeat/toolbox/vl_setup.m`
 - Vowpal Wabbit
-	1. Download or git clone from https://github.com/JohnLangford/vowpal_wabbit
+	1. Download or git clone from https://github.com/JohnLangford/vowpal\_wabbit
 		- Version 7.7 (git tag b2b702c) officially supported. Later versions should also work.
 	2. Unpack to `$ROOT$/external/vowpal_wabbit`
 		- Unpack the directory structure such that this file path is valid: `$ROOT$/external/vowpal_wabbit/Makefile`
 
-### 2) Build the dependencies
+#### 2) Build the dependencies
 
-If you are using Linux, simply run the following script to build everything automatically:
+Build the dependencies: LIBLINEAR, LIBSVM, Vowpal Wabbit. For LIBLINEAR and LIBSVM, follow their instructions. Build the command-line tools _and_ MATLAB interfaces.
 
-```
-./install_linux_dependencies.sh
-```
-
-If you have problems building Vowpal Wabbit, you may need to install additional Linux dependencies beforehand:
+For Vowpal Wabbit, follow their instructions as well. If you have problems building Vowpal Wabbit, you may need to install additional Linux dependencies beforehand:
 
 ```
-sudo apt-get install libtool automake libboost-program-options1.49-dev build-essential libatlas-base-dev zlib1g-dev
+sudo apt-get install libtool
+sudo apt-get install automake
+sudo apt-get install libboost-program-options1.49-dev
+sudo apt-get install build-essential
+sudo apt-get install libatlas-base-dev
+sudo apt-get install zlib1g-dev
 ```
 
-If you are using Windows, you do not need to build anything. Just make sure the following binaries are working:
+The dependencies are analogous for Mac. Use Homebrew. Something like this:
+
+```
+brew install autoconf
+brew install automake
+brew install libtool
+brew install boost
+```
+
+(Verify that glibtoolize exists before configuring/compiling VowpalWabbit on Mac.)
+
+If you are using Windows, you do not need to build anything _except_ for the LIBLINEAR and LIBSVM MATLAB interfaces. Just make sure the following command-line binaries are working:
 - `$ROOT$/external/vw.exe`
 - `$ROOT$/external/liblinear/windows/predict.exe`
 - `$ROOT$/external/liblinear/windows/train.exe`
 
-### 3) Build HC-Search
+#### 3) Build HC-Search
 
-If you are using Linux, simply run `make` to build the HC-Search module.
+If you are using Mac/Linux, simply run `make` to build the HC-Search module.
 
 If you are using Windows, you do not need to build it. Just make sure the included binary `$ROOT$/HCSearch.exe` is working.
 
@@ -172,18 +126,13 @@ If the executable complains about a missing DLL related to MPI or you would like
 
 Note: The default build settings will try to compile with MPI (Message Passing Interface for parallel processing) using Microsoft's HPC Pack. If you do not want to build with MPI, open up the properties of each project in the solution and remove the `USE_MPI` preprocessor flag.
 
-For Linux, you will need to install MPI to build from source. You can run the following command:
+For Mac/Linux, you will need to install MPI to build from source. You can run the following command for Linux:
 
 ```
 sudo apt-get install libcr-dev mpich2 mpich2-doc
 ```
 
+The dependencies are analogous for Mac. Use Homebrew.
+
 Then run `make mpi` instead of `make`.
 
-### 4) MATLAB Include Paths
-
-Finally, open MATLAB and cd to the `$ROOT` directory. For first time installation, run the script 'matlab_crf_install'. This will set up the include paths and install additional necessary MATLAB functionality.
-
-Whenever you launch MATLAB to run something, you must set up the include paths properly. To do so, simply run the script 'matlab_crf_setup_include_paths'.
-
-Note: On Linux, if you haven't run `mex -setup` before, the script will prompt you to select which compiler to use.
