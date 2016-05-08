@@ -18,10 +18,8 @@ This system was built to interface with the avatol\_cv software. Please consult 
 While it is meant to run as a module through the avatol\_cv software, it could also be run as a stand-alone module. However, this is not recommended. Here are some rough steps if you are interested:
 
 1. Preprocess: `preprocess_avatol()` (MATLAB)
-2. Segmentation: `$ROOT$/HCSearch`
+2. Segmentation: `./HCSearch`
 3. Postprocess: `postprocess_avatol()` (MATLAB)
-
-(Let `$ROOT$` denote the root directory containing `src` and this README.)
 
 ## Installation Instructions
 
@@ -32,7 +30,7 @@ Currently supports Windows and Mac. Linux is unsupported but installation should
 You can automate the entire installation process by running the following (Python 2.7 is required):
 
 ```
-python $ROOT$/setup.py
+python setup.py
 ```
 
 This should work on Windows and Mac at least.
